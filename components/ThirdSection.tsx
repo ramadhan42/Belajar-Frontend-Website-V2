@@ -26,8 +26,8 @@ export default function ThirdSection() {
         <Image
           src="/src/images/Group 34.png"
           alt="Brand Value Illustration"
-          width={800} // Sesuaikan angka ini dengan lebar asli Group 34.png
-          height={400} // Sesuaikan angka ini dengan tinggi asli Group 34.png
+          width={1128} // Sesuaikan angka ini dengan lebar asli Group 34.png
+          height={343} // Sesuaikan angka ini dengan tinggi asli Group 34.png
           className="w-auto h-auto object-contain"
         />
       </div>

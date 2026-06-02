@@ -22,7 +22,7 @@ export default function FifthSection() {
 
       {/* Teks Baru di bawah Khas Evomi (Font size 20px) */}
       <p className="text-[20px] text-gray-600 font-medium mb-12 max-w-2xl mb-10">
-        Empat karakter aroma yang mewakili sisi berbeda dari dirimu.
+        <b>Empat karakter aroma yang mewakili sisi berbeda dari dirimu.</b>
       </p>
 
       {/* 2. Empat Gambar Posisi Horizontal */}
