@@ -34,7 +34,7 @@ export default function FifthSection() {
               alt={product.alt}
               width={267} // GANTI: Sesuaikan lebar asli gambar produk kamu
               height={500} // GANTI: Sesuaikan tinggi asli gambar produk kamu
-              className="w-full h-auto max-w-[250px] object-contain"
+              className="object-contain"
             />
           </div>
         ))}
