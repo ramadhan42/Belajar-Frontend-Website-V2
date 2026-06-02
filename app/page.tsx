@@ -3,6 +3,7 @@ import SecondSection from "@/components/SecondSection";
 import FourthSection from "@/components/FourthSection";
 import Image from "next/image";
 import ThirdSection from "@/components/ThirdSection";
+import FifthSection from "@/components/FifthSection";
 
 export default function Home() {
   return (
@@ -18,6 +19,9 @@ export default function Home() {
 
       {/* Section ke 4 */}
       <FourthSection />
+
+      {/* Section ke 5 */}
+      <FifthSection />
     </div>
   );
 }

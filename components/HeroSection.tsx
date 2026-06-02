@@ -28,8 +28,9 @@ export default function HeroSection() {
 
       {/* 3. Teks Deskripsi (20px) */}
       <p className="text-[20px] font-normal leading-relaxed max-w-3xl mb-20 opacity-95">
-        Evomi hadir untuk mendukung keunikan dan rasa <br />
-        percaya dirimu. Bukan cuma parfum, ini adalah bentuk ekspresi jati diri yang berani dan autentik.
+        <b>Evomi</b> hadir untuk mendukung keunikan dan rasa <br />
+        percaya dirimu. Bukan cuma parfum, ini adalah <br /> 
+        bentuk ekspresi jati diri yang berani dan autentik.
       </p>
 
       {/* 4. Button Jelajahi Koleksi (18px) */}

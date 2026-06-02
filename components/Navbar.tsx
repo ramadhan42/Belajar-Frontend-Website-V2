@@ -23,25 +23,25 @@ export default function Navbar() {
       <div className="flex items-center space-x-6 mt-5">
         <Link
           href="/"
-          className="bg-white text-[#0071bc] px-4 py-2 rounded-full font-semibold text-center hover:bg-opacity-90 transition-all"
+          className="text-[16] bg-white text-[#0071bc] px-4 py-2 rounded-full font-semibold text-center hover:bg-opacity-90 transition-all"
         >
           Beranda
         </Link>
         <Link
           href="/tentang"
-          className="hover:text-gray-200 font-medium transition-colors"
+          className="text-[16] hover:text-gray-200 font-medium transition-colors"
         >
           Tentang
         </Link>
         <Link
           href="/belanja"
-          className="hover:text-gray-200 font-medium transition-colors"
+          className="text-[16] hover:text-gray-200 font-medium transition-colors"
         >
           Belanja
         </Link>
         <Link
           href="/kuis"
-          className="hover:text-gray-200 font-medium transition-colors"
+          className="text-[16] hover:text-gray-200 font-medium transition-colors"
         >
           Kuis
         </Link>
@@ -51,13 +51,13 @@ export default function Navbar() {
       <div className="flex items-center space-x-6 mt-5 mr-5">
         <Link
           href="/login"
-          className="hover:text-gray-200 font-medium transition-colors"
+          className="text-[16] hover:text-gray-200 font-medium transition-colors"
         >
           Login
         </Link>
         <Link
           href="/daftar"
-          className="bg-white text-[#0071bc] px-5 py-2 rounded-full font-semibold text-center hover:bg-opacity-90 transition-all"
+          className="text-[16] bg-white text-[#0071bc] px-5 py-2 rounded-full font-semibold text-center hover:bg-opacity-90 transition-all"
         >
           Daftar
         </Link>
