@@ -13,7 +13,7 @@ export default function Navbar() {
             alt="Logo Evomi"
             width={120} // WAJIB GANTI: Isi dengan angka lebar asli gambar kamu (px)
             height={40} // WAJIB GANTI: Isi dengan angka tinggi asli gambar kamu (px)
-            className="w-auto h-auto object-contain"
+            className="object-contain"
             priority // Agar logo di-load pertama kali tanpa delay
           />
         </Link>

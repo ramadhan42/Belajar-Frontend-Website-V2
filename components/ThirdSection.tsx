@@ -17,7 +17,7 @@ export default function ThirdSection() {
           alt="Icon Frame 5"
           width={64} // Sesuaikan angka ini dengan lebar asli Frame 5.png
           height={64} // Sesuaikan angka ini dengan tinggi asli Frame 5.png
-          className="w-auto h-auto object-contain"
+          className="object-contain"
         />
       </div>
 
@@ -28,7 +28,7 @@ export default function ThirdSection() {
           alt="Brand Value Illustration"
           width={1128} // Sesuaikan angka ini dengan lebar asli Group 34.png
           height={343} // Sesuaikan angka ini dengan tinggi asli Group 34.png
-          className="w-auto h-auto object-contain"
+          className="object-contain"
         />
       </div>
 

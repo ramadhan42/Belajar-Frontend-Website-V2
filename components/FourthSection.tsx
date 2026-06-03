@@ -15,19 +15,19 @@ export default function FourthSection() {
           alt="Center Background"
           width={1930} // Sesuaikan dengan ukuran asli gambar
           height={1096} // Sesuaikan dengan ukuran asli gambar
-          className="w-full h-auto object-contain"
+          className="object-contain"
         />
       </div>
 
       {/* 2. Gambar Background Start Top Left */}
       {/* top-10 = margin atas 10 | left-[60px] = setara margin kiri 15 */}
-      <div className="absolute left-[60px] top-35 z-20">
+      <div className="absolute left-[150px] top-55 z-20">
         <Image
           src="/src/images/Group 37.png"
           alt="Top Left Decoration"
           width={968} // Sesuaikan
           height={565} // Sesuaikan
-          className="w-auto h-auto object-contain"
+          className="object-contain"
         />
       </div>
 
@@ -37,9 +37,9 @@ export default function FourthSection() {
         <Image
           src="/src/images/Group 36.png"
           alt="Top Right Decoration"
-          width={250} // Sesuaikan
-          height={250} // Sesuaikan
-          className="w-auto h-auto object-contain"
+          width={129} // Sesuaikan
+          height={129} // Sesuaikan
+          className="object-contain"
         />
       </div>
 

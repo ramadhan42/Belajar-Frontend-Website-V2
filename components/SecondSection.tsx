@@ -23,7 +23,7 @@ export default function SecondSection() {
           alt="Karakter Evomi"
           width={1000} // Sesuaikan nilai width dengan ukuran asli gambarmu
           height={500} // Sesuaikan nilai height dengan ukuran asli gambarmu
-          className="w-auto h-auto max-w-full object-contain"
+          className="object-contain"
         />
       </div>
 

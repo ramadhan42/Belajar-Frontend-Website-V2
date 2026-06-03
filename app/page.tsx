@@ -1,7 +1,6 @@
 import HeroSection from "@/components/HeroSection";
 import SecondSection from "@/components/SecondSection";
 import FourthSection from "@/components/FourthSection";
-import Image from "next/image";
 import ThirdSection from "@/components/ThirdSection";
 import FifthSection from "@/components/FifthSection";
 
