@@ -3,7 +3,7 @@ import Image from "next/image"; // 1. Import komponen Image bawaan Next.js
 
 export default function Navbar() {
   return (
-    <nav className="bg-[#0071bc] text-white px-6 py-4 flex items-center justify-between shadow-md">
+    <nav className="bg-[#0071bc] text-white px-6 py-4 flex items-center justify-between shadow-md" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
       
       {/* Menu Kiri: Logo / Brand diganti dengan Gambar */}
       <div className="mt-5 ml-5">
