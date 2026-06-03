@@ -3,9 +3,9 @@ import Link from 'next/link';
 
 export default function HeroSection() {
   return (
-    <section className="bg-[#0071BC] text-white pt-12 pb-20 px-4 flex flex-col items-center text-center select-none">
+    <section className="hero-section bg-[#0071BC] text-white pt-12 pb-20 px-4 flex flex-col items-center text-center select-none">
       
-      {/* 1. Judul Utama (72px) - menggunakan Nohemi font dari globals.css */}
+      {/* 1. Judul Utama (72px) - Nohemi dengan letter-spacing */}
       <h1 className="text-[72px] font-extrabold leading-[1.1] tracking-tight max-w-5xl mb-1 mt-7">
         <span className="text-white">Temukan </span>
         <span className="text-[#5CB2ED]">karakter</span>
@@ -26,7 +26,7 @@ export default function HeroSection() {
         />
       </div>
 
-      {/* 3. Teks Deskripsi (20px) */}
+      {/* 3. Teks Deskripsi (20px) - Nohemi dengan letter-spacing kecil */}
       <p className="text-[20px] font-normal leading-relaxed max-w-3xl mb-15 opacity-95">
         <b>Evomi</b> hadir untuk mendukung keunikan dan rasa <br />
         percaya dirimu. Bukan cuma parfum, ini adalah <br />
