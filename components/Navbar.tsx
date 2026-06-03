@@ -4,17 +4,17 @@ import Image from "next/image"; // 1. Import komponen Image bawaan Next.js
 export default function Navbar() {
   return (
     <nav className="bg-[#0071bc] text-white px-6 py-4 flex items-center justify-between shadow-md" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
-      
+
       {/* Menu Kiri: Logo / Brand diganti dengan Gambar */}
       <div className="mt-5 ml-5">
         <Link href="/">
           <Image
-            src="/src/images/Group-navbar-logo.png" // Path otomatis membaca isi dalam folder public
+            src="/src/images/navbar/evomi-logo.png"
             alt="Logo Evomi"
-            width={120} // WAJIB GANTI: Isi dengan angka lebar asli gambar kamu (px)
-            height={40} // WAJIB GANTI: Isi dengan angka tinggi asli gambar kamu (px)
-            className="object-contain"
-            priority // Agar logo di-load pertama kali tanpa delay
+            width={120}
+            height={40}
+            className="object-contain brightness-0 invert"
+            priority
           />
         </Link>
       </div>
@@ -23,7 +23,7 @@ export default function Navbar() {
       <div className="flex items-center space-x-6 mt-5">
         <Link
           href="/"
-          className="text-[16] bg-white text-[#0071bc] px-4 py-2 rounded-full font-semibold text-center hover:bg-opacity-90 transition-all"
+          className="text-[16] bg-white text-[#0071bc] px-4 py-2 rounded-full font-regular text-center hover:bg-opacity-90 transition-all"
         >
           Beranda
         </Link>
@@ -57,7 +57,7 @@ export default function Navbar() {
         </Link>
         <Link
           href="/daftar"
-          className="text-[16] bg-white text-[#0071bc] px-5 py-2 rounded-full font-semibold text-center hover:bg-opacity-90 transition-all"
+          className="text-[16] bg-white text-[#0071bc] px-5 py-2 rounded-full font-regular text-center hover:bg-opacity-90 transition-all"
         >
           Daftar
         </Link>
