@@ -1,29 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import localFont from "next/font/local";
-
-
-/* =========================================================================
- * KONFIGURASI FONT LOKAL
- * ========================================================================= */
-const fontJudul = localFont({
-  src: "./fonts/8-Heavy.ttf",
-  variable: "--font-brand",
-  display: "swap",
-});
-
-const fontCaption = localFont({
-  src: "./fonts/Nohemi-Regular.otf",
-  variable: "--font-body",
-  display: "swap",
-});
 
 export default function HeroSection() {
   return (
-
-    <section className="bg-[#0071BC] text-white pt-12 pb-20 px-4 flex flex-col items-center text-center select-none font-nohemi">
+    <section className="bg-[#0071BC] text-white pt-12 pb-20 px-4 flex flex-col items-center text-center select-none">
       
-      {/* 1. Judul Utama (72px) */}
+      {/* 1. Judul Utama (72px) - menggunakan Nohemi font dari globals.css */}
       <h1 className="text-[72px] font-extrabold leading-[1.1] tracking-tight max-w-5xl mb-1 mt-7">
         <span className="text-white">Temukan </span>
         <span className="text-[#5CB2ED]">karakter</span>
