@@ -34,10 +34,28 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================================================================
+ * KONFIGURASI NOHEMI FONT DENGAN LETTER SPACING
+ * Hanya untuk HeroSection dan heading penting
+ * ========================================================================= */
+.hero-section {
   font-family: var(--font-nohemi);
 }
 
-/* Pastikan heading menggunakan font Nohemi */
-h1, h2, h3, h4, h5, h6 {
+.hero-section h1 {
   font-family: var(--font-nohemi);
+  letter-spacing: 0.08em;
+}
+
+.hero-section p {
+  font-family: var(--font-nohemi);
+  letter-spacing: 0.02em;
+}
+
+/* Pastikan heading menggunakan font standar */
+h1, h2, h3, h4, h5, h6 {
+  font-family: Arial, Helvetica, sans-serif;
 }
