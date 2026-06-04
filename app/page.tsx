@@ -3,6 +3,9 @@ import SecondSection from "@/components/SecondSection";
 import FourthSection from "@/components/FourthSection";
 import ThirdSection from "@/components/ThirdSection";
 import FifthSection from "@/components/FifthSection";
+import SixthSection from "@/components/SixthSection";
+import SeventhSection from "@/components/SeventhSection";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
@@ -21,6 +24,15 @@ export default function Home() {
 
       {/* Section ke 5 */}
       <FifthSection />
+
+      {/* Section ke 6 */}
+      <SixthSection/>
+
+      {/* Section ke 7 */}
+      <SeventhSection/>
+
+      {/* Section ke 8 (Footer) */}
+      <Footer />
     </div>
   );
 }

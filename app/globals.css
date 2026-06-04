@@ -11,10 +11,19 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: '8-Heavy';
+  /* Folder 'public' diabaikan dalam URL karena Next.js menganggap public sebagai root (/) */
+  src: url('/src/fonts/8-Heavy.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
   --font-nohemi: "Nohemi", system-ui, sans-serif;
+  --font-8-heavy: "8-Heavy", system-ui, sans-serif;
 }
 
 @theme inline {

@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Matikan semua indikator pengembangan
+  devIndicators: {
+  },
 };
 
 export default nextConfig;
