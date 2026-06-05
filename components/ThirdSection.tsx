@@ -6,66 +6,78 @@ export default function ThirdSection() {
       title: "Self\nAwareness",
       description: "Setiap aroma dirancang untuk merepresentasikan versi diri, emosi, dan karakter manusia yang berbeda, sehingga parfum menjadi medium ekspresi personal, bukan sekadar wewangian.",
       icon: "/src/images/section 3/star-medium.png",
-      hoverClass: "hover:rotate-[15deg]",
+      // Rotasi sedikit diperkecil di mobile agar kartu tidak melebar keluar layar
+      hoverClass: "hover:rotate-[5deg] md:hover:rotate-[5deg]",
     },
     {
       title: "Environment\nFriendly",
       description: "Mengusung kepedulian terhadap lingkungan melalui pemanfaatan daur ulang tutup botol plastik menjadi bagian dari identitas produk, sebagai bentuk kontribusi kecil dalam mengurangi limbah plastik sekaligus menghadirkan nilai sustainability.",
       icon: "/src/images/section 3/peaceful-calm.png",
-      hoverClass: "hover:-rotate-[15deg]",
+      hoverClass: "hover:-rotate-[5deg] md:hover:-rotate-[5deg]",
     },
     {
       title: "Playful Design\nConcept",
       description: "Dikemas dengan pendekatan visual yang playful, ekspresif, dan dekat dengan generasi muda agar pengalaman menggunakan parfum terasa lebih personal dan menyenangkan.",
       icon: "/src/images/section 3/triangle.png",
-      hoverClass: "hover:rotate-[15deg]",
+      hoverClass: "hover:rotate-[5deg] md:hover:rotate-[5deg]",
     }
   ];
 
   return (
-    // Tambahan relative, overflow-hidden, dan pb-24/md:pb-32 untuk memberi ruang pada gelombang di bagian bawah
-    <section className="relative bg-[#0071BC] flex flex-col items-center text-center w-full px-4 overflow-hidden pb-32 md:pb-40">
+    <section className="relative bg-[#0071BC] flex flex-col items-center text-center w-full px-2 md:px-2 overflow-hidden pb-10 md:pb-10">
 
       {/* 1. Teks Atas & Gambar di Sisi Kanan */}
-      <div className="flex items-center justify-center gap-4 mt-15 mb-[30px]">
-        <h2 className="text-[48px] font-bold">
+      {/* Diperbarui: Margin dan gap diperkecil di layar mobile */}
+      <div className="group flex items-center justify-center gap-3 md:gap-4 mt-10 md:mt-15 mb-6 md:mb-[30px] cursor-pointer">
+        {/* 'group' pada parent memungkinkan elemen di dalamnya bereaksi 
+        ketika parent tersebut di-hover.
+        */}
+        <h2 className="text-[32px] md:text-[48px] font-bold leading-tight transition-transform duration-300 ease-in-out group-hover:rotate-[4deg]">
           <span className="text-white">Brand </span>
           <span className="text-[#90EE90]">Value</span>
         </h2>
-        <Image
-          src="/src/images/section 3/star-medium.png"
-          alt="Icon Frame 5"
-          width={32}
-          height={32}
-          className="object-contain brightness-0 invert"
-        />
+
+        {/* Ikon juga akan ikut berotasi karena berada di dalam 'group' */}
+        <div className="w-[24px] md:w-[32px] h-[24px] md:h-[32px] relative flex justify-center items-center transition-transform duration-300 ease-in-out group-hover:-rotate-[4deg]">
+          <Image
+            src="/src/images/section 3/star-medium.png"
+            alt="Icon Frame 5"
+            width={32}
+            height={32}
+            className="w-full h-full object-contain brightness-0 invert"
+          />
+        </div>
       </div>
 
       {/* 2. Card Section */}
-      <div className="flex justify-center w-full max-w-6xl mt-4 mb-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8 w-full px-4 pt-10 pb-10">
+      <div className="flex justify-center w-full max-w-6xl mt-2 md:mt-4 mb-8 relative z-10">
+        {/* Diperbarui: Gap vertikal di mobile sedikit diperbesar (gap-12) agar ikon card di bawahnya tidak menabrak card di atasnya */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 w-full px-2 md:px-4 pt-6 md:pt-10 pb-6 md:pb-10">
 
           {brandValues.map((card, index) => (
             <div key={index} className="flex flex-col">
-              
-              <h3 className="text-white text-[26px] font-bold mb-6 text-left px-2 whitespace-pre-line">
+
+              {/* Diperbarui: Font size judul card disesuaikan */}
+              <h3 className="text-white text-[22px] md:text-[26px] font-bold mb-4 md:mb-6 text-left px-2 whitespace-pre-line">
                 {card.title}
               </h3>
 
               <div
-                className={`relative bg-white rounded-3xl p-8 shadow-xl flex flex-col cursor-pointer transition-transform duration-300 ease-out hover:z-10 flex-grow ${card.hoverClass}`}
+                className={`relative bg-white rounded-[24px] md:rounded-3xl p-6 md:p-8 shadow-xl flex flex-col cursor-pointer transition-transform duration-300 ease-out hover:z-10 flex-grow ${card.hoverClass}`}
               >
-                <div className="absolute -top-5 -right-6 md:-right-15 w-[90px] h-[90px] z-20 transition-transform duration-300">
+                {/* Diperbarui: Posisi absolut (-right) dikecilkan di mobile agar ikon tidak tumpah/terpotong di luar batas layar HP */}
+                <div className="absolute -top-6 -right-2 md:-top-12 md:-right-10 lg:-right-9 w-[60px] md:w-[90px] h-[60px] md:h-[90px] z-20 transition-transform duration-300 flex justify-center items-center">
                   <Image
                     src={card.icon}
                     alt={card.title.replace('\n', ' ')}
-                    width={58}
-                    height={58}
+                    width={70}
+                    height={70}
                     className="object-contain drop-shadow-md"
                   />
                 </div>
 
-                <p className="text-left text-[#0071BC] text-[18px] leading-relaxed">
+                {/* Diperbarui: Ukuran font deskripsi menyesuaikan untuk keterbacaan di mobile */}
+                <p className="text-left text-[#0071BC] text-[15px] md:text-[18px] leading-relaxed">
                   {card.description}
                 </p>
 
@@ -77,57 +89,10 @@ export default function ThirdSection() {
       </div>
 
       {/* 3. Teks Bawah */}
-      {/* Tambahan z-10 agar teks tetap berada di atas animasi gelombang */}
-      <p className="text-white text-[32px] font-bold mt-[15px] mb-5 relative z-10">
+      {/* Diperbarui: Font size text bawah disesuaikan */}
+      <p className="text-white text-[24px] md:text-[32px] font-bold mt-4 md:mt-[15px] mb-8 md:mb-5 relative z-10 transition-transform duration-300 ease-in-out hover:-rotate-[3deg] cursor-pointer">
         Every Version of Me
       </p>
-
-      {/* 4. Animasi Gelombang (Wave Section) */}
-      <div className="absolute bottom-0 left-0 w-full leading-[0] overflow-hidden rotate-180">
-        {/* Style lokal untuk keyframes Tailwind, tidak perlu setting tailwind.config.ts */}
-        <style>{`
-          @keyframes wave-fast {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          @keyframes wave-slow {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          .animate-wave-fast {
-            animation: wave-fast 7s linear infinite;
-          }
-          .animate-wave-slow {
-            animation: wave-slow 11s linear infinite;
-          }
-        `}</style>
-        
-        {/* Layer Belakang (Lebih Lambat & Semi-Transparan) */}
-        <svg
-          className="animate-wave-slow absolute bottom-0 block w-[200%] h-[70px] md:h-[110px] opacity-40"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 2000 100"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0 50 Q 250 0 500 50 T 1000 50 T 1500 50 T 2000 50 V 120 H 0 Z"
-            fill="#60BBFF"
-          />
-        </svg>
-
-        {/* Layer Depan (Lebih Cepat) */}
-        <svg
-          className="animate-wave-fast relative block w-[200%] h-[50px] md:h-[90px]"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 2000 100"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0 50 Q 250 100 500 50 T 1000 50 T 1500 50 T 2000 50 V 120 H 0 Z"
-            fill="#60BBFF"
-          />
-        </svg>
-      </div>
 
     </section>
   );

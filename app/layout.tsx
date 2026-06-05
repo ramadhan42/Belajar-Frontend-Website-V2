@@ -13,18 +13,27 @@ const eightHeavy = localFont({
   display: 'swap', 
 });
 
-// Deklarasikan font kedua
+// 1. Inisialisasi Kumpulan Font Nohemi
 const nohemi = localFont({
-  src: './fonts/Nohemi-Regular.otf',
-  variable: '--font-nohemi',
-  display: 'swap',
+  src: [
+    {
+      path: './fonts/Nohemi-Regular.otf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: './fonts/Nohemi-SemiBold.otf',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: './fonts/Nohemi-Bold.otf',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-nohemi', // Membuat CSS Variable untuk Tailwind
 });
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
   title: "Evomi Website",
   description: "Selamat datang di Evomi",
