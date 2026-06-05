@@ -20,7 +20,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1172BA;
   --font-nohemi: "Nohemi", system-ui, sans-serif;
   --font-8-heavy: "8-Heavy", system-ui, sans-serif;
 }
@@ -29,7 +29,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1172BA;
   --font-nohemi: "Nohemi", system-ui, sans-serif;
   --font-8-heavy: "8-Heavy", system-ui, sans-serif;
   --color-background: var(--background);

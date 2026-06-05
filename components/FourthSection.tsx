@@ -3,7 +3,7 @@ import Image from 'next/image';
 export default function FourthSection() {
   return (
     // Penyesuaian min-h dari 350px (untuk HP kecil) hingga 800px (Desktop)
-    <section className="relative w-full min-h-[350px] sm:min-h-[500px] md:min-h-[800px] flex justify-center items-center pt-10 sm:pt-16 md:pt-20 pb-20 sm:pb-28 md:pb-40 overflow-hidden">
+    <section className="relative bg-white w-full min-h-[350px] sm:min-h-[500px] md:min-h-[800px] flex justify-center items-center pt-10 sm:pt-16 md:pt-20 pb-20 sm:pb-28 md:pb-40 overflow-hidden">
 
       {/* 1. Background Image (z-0) */}
       <div className="absolute inset-0 z-0">
