@@ -6,12 +6,6 @@ import "./globals.css";
 // 1. Import komponen Navbar yang baru dibuat
 import Navbar from "@/components/Navbar"; 
 
-// Deklarasikan font pertama
-const eightHeavy = localFont({
-  src: './fonts/8-Heavy.ttf',
-  variable: '--font-eight-heavy',
-  display: 'swap', 
-});
 
 // 1. Inisialisasi Kumpulan Font Nohemi
 const nohemi = localFont({
@@ -46,8 +40,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${eightHeavy.variable} ${nohemi.variable}`}>
-      <body className={`${nohemi.variable} antialiased`}>
+    <html lang="en" className={`${nohemi.variable}`}>
+      <body className={`antialiased`}>
         
         {/* 2. Pasang komponen Navbar di sini */}
         <Navbar />

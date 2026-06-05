@@ -29,7 +29,6 @@ export default function SecondSection() {
   return (
     // DIUBAH: Menambahkan 'pb-[30px]' agar tombol paling bawah tidak menempel dengan divider baru
     <section className="bg-[#ffffff] flex flex-col items-center text-center px-4 w-full overflow-hidden relative pb-[30px]">
-     
       {/* ================= STICKY LINGKARAN DIVIDER (BARU) ================= */}
       {/* Wrapper ini dipasang absolute dari pojok kiri ke kanan, memotong setengah tinggi lingkaran */}
       <div className="absolute top-0 left-0 w-full flex justify-center overflow-hidden gap-[15px] h-[23px] pointer-events-none">
@@ -46,13 +45,12 @@ export default function SecondSection() {
 
       {/* 1. Teks Judul */}
       {/* Mengembalikan mt-14 karena divider atas sudah dipindahkan ke bawah */}
-      <h2 className="mt-14 md:mt-20 mb-8 md:mb-10 text-[32px] md:text-[48px] font-extrabold leading-tight">
+      <h2 className="mt-14 md:mt-25 mb-8 md:mb-10 text-[32px] md:text-[48px] font-nohemi font-semibold leading-tight">
         <span className="text-[#0071BC]">Kenalan sama</span>
         <br />
         <span className="text-[#F7B497]">karakter </span>
         <span className="text-[#0071BC]">kita yuk!</span>
       </h2>
-
       {/* 2. Grid 4 Gambar Karakter */}
       <div className="mt-6 md:mt-10 mb-8 md:mb-10 w-full max-w-6xl grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 justify-items-center">
         {characters.map((char, index) => (
@@ -70,11 +68,12 @@ export default function SecondSection() {
               />
             </div>
 
-            <p
-              className={`mt-4 md:mt-10 text-[18px] sm:text-[22px] md:text-[28.5px] font-bold font-['8-Heavy'] transition-colors duration-300 whitespace-pre-line text-center ${char.colorClass}`}
+            {/* PENERAPAN DI SINI: font-heavy akan otomatis mengambil dari globals.css */}
+            <h3
+              className={`font-heavy text-2xl md:text-3xl tracking-tight whitespace-pre-line md:mt-3 ${char.colorClass}`}
             >
               {char.name}
-            </p>
+            </h3>
           </div>
         ))}
       </div>
@@ -82,7 +81,7 @@ export default function SecondSection() {
       {/* 3. Button Lihat Semua Karakter */}
       <Link
         href="/belanja"
-        className="bg-[#0071BC] text-white text-[15px] md:text-[18.3px] font-bold px-6 md:px-9 py-3 md:py-4 rounded-full shadow-lg inline-flex items-center gap-2 mb-10 md:mb-15 md:mt-7 relative z-10 transform transition-all duration-200 ease-out hover:scale-95 hover:translate-y-1 hover:shadow-sm"
+        className="bg-[#0071BC] text-white text-[15px] md:text-[18.3px] font-bold px-6 md:px-9 py-3 md:py-4  rounded-full shadow-lg inline-flex items-center gap-2 mb-10 md:mb-25 md:mt-7 relative z-10 transform transition-all duration-200 ease-out hover:scale-95 hover:translate-y-1 hover:shadow-sm"
       >
         Lihat Semua Karakter
         <svg

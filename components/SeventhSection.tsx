@@ -18,9 +18,9 @@ export default function SeventhSection() {
       {/* =================================================================== */}
 
       {/* ================= SISI KIRI: KONTEN TEKS & TOMBOL ================= */}
-      <div className="relative z-10 flex flex-col justify-between items-start h-full max-w-xl gap-12 md:gap-24 mb-20 md:mb-0 md:mt-25 md:left-15">
+      <div className="relative z-10 flex flex-col justify-between items-start h-full max-w-xl gap-12 md:gap-24 mb-20 md:mb-0 md:mt-45 md:left-5">
         {/* Disisi Kiri Atas: Judul Utama */}
-        <h2 className="font-nohemi font-semibold md:text-[67px] leading-[1.1] tracking-tighter whitespace-pre-line text-left transition-all duration-300 ease-out hover:rotate-[3deg] cursor-pointer origin-left">
+        <h2 className="font-nohemi font-semibold md:text-[55px] leading-[1.1] whitespace-pre-line text-left transition-all duration-300 ease-out hover:rotate-[3deg] cursor-pointer origin-left">
           <span className="text-[#1172BA]">Temukan</span>
           {"\n"}
           <span className="text-[#DD74A5]">aromamu</span>

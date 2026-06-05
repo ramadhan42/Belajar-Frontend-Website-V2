@@ -5,17 +5,19 @@
  * ========================================================================= */
 @font-face {
   font-family: "Nohemi";
-  src: url("/src/fonts/Nohemi-Regular.otf") format("truetype");
-  font-weight: normal;
+  src: url("/fonts/Nohemi-Regular.otf") format("truetype");
+  font-weight: 900;
   font-style: normal;
+  font-display: swap;
 }
 
+/* AMBIL LANGSUNG DARI FOLDER PUBLIC */
 @font-face {
-  font-family: '8-Heavy';
-  /* Folder 'public' diabaikan dalam URL karena Next.js menganggap public sebagai root (/) */
-  src: url('/src/fonts/8-Heavy.ttf') format('truetype');
-  font-weight: normal;
+  font-family: 'EightHeavy';
+  src: url('/fonts/8-Heavy.ttf') format('truetype');
+  font-weight: 900;
   font-style: normal;
+  font-display: swap;
 }
 
 :root {
@@ -67,6 +69,17 @@ body {
 .hero-section p {
   font-family: var(--font-nohemi);
   letter-spacing: 0.02em;
+}
+
+@layer utilities {
+  /* Class ini yang kita panggil di SecondSection.tsx */
+  .font-heavy {
+    font-family: 'EightHeavy', sans-serif !important;
+  }
+  /* Tambahkan ini agar class font-nohemi bisa digunakan */
+  .font-nohemi {
+    font-family: var(--font-nohemi), sans-serif !important;
+  }
 }
 
 /* Pastikan heading menggunakan font standar */
