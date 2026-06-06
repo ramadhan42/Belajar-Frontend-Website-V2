@@ -1,10 +1,9 @@
-import Image from 'next/image';
-import Link from 'next/link';
+import Image from "next/image";
+import Link from "next/link";
 
 export default function HeroSection() {
   return (
-    <section className="hero-section bg-[#0071BC] text-white pt-10 md:pt-12 pb-16 md:pb-20 px-4 flex flex-col items-center text-center select-none overflow-hidden relative">
-
+    <section className="hero-section bg-[#0071BC] text-white pt-10 md:pt-12 pb-16 md:pb-60 px-4 flex flex-col items-center text-center select-none overflow-hidden relative">
       {/* --- CSS ANIMASI HOVER EFFECT --- */}
       <style>{`
         /* Efek Hover Gambar Utama (Smooth Rotate & Zoom) */
@@ -58,7 +57,6 @@ export default function HeroSection() {
 
       {/* 2. Image Poster Area (Container Responsive Aspect Ratio) */}
       <div className="relative mb-10 mt-10 md:mt-15 w-[100%] sm:w-[120%] lg:w-full max-w-7xl mx-auto aspect-[1280/412]">
-
         {/* GAMBAR KIRI (Sayap Kiri) */}
         <div className="absolute left-[-14%] top-[19.4%] w-[36.1%] h-[65.5%] z-0 rounded-l-2xl overflow-hidden sayap-hover-effect cursor-pointer">
           <Image
@@ -114,19 +112,41 @@ export default function HeroSection() {
         </div>
 
         {/* Eau de Parfum */}
-        {/* Diubah: class CSS menjadi badge-kiri-rotate */}
-        <div className="badge-kiri-rotate cursor-pointer absolute left-[7.8%] bottom-[-2.4%] inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[9px] sm:text-[11px] md:text-[14px] font-bold px-3 md:px-7 py-1.5 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30">
-          <svg className="w-3 h-3 md:w-5 md:h-5" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4.44444 4.15153L-3.61099e-05 5.78063L1.83007 10.1457L0.332174 14.6364L4.88613 15.9286L7.46318 19.9L11.3117 17.1448L16.0236 17.6062L16.2697 12.8784L19.5674 9.48231L16.0249 6.34218L15.4258 1.64729L10.7622 2.4587L6.71773 4.00083e-06L4.44444 4.15153Z" fill="#F899C6" />
+        {/* Ditambahkan mt-6 md:mt-10 untuk memberi jarak ke atas */}
+        <div className="badge-kiri-rotate cursor-pointer absolute left-[7.8%] bottom-[-2.4%] mt-6 md:mt-10 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[9px] sm:text-[11px] md:text-[14px] font-bold px-3 md:px-7 py-1.5 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30">
+          <svg
+            className="w-3 h-3 md:w-5 md:h-5"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M4.44444 4.15153L-3.61099e-05 5.78063L1.83007 10.1457L0.332174 14.6364L4.88613 15.9286L7.46318 19.9L11.3117 17.1448L16.0236 17.6062L16.2697 12.8784L19.5674 9.48231L16.0249 6.34218L15.4258 1.64729L10.7622 2.4587L6.71773 4.00083e-06L4.44444 4.15153Z"
+              fill="#F899C6"
+            />
           </svg>
           <p className="whitespace-nowrap">Eau de Parfum</p>
         </div>
 
-        {/* Concentration 20% */}
-        {/* Diubah: class CSS menjadi badge-kanan-rotate */}
-        <div className="badge-kanan-rotate cursor-pointer absolute right-[11.7%] bottom-[-18%] inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[9px] sm:text-[11px] md:text-[14px] font-bold px-3 md:px-7 py-1.5 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30">
-          
+        {/* Concentration 20% (Dipindah ke Tengah) */}
+        {/* Ditambahkan mt-6 md:mt-10 untuk memberi jarak ke atas */}
+        <div className="cursor-pointer absolute left-0 right-0 mx-auto w-max bottom-[-25%] mt-6 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[9px] sm:text-[11px] md:text-[14px] font-bold px-3 md:px-7 py-1.5 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30 transition-transform duration-300 hover:scale-105">
           <p className="whitespace-nowrap">Concentration 20%</p>
+        </div>
+
+        {/* Recycle Bottle Cap (Card Baru di Posisi Kanan) */}
+        {/* Ditambahkan mt-6 md:mt-10 untuk memberi jarak ke atas */}
+        <div className="badge-kanan-rotate cursor-pointer absolute right-[5.7%] bottom-[-16%] mt-6 md:mt-10 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[9px] sm:text-[11px] md:text-[14px] font-bold px-3 md:px-7 py-1.5 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30">
+          {/* Wrapper Image untuk icon recycle */}
+          <div className="relative w-3 h-3 md:w-5 md:h-5">
+            <Image
+              src="/src/images/section 1/recycle.png"
+              alt="Recycle Icon"
+              fill
+              className="object-contain"
+            />
+          </div>
+          <p className="whitespace-nowrap">Recycle Bottle Cap</p>
         </div>
 
         {/* GAMBAR KANAN (Sayap Kanan) */}
@@ -142,7 +162,6 @@ export default function HeroSection() {
         {/* GAMBAR UTAMA */}
         {/* GAMBAR UTAMA (Diganti menjadi 4 gambar horizontal) */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/3 -translate-y-1/15 z-10 w-[76.1%] h-[100%] flex items-center justify-between gap-2 md:gap-4 bg-transparent cursor-pointer">
-
           {/* Gambar 1 */}
           <div className="relative w-full h-full left-[5.7%] top-[2.5%]">
             <Image
@@ -186,12 +205,70 @@ export default function HeroSection() {
               priority
             />
           </div>
-
         </div>
 
-      </div>
+        {/* Divider Marquee Looping */}
+        <div className="absolute -bottom-[25%] md:-bottom-[55%] left-1/2 -translate-x-1/2 w-[100vw] overflow-hidden py-4 border-y border-white/10 z-40 bg-[#0071BC]">
+          <div className="animate-marquee flex items-center gap-6 md:gap-8">
+            {/* Array diulang 4 kali agar layar lebar terisi penuh tanpa terputus saat looping */}
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="flex items-center gap-6 md:gap-8">
+                {/* Teks & Gambar 1 */}
+                <span className="text-[23px] font-medium whitespace-nowrap text-white">
+                  Every Version of Me
+                </span>
+                <div className="relative w-[25px] h-[25px]">
+                  <Image
+                    src="/src/images/section 1/purpose.png"
+                    alt="Purpose"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
 
-  
+                {/* Teks & Gambar 2 */}
+                <span className="text-[23px] font-medium whitespace-nowrap text-white">
+                  Every Version of Me
+                </span>
+                <div className="relative w-[25px] h-[25px]">
+                  <Image
+                    src="/src/images/section 1/peaceful.png"
+                    alt="Peaceful"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+
+                {/* Teks & Gambar 3 */}
+                <span className="text-[23px] font-medium whitespace-nowrap text-white">
+                  Every Version of Me
+                </span>
+                <div className="relative w-[25px] h-[25px]">
+                  <Image
+                    src="/src/images/section 1/rab.png"
+                    alt="Rab"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+
+                {/* Teks & Gambar 4 */}
+                <span className="text-[23px] font-medium whitespace-nowrap text-white">
+                  Every Version of Me
+                </span>
+                <div className="relative w-[25px] h-[25px]">
+                  <Image
+                    src="/src/images/section 1/sweetshy.png"
+                    alt="Sweet Shy"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

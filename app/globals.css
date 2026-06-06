@@ -13,8 +13,8 @@
 
 /* AMBIL LANGSUNG DARI FOLDER PUBLIC */
 @font-face {
-  font-family: 'EightHeavy';
-  src: url('/fonts/8-Heavy.ttf') format('truetype');
+  font-family: "EightHeavy";
+  src: url("/fonts/8-Heavy.ttf") format("truetype");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -22,7 +22,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #1172BA;
+  --foreground: #1172ba;
   --font-nohemi: "Nohemi", system-ui, sans-serif;
   --font-8-heavy: "8-Heavy", system-ui, sans-serif;
 }
@@ -31,7 +31,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #1172BA;
+  --foreground: #1172ba;
   --font-nohemi: "Nohemi", system-ui, sans-serif;
   --font-8-heavy: "8-Heavy", system-ui, sans-serif;
   --color-background: var(--background);
@@ -48,7 +48,7 @@
 } */
 
 body {
-  background-color: #1172BA;
+  background-color: #1172ba;
   color: #ffffff; /* Opsional: membuat text default menjadi putih agar kontras */
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -74,7 +74,7 @@ body {
 @layer utilities {
   /* Class ini yang kita panggil di SecondSection.tsx */
   .font-heavy {
-    font-family: 'EightHeavy', sans-serif !important;
+    font-family: "EightHeavy", sans-serif !important;
   }
   /* Tambahkan ini agar class font-nohemi bisa digunakan */
   .font-nohemi {
@@ -83,6 +83,26 @@ body {
 }
 
 /* Pastikan heading menggunakan font standar */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ANIMASI MARQUEE (DIVIDER BERJALAN LOOPING) */
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll 70s linear infinite; /* Kecepatan bisa diubah di sini (15s) */
 }

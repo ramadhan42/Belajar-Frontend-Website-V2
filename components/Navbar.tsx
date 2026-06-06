@@ -10,12 +10,10 @@ export default function Navbar() {
   return (
     /* Wrapper luar untuk memberikan ruang agar rounded-full terlihat (efek floating) */
     <div className="p-4 md:p-6 w-full relative z-50 md:mt-5">
-
       <nav
-        className="bg-[#2B92DE] text-white rounded-[25px] px-6 py-3 md:px-8 md:py-4 relative max-w-[1440px] mx-auto"
-        style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
+        className="bg-[#2B92DE] text-white rounded-[25px] px-6 py-3 md:px-8 md:py-4 relative w-[95%] max-w-[1280px] mx-auto"
+        style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
       >
-
         {/* --- CSS ANIMASI HOVER BOLD & PRESSED BUTTON --- */}
         <style>{`
           .hover-bold-effect {
@@ -29,7 +27,6 @@ export default function Navbar() {
 
         {/* Kontainer Utama Navigasi */}
         <div className="flex items-center justify-between">
-
           {/* Menu Kiri: Logo */}
           <div className="md:ml-2 flex-shrink-0 md:mb-2.5">
             <Link href="/">
@@ -97,13 +94,33 @@ export default function Navbar() {
             >
               {isOpen ? (
                 // Icon Cross (X) saat menu terbuka
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               ) : (
                 // Icon Hamburger Menu (≡) saat menu tertutup
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               )}
             </button>
@@ -161,7 +178,6 @@ export default function Navbar() {
             </Link>
           </div>
         )}
-
       </nav>
     </div>
   );
