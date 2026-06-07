@@ -20,18 +20,16 @@ export default function FourthSection() {
       <div className="relative z-10 w-full max-w-6xl min-h-[300px] sm:min-h-[400px] md:min-h-[650px] px-4 md:px-6">
 
         {/* --- GROUP ATAS KANAN --- */}
-        {/* Gap diperkecil jadi gap-2 di HP layar sempit */}
-        <div className="absolute top-2 sm:top-0 right-4 md:right-2 flex flex-col md:flex-row items-end md:items-center gap-2 sm:gap-3 md:gap-6">
+        {/* Mengubah flex-col menjadi flex-row agar selalu sejajar horizontal di mobile maupun desktop */}
+        <div className="absolute top-4 sm:top-6 md:top-0 right-10 md:right-4 flex flex-row items-center gap-2 sm:gap-3 md:gap-6">
 
           {/* Teks di sebelah Icon Recycle */}
-          {/* Font diperkecil hingga 12px di HP kecil, leading (spasi antar baris) dipersempit */}
-          <p className="font-['Nohemi'] text-[12px] sm:text-[16px] md:text-[25.2px] text-[#5D5D5D] font-semibold whitespace-pre-line text-right md:text-left z-10 md:mr-25 leading-tight md:leading-normal">
+          <p className="font-['Nohemi'] text-[12px] sm:text-[14px] mx-5 md:text-[25.2px] text-[#5D5D5D] font-semibold whitespace-pre-line text-right z-10 md:mr-10 leading-tight md:leading-normal">
             Tidak ada yang kita buang{'\n'}benar-benar pergi,
           </p>
 
           {/* Icon Recycle & Teks Deskripsi */}
           <div className="flex flex-col items-center z-10">
-            {/* Ukuran ikon mengecil jadi 32px di layar mobile yang sangat kecil */}
             <div className="relative w-[32px] h-[32px] sm:w-[40px] sm:h-[40px] md:w-[64px] md:h-[64px] cursor-pointer transition-transform duration-1500 ease-in-out hover:rotate-[180deg]">
               <Image
                 src="/src/images/section 4/recycle.png"
@@ -40,16 +38,13 @@ export default function FourthSection() {
                 className="object-contain"
               />
             </div>
-            {/* Ukuran font teks label mengecil di HP (10px) */}
             <div className="group perspective inline-block cursor-pointer">
-              {/* Container untuk memberikan efek 3D */}
               <div className="transition-transform duration-500 transform-style-3d group-hover:rotate-y-360">
-                <p className="font-['Nohemi'] text-[10px] sm:text-[14px] md:text-[22.8px] text-[#1172BA] font-semibold text-center whitespace-pre-line mt-1 md:mt-2 leading-tight md:leading-normal backface-hidden">
+                <p className="font-['Nohemi'] text-[12px] sm:text-[12px] md:text-[22.8px] text-[#1172BA] font-semibold text-center whitespace-pre-line mt-1 md:mt-2 leading-tight md:leading-normal backface-hidden">
                   Recycle{'\n'}Plastic Cap
                 </p>
               </div>
 
-              {/* Tambahkan style ini di file CSS global Anda atau di dalam tag <style> di komponen */}
               <style>{`
                 .perspective { perspective: 1000px; }
                 .transform-style-3d { transform-style: preserve-3d; }
@@ -62,24 +57,21 @@ export default function FourthSection() {
         </div>
 
         {/* --- GROUP BAWAH KIRI --- */}
-        {/* Teks disusun dengan gap yang sangat tipis di HP (gap-2) */}
-        <div className="absolute bottom-4 sm:bottom-8 md:bottom-12 left-4 md:left-12 flex flex-col md:flex-row items-start md:items-center gap-2 sm:gap-3 md:gap-6 lg:gap-8 z-10">
+        {/* Mengubah flex-col menjadi flex-row dan merapatkan gap di versi mobile agar muat ke samping */}
+        <div className="absolute bottom-12 sm:bottom-16 md:bottom-12 left-25 md:left-12 flex flex-row items-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 z-10 w-full md:w-auto pr-4">
 
           {/* Teks 1 */}
-          {/* Ukuran font disesuaikan turun ke 12px */}
-          <p className="font-['Nohemi'] text-[12px] sm:text-[16px] md:text-[25.2px] text-[#5D5D5D] font-semibold whitespace-pre-line leading-tight md:leading-normal">
+          <p className="font-['Nohemi'] text-[12px] sm:text-[14px] md:text-[25.2px] mx-2 text-[#5D5D5D] font-semibold whitespace-pre-line leading-tight md:leading-normal">
             Apa yang kita buang{'\n'}bisa melilit Bumi
           </p>
 
           {/* Teks 2 (25x putaran) */}
-          {/* Angka "25x" mengecil jadi 18px di layar HP ekstrem */}
-          <p className="font-['Nohemi'] text-[14px] sm:text-[18px] md:text-[28px] font-semibold text-[#1172BA] whitespace-pre-line md:ml-10 lg:ml-40 leading-tight md:leading-normal">
-            <span className="text-[18px] sm:text-[24px] md:text-[35px]">25x</span>{'\n'} putaran
+          <p className="font-['Nohemi'] text-[12px] sm:text-[16px] md:text-[28px] mx-5 font-semibold text-[#1172BA] whitespace-pre-line text-center ml-1 sm:ml-4 md:ml-10 lg:ml-20 leading-tight md:leading-normal">
+            <span className="text-[14px] sm:text-[20px] md:text-[35px]">25x</span>{'\n'} putaran
           </p>
 
           {/* Teks 3 */}
-          {/* Ukuran font 12px untuk mobile kecil */}
-          <p className="font-['Nohemi'] text-[12px] sm:text-[16px] md:text-[25.2px] text-[#5D5D5D] font-semibold whitespace-pre-line md:ml-10 lg:ml-40 leading-tight md:leading-normal">
+          <p className="font-['Nohemi'] text-[12px] sm:text-[14px] md:text-[25.2px] text-[#5D5D5D] font-semibold whitespace-pre-line ml-1 sm:ml-4 md:ml-10 lg:ml-20 leading-tight md:leading-normal">
             dia akan{'\n'}kembali dalam{'\n'} bentuk yang{'\n'} berbeda
           </p>
         </div>
@@ -105,7 +97,6 @@ export default function FourthSection() {
         `}</style>
 
         {/* Layer Belakang (Lebih Lambat & Transparan) */}
-        {/* Tinggi ombak diturunkan jadi 30px di layar mobile */}
         <svg
           className="animate-wave-div-slow absolute bottom-0 block w-[200%] h-[30px] sm:h-[50px] md:h-[80px] opacity-50"
           xmlns="http://www.w3.org/2000/svg"
@@ -119,7 +110,6 @@ export default function FourthSection() {
         </svg>
 
         {/* Layer Depan (Lebih Cepat & Solid Putih) */}
-        {/* Tinggi ombak diturunkan jadi 20px di layar mobile */}
         <svg
           className="animate-wave-div-fast relative block w-[200%] h-[20px] sm:h-[40px] md:h-[65px]"
           xmlns="http://www.w3.org/2000/svg"

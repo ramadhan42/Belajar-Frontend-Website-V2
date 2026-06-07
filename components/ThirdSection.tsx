@@ -52,7 +52,7 @@ export default function ThirdSection() {
       {/* 2. Card Section */}
       <div className="flex justify-center w-full max-w-6xl mt-2 md:mt-4 mb-8 relative z-10">
         {/* Diperbarui: Gap vertikal di mobile sedikit diperbesar (gap-12) agar ikon card di bawahnya tidak menabrak card di atasnya */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 w-full px-2 md:px-4 pt-6 md:pt-10 pb-6 md:pb-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 w-full px-20 md:px-10 pt-6 md:pt-10 pb-6 md:pb-10">
 
           {brandValues.map((card, index) => (
             <div key={index} className="flex flex-col">
