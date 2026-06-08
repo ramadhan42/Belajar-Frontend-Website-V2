@@ -1,5 +1,7 @@
+"use client";
+
 import Image from 'next/image';
-import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 export default function FifthSection() {
   const products = [
@@ -61,30 +63,63 @@ export default function FifthSection() {
     }
   ];
 
+  // Varian Animasi untuk container grid produk (Efek Stagger)
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15, // Jeda waktu kemunculan antar kartu produk
+      },
+    },
+  };
+
+  // Varian Animasi untuk masing-masing kartu produk (Slide Up + Fade In)
+  const cardVariants = {
+    hidden: { opacity: 0, y: 40 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+  };
+
   return (
-    // Penyesuaian padding luar agar pas di mobile
-    <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-20 pb-32 md:pb-40 px-2 md:px-4 relative overflow-hidden">
+    <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-20 pb-25 md:pb-40 px-2 md:px-4 relative overflow-hidden">
       
-      {/* 1. Tulisan Tengah Atas */}
-      <h2 className="font-['Nohemi'] relative z-10 text-[32px] md:text-[48px] font-bold mb-2 md:mb-3 leading-tight">
-        <span className="text-[#1172BA]">Khas </span>
-        <span className="text-[#FF8A84]">Evomi</span>
-      </h2>
+      {/* 1. Tulisan Tengah Atas (Judul & Subjudul) */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0.5 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="relative z-10"
+      >
+        <h2 className="font-['Nohemi'] text-[32px] md:text-[48px] font-bold mb-2 md:mb-3 leading-tight">
+          <span className="text-[#1172BA]">Khas </span>
+          <span className="text-[#FF8A84]">Evomi</span>
+        </h2>
 
-      <p className="font-['Nohemi'] relative z-10 text-[14px] md:text-[20px] text-[#5D5D5D] max-w-2xl mb-10 md:mb-16 px-4">
-        <b>Empat karakter aroma yang mewakili sisi berbeda dari dirimu.</b>
-      </p>
+        <p className="font-['Nohemi'] text-[14px] md:text-[20px] text-[#5D5D5D] max-w-2xl mb-10 md:mb-16 px-4">
+          <b>Empat karakter aroma yang mewakili sisi berbeda dari dirimu.</b>
+        </p>
+      </motion.div>
 
-      {/* 2. Grid Card Produk */}
-      {/* Mengubah menjadi grid-cols-2 di mobile agar card menyusut/mengecil dan sejajar */}
-      <div className="relative z-10 w-full max-w-7xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 mb-12 md:mb-16 px-5 py-5 md:px-4">
+      {/* 2. Grid Card Produk dengan Animasi Berurutan (Staggered) */}
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: false, amount: 0.15 }}
+        className="relative z-10 w-full max-w-7xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 mb-12 md:mb-16 px-5 py-5 md:px-4"
+      >
         {products.map((product) => (
-          <div 
+          <motion.div 
             key={product.id} 
+            variants={cardVariants}
             className={`font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
           >
             {/* Bagian Atas: Gambar & Badge */}
-            {/* Padding diperkecil (p-3) di mobile */}
             <div className={`relative w-full aspect-square flex justify-center items-center p-3 md:p-6 ${product.imgBg}`}>
               <span className={`absolute top-2 left-2 md:top-5 md:left-5 bg-white px-2 py-1 md:px-4 md:py-1.5 rounded-full text-[8px] md:text-[14px] font-bold ${product.textColor}`}>
                 {product.badge}
@@ -100,7 +135,6 @@ export default function FifthSection() {
             </div>
 
             {/* Bagian Bawah: Teks & Info Produk */}
-            {/* Teks dan padding menyusut di mobile */}
             <div className={`p-3 md:p-6 flex flex-col flex-grow text-left ${product.cardBg}`}>
               <h3 className={`text-[13px] md:text-[20px] font-bold mb-1 md:mb-2 ${product.textColor}`}>
                 {product.title}
@@ -116,7 +150,6 @@ export default function FifthSection() {
                   {product.price}
                 </span>
                 
-                {/* Tombol diperkecil jadi w-6 h-6 di mobile */}
                 <button className={`w-6 h-6 md:w-10 md:h-10 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${product.btnBg}`}>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3 md:w-5 md:h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
@@ -124,27 +157,33 @@ export default function FifthSection() {
                 </button>
               </div>
             </div>
-            
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* 3. Tombol Lihat Koleksi */}
-      {/* Tombol CTA juga sedikit disesuaikan untuk mobile */}
-      <Link 
-        href="/koleksi" 
-        className="relative z-10 font-['Nohemi'] group flex items-center justify-center gap-2 md:gap-4 bg-[#1172BA] text-white text-[14px] md:text-[18px] font-bold px-6 py-3 md:px-10 md:py-4 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 shadow-md hover:shadow-inner"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: false }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="relative z-10"
       >
-        <div className="relative w-[18px] h-[18px] md:w-[24px] md:h-[24px]">
-          <Image 
-            src="/src/images/section 5/star-medium.png" 
-            alt="Star Icon" 
-            fill
-            className="object-contain brightness-0 invert"
-          />
-        </div>
-        Lihat Koleksi &rarr;
-      </Link>
+        <button
+          onClick={() => window.location.href = '/koleksi'}
+          className="font-['Nohemi'] group flex items-center justify-center gap-2 md:gap-4 bg-[#1172BA] text-white text-[14px] md:text-[18px] font-bold px-6 py-3 md:px-10 md:py-4 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 shadow-md hover:shadow-inner"
+        >
+          <div className="relative w-[18px] h-[18px] md:w-[24px] md:h-[24px]">
+            <Image 
+              src="/src/images/section 5/star-medium.png" 
+              alt="Star Icon" 
+              fill
+              className="object-contain brightness-0 invert"
+            />
+          </div>
+          Lihat Koleksi &rarr;
+        </button>
+      </motion.div>
 
       {/* 4. Animated Wave Background (Bottom) */}
       <div className="absolute bottom-0 left-0 w-full z-0 leading-[0]">
