@@ -82,7 +82,7 @@ export default function SixthSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent md:left-10 p-2 rounded-full md:p-0 whitespace-pre-line text-left"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent left-0 md:left-25 p-2 rounded-full md:p-0 whitespace-pre-line text-left"
           >
             <span className="text-[12px] md:text-[22px] font-medium">
               Purpose{'\n'}Prestige
