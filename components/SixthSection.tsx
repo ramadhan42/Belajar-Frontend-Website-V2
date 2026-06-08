@@ -37,7 +37,8 @@ export default function SixthSection() {
       <motion.div
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: false, amount: 0.5 }}
+        // PERBAIKAN: Ubah once menjadi true
+        viewport={{ once: true, amount: 0.5 }}
         variants={fadeUpVariants}
         className="relative z-30 flex items-center justify-center gap-3 text-center px-4 py-2 top-2 md:top-15 md:mb-10"
       >
