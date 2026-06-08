@@ -2,11 +2,11 @@
 
 import React from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 export default function SixthSection() {
   // Variabel animasi standar untuk efek muncul dari bawah
-  const fadeUpVariants = {
+  const fadeUpVariants: Variants = {
     hidden: { opacity: 0, y: 40 },
     visible: {
       opacity: 1,

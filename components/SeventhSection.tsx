@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 export default function SeventhSection() {
   // Varian untuk kontainer (mengatur urutan munculnya anak elemen)
@@ -17,7 +17,7 @@ export default function SeventhSection() {
   };
 
   // Varian untuk setiap bagian konten (muncul dari bawah + zoom)
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 40, scale: 0.9 },
     visible: {
       opacity: 1,

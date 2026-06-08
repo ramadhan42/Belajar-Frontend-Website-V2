@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 export default function FifthSection() {
   const products = [
@@ -75,7 +75,7 @@ export default function FifthSection() {
   };
 
   // Varian Animasi untuk masing-masing kartu produk (Slide Up + Fade In)
-  const cardVariants = {
+  const cardVariants: Variants = {
     active: { scale: 1.05 },
     inactive: { scale: 1 },
     hidden: { opacity: 0, y: 40 },

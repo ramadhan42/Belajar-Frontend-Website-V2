@@ -1,11 +1,11 @@
 "use client";
 
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 
 export default function FourthSection() {
   // Variabel untuk animasi muncul dari bawah
-  const fadeInVariants = {
+  const fadeInVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
