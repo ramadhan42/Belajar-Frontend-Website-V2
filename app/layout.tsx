@@ -6,6 +6,7 @@ import "./globals.css";
 // 1. Import komponen Navbar yang baru dibuat
 import Navbar from "@/components/global/Navbar";
 import LoadingScreen from "@/components/beranda/LoadingScreen";
+import { NavbarColorProvider } from "@/context/NavbarColorContext";
 
 // 1. Inisialisasi Kumpulan Font Nohemi
 const nohemi = localFont({
@@ -41,13 +42,16 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${nohemi.variable}`}>
       <body className={`antialiased`}>
-        {/* Pasang Loading Screen di paling atas */}
-        <LoadingScreen />
+        <NavbarColorProvider>
+          {/* Pasang Loading Screen di paling atas */}
+          <LoadingScreen />
 
-        
+          {/* Navbar */}
+          <Navbar />
 
-        {/* Konten halaman web kamu akan muncul di bawah navbar */}
-        <main className="min-h-screen">{children}</main>
+          {/* Konten halaman web kamu akan muncul di bawah navbar */}
+          <main className="min-h-screen">{children}</main>
+        </NavbarColorProvider>
       </body>
     </html>
   );
