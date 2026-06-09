@@ -1,14 +1,18 @@
 "use client";
 
-import React from 'react';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
+import React from "react";
+import Image from "next/image";
+import { motion } from "framer-motion";
 
 export default function SixthSection() {
   // Variabel animasi standar untuk efek muncul dari bawah
   const fadeUpVariants = {
     hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" },
+    },
   };
 
   return (
@@ -30,7 +34,7 @@ export default function SixthSection() {
       `}</style>
 
       {/* 1. Atas: Header "Packaging Reveal" + Icon Star */}
-      <motion.div 
+      <motion.div
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.5 }}
@@ -38,7 +42,7 @@ export default function SixthSection() {
         className="relative z-30 flex items-center justify-center gap-3 text-center px-4 py-2 top-2 md:top-15 md:mb-10"
       >
         <h2 className="font-nohemi font-semibold text-[32px] sm:text-[40px] md:text-[72px] font-bold">
-          <span className="text-white">Packaging</span>{' '}
+          <span className="text-white">Packaging</span>{" "}
           <span className="text-[#A5E194]">Reveal</span>
         </h2>
         <img
@@ -50,7 +54,6 @@ export default function SixthSection() {
 
       {/* 2. Tengah: Area Konten Gambar & Tulisan Melayang */}
       <div className="relative w-full flex flex-col items-center justify-center my-0 px-2 py-2">
-
         {/* Background Frame Kiri (Animasi Slide In dari Kiri) */}
         <motion.img
           initial={{ opacity: 0, x: -60 }}
@@ -75,9 +78,8 @@ export default function SixthSection() {
 
         {/* --- TULISAN MELAYANG ATAS --- */}
         <div className="absolute top-5 md:top-20 left-0 md:left-2 w-full px-4 md:px-60 z-30 flex justify-between items-center text-white text-sm md:text-lg font-medium">
-
           {/* Purpose Prestige (Kiri Atas) */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
@@ -85,27 +87,36 @@ export default function SixthSection() {
             className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent md:left-10 p-2 rounded-full md:p-0 whitespace-pre-line text-left"
           >
             <span className="text-[12px] md:text-[22px] font-medium">
-              Purpose{'\n'}Prestige
+              Purpose{"\n"}Prestige
             </span>
-            <img src="/src/images/section 6/purpose.png" alt="Purpose" className="w-[17px] md:w-[30px] h-[17px] md:h-[30px] object-contain" />
+            <img
+              src="/src/images/section 6/purpose.png"
+              alt="Purpose"
+              className="w-[17px] md:w-[30px] h-[17px] md:h-[30px] object-contain"
+            />
           </motion.div>
 
           {/* Rabel Brave (Kanan Atas) */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
             className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left mr-30 md:mr-80"
           >
-            <span className="text-[12px] md:text-[22px] font-medium">Rabel{'\n'}Brave</span>
-            <img src="/src/images/section 6/rabel.png" alt="Rabel" className="w-[17px] md:w-[30px] h-[17px] md:h-[30px] object-contain" />
+            <span className="text-[12px] md:text-[22px] font-medium">
+              Rabel{"\n"}Brave
+            </span>
+            <img
+              src="/src/images/section 6/rabel.png"
+              alt="Rabel"
+              className="w-[17px] md:w-[30px] h-[17px] md:h-[30px] object-contain"
+            />
           </motion.div>
-
         </div>
 
         {/* Gambar Utama: Packaging (Animasi Pop-up / Scale Up) */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.85, y: 30 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
           viewport={{ once: false, amount: 0.3 }}
@@ -121,34 +132,42 @@ export default function SixthSection() {
 
         {/* --- TULISAN MELAYANG BAWAH --- */}
         <div className="absolute bottom-4 md:bottom-18 left-5 md:left-20 w-full px-25 md:px-100 z-30 flex justify-between items-center text-white text-sm md:text-lg font-medium">
-
           {/* Peaceful Calm (Kiri Bawah) */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
             className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left"
           >
-            <span className="text-[12px] md:text-[22px] font-medium">Peaceful{'\n'}Calm</span>
-            <img src="/src/images/section 6/peaceful.png" alt="Peaceful" className="w-[17px] md:w-[30px] h-[17px] md:h-[30px] object-contain" />
+            <span className="text-[12px] md:text-[22px] font-medium">
+              Peaceful{"\n"}Calm
+            </span>
+            <img
+              src="/src/images/section 6/peaceful.png"
+              alt="Peaceful"
+              className="w-[17px] md:w-[30px] h-[17px] md:h-[30px] object-contain"
+            />
           </motion.div>
-          
-          
+
           {/* Sweet Shy (Kanan Bawah) */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
             className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left ml-20"
           >
-            <span className="text-[12px] md:text-[22px] font-medium">Sweet{'\n'}Shy</span>
-            <img src="/src/images/section 6/sweetshy.png" alt="Sweet" className="w-[17px] md:w-[30px] h-[17px] md:h-[30px] object-contain" />
+            <span className="text-[12px] md:text-[22px] font-medium">
+              Sweet{"\n"}Shy
+            </span>
+            <img
+              src="/src/images/section 6/sweetshy.png"
+              alt="Sweet"
+              className="w-[17px] md:w-[30px] h-[17px] md:h-[30px] object-contain"
+            />
           </motion.div>
-
         </div>
-
       </div>
 
       {/* Divider Marquee Looping */}
@@ -160,34 +179,53 @@ export default function SixthSection() {
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
-                <Image src="/src/images/section 1/purpose.png" alt="Purpose" fill className="object-contain" />
+                <Image
+                  src="/src/images/section 1/purpose.png"
+                  alt="Purpose"
+                  fill
+                  className="object-contain"
+                />
               </div>
 
               <span className="text-[12px] sm:text-[16px] md:text-[23px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
-                <Image src="/src/images/section 1/peaceful.png" alt="Peaceful" fill className="object-contain" />
+                <Image
+                  src="/src/images/section 1/peaceful.png"
+                  alt="Peaceful"
+                  fill
+                  className="object-contain"
+                />
               </div>
 
               <span className="text-[12px] sm:text-[16px] md:text-[23px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
-                <Image src="/src/images/section 1/rab.png" alt="Rab" fill className="object-contain" />
+                <Image
+                  src="/src/images/section 1/rab.png"
+                  alt="Rab"
+                  fill
+                  className="object-contain"
+                />
               </div>
 
               <span className="text-[12px] sm:text-[16px] md:text-[23px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
-                <Image src="/src/images/section 1/sweetshy.png" alt="Sweet Shy" fill className="object-contain" />
+                <Image
+                  src="/src/images/section 1/sweetshy.png"
+                  alt="Sweet Shy"
+                  fill
+                  className="object-contain"
+                />
               </div>
             </div>
           ))}
         </div>
       </div>
-
     </section>
   );
 }
