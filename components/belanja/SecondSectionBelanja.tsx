@@ -7,7 +7,7 @@ import { motion, Variants } from "framer-motion";
 import { useNavbarColor } from "@/context/NavbarColorContext";
 
 export default function SecondSectionBelanja() {
-  const { setNavbarColor } = useNavbarColor();
+  // const { setNavbarColor } = useNavbarColor();
 
   const products = [
     {
@@ -95,9 +95,9 @@ export default function SecondSectionBelanja() {
     },
   };
 
-  const handleProductClick = (product: typeof products[0]) => {
-    setNavbarColor(product.navbarColor);
-  };
+  // const handleProductClick = (product: typeof products[0]) => {
+  //   setNavbarColor(product.navbarColor);
+  // };
 
   return (
     <section className="bg-white flex flex-col items-center text-center w-full pt-16 md:pt-20 pb-20 md:pb-25 px-2 md:px-4 relative overflow-hidden">
