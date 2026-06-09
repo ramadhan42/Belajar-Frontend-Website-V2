@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 export default function SeventhSection() {
   // Varian untuk kontainer (mengatur urutan munculnya anak elemen)
@@ -17,7 +17,7 @@ export default function SeventhSection() {
   };
 
   // Varian untuk setiap bagian konten (muncul dari bawah + zoom)
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 40, scale: 0.9 },
     visible: {
       opacity: 1,
@@ -78,9 +78,9 @@ export default function SeventhSection() {
       {/* 2. SISI KANAN (Gambar Produk) */}
       <motion.div
         variants={itemVariants}
-        className="relative z-10 flex justify-end w-full md:w-[750px] h-[200px] md:h-[550px] top-[78px] mt-[25px]"
+        className="relative z-10 flex justify-end w-full md:w-[750px] h-[250px] md:h-[550px] top-[78px] mt-[15px]"
       >
-        <div className="z-5 absolute bottom-15 right-0 w-full md:w-[780px] h-[220px] md:h-[550px] bg-[#1172BA] rounded-[24px] md:rounded-l-[40px] shadow-lg"></div>
+        <div className="z-5 absolute bottom-15 right-0 w-full md:w-[780px] h-[250px] md:h-[550px] bg-[#1172BA] rounded-[24px] md:rounded-l-[40px] shadow-lg"></div>
       </motion.div>
 
       {/* 3. Card Badges (Di atas Gambar Produk) */}
@@ -89,28 +89,27 @@ export default function SeventhSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        // Mengatur posisi absolute agar berada tepat di atas gambar produk
-        // Gunakan flex-wrap agar tidak bertumpuk jika layar terlalu kecil
-        className="absolute z-30 flex flex-row flex-wrap justify-center gap-2 md:gap-4 
-                   bottom-[28%] md:bottom-auto md:top-[160px] right-[10%] md:-right-[-10]"
+        // Dioptimalkan untuk S20 (lebar 360px): menggunakan right-[18%] agar pas di sisi kiri botol dan gap-1.5 agar hemat ruang
+        className="absolute z-30 flex flex-row flex-wrap justify-center gap-1.5 md:gap-4 
+                   bottom-[30%] md:bottom-auto md:top-[160px] right-[18%] sm:right-[25%] md:right-[280px]"
       >
-        {/* Badge 1: Rebel */}
-        <div className="bg-white px-4 py-1.5 md:py-2 rounded-full shadow-md text-[16px] font-bold text-[#E33D35] transition-transform hover:scale-105 cursor-pointer">
+        {/* Badge 1: Rebel (Menggunakan padding em, geser ke kiri dengan x, geser ke bawah dengan y) */}
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#E33D35] transition-transform hover:scale-105 cursor-pointer translate-x-[12px] translate-y-[5px] md:translate-x-[140px] md:translate-y-25">
           Rebel
         </div>
 
         {/* Badge 2: Sweet */}
-        <div className="bg-white px-4 py-1.5 md:py-2 rounded-full shadow-md text-[16px] font-bold text-[#DD74A5] transition-transform hover:scale-105 cursor-pointer">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#DD74A5] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[-30px] md:translate-x-[205px] md:translate-y-1">
           Sweet
         </div>
 
         {/* Badge 3: Prestige */}
-        <div className="bg-white px-4 py-1.5 md:py-2 rounded-full shadow-md text-[16px] font-bold text-[#5CB2ED] transition-transform hover:scale-105 cursor-pointer">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5CB2ED] transition-transform hover:scale-105 cursor-pointer translate-x-[-18px] translate-y-[44px] md:translate-x-[180px] md:translate-y-50">
           Prestige
         </div>
 
         {/* Badge 4: Calm */}
-        <div className="bg-white px-4 py-1.5 md:py-2 rounded-full shadow-md text-[16px] font-bold text-[#5EA14A] transition-transform hover:scale-105 cursor-pointer">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5EA14A] transition-transform hover:scale-105 cursor-pointer translate-x-[-30px] translate-y-[10px] md:translate-x-[220px] md:translate-y-25">
           Calm
         </div>
       </motion.div>
@@ -123,9 +122,7 @@ export default function SeventhSection() {
 
       {/* 4. Animated Wave Background (Bottom - Original Kiri) */}
       <div className="absolute bottom-15 left-0 left-[-120px] w-full z-10 leading-[0]">
-        {/* Menggunakan h-[auto] agar tinggi menyesuaikan proporsi gambar */}
         <div className="relative w-full h-[100px] md:h-[200px]">
-          {/* SVG 1 & 2 sebagai satu kesatuan */}
           <img
             src="/src/images/section 7/vector-diseksi7-1.svg"
             alt="Wave Layer 1"

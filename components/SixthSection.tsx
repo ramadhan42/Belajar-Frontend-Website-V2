@@ -2,11 +2,11 @@
 
 import React from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 export default function SixthSection() {
   // Variabel animasi standar untuk efek muncul dari bawah
-  const fadeUpVariants = {
+  const fadeUpVariants: Variants = {
     hidden: { opacity: 0, y: 40 },
     visible: {
       opacity: 1,
@@ -37,7 +37,8 @@ export default function SixthSection() {
       <motion.div
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: false, amount: 0.5 }}
+        // PERBAIKAN: Ubah once menjadi true
+        viewport={{ once: true, amount: 0.5 }}
         variants={fadeUpVariants}
         className="relative z-30 flex items-center justify-center gap-3 text-center px-4 py-2 top-2 md:top-15 md:mb-10"
       >
@@ -78,13 +79,13 @@ export default function SixthSection() {
 
         {/* --- TULISAN MELAYANG ATAS --- */}
         <div className="absolute top-5 md:top-20 left-0 md:left-2 w-full px-4 md:px-60 z-30 flex justify-between items-center text-white text-sm md:text-lg font-medium">
-          {/* Purpose Prestige (Kiri Atas) */}
+          {/* Purpose Prestige (Kiri Atas) - Ditambahkan translate-x untuk menggeser ke kiri */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent md:left-10 p-2 rounded-full md:p-0 whitespace-pre-line text-left"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent left-0 md:left-25 p-2 rounded-full md:p-0 whitespace-pre-line text-left translate-x-[-15px] md:translate-x-[-80px]"
           >
             <span className="text-[12px] md:text-[22px] font-medium">
               Purpose{"\n"}Prestige
@@ -102,7 +103,7 @@ export default function SixthSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left mr-30 md:mr-80"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left mr-30 md:mr-80 translate-x-[-15px] md:translate-x-[35px]"
           >
             <span className="text-[12px] md:text-[22px] font-medium">
               Rabel{"\n"}Brave
@@ -131,7 +132,7 @@ export default function SixthSection() {
         </motion.div>
 
         {/* --- TULISAN MELAYANG BAWAH --- */}
-        <div className="absolute bottom-4 md:bottom-18 left-5 md:left-20 w-full px-25 md:px-100 z-30 flex justify-between items-center text-white text-sm md:text-lg font-medium">
+        <div className="absolute bottom-4 md:bottom-18 left-5 md:left-20 w-full px-25 md:px-100 z-30 flex justify-between items-center text-white text-sm md:text-lg font-medium translate-x-[-15px] md:translate-x-[15px]">
           {/* Peaceful Calm (Kiri Bawah) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -156,7 +157,7 @@ export default function SixthSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left ml-20"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left ml-20 translate-x-[35px] md:translate-x-[80px]"
           >
             <span className="text-[12px] md:text-[22px] font-medium">
               Sweet{"\n"}Shy

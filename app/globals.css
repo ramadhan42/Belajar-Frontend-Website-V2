@@ -106,3 +106,11 @@ h6 {
   width: max-content;
   animation: marqueeScroll 70s linear infinite; /* Kecepatan bisa diubah di sini (15s) */
 }
+
+/* Future Cursor Arrow - https://www.cursors-4u.com/cursor/future-cursor-arrow */
+* {
+  cursor:
+    url("https://cdn.cursors-4u.net/previews/normal-9e607e2c-48.webp") 33 30,
+    auto !important;
+}
+/* End www.Cursors-4U.com Code */
