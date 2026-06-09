@@ -9,17 +9,26 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { navbarColor } = useNavbarColor();
 
+  // Class seragam untuk semua menu agar memiliki efek hover pill (rounded-full, bg-white, text dinamis)
+ // Class seragam untuk semua menu agar memiliki efek hover pill (rounded-full, bg-white, text dinamis)
+  // Ditambahkan w-full md:w-[110px] dan flex justify-center agar lebarnya sama rata
+  const navLinkClass = "flex justify-center items-center w-full md:w-[100px] text-[16px] py-2.5 font-bold rounded-full text-center text-white hover:bg-white hover:text-[var(--nav-color)] hover-bold-effect transition-colors duration-300";
+
   return (
     /* Wrapper luar untuk memberikan ruang agar rounded-full terlihat (efek floating) */
     <div className="p-4 md:p-6 w-full relative z-50 md:mt-5">
       <nav
         className="text-white rounded-[25px] px-6 py-3 md:px-8 md:py-4 relative w-[95%] max-w-[1280px] mx-auto transition-colors duration-300"
-        style={{ backgroundColor: navbarColor, fontFamily: "Arial, Helvetica, sans-serif" }}
+        style={{ 
+          backgroundColor: navbarColor, 
+          fontFamily: "Arial, Helvetica, sans-serif",
+          "--nav-color": navbarColor // Deklarasi variabel CSS dinamis untuk Tailwind hover
+        } as React.CSSProperties}
       >
         {/* --- CSS ANIMASI HOVER BOLD & PRESSED BUTTON --- */}
         <style>{`
           .hover-bold-effect {
-            transition: text-shadow 0.2s ease-in-out, opacity 0.2s ease-in-out, transform 0.2s ease-out;
+            transition: text-shadow 0.2s ease-in-out, opacity 0.2s ease-in-out, transform 0.2s ease-out, background-color 0.3s ease-in-out, color 0.3s ease-in-out;
           }
           .hover-bold-effect:hover {
             text-shadow: 0.8px 0 0 currentColor; 
@@ -44,59 +53,32 @@ export default function Navbar() {
           </div>
 
           {/* --- DESKTOP VIEW: MENU TENGAH --- */}
-          <div className="hidden md:flex items-center space-x-8">
-
-            {/* Link Beranda */}
-            <Link
-              href="/"
-              onClick={() => setIsOpen(false)}
-              className="text-[14px] bg-white px-5 py-2.5 font-medium rounded-full text-center hover-bold-effect transition-colors duration-300"
-              style={{ color: navbarColor }}
-            >
+          {/* Jarak diubah menjadi space-x-2 karena item sudah memiliki padding horizontal (px-5) */}
+          <div className="hidden md:flex items-center space-x-2">
+            <Link href="/" onClick={() => setIsOpen(false)} className={navLinkClass}>
               Beranda
             </Link>
 
-            {/* Link Tentang (Menggunakan Hash Anchor) */}
-            <Link
-              href="/#third-section"
-              onClick={() => setIsOpen(false)}
-              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
-            >
+            <Link href="/#third-section" onClick={() => setIsOpen(false)} className={navLinkClass}>
               Tentang
             </Link>
 
-            {/* Link Belanja */}
-            <Link
-              href="/halaman/belanja"
-              onClick={() => setIsOpen(false)}
-              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
-            >
+            <Link href="/halaman/belanja" onClick={() => setIsOpen(false)} className={navLinkClass}>
               Belanja
             </Link>
 
-            {/* Link Kuis */}
-            <Link
-              href="/halaman/kuis"
-              onClick={() => setIsOpen(false)}
-              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
-            >
+            <Link href="/halaman/kuis" onClick={() => setIsOpen(false)} className={navLinkClass}>
               Kuis
             </Link>
           </div>
 
           {/* --- DESKTOP VIEW: MENU KANAN --- */}
-          <div className="hidden md:flex items-center space-x-6 md:mr-2">
-            <Link
-              href="/halaman/masuk"
-              className="text-[14px] font-medium hover:text-gray-200 transition-colors hover-bold-effect"
-            >
+          <div className="hidden md:flex items-center space-x-2 md:mr-2">
+            <Link href="/halaman/masuk" className={navLinkClass}>
               Login
             </Link>
-            <Link
-              href="/halaman/daftar"
-              className="text-[14px] font-medium bg-white px-6 py-2.5 rounded-full text-center hover:bg-opacity-90 transition-all hover-bold-effect"
-              style={{ color: navbarColor }}
-            >
+            
+            <Link href="/halaman/daftar" className={navLinkClass}>
               Daftar
             </Link>
           </div>
@@ -110,33 +92,13 @@ export default function Navbar() {
             >
               {isOpen ? (
                 // Icon Cross (X) saat menu terbuka
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
                 // Icon Hamburger Menu (≡) saat menu tertutup
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               )}
             </button>
@@ -146,58 +108,32 @@ export default function Navbar() {
         {/* --- MOBILE VIEW: DROPDOWN MENU --- */}
         {isOpen && (
           <div
-            className="md:hidden absolute left-0 right-0 top-full mt-3 px-6 py-5 flex flex-col space-y-4 shadow-xl rounded-2xl border z-40 transition-colors duration-300"
+            className="md:hidden absolute left-0 right-0 top-full mt-3 px-6 py-5 flex flex-col space-y-2 shadow-xl rounded-2xl border z-40 transition-colors duration-300"
             style={{ backgroundColor: navbarColor, borderColor: `${navbarColor}99` }}
           >
-            <Link
-              href="/"
-              onClick={() => setIsOpen(false)}
-              className="text-[14px] bg-white py-2.5 rounded-full font-semibold text-center hover-bold-effect transition-colors duration-300"
-              style={{ color: navbarColor }}
-            >
+            <Link href="/" onClick={() => setIsOpen(false)} className={navLinkClass}>
               Beranda
             </Link>
-            <Link
-              href="/#third-section"
-              onClick={() => setIsOpen(false)}
-              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
-            >
+            <Link href="/#third-section" onClick={() => setIsOpen(false)} className={navLinkClass}>
               Tentang
             </Link>
-            <Link
-              href="/halaman/belanja"
-              onClick={() => setIsOpen(false)}
-              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
-            >
+            <Link href="/halaman/belanja" onClick={() => setIsOpen(false)} className={navLinkClass}>
               Belanja
             </Link>
-            <Link
-              href="/halaman/kuis"
-              onClick={() => setIsOpen(false)}
-              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
-            >
+            <Link href="/halaman/kuis" onClick={() => setIsOpen(false)} className={navLinkClass}>
               Kuis
             </Link>
 
             {/* Garis Pembatas Tipis */}
             <div
-              className="my-1 transition-colors duration-300"
+              className="my-3 transition-colors duration-300"
               style={{ borderTopColor: `${navbarColor}99`, borderTopWidth: "1px" }}
             />
 
-            <Link
-              href="/halaman/masuk"
-              onClick={() => setIsOpen(false)}
-              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
-            >
+            <Link href="/halaman/masuk" onClick={() => setIsOpen(false)} className={navLinkClass}>
               Login
             </Link>
-            <Link
-              href="/halaman/daftar"
-              onClick={() => setIsOpen(false)}
-              className="text-[14px] bg-white py-2.5 rounded-full font-semibold text-center hover-bold-effect transition-colors duration-300"
-              style={{ color: navbarColor }}
-            >
+            <Link href="/halaman/daftar" onClick={() => setIsOpen(false)} className={navLinkClass}>
               Daftar
             </Link>
           </div>
