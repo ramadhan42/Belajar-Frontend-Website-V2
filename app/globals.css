@@ -22,6 +22,8 @@
 
 /* Removed invalid @theme rule. Define theme-like variables in :root instead. */
 :root {
+  --background: #ffffff;
+  --foreground: #1172ba;
   --font-nohemi: "Nohemi", system-ui, sans-serif;
   --font-8-heavy: "8-Heavy", system-ui, sans-serif;
   --color-background: var(--background);
@@ -31,15 +33,12 @@
 }
 
 body {
-  /* Hapus background-color dan color yang lama */
-  background-color: #ffffff; /* Ubah default menjadi putih */
-  color: #111827; /* Beri warna teks default gelap agar terbaca di background putih */
-  font-family: Arial, Helvetica, sans-serif; /* Tailwind biasanya sudah handle ini otomatis, tapi tidak apa-apa dipertahankan */
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 /* =========================================================================
  * KONFIGURASI NOHEMI FONT DENGAN LETTER SPACING
- * Hanya untuk HeroSection dan heading penting
+ * Hanya untuk HeroSection dan heading penting 
  * ========================================================================= */
 .hero-section {
   font-family: var(--font-nohemi);

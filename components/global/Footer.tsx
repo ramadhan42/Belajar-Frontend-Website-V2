@@ -3,32 +3,34 @@
 import React from 'react';
 import { FaInstagram, FaTwitter, FaFacebookF } from 'react-icons/fa';
 import { motion, Variants } from "framer-motion";
+import { useNavbarColor } from "@/context/NavbarColorContext"; // 1. Import Context
+
 
 export default function Footer() {
-    // Varian untuk kontainer konten (mengatur jeda antar anak elemen)
+    const { navbarColor } = useNavbarColor(); // 2. Ambil nilai warna dari Context
+    const { footerColor } = useNavbarColor(); // Ambil footerColor
+
     const containerVariants: Variants = {
-        hidden: { opacity: 1 }, // Tetapkan opacity 1 agar konten tidak hilang total di awal jika diinginkan, atau tetap 0 untuk fade in konten saja
+        hidden: { opacity: 1 },
         visible: {
             opacity: 1,
-            transition: {
-                staggerChildren: 0.2, 
-            },
+            transition: { staggerChildren: 0.2 },
         },
     };
 
-    // Varian untuk tiap elemen (muncul dari bawah dengan fade)
     const itemVariants: Variants = {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
     };
 
     return (
-        // 1. Mengubah motion.footer menjadi footer standar agar background (bg-[#1172BA]) tidak ikut teranimasi
-        <footer 
-            className="w-full bg-[#1172BA] py-12 md:py-16 px-6 md:px-24" 
-            style={{ fontFamily: "'Nohemi', sans-serif" }}
+        <footer
+            className="w-full py-12 md:py-16 px-6 md:px-24 transition-colors duration-500"
+            style={{
+                fontFamily: "'Nohemi', sans-serif",
+                backgroundColor: footerColor // Menggunakan warna footer spesifik
+            }}
         >
-            {/* 2. Memindahkan motion logic ke div pembungkus konten agar background tetap solid */}
             <motion.div
                 variants={containerVariants}
                 initial="hidden"
@@ -46,13 +48,16 @@ export default function Footer() {
                         </p>
                         <div className="flex items-center bg-white rounded-full p-1 w-full h-[44px] md:h-[48px] mt-2">
                             <input type="email" placeholder="email@kamu.com" className="flex-grow bg-transparent outline-none px-4 text-[12px] md:text-[14px] text-gray-500 placeholder-gray-300" />
-                            <button className="bg-[#1172BA] text-white w-[85px] md:w-[97px] h-[36px] md:h-[40px] rounded-full text-[12px] md:text-[14px] font-bold hover:bg-[#0e5d99] transition-colors">Daftar</button>
+                            <button className="text-white w-[85px] md:w-[97px] h-[36px] md:h-[40px] rounded-full text-[12px] md:text-[14px] font-bold hover:bg-[#0e5d99] transition-colors" style={{
+
+                                backgroundColor: footerColor // 3. Gunakan warna dari Context
+                            }}>Daftar</button>
                         </div>
                     </motion.div>
 
                     {/* Grup Kanan: Menu, Bantuan, Social */}
                     <div className="flex flex-row justify-between items-start w-full lg:w-[50%] gap-2 sm:gap-8 mt-4 lg:mt-0">
-                        
+
                         {/* 2. Menu */}
                         <motion.div variants={itemVariants} className="flex flex-col gap-2 md:gap-4 w-1/3">
                             <span className="text-[12px] md:text-[14px] text-white/70">Menu</span>

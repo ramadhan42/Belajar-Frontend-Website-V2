@@ -3,16 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useNavbarColor } from "@/context/NavbarColorContext";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { navbarColor } = useNavbarColor();
 
   return (
     /* Wrapper luar untuk memberikan ruang agar rounded-full terlihat (efek floating) */
     <div className="p-4 md:p-6 w-full relative z-50 md:mt-5">
       <nav
-        className="bg-[#2B92DE] text-white rounded-[25px] px-6 py-3 md:px-8 md:py-4 relative w-[95%] max-w-[1280px] mx-auto"
-        style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
+        className="text-white rounded-[25px] px-6 py-3 md:px-8 md:py-4 relative w-[95%] max-w-[1280px] mx-auto transition-colors duration-300"
+        style={{ backgroundColor: navbarColor, fontFamily: "Arial, Helvetica, sans-serif" }}
       >
         {/* --- CSS ANIMASI HOVER BOLD & PRESSED BUTTON --- */}
         <style>{`
@@ -48,7 +50,8 @@ export default function Navbar() {
             <Link
               href="/"
               onClick={() => setIsOpen(false)}
-              className="text-[14px] bg-white text-[#0E63A1] px-5 py-2.5 font-semibold rounded-full text-center hover-bold-effect"
+              className="text-[14px] bg-white px-5 py-2.5 font-medium rounded-full text-center hover-bold-effect transition-colors duration-300"
+              style={{ color: navbarColor }}
             >
               Beranda
             </Link>
@@ -57,7 +60,7 @@ export default function Navbar() {
             <Link
               href="/#third-section"
               onClick={() => setIsOpen(false)}
-              className="text-[14px] text-center py-2 font-semibold hover-bold-effect text-white"
+              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
             >
               Tentang
             </Link>
@@ -66,7 +69,7 @@ export default function Navbar() {
             <Link
               href="/halaman/belanja"
               onClick={() => setIsOpen(false)}
-              className="text-[14px] text-center py-2 font-semibold hover-bold-effect text-white"
+              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
             >
               Belanja
             </Link>
@@ -75,7 +78,7 @@ export default function Navbar() {
             <Link
               href="/halaman/kuis"
               onClick={() => setIsOpen(false)}
-              className="text-[14px] hover:text-gray-200 font-semibold transition-colors hover-bold-effect"
+              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
             >
               Kuis
             </Link>
@@ -85,13 +88,14 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-6 md:mr-2">
             <Link
               href="/halaman/masuk"
-              className="text-[14px] font-semibold  hover:text-gray-200 font-medium transition-colors hover-bold-effect"
+              className="text-[14px] font-medium hover:text-gray-200 transition-colors hover-bold-effect"
             >
               Login
             </Link>
             <Link
               href="/halaman/daftar"
-              className="text-[14px] font-semibold  bg-white text-[#2B92DE] px-6 py-2.5 rounded-full font-medium text-center hover:bg-opacity-90 transition-all hover-bold-effect"
+              className="text-[14px] font-medium bg-white px-6 py-2.5 rounded-full text-center hover:bg-opacity-90 transition-all hover-bold-effect"
+              style={{ color: navbarColor }}
             >
               Daftar
             </Link>
@@ -141,11 +145,15 @@ export default function Navbar() {
 
         {/* --- MOBILE VIEW: DROPDOWN MENU --- */}
         {isOpen && (
-          <div className="md:hidden absolute left-0 right-0 top-full mt-3 bg-[#2B92DE] px-6 py-5 flex flex-col space-y-4 shadow-xl rounded-2xl border border-[#4DA5E6] z-40">
+          <div
+            className="md:hidden absolute left-0 right-0 top-full mt-3 px-6 py-5 flex flex-col space-y-4 shadow-xl rounded-2xl border z-40 transition-colors duration-300"
+            style={{ backgroundColor: navbarColor, borderColor: `${navbarColor}99` }}
+          >
             <Link
               href="/"
               onClick={() => setIsOpen(false)}
-              className="text-[14px] bg-white text-[#0E63A1] py-2.5 rounded-full font-semibold text-center hover-bold-effect"
+              className="text-[14px] bg-white py-2.5 rounded-full font-semibold text-center hover-bold-effect transition-colors duration-300"
+              style={{ color: navbarColor }}
             >
               Beranda
             </Link>
@@ -172,7 +180,10 @@ export default function Navbar() {
             </Link>
 
             {/* Garis Pembatas Tipis */}
-            <div className="border-t border-[#4DA5E6] my-1"></div>
+            <div
+              className="my-1 transition-colors duration-300"
+              style={{ borderTopColor: `${navbarColor}99`, borderTopWidth: "1px" }}
+            />
 
             <Link
               href="/halaman/masuk"
@@ -184,7 +195,8 @@ export default function Navbar() {
             <Link
               href="/halaman/daftar"
               onClick={() => setIsOpen(false)}
-              className="text-[14px] bg-white text-[#2B92DE] py-2.5 rounded-full font-semibold text-center hover-bold-effect"
+              className="text-[14px] bg-white py-2.5 rounded-full font-semibold text-center hover-bold-effect transition-colors duration-300"
+              style={{ color: navbarColor }}
             >
               Daftar
             </Link>

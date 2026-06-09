@@ -4,8 +4,11 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
+import { useNavbarColor } from "@/context/NavbarColorContext";
 
 export default function SecondSectionBelanja() {
+  const { setNavbarColor } = useNavbarColor();
+
   const products = [
     {
       id: 1,
@@ -20,6 +23,7 @@ export default function SecondSectionBelanja() {
       price: "Rp189.000",
       btnBg: "bg-[#1172BA]",
       hoverClass: "hover:-rotate-[5deg]",
+      navbarColor: "#1172BA",
     },
     {
       id: 2,
@@ -34,6 +38,7 @@ export default function SecondSectionBelanja() {
       price: "Rp199.000",
       btnBg: "bg-[#5EA14A]",
       hoverClass: "hover:rotate-[5deg]",
+      navbarColor: "#5EA14A",
     },
     {
       id: 3,
@@ -48,6 +53,7 @@ export default function SecondSectionBelanja() {
       price: "Rp179.000",
       btnBg: "bg-[#E33D35]",
       hoverClass: "hover:-rotate-[5deg]",
+      navbarColor: "#E33D35",
     },
     {
       id: 4,
@@ -62,6 +68,7 @@ export default function SecondSectionBelanja() {
       price: "Rp189.000",
       btnBg: "bg-[#DD74A5]",
       hoverClass: "hover:rotate-[5deg]",
+      navbarColor: "#DD74A5",
     },
   ];
 
@@ -88,8 +95,12 @@ export default function SecondSectionBelanja() {
     },
   };
 
+  const handleProductClick = (product: typeof products[0]) => {
+    setNavbarColor(product.navbarColor);
+  };
+
   return (
-    <section className="bg-[#F6F6F6] flex flex-col items-center text-center w-full pt-16 md:pt-20 pb-20 md:pb-25 px-2 md:px-4 relative overflow-hidden">
+    <section className="bg-white flex flex-col items-center text-center w-full pt-16 md:pt-20 pb-20 md:pb-25 px-2 md:px-4 relative overflow-hidden">
 
       {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
       <div className="absolute top-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none z-10">
@@ -166,13 +177,11 @@ export default function SecondSectionBelanja() {
 
               {/* Harga & Tombol Panah (Sejajar) */}
               <div className="flex justify-between items-center mt-auto">
-                <span
-                  className={`text-[10px] md:text-[14px] font-bold ${product.textColor}`}
-                >
+                <span className={`text-[10px] md:text-[14px] font-bold ${product.textColor}`}>
                   {product.price}
                 </span>
 
-                {/* Gunakan Link untuk membungkus tombol navigasi ke Belanja Details dengan product ID */}
+                {/* Cukup gunakan Link biasa tanpa handleProductClick onClick */}
                 <Link href={`/halaman/belanja/${product.id}`}>
                   <button
                     className={`w-10 h-10 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${product.btnBg}`}

@@ -7,12 +7,11 @@ export default function Belanja() {
     return (
         <div>
             <div className="bg-[#1172BA] flex flex-col justify-center items-center min-h-screen">
-                <Navbar />
+               
                 {/* Konten belanja akan ditampilkan di sini */}
                 <FirstSectionBelanja />
                 <SecondSectionBelanja />
             </div>
-            <Footer />
         </div>
 
 

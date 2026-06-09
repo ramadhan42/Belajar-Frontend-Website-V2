@@ -3,32 +3,27 @@ import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
-// 1. Import komponen Navbar yang baru dibuat
 import Navbar from "@/components/global/Navbar";
 import LoadingScreen from "@/components/beranda/LoadingScreen";
+
+// 1. Import komponen handler baru
+import NavbarRouteHandler from "@/components/global/NavbarRouteHandler";
+
 import { NavbarColorProvider } from "@/context/NavbarColorContext";
 
-// 1. Inisialisasi Kumpulan Font Nohemi
+// 1. Import komponen BodyColorHandler
+import BodyColorHandler from "@/components/global/BodyColorHandler";
+import Footer from "@/components/global/Footer";
+
 const nohemi = localFont({
   src: [
-    {
-      path: "./fonts/Nohemi-Regular.otf",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Nohemi-SemiBold.otf",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Nohemi-Bold.otf",
-      weight: "700",
-      style: "normal",
-    },
+    { path: "./fonts/Nohemi-Regular.otf", weight: "400", style: "normal" },
+    { path: "./fonts/Nohemi-SemiBold.otf", weight: "600", style: "normal" },
+    { path: "./fonts/Nohemi-Bold.otf", weight: "700", style: "normal" },
   ],
-  variable: "--font-nohemi", // Membuat CSS Variable untuk Tailwind
+  variable: "--font-nohemi",
 });
+
 export const metadata: Metadata = {
   title: "Evomi Website",
   description: "Selamat datang di Evomi",
@@ -42,15 +37,17 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${nohemi.variable}`}>
       <body className={`antialiased`}>
+        <BodyColorHandler />
+
         <NavbarColorProvider>
-          {/* Pasang Loading Screen di paling atas */}
+          {/* 2. Pasang NavbarRouteHandler DI DALAM Provider */}
+          <NavbarRouteHandler />
+
           <LoadingScreen />
-
-          {/* Navbar */}
           <Navbar />
-
-          {/* Konten halaman web kamu akan muncul di bawah navbar */}
           <main className="min-h-screen">{children}</main>
+
+          <Footer />
         </NavbarColorProvider>
       </body>
     </html>
