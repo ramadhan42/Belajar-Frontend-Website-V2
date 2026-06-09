@@ -43,26 +43,35 @@ export default function Navbar() {
 
           {/* --- DESKTOP VIEW: MENU TENGAH --- */}
           <div className="hidden md:flex items-center space-x-8">
+
+            {/* Link Beranda */}
             <Link
               href="/"
-              className="text-[14px] bg-white text-[#2B92DE] px-5 py-2.5 rounded-full font-semibold text-center hover:bg-opacity-90 transition-all hover-bold-effect"
+              onClick={() => setIsOpen(false)}
+              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
             >
               Beranda
             </Link>
+
+            {/* Link Tentang (Menggunakan Hash Anchor) */}
             <Link
-              href="/tentang"
-              className="text-[14px] hover:text-gray-200 font-semibold transition-colors hover-bold-effect"
+              href="/#third-section"
+              onClick={() => setIsOpen(false)}
+              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
             >
               Tentang
             </Link>
+
+            {/* Link Belanja */}
             <Link
-              href="/belanja"
-              className="text-[14px] hover:text-gray-200 font-semibold transition-colors hover-bold-effect"
+              href="/halaman/belanja"
+              onClick={() => setIsOpen(false)}
+              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
             >
               Belanja
             </Link>
             <Link
-              href="/kuis"
+              href="/halaman/kuis"
               className="text-[14px] hover:text-gray-200 font-semibold transition-colors hover-bold-effect"
             >
               Kuis

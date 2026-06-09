@@ -4,8 +4,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 
 // 1. Import komponen Navbar yang baru dibuat
-import Navbar from "@/components/Navbar";
-import LoadingScreen from "@/components/LoadingScreen";
+import Navbar from "@/components/global/Navbar";
+import LoadingScreen from "@/components/beranda/LoadingScreen";
 
 // 1. Inisialisasi Kumpulan Font Nohemi
 const nohemi = localFont({
@@ -44,8 +44,7 @@ export default function RootLayout({
         {/* Pasang Loading Screen di paling atas */}
         <LoadingScreen />
 
-        {/* 2. Pasang komponen Navbar di sini */}
-        <Navbar />
+        
 
         {/* Konten halaman web kamu akan muncul di bawah navbar */}
         <main className="min-h-screen">{children}</main>

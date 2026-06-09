@@ -88,6 +88,55 @@ export default function FifthSection() {
 
   return (
     <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-20 pb-25 md:pb-40 px-2 md:px-4 relative overflow-hidden">
+      
+      {/* --- BACKGROUND DECORATIVE IMAGES --- */}
+      
+      {/* Gambar 1: Atas kiri agak kebawah */}
+      <div className="absolute top-[15%] md:top-[15%] left-0 -translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
+        <Image
+          src="/src/images/section 5/purpose.png"
+          alt="Purpose Decoration"
+          width={100}
+          height={100}
+          className="object-contain"
+        />
+      </div>
+
+      {/* Gambar 2: Atas kanan agak kebawah */}
+      <div className="absolute top-[15%] md:top-[15%] right-0 translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
+        <Image
+          src="/src/images/section 5/sweet.png"
+          alt="Sweet Decoration"
+          width={100}
+          height={100}
+          className="object-contain"
+        />
+      </div>
+
+      {/* Gambar 3: Bawah kiri agak keatas */}
+      <div className="absolute bottom-[20%] md:bottom-[22%] left-0 -translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
+        <Image
+          src="/src/images/section 5/rebel.png"
+          alt="Rebel Decoration"
+          width={100}
+          height={100}
+          className="object-contain"
+        />
+      </div>
+
+      {/* Gambar 4: Bawah kanan agak kebawah */}
+      <div className="absolute bottom-[20%] md:bottom-[22%] right-0 translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
+        <Image
+          src="/src/images/section 5/peaceful.png"
+          alt="Peaceful Decoration"
+          width={100}
+          height={100}
+          className="object-contain"
+        />
+      </div>
+
+      {/* ------------------------------------ */}
+
       {/* 1. Tulisan Tengah Atas (Judul & Subjudul) */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -119,7 +168,7 @@ export default function FifthSection() {
             animate="active"
             key={product.id}
             variants={cardVariants}
-            className={`font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
+            className={`font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-100 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
           >
             {/* Bagian Atas: Gambar & Badge */}
             <div
