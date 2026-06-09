@@ -48,7 +48,7 @@ export default function Navbar() {
             <Link
               href="/"
               onClick={() => setIsOpen(false)}
-              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
+              className="text-[14px] bg-white text-[#0E63A1] px-5 py-2.5 font-semibold rounded-full text-center hover-bold-effect"
             >
               Beranda
             </Link>
@@ -57,7 +57,7 @@ export default function Navbar() {
             <Link
               href="/#third-section"
               onClick={() => setIsOpen(false)}
-              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
+              className="text-[14px] text-center py-2 font-semibold hover-bold-effect text-white"
             >
               Tentang
             </Link>
@@ -66,12 +66,15 @@ export default function Navbar() {
             <Link
               href="/halaman/belanja"
               onClick={() => setIsOpen(false)}
-              className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
+              className="text-[14px] text-center py-2 font-semibold hover-bold-effect text-white"
             >
               Belanja
             </Link>
+
+            {/* Link Kuis */}
             <Link
               href="/halaman/kuis"
+              onClick={() => setIsOpen(false)}
               className="text-[14px] hover:text-gray-200 font-semibold transition-colors hover-bold-effect"
             >
               Kuis
@@ -81,13 +84,13 @@ export default function Navbar() {
           {/* --- DESKTOP VIEW: MENU KANAN --- */}
           <div className="hidden md:flex items-center space-x-6 md:mr-2">
             <Link
-              href="/login"
+              href="/halaman/masuk"
               className="text-[14px] font-semibold  hover:text-gray-200 font-medium transition-colors hover-bold-effect"
             >
               Login
             </Link>
             <Link
-              href="/daftar"
+              href="/halaman/daftar"
               className="text-[14px] font-semibold  bg-white text-[#2B92DE] px-6 py-2.5 rounded-full font-medium text-center hover:bg-opacity-90 transition-all hover-bold-effect"
             >
               Daftar
@@ -142,26 +145,26 @@ export default function Navbar() {
             <Link
               href="/"
               onClick={() => setIsOpen(false)}
-              className="text-[14px] bg-white text-[#2B92DE] py-2.5 rounded-full font-semibold text-center hover-bold-effect"
+              className="text-[14px] bg-white text-[#0E63A1] py-2.5 rounded-full font-semibold text-center hover-bold-effect"
             >
               Beranda
             </Link>
             <Link
-              href="/tentang"
+              href="/#third-section"
               onClick={() => setIsOpen(false)}
               className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
             >
               Tentang
             </Link>
             <Link
-              href="/belanja"
+              href="/halaman/belanja"
               onClick={() => setIsOpen(false)}
               className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
             >
               Belanja
             </Link>
             <Link
-              href="/kuis"
+              href="/halaman/kuis"
               onClick={() => setIsOpen(false)}
               className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
             >
@@ -172,14 +175,14 @@ export default function Navbar() {
             <div className="border-t border-[#4DA5E6] my-1"></div>
 
             <Link
-              href="/login"
+              href="/halaman/masuk"
               onClick={() => setIsOpen(false)}
               className="text-[14px] text-center py-2 font-medium hover-bold-effect text-white"
             >
               Login
             </Link>
             <Link
-              href="/daftar"
+              href="/halaman/daftar"
               onClick={() => setIsOpen(false)}
               className="text-[14px] bg-white text-[#2B92DE] py-2.5 rounded-full font-semibold text-center hover-bold-effect"
             >

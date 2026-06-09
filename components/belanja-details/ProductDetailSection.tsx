@@ -135,7 +135,7 @@ export default function ProductDetailSection() {
                         </div>
                     </div>
 
-                    <div className="font-['Nohemi'] flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3 mb-8 md:mb-12 md:mt-5">
+                    <div className="font-['Nohemi'] flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 md:gap-8 mb-8 md:mb-12 md:mt-5">
                         <span className="text-[22px] md:text-[24px] font-medium text-[#1D7BC1]">
                             Harga
                         </span>

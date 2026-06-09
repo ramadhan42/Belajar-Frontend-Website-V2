@@ -2,8 +2,8 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, Variants } from "framer-motion";
-import { Link } from "lucide-react";
 
 export default function SecondSectionBelanja() {
   const products = [
@@ -89,7 +89,7 @@ export default function SecondSectionBelanja() {
   };
 
   return (
-    <section className="bg-white flex flex-col items-center text-center w-full pt-16 md:pt-20 pb-20 md:pb-25 px-2 md:px-4 relative overflow-hidden">
+    <section className="bg-[#F6F6F6] flex flex-col items-center text-center w-full pt-16 md:pt-20 pb-20 md:pb-25 px-2 md:px-4 relative overflow-hidden">
 
       {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
       <div className="absolute top-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none z-10">
@@ -125,7 +125,7 @@ export default function SecondSectionBelanja() {
             animate="active"
             key={product.id}
             variants={cardVariants}
-            className={`font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-100 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
+            className={`font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-100 ease-out overflow-hidden flex flex-col border border-gray-100`}
           >
             {/* Bagian Atas: Gambar & Badge */}
             <div
@@ -144,7 +144,7 @@ export default function SecondSectionBelanja() {
                 alt={product.title}
                 width={340}
                 height={340}
-                className="absolute bottom-[-20%] md:bottom-[-21%] left-[-10%] md:left-[-27%] w-[120%] md:w-[140%] max-w-none object-contain drop-shadow-xl rotate-[35deg] transition-transform duration-300 z-10"
+                className="absolute bottom-[-20%] md:bottom-[-21%] left-[-10%] md:left-[-27%] w-[120%] md:w-[140%] max-w-none object-contain drop-shadow-xl rotate-[35deg] transition-transform duration-300"
               />
             </div>
 
@@ -172,8 +172,8 @@ export default function SecondSectionBelanja() {
                   {product.price}
                 </span>
 
-                {/* Gunakan Link untuk membungkus tombol navigasi ke Belanja Details */}
-                <Link href="/halaman/belanja/belanja-details">
+                {/* Gunakan Link untuk membungkus tombol navigasi ke Belanja Details dengan product ID */}
+                <Link href={`/halaman/belanja/${product.id}`}>
                   <button
                     className={`w-10 h-10 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${product.btnBg}`}
                   >
