@@ -24,8 +24,8 @@
 :root {
   --background: #ffffff;
   --foreground: #1172ba;
-  --font-nohemi: "Nohemi", system-ui, sans-serif;
-  --font-8-heavy: "8-Heavy", system-ui, sans-serif;
+  /* --font-nohemi: "Nohemi", system-ui, sans-serif; asd
+  --font-8-heavy: "8-Heavy", system-ui, sans-serif; */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-nohemi);

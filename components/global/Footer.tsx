@@ -25,7 +25,7 @@ export default function Footer() {
 
     return (
         <footer
-            className="w-full py-12 md:py-16 px-6 md:px-24 transition-colors duration-500"
+            className="w-full py-12 md:py-16 px-6 md:px-24 transition-colors duration-0"
             style={{
                 fontFamily: "'Nohemi', sans-serif",
                 backgroundColor: footerColor // Menggunakan warna footer spesifik

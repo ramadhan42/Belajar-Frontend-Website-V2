@@ -13,8 +13,6 @@ export default function Beranda() {
     return (
         <div className="bg-[#1172ba] w-full min-h-screen flex flex-col">
             {/* Pasang komponen Navbar di sini */}
-            {/* <Navbar /> */}
-
             {/* Section Pertama */}
             <HeroSection />
 

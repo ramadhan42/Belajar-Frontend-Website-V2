@@ -18,7 +18,7 @@ export default function Navbar() {
     /* Wrapper luar untuk memberikan ruang agar rounded-full terlihat (efek floating) */
     <div className="p-4 md:p-6 w-full relative z-50 md:mt-5">
       <nav
-        className="text-white rounded-[25px] px-6 py-3 md:px-8 md:py-4 relative w-[95%] max-w-[1280px] mx-auto transition-colors duration-300"
+        className="text-white rounded-[25px] px-6 py-3 md:px-8 md:py-4 relative w-[95%] max-w-[1280px] mx-auto transition-colors duration-0"
         style={{ 
           backgroundColor: navbarColor, 
           fontFamily: "Arial, Helvetica, sans-serif",
@@ -74,11 +74,11 @@ export default function Navbar() {
 
           {/* --- DESKTOP VIEW: MENU KANAN --- */}
           <div className="hidden md:flex items-center space-x-2 md:mr-2">
-            <Link href="/halaman/masuk" className={navLinkClass}>
+            <Link href="/login" className={navLinkClass}>
               Login
             </Link>
             
-            <Link href="/halaman/daftar" className={navLinkClass}>
+            <Link href="/register" className={navLinkClass}>
               Daftar
             </Link>
           </div>
@@ -108,7 +108,7 @@ export default function Navbar() {
         {/* --- MOBILE VIEW: DROPDOWN MENU --- */}
         {isOpen && (
           <div
-            className="md:hidden absolute left-0 right-0 top-full mt-3 px-6 py-5 flex flex-col space-y-2 shadow-xl rounded-2xl border z-40 transition-colors duration-300"
+            className="md:hidden absolute left-0 right-0 top-full mt-3 px-6 py-5 flex flex-col space-y-2 shadow-xl rounded-2xl border z-40 transition-colors duration-0"
             style={{ backgroundColor: navbarColor, borderColor: `${navbarColor}99` }}
           >
             <Link href="/" onClick={() => setIsOpen(false)} className={navLinkClass}>

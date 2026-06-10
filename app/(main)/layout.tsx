@@ -1,7 +1,6 @@
+
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import localFont from "next/font/local";
-import "./globals.css";
+import "./../globals.css";
 
 import Navbar from "@/components/global/Navbar";
 import LoadingScreen from "@/components/beranda/LoadingScreen";
@@ -16,15 +15,6 @@ import BodyColorHandler from "@/components/global/BodyColorHandler";
 import Footer from "@/components/global/Footer";
 
 
-const nohemi = localFont({
-  src: [
-    { path: "./fonts/Nohemi-Regular.otf", weight: "400", style: "normal" },
-    { path: "./fonts/Nohemi-SemiBold.otf", weight: "600", style: "normal" },
-    { path: "./fonts/Nohemi-Bold.otf", weight: "700", style: "normal" },
-  ],
-  variable: "--font-nohemi",
-});
-
 export const metadata: Metadata = {
   title: "Evomi Website",
   description: "Selamat datang di Evomi",
@@ -36,26 +26,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
 
-
   return (
-    <html lang="en" className={`${nohemi.variable}`}>
-      <body className={`antialiased`}>
-        {/* <BodyColorHandler /> */}
+   <main>
+     <BodyColorHandler />
 
-        {/* <NavbarColorProvider> */}
+        <NavbarColorProvider>
           {/* 2. Pasang NavbarRouteHandler DI DALAM Provider */}
-          {/* <NavbarRouteHandler /> */}
+          <NavbarRouteHandler />
 
-          {/* <LoadingScreen /> */}
+          <LoadingScreen />
 
-          {/* {<Navbar />} */}
+          {<Navbar />}
 
           <main className="min-h-screen">{children}</main>
 
-          {/* {<Footer />}
+          {<Footer />}
           
-        </NavbarColorProvider> */}
-      </body>
-    </html>
+        </NavbarColorProvider>
+   </main>
   );
 }
