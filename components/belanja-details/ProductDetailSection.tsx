@@ -34,7 +34,7 @@ const productsData: Record<
       "/src/images/belanja/detail/purpose/gambar1.png",
       "/src/images/belanja/detail/purpose/gambar2.png",
       "/src/images/belanja/detail/purpose/gambar3.png",
-      "/src/images/belanja/detail/purpose/gambar4.png",
+      // "/src/images/belanja/detail/purpose/gambar4.png",
     ],
     characterPath: "/src/images/belanja/detail/purpose-character.svg",
   },
@@ -51,7 +51,7 @@ const productsData: Record<
       "/src/images/belanja/detail/peaceful/gambar1.png",
       "/src/images/belanja/detail/peaceful/gambar2.png",
       "/src/images/belanja/detail/peaceful/gambar3.png",
-      "/src/images/belanja/detail/peaceful/gambar4.png",
+      // "/src/images/belanja/detail/peaceful/gambar4.png",
     ],
     characterPath: "/src/images/belanja/detail/peaceful-character.svg",
   },
@@ -68,7 +68,7 @@ const productsData: Record<
       "/src/images/belanja/detail/rebel/gambar1.png",
       "/src/images/belanja/detail/rebel/gambar2.png",
       "/src/images/belanja/detail/rebel/gambar3.png",
-      "/src/images/belanja/detail/rebel/gambar4.png",
+      // "/src/images/belanja/detail/rebel/gambar4.png",
     ],
     characterPath: "/src/images/belanja/detail/rebel-character.svg",
   },
@@ -85,7 +85,7 @@ const productsData: Record<
       "/src/images/belanja/detail/sweet/gambar1.png",
       "/src/images/belanja/detail/sweet/gambar2.png",
       "/src/images/belanja/detail/sweet/gambar3.png",
-      "/src/images/belanja/detail/sweet/gambar4.png",
+      // "/src/images/belanja/detail/sweet/gambar4.png",
     ],
     characterPath: "/src/images/belanja/detail/sweet-character.svg",
   },
@@ -148,71 +148,92 @@ export default function ProductDetailSection({
       <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mt-6 mb-16 z-10">
         {/* ================= BAGIAN KIRI: IMAGE SLIDER ================= */}
         <div className="lg:col-span-5 flex flex-col items-center lg:items-end w-full select-none">
-          {/* Background dinamis mengikuti produk */}
+          {/* Gambar Utama Slide */}
           <div
             className="w-full max-w-[482px] aspect-square rounded-[24px] overflow-hidden flex justify-center items-center relative shadow-sm"
             style={{ backgroundColor: product.navbarColor }}
           >
-            {/* Mapping semua gambar agar bertumpuk dan beranimasi fade halus */}
-            {currentImages.map((imgSrc, index) => (
-              <Image
+            {/* Mapping semua gambar */}
+            {currentImages.map((imgSrc, index) => {
+              // KONDISI: Cek apakah ini gambar2.png
+              const isGambar2 = imgSrc.includes("gambar2.png");
+
+              return (
+                <div
+                  key={index}
+                  className={`absolute inset-0 transition-opacity duration-2000 ease-in-out flex justify-center items-center ${
+                    currentIndex === index
+                      ? "opacity-100 z-10"
+                      : "opacity-0 z-0 pointer-events-none"
+                  } ${isGambar2 ? "p-0" : "p-0"}`} // <--- Hanya gambar 2 yang diberi padding (p-12), yang lain p-0
+                >
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={imgSrc}
+                      alt={`Gambar Utama Produk ${index + 1}`}
+                      fill
+                      className={isGambar2 ? "object-contain" : "object-cover"} // <--- Gambar 2 contain (biar ga terpotong), yang lain cover (penuh)
+                      priority={index === 0}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Indicator Titik (Dots) */}
+          {/* ================= BAGIAN INDIKATOR / DOTS ================= */}
+          <div className="flex justify-center items-center w-full max-w-[482px] gap-2 my-6">
+            {currentImages.map((_, index) => (
+              <button
                 key={index}
-                src={imgSrc}
-                alt={`Gambar Utama Produk ${index + 1}`}
-                fill
-                className={`object-cover transition-opacity duration-2000 ease-in-out ${
-                  currentIndex === index
-                    ? "opacity-100 z-10"
-                    : "opacity-0 z-0 pointer-events-none"
+                onClick={() => setCurrentIndex(index)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  currentIndex === index ? "w-6" : "w-2 opacity-30"
                 }`}
-                priority={index === 0}
+                style={{ backgroundColor: product.navbarColor }}
+                aria-label={`Go to slide ${index + 1}`}
               />
             ))}
           </div>
 
-          {/* Indicator Titik (Dots) */}
-          {/* ================= BAGIAN INDIKATOR / DOTS (Tetap tampil semua) ================= */}
-          <div className="flex justify-center gap-2 mt-4">
-            {product.images.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    currentIndex === index ? "w-6" : "w-2 opacity-30"
-                  }`}
-                  style={{ backgroundColor: product.navbarColor }}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-          </div>
+          {/* ================= BAGIAN THUMBNAIL ================= */}
+          {/* Menggunakan grid-cols-4 jika gambar berjumlah 4 agar muat satu baris */}
+          <div className={`grid gap-4 w-full max-w-[482px] ${currentImages.length === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
+            {currentImages.map((image, index) => {
+              // KONDISI: Cek apakah ini gambar2.png untuk thumbnail
+              const isGambar2 = image.includes("gambar2.png");
 
-          {/* Thumbnail Gambar */}
-          {/* ================= BAGIAN THUMBNAIL (Hanya tampil 3) ================= */}
-          <div className="grid grid-cols-3 gap-4 w-full max-w-[482px]">
-            {currentImages.map((image, index) => (
+              return (
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index)}
-                  className={`relative w-[80px] h-[80px] md:w-[100px] md:h-[100px] flex-shrink-0 rounded-[16px] overflow-hidden border-2 transition-all duration-300 ${
+                  // {/* Disesuaikan: Menghapus bg-white/10 agar warna navbarColor asli terlihat jelas */}
+                  className={`relative w-full aspect-square flex-shrink-0 rounded-[16px] overflow-hidden border-2 transition-all duration-300 flex justify-center items-center ${
                     currentIndex === index
                       ? "border-opacity-100"
                       : "border-transparent opacity-50 hover:opacity-100"
-                  }`}
+                  } ${isGambar2 ? "p-0" : "p-0"}`} // <--- p-3.5 tetap dipertahankan agar gambar di dalamnya tidak mentok ke tepi warna
                   style={{
                     borderColor:
                       currentIndex === index
                         ? product.navbarColor
                         : "transparent",
+                    // KONDISI BARU: Jika gambar2.png maka beri warna product.navbarColor, selain itu transparent
+                    backgroundColor: isGambar2 ? product.navbarColor : "transparent",
                   }}
                 >
-                  <Image
-                    src={image}
-                    alt={`${product.title} thumbnail ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={image}
+                      alt={`${product.title} thumbnail ${index + 1}`}
+                      fill
+                      className={isGambar2 ? "object-contain" : "object-cover"}
+                    />
+                  </div>
                 </button>
-              ))}
+              );
+            })}
           </div>
         </div>
 
