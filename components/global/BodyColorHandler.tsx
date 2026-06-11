@@ -12,16 +12,23 @@ export default function BodyColorHandler() {
 
     // Tentukan logika warna berdasarkan rute (pathname)
     // Contoh: Jika di halaman /about atau /contact, warnanya #1172BA
-    if (pathname === "/about" || pathname === "/contact" || pathname === "/" || pathname === "/halaman/belanja" || pathname === "/halaman/kuis" ) {
+    if (
+      pathname === "/about" ||
+      pathname === "/contact" ||
+      pathname === "/" ||
+      pathname === "/halaman/belanja"
+    ) {
       body.style.backgroundColor = "#1172BA";
-    } 
+    }
     // Kamu bisa tambahkan else if lain untuk halaman tertentu
     else if (pathname === "/layanan") {
       body.style.backgroundColor = "#f0f0f0"; // Warna lain
-    } 
+    } else if (pathname === "/halaman/kuis") {
+      body.style.backgroundColor = "#F6F6F6"; // Warna lain
+    }
     // Default warna untuk halaman lainnya (termasuk "/")
     else {
-      body.style.backgroundColor = "transparent"; 
+      body.style.backgroundColor = "transparent";
     }
 
     // (Opsional) Cleanup function

@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
-import { useNavbarColor } from "@/context/NavbarColorContext";
+import { useRouter } from "next/navigation"; // 1. Import useRouter dari Next.js
 
 export default function SecondSectionBelanja() {
   // const { setNavbarColor } = useNavbarColor();
@@ -95,6 +95,8 @@ export default function SecondSectionBelanja() {
     },
   };
 
+  const router = useRouter(); // 2. Inisialisasi router
+
   // const handleProductClick = (product: typeof products[0]) => {
   //   setNavbarColor(product.navbarColor);
   // };
@@ -131,12 +133,18 @@ export default function SecondSectionBelanja() {
         viewport={{ once: false, amount: 0.10 }}
         className="relative z-10 w-full max-w-7xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 px-5 py-5 md:px-4 mt-8"
       >
-        {products.map((product) => (
+        {products.map((product, index) => (
           <motion.div
-            animate="active"
             key={product.id}
+            animate="active"
             variants={cardVariants}
-            className={`font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-100 ease-out overflow-hidden flex flex-col border border-gray-100`}
+            whileHover={{
+              rotate: index % 2 === 0 ? 5 : -5,
+              scale: 1.02
+            }}
+            // 3. Tambahkan fungsi onClick di sini untuk navigasi satu card penuh
+            onClick={() => router.push(`/halaman/belanja/${product.id}`)}
+            className={`font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 cursor-pointer`}
           >
             {/* Bagian Atas: Gambar & Badge */}
             <div
@@ -148,8 +156,6 @@ export default function SecondSectionBelanja() {
                 {product.badge}
               </span>
 
-              {/* Perubahan Utama: Absolute positioning, ukuran lebih besar (120-100%), 
-                  posisi mentok kiri (left-[-10%]), dan turun 5% (bottom-[-20%]) agar terpotong di bawah */}
               <Image
                 src={product.path}
                 alt={product.title}
@@ -181,27 +187,25 @@ export default function SecondSectionBelanja() {
                   {product.price}
                 </span>
 
-                {/* Cukup gunakan Link biasa tanpa handleProductClick onClick */}
-                <Link href={`/halaman/belanja/${product.id}`}>
-                  <button
-                    className={`w-10 h-10 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${product.btnBg}`}
+                {/* Tag <Link> SUDAH DIHAPUS, hanya menyisakan button murni sebagai visual/aksesibilitas */}
+                <button
+                  className={`w-10 h-10 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${product.btnBg}`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2.5}
+                    stroke="currentColor"
+                    className="w-5 h-5"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-                      />
-                    </svg>
-                  </button>
-                </Link>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
           </motion.div>

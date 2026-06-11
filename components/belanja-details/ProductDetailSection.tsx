@@ -31,9 +31,10 @@ const productsData: Record<
     middleNote: "Lavender • Iris • Geranium",
     baseNote: "Cedarwood • Musk Putih • Amber",
     images: [
-      "/src/images/belanja/detail/purpose/gambar-bawah-card-ke2.png",
-      "/src/images/belanja/detail/purpose/gambar-card-utama.png",
-      "/src/images/belanja/detail/purpose/gambar-bawah-card-ke2.png",
+      "/src/images/belanja/detail/purpose/gambar1.png",
+      "/src/images/belanja/detail/purpose/gambar2.png",
+      "/src/images/belanja/detail/purpose/gambar3.png",
+      "/src/images/belanja/detail/purpose/gambar4.png",
     ],
     characterPath: "/src/images/belanja/detail/purpose-character.svg",
   },
@@ -47,7 +48,10 @@ const productsData: Record<
     middleNote: "Jasmine • Camelia • White Violet",
     baseNote: "Musk • Cedarwood • Amber",
     images: [
-      "/src/images/section 5/peaceful-calm.png", // Sesuaikan dengan path gambar kamu
+      "/src/images/belanja/detail/peaceful/gambar1.png",
+      "/src/images/belanja/detail/peaceful/gambar2.png",
+      "/src/images/belanja/detail/peaceful/gambar3.png",
+      "/src/images/belanja/detail/peaceful/gambar4.png",
     ],
     characterPath: "/src/images/belanja/detail/peaceful-character.svg",
   },
@@ -60,7 +64,12 @@ const productsData: Record<
     topNote: "Spicy Pepper • Pink Grapefruit",
     middleNote: "Lavender • Vetiver",
     baseNote: "Leather • Patchouli • Oakmoss",
-    images: ["/src/images/section 5/rabel-brave.png"],
+    images: [
+      "/src/images/belanja/detail/rebel/gambar1.png",
+      "/src/images/belanja/detail/rebel/gambar2.png",
+      "/src/images/belanja/detail/rebel/gambar3.png",
+      "/src/images/belanja/detail/rebel/gambar4.png",
+    ],
     characterPath: "/src/images/belanja/detail/rebel-character.svg",
   },
   "4": {
@@ -72,14 +81,27 @@ const productsData: Record<
     topNote: "Red Berries • Pear • Mandarin",
     middleNote: "Gardenia • Frangipani",
     baseNote: "Patchouli • Brown Sugar",
-    images: ["/src/images/section 5/sweet-shy.png"],
+    images: [
+      "/src/images/belanja/detail/sweet/gambar1.png",
+      "/src/images/belanja/detail/sweet/gambar2.png",
+      "/src/images/belanja/detail/sweet/gambar3.png",
+      "/src/images/belanja/detail/sweet/gambar4.png",
+    ],
     characterPath: "/src/images/belanja/detail/sweet-character.svg",
   },
 };
 
-export default function ProductDetailSection() {
+export default function ProductDetailSection({
+  forcedId,
+  showDivider = true,
+  showCharacter = true,
+}: {
+  forcedId?: string;
+  showDivider?: boolean;
+  showCharacter?: boolean;
+}) {
   const params = useParams();
-  const id = (params?.id as string) || "1"; // Ambil ID dari URL (contoh: /halaman/belanja/2 -> id = "2")
+  const id = forcedId || (params?.id as string) || "1"; // Gunakan forcedId jika ada, fallback ke URL param
 
   const { setNavbarAndFooterColor } = useNavbarColor();
   const { footerColor } = useNavbarColor(); // Ambil footerColor
@@ -105,10 +127,10 @@ export default function ProductDetailSection() {
     }
   }, [product.images.length]);
 
-  // Mengamankan jika ada gambar kosong/thumbnail bermasalah saat data dinamis
+  // Batasi hanya 3 gambar agar slider utama dan thumbnail selalu sinkron
   const currentImages =
     product.images.length > 0
-      ? product.images
+      ? product.images.slice(0, 3)
       : ["/src/images/belanja/detail/purpose/gambar-card-utama.png"];
 
   return (
@@ -149,54 +171,65 @@ export default function ProductDetailSection() {
           </div>
 
           {/* Indicator Titik (Dots) */}
-          <div className="flex gap-2.5 my-5 justify-center w-full max-w-[482px]">
-            {currentImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`h-2.5 rounded-full transition-all duration-300 ${currentIndex === index ? "w-6" : "bg-gray-300 w-2.5"}`}
-                style={{
-                  backgroundColor:
-                    currentIndex === index ? product.navbarColor : undefined,
-                }}
-                aria-label={`Ke slide ${index + 1}`}
-              />
-            ))}
+          {/* ================= BAGIAN INDIKATOR / DOTS (Tetap tampil semua) ================= */}
+          <div className="flex justify-center gap-2 mt-4">
+            {product.images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    currentIndex === index ? "w-6" : "w-2 opacity-30"
+                  }`}
+                  style={{ backgroundColor: product.navbarColor }}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
           </div>
 
           {/* Thumbnail Gambar */}
+          {/* ================= BAGIAN THUMBNAIL (Hanya tampil 3) ================= */}
           <div className="grid grid-cols-3 gap-4 w-full max-w-[482px]">
-            {currentImages.map((imgSrc, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-full aspect-square rounded-[16px] overflow-hidden flex justify-center items-center border-2 transition-all ${currentIndex === index ? "border-white scale-95 shadow-lg" : "border-transparent hover:border-white/50"}`}
-                style={{ backgroundColor: product.navbarColor }}
-              >
-                <Image
-                  src={imgSrc}
-                  alt={`Thumbnail ${index + 1}`}
-                  width={160}
-                  height={160}
-                  className="object-cover w-full h-full drop-shadow-md"
-                />
-              </button>
-            ))}
+            {currentImages.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`relative w-[80px] h-[80px] md:w-[100px] md:h-[100px] flex-shrink-0 rounded-[16px] overflow-hidden border-2 transition-all duration-300 ${
+                    currentIndex === index
+                      ? "border-opacity-100"
+                      : "border-transparent opacity-50 hover:opacity-100"
+                  }`}
+                  style={{
+                    borderColor:
+                      currentIndex === index
+                        ? product.navbarColor
+                        : "transparent",
+                  }}
+                >
+                  <Image
+                    src={image}
+                    alt={`${product.title} thumbnail ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </button>
+              ))}
           </div>
         </div>
 
         {/* ================= BAGIAN KANAN: DETAIL INFO PRODUK ================= */}
         <div className="lg:col-span-7 flex flex-col text-left w-full lg:pl-4 relative">
           {/* Karakter SVG Dinamis (Posisi Pojok Kanan Atas) */}
-          <div className="absolute top-0 right-0 md:right-[-110px] hidden lg:block w-[100px] h-[100px] opacity-100">
-            <Image
-              src={product.characterPath}
-              alt="Character"
-              width={100}
-              height={100}
-              className="object-contain"
-            />
-          </div>
+          {showCharacter && (
+            <div className="absolute top-0 right-0 md:right-[-110px] hidden lg:block w-[100px] h-[100px] opacity-100">
+              <Image
+                src={product.characterPath}
+                alt="Character"
+                width={100}
+                height={100}
+                className="object-contain"
+              />
+            </div>
+          )}
 
           {/* Warna teks judul dinamis */}
           <h1
@@ -343,17 +376,19 @@ export default function ProductDetailSection() {
       </div>
 
       {/* Sticky lingkaran bawah dinamis */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none z-0">
-        <div className="flex w-max gap-[15px] animate-slide-right-40s">
-          {Array.from({ length: 80 }).map((_, index) => (
-            <div
-              key={`bottom-${index}`}
-              className="w-[46px] h-[46px] rounded-full flex-shrink-0"
-              style={{ backgroundColor: product.navbarColor }}
-            />
-          ))}
+      {showDivider && (
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none z-0">
+          <div className="flex w-max gap-[15px] animate-slide-right-40s">
+            {Array.from({ length: 80 }).map((_, index) => (
+              <div
+                key={`bottom-${index}`}
+                className="w-[46px] h-[46px] rounded-full flex-shrink-0"
+                style={{ backgroundColor: product.navbarColor }}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

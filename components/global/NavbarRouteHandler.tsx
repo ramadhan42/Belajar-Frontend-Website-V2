@@ -11,7 +11,7 @@ export default function NavbarRouteHandler() {
 
     useEffect(() => {
         // Jika path BUKAN halaman detail produk, reset ke warna default
-        if (!pathname.startsWith("/halaman/belanja/")) {
+        if (!pathname.startsWith("/halaman/belanja/") || !pathname.startsWith("/halaman/kuis/")) {
             resetColors();
         }
     }, [pathname, resetColors]);

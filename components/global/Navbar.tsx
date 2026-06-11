@@ -16,9 +16,9 @@ export default function Navbar() {
 
   return (
     /* Wrapper luar untuk memberikan ruang agar rounded-full terlihat (efek floating) */
-    <div className="p-4 md:p-6 w-full relative z-50 md:mt-5">
+    <div className="p-4 md:p-4 w-full relative z-50 md:mt-5">
       <nav
-        className="text-white rounded-[25px] px-6 py-3 md:px-8 md:py-4 relative w-[95%] max-w-[1280px] mx-auto transition-colors duration-0"
+        className="text-white rounded-[25px] px-6 md:px-6 py-3 md:px-8 md:py-4 relative w-[100%] max-w-[1240px] mx-auto transition-colors duration-0"
         style={{ 
           backgroundColor: navbarColor, 
           fontFamily: "Arial, Helvetica, sans-serif",

@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 // Tambahkan useMotionValueEvent di import
 import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
@@ -142,7 +141,7 @@ export default function HeroSection() {
           <motion.div
             animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="absolute left-[14%] top-[-2%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
+            className="absolute left-[20%] md:left-[20%] top-[-10%] md:top-[-10%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
           >
             <Image src="/src/images/section 1/purpose-prestige.png" alt="Purpose Prestige" fill className="object-contain" />
           </motion.div>
@@ -166,7 +165,7 @@ export default function HeroSection() {
           <motion.div
             animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
             transition={{ duration: 0.6, delay: 0.7 }}
-            className="absolute right-[15%] top-[-2.4%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
+            className="absolute right-[20%] md:right-[20%] top-[-2.4%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
           >
             <Image src="/src/images/section 1/sweet-shy.png" alt="Sweet Shy" fill className="object-contain" />
           </motion.div>

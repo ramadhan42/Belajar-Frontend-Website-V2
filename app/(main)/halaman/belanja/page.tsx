@@ -11,10 +11,8 @@ export default function Belanja() {
                 {/* Konten belanja akan ditampilkan di sini */}
                 <FirstSectionBelanja />
                 <SecondSectionBelanja />
+                
             </div>
         </div>
-
-
-
     );
 }
