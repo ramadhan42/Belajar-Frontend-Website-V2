@@ -144,7 +144,7 @@ export default function KuisResultSection({
                 className="object-contain object-bottom-right opacity-100 brightness-100" // Memastikan opacity & kecerahan penuh
               />
             </div>
-            
+
             {/* Product Image z-10 */}
             <div className="absolute inset-0 z-10 flex items-end justify-end">
               <Image

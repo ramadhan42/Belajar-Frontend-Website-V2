@@ -199,7 +199,9 @@ export default function ProductDetailSection({
 
           {/* ================= BAGIAN THUMBNAIL ================= */}
           {/* Menggunakan grid-cols-4 jika gambar berjumlah 4 agar muat satu baris */}
-          <div className={`grid gap-4 w-full max-w-[482px] ${currentImages.length === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
+          <div
+            className={`grid gap-4 w-full max-w-[482px] ${currentImages.length === 4 ? "grid-cols-4" : "grid-cols-3"}`}
+          >
             {currentImages.map((image, index) => {
               // KONDISI: Cek apakah ini gambar2.png untuk thumbnail
               const isGambar2 = image.includes("gambar2.png");
@@ -220,7 +222,9 @@ export default function ProductDetailSection({
                         ? product.navbarColor
                         : "transparent",
                     // KONDISI BARU: Jika gambar2.png maka beri warna product.navbarColor, selain itu transparent
-                    backgroundColor: isGambar2 ? product.navbarColor : "transparent",
+                    backgroundColor: isGambar2
+                      ? product.navbarColor
+                      : "transparent",
                   }}
                 >
                   <div className="relative w-full h-full">

@@ -18,10 +18,8 @@ export default function SlideToRightSectionLearn() {
   return (
     // Wadah tinggi (400vh) untuk memberikan ruang scroll yang panjang
     <section ref={targetRef} className="relative h-[400vh] bg-gray-50">
-      
       {/* Sticky container: menahan layar agar tidak turun, sampai konten horizontal habis */}
       <div className="sticky top-0 flex h-screen items-center overflow-hidden">
-        
         {/* Title Font Animasi di Tengah */}
         <motion.div
           initial={{ opacity: 0, y: 30, scale: 0.9 }}
@@ -38,35 +36,42 @@ export default function SlideToRightSectionLearn() {
 
         {/* Konten Horizontal yang Bergeser */}
         <motion.div style={{ x }} className="flex gap-8 px-10 pt-32">
-          <SlideCard 
-            number="01" 
-            title="Minimal Interface" 
-            desc="Desain yang bersih dengan fokus pada typografi dan whitespace." 
+          <SlideCard
+            number="01"
+            title="Minimal Interface"
+            desc="Desain yang bersih dengan fokus pada typografi dan whitespace."
           />
-          <SlideCard 
-            number="02" 
-            title="Smooth Transitions" 
-            desc="Mengubah scroll bawah menjadi pergerakan horizontal yang natural." 
+          <SlideCard
+            number="02"
+            title="Smooth Transitions"
+            desc="Mengubah scroll bawah menjadi pergerakan horizontal yang natural."
           />
-          <SlideCard 
-            number="03" 
-            title="Modern Aesthetics" 
-            desc="Kombinasi bayangan lembut dan sudut membulat untuk kesan premium." 
+          <SlideCard
+            number="03"
+            title="Modern Aesthetics"
+            desc="Kombinasi bayangan lembut dan sudut membulat untuk kesan premium."
           />
-          <SlideCard 
-            number="04" 
-            title="Optimized Assets" 
-            desc="Mendukung penggunaan local fonts dan gambar beresolusi tinggi." 
+          <SlideCard
+            number="04"
+            title="Optimized Assets"
+            desc="Mendukung penggunaan local fonts dan gambar beresolusi tinggi."
           />
         </motion.div>
-
       </div>
     </section>
   );
 }
 
 // Sub-komponen untuk kartu konten (Bisa dipecah ke file terpisah jika perlu)
-function SlideCard({ number, title, desc }: { number: string; title: string; desc: string }) {
+function SlideCard({
+  number,
+  title,
+  desc,
+}: {
+  number: string;
+  title: string;
+  desc: string;
+}) {
   return (
     <div className="flex h-[55vh] w-[85vw] flex-col justify-between overflow-hidden rounded-3xl bg-white p-10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] md:w-[45vw] lg:w-[35vw]">
       <span className="text-5xl font-bold text-gray-200">{number}</span>
