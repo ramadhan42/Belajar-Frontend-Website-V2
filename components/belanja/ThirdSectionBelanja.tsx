@@ -44,8 +44,8 @@ export default function ThirdSectionBelanja() {
                   Gambar {product.id}
                 </span>
                 {/* Jika punya gambar, ganti dengan: 
-                                <Image src="/path-gambar.jpg" alt={product.name} width={200} height={200} className="rounded-2xl object-cover" /> 
-                                */}
+                  <Image src="/path-gambar.jpg" alt={product.name} width={200} height={200} className="rounded-2xl object-cover" /> 
+                */}
               </div>
 
               {/* Detail Produk */}

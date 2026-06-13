@@ -33,13 +33,25 @@ export interface AuthResponse {
 
 export interface Product {
   id: number;
-  name: string;
+  title: string;           // bukan "name"
   description?: string;
-  price: number;
-  image_url?: string;
-  category?: string;
-  stock?: number;
+  price: string;           // string "10000.00" dari Laravel
+  personality_type?: string;
+  top_note?: string;
+  middle_note?: string;
+  base_note?: string;
+  image_produk_belanja?: string;
+  image_1?: string;
+  image_2?: string;
+  image_3?: string;
+  image_4?: string;
+  bottle_size?: number;
+  perfume_type?: string;
+  gender?: string;
+  quantity?: number;
+  stock_status?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface CartItem {
@@ -196,23 +208,56 @@ export async function getShoppingHistory(): Promise<ShoppingHistoryItem[]> {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers khusus Product
+// ---------------------------------------------------------------------------
+
+/** Base URL storage Laravel (gambar produk disimpan di storage/app/public) */
+const STORAGE_URL =
+  (process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000") +
+  "/storage/";
+
+/** Konversi path gambar relatif dari Laravel menjadi URL absolut */
+export function getProductImageUrl(path?: string): string | null {
+  if (!path) return null;
+  if (path.startsWith("http")) return path;
+  return STORAGE_URL + path;
+}
+
+/** Format harga string "10000.00" → "Rp10.000" */
+export function formatProductPrice(price?: string | number): string {
+  if (!price) return "";
+  const num = typeof price === "string" ? parseFloat(price) : price;
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  })
+    .format(num)
+    .replace("IDR", "Rp");
+}
+
+// ---------------------------------------------------------------------------
 // 3. Products
 // ---------------------------------------------------------------------------
 
 /** GET /api/products */
 export async function getProducts(): Promise<Product[]> {
-  return request<Product[]>("/api/products", {
+  const res = await request<{ data: Product[] } | Product[]>("/api/products", {
     method: "GET",
     headers: buildHeaders(),
   });
+  // Unwrap Laravel Resource Collection { data: [...] }
+  return Array.isArray(res) ? res : (res as { data: Product[] }).data ?? [];
 }
 
 /** GET /api/products/:id */
 export async function getProduct(id: number | string): Promise<Product> {
-  return request<Product>(`/api/products/${id}`, {
+  const res = await request<{ data: Product } | Product>(`/api/products/${id}`, {
     method: "GET",
     headers: buildHeaders(),
   });
+  // Unwrap Laravel Resource { data: {...} }
+  return (res as { data: Product }).data ?? (res as Product);
 }
 
 // ---------------------------------------------------------------------------
