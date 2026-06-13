@@ -2,31 +2,31 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useParams } from "next/navigation"; // 1. Import useParams untuk ambil ID dari URL
-import { useNavbarColor } from "@/context/NavbarColorContext"; // 2. Import context navbar
+import { useParams } from "next/navigation";
+import { useNavbarColor } from "@/context/NavbarColorContext";
+import {
+  getProduct,
+  addToCart,
+  addToWishlist,
+  Product,
+} from "@/lib/api";
 
-// 3. Pindahkan data spek produk ke objek berdasarkan ID supaya mudah dipanggil
+// Data visual statis berdasarkan ID — tetap dipakai karena backend tidak menyediakan warna UI
 const productsData: Record<
   string,
   {
-    title: string;
-    price: string;
     navbarColor: string;
     badge: string;
-    desc: string;
     topNote: string;
     middleNote: string;
     baseNote: string;
     images: string[];
-    characterPath: string; // Tambahkan ini
+    characterPath: string;
   }
 > = {
   "1": {
-    title: "Purpose Prestige",
-    price: "Rp189.000",
     navbarColor: "#1172BA",
     badge: "Optimis",
-    desc: "Sebuah komposisi elegan untuk kamu yang menemukan kekuatan dalam ketenangan. Sentuhan citrus segar berpadu dengan kehangatan kayu cedarwood, menghadirkan rasa percaya diri yang tidak perlu berbicara keras.",
     topNote: "Bergamot • Lemon Italia • Daun Mint",
     middleNote: "Lavender • Iris • Geranium",
     baseNote: "Cedarwood • Musk Putih • Amber",
@@ -34,16 +34,12 @@ const productsData: Record<
       "/src/images/belanja/detail/purpose/gambar1.png",
       "/src/images/belanja/detail/purpose/gambar2.png",
       "/src/images/belanja/detail/purpose/gambar3.png",
-      // "/src/images/belanja/detail/purpose/gambar4.png",
     ],
     characterPath: "/src/images/belanja/detail/purpose-character.svg",
   },
   "2": {
-    title: "Peaceful Calm",
-    price: "Rp199.000",
     navbarColor: "#5EA14A",
     badge: "Damai",
-    desc: "Keberanian dan semangat untuk mengekspresikan diri lewat kesegaran alami yang menenangkan.",
     topNote: "Green Tea • Bergamot • Mandarin Orange",
     middleNote: "Jasmine • Camelia • White Violet",
     baseNote: "Musk • Cedarwood • Amber",
@@ -51,16 +47,12 @@ const productsData: Record<
       "/src/images/belanja/detail/peaceful/gambar1.png",
       "/src/images/belanja/detail/peaceful/gambar2.png",
       "/src/images/belanja/detail/peaceful/gambar3.png",
-      // "/src/images/belanja/detail/peaceful/gambar4.png",
     ],
     characterPath: "/src/images/belanja/detail/peaceful-character.svg",
   },
   "3": {
-    title: "Rabel Brave",
-    price: "Rp179.000",
     navbarColor: "#E33D35",
     badge: "Berani",
-    desc: "Aroma menenangkan yang menyatu dengan diri, memberikan energi keberanian sepanjang hari.",
     topNote: "Spicy Pepper • Pink Grapefruit",
     middleNote: "Lavender • Vetiver",
     baseNote: "Leather • Patchouli • Oakmoss",
@@ -68,16 +60,12 @@ const productsData: Record<
       "/src/images/belanja/detail/rebel/gambar1.png",
       "/src/images/belanja/detail/rebel/gambar2.png",
       "/src/images/belanja/detail/rebel/gambar3.png",
-      // "/src/images/belanja/detail/rebel/gambar4.png",
     ],
     characterPath: "/src/images/belanja/detail/rebel-character.svg",
   },
   "4": {
-    title: "Sweet Shy",
-    price: "Rp189.000",
     navbarColor: "#DD74A5",
     badge: "Manis",
-    desc: "Aroma manis lembut menenangkan yang menyatu harmonis dengan kehangatan kulitmu.",
     topNote: "Red Berries • Pear • Mandarin",
     middleNote: "Gardenia • Frangipani",
     baseNote: "Patchouli • Brown Sugar",
@@ -85,11 +73,28 @@ const productsData: Record<
       "/src/images/belanja/detail/sweet/gambar1.png",
       "/src/images/belanja/detail/sweet/gambar2.png",
       "/src/images/belanja/detail/sweet/gambar3.png",
-      // "/src/images/belanja/detail/sweet/gambar4.png",
     ],
     characterPath: "/src/images/belanja/detail/sweet-character.svg",
   },
 };
+
+// Fallback data lokal jika API belum tersedia
+const FALLBACK_PRODUCTS: Record<string, { title: string; price: string; desc: string }> = {
+  "1": { title: "Purpose Prestige", price: "Rp189.000", desc: "Sebuah komposisi elegan untuk kamu yang menemukan kekuatan dalam ketenangan." },
+  "2": { title: "Peaceful Calm", price: "Rp199.000", desc: "Keberanian dan semangat untuk mengekspresikan diri lewat kesegaran alami." },
+  "3": { title: "Rabel Brave", price: "Rp179.000", desc: "Aroma menenangkan yang menyatu dengan diri, memberikan energi keberanian." },
+  "4": { title: "Sweet Shy", price: "Rp189.000", desc: "Aroma manis lembut menenangkan yang menyatu harmonis dengan kehangatan kulitmu." },
+};
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  })
+    .format(price)
+    .replace("IDR", "Rp");
+}
 
 export default function ProductDetailSection({
   forcedId,
@@ -101,37 +106,104 @@ export default function ProductDetailSection({
   showCharacter?: boolean;
 }) {
   const params = useParams();
-  const id = forcedId || (params?.id as string) || "1"; // Gunakan forcedId jika ada, fallback ke URL param
+  const id = forcedId || (params?.id as string) || "1";
 
   const { setNavbarAndFooterColor } = useNavbarColor();
-  const { footerColor } = useNavbarColor(); // Ambil footerColor
+  const { footerColor } = useNavbarColor();
 
-  // Ambil data produk berdasarkan ID dari URL, jika tidak ketemu redirect/fallback ke ID 1
-  const product = productsData[id] || productsData["1"];
+  // State produk dari API
+  const [apiProduct, setApiProduct] = useState<Product | null>(null);
+  const [isLoadingProduct, setIsLoadingProduct] = useState(true);
+
+  // State aksi cart & wishlist
+  const [cartStatus, setCartStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [wishlistStatus, setWishlistStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [cartMessage, setCartMessage] = useState('');
+  const [wishlistMessage, setWishlistMessage] = useState('');
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // ================= PENTING: OTOMATIS GANTI WARNA NAVBAR DI SINI =================
-  useEffect(() => {
-    if (product) {
-      setNavbarAndFooterColor(product.navbarColor); // Set warna navbar dan footer sesuai warna produk aktif
-    }
-  }, [id, product, setNavbarAndFooterColor]);
+  // Ambil data visual statis (warna, gambar, notes) berdasarkan ID
+  const visual = productsData[id] ?? productsData["1"];
 
+  // Ambil produk dari API, fallback ke data lokal
   useEffect(() => {
-    if (product.images.length > 1) {
+    setIsLoadingProduct(true);
+    getProduct(id)
+      .then((data) => setApiProduct(data))
+      .catch(() => setApiProduct(null))
+      .finally(() => setIsLoadingProduct(false));
+  }, [id]);
+
+  // Data final produk (gabungan API + fallback lokal)
+  const fallback = FALLBACK_PRODUCTS[id] ?? FALLBACK_PRODUCTS["1"];
+  const productTitle = apiProduct?.name ?? fallback.title;
+  const productDesc = apiProduct?.description ?? fallback.desc;
+  const productPrice = apiProduct?.price
+    ? formatPrice(apiProduct.price)
+    : fallback.price;
+
+  // Set warna navbar & footer berdasarkan visual produk
+  useEffect(() => {
+    setNavbarAndFooterColor(visual.navbarColor);
+  }, [id, visual.navbarColor, setNavbarAndFooterColor]);
+
+  // Auto-slide gambar
+  useEffect(() => {
+    const images = visual.images;
+    if (images.length > 1) {
       const interval = setInterval(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % product.images.length);
+        setCurrentIndex((prev) => (prev + 1) % images.length);
       }, 4000);
       return () => clearInterval(interval);
     }
-  }, [product.images.length]);
+  }, [visual.images]);
 
-  // Batasi hanya 3 gambar agar slider utama dan thumbnail selalu sinkron
-  const currentImages =
-    product.images.length > 0
-      ? product.images.slice(0, 3)
-      : ["/src/images/belanja/detail/purpose/gambar-card-utama.png"];
+  const currentImages = visual.images.slice(0, 3);
+
+  // ---------------------------------------------------------------------------
+  // Handler: Tambah ke Keranjang
+  // ---------------------------------------------------------------------------
+  const handleAddToCart = async () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    if (!token) {
+      setCartMessage('Silakan login terlebih dahulu.');
+      setCartStatus('error');
+      return;
+    }
+    setCartStatus('loading');
+    setCartMessage('');
+    try {
+      await addToCart(Number(id), 1);
+      setCartStatus('success');
+      setCartMessage('Produk berhasil ditambahkan ke keranjang!');
+    } catch (err: unknown) {
+      setCartStatus('error');
+      setCartMessage(err instanceof Error ? err.message : 'Gagal menambahkan ke keranjang.');
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Handler: Tambah ke Wishlist
+  // ---------------------------------------------------------------------------
+  const handleAddToWishlist = async () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    if (!token) {
+      setWishlistMessage('Silakan login terlebih dahulu.');
+      setWishlistStatus('error');
+      return;
+    }
+    setWishlistStatus('loading');
+    setWishlistMessage('');
+    try {
+      await addToWishlist(Number(id));
+      setWishlistStatus('success');
+      setWishlistMessage('Produk ditambahkan ke wishlist!');
+    } catch (err: unknown) {
+      setWishlistStatus('error');
+      setWishlistMessage(err instanceof Error ? err.message : 'Gagal menambahkan ke wishlist.');
+    }
+  };
 
   return (
     <section className="bg-[#F6F6F6] w-full pt-12 pb-24 px-4 md:px-8 relative overflow-hidden flex flex-col items-center">
@@ -151,13 +223,10 @@ export default function ProductDetailSection({
           {/* Gambar Utama Slide */}
           <div
             className="w-full max-w-[482px] aspect-square rounded-[24px] overflow-hidden flex justify-center items-center relative shadow-sm"
-            style={{ backgroundColor: product.navbarColor }}
+            style={{ backgroundColor: visual.navbarColor }}
           >
-            {/* Mapping semua gambar */}
             {currentImages.map((imgSrc, index) => {
-              // KONDISI: Cek apakah ini gambar2.png
               const isGambar2 = imgSrc.includes("gambar2.png");
-
               return (
                 <div
                   key={index}
@@ -165,14 +234,14 @@ export default function ProductDetailSection({
                     currentIndex === index
                       ? "opacity-100 z-10"
                       : "opacity-0 z-0 pointer-events-none"
-                  } ${isGambar2 ? "p-0" : "p-0"}`} // <--- Hanya gambar 2 yang diberi padding (p-12), yang lain p-0
+                  }`}
                 >
                   <div className="relative w-full h-full">
                     <Image
                       src={imgSrc}
                       alt={`Gambar Utama Produk ${index + 1}`}
                       fill
-                      className={isGambar2 ? "object-contain" : "object-cover"} // <--- Gambar 2 contain (biar ga terpotong), yang lain cover (penuh)
+                      className={isGambar2 ? "object-contain" : "object-cover"}
                       priority={index === 0}
                     />
                   </div>
@@ -181,7 +250,6 @@ export default function ProductDetailSection({
             })}
           </div>
 
-          {/* Indicator Titik (Dots) */}
           {/* ================= BAGIAN INDIKATOR / DOTS ================= */}
           <div className="flex justify-center items-center w-full max-w-[482px] gap-2 my-6">
             {currentImages.map((_, index) => (
@@ -191,42 +259,34 @@ export default function ProductDetailSection({
                 className={`h-2 rounded-full transition-all duration-300 ${
                   currentIndex === index ? "w-6" : "w-2 opacity-30"
                 }`}
-                style={{ backgroundColor: product.navbarColor }}
+                style={{ backgroundColor: visual.navbarColor }}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}
           </div>
 
           {/* ================= BAGIAN THUMBNAIL ================= */}
-          {/* Menggunakan grid-cols-4 jika gambar berjumlah 4 agar muat satu baris */}
           <div className={`grid gap-4 w-full max-w-[482px] ${currentImages.length === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
             {currentImages.map((image, index) => {
-              // KONDISI: Cek apakah ini gambar2.png untuk thumbnail
               const isGambar2 = image.includes("gambar2.png");
-
               return (
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index)}
-                  // {/* Disesuaikan: Menghapus bg-white/10 agar warna navbarColor asli terlihat jelas */}
                   className={`relative w-full aspect-square flex-shrink-0 rounded-[16px] overflow-hidden border-2 transition-all duration-300 flex justify-center items-center ${
                     currentIndex === index
                       ? "border-opacity-100"
                       : "border-transparent opacity-50 hover:opacity-100"
-                  } ${isGambar2 ? "p-0" : "p-0"}`} // <--- p-3.5 tetap dipertahankan agar gambar di dalamnya tidak mentok ke tepi warna
+                  }`}
                   style={{
-                    borderColor:
-                      currentIndex === index
-                        ? product.navbarColor
-                        : "transparent",
-                    // KONDISI BARU: Jika gambar2.png maka beri warna product.navbarColor, selain itu transparent
-                    backgroundColor: isGambar2 ? product.navbarColor : "transparent",
+                    borderColor: currentIndex === index ? visual.navbarColor : "transparent",
+                    backgroundColor: isGambar2 ? visual.navbarColor : "transparent",
                   }}
                 >
                   <div className="relative w-full h-full">
                     <Image
                       src={image}
-                      alt={`${product.title} thumbnail ${index + 1}`}
+                      alt={`${productTitle} thumbnail ${index + 1}`}
                       fill
                       className={isGambar2 ? "object-contain" : "object-cover"}
                     />
@@ -239,11 +299,11 @@ export default function ProductDetailSection({
 
         {/* ================= BAGIAN KANAN: DETAIL INFO PRODUK ================= */}
         <div className="lg:col-span-7 flex flex-col text-left w-full lg:pl-4 relative">
-          {/* Karakter SVG Dinamis (Posisi Pojok Kanan Atas) */}
+          {/* Karakter SVG Dinamis */}
           {showCharacter && (
             <div className="absolute top-0 right-0 md:right-[-110px] hidden lg:block w-[100px] h-[100px] opacity-100">
               <Image
-                src={product.characterPath}
+                src={visual.characterPath}
                 alt="Character"
                 width={100}
                 height={100}
@@ -252,12 +312,16 @@ export default function ProductDetailSection({
             </div>
           )}
 
-          {/* Warna teks judul dinamis */}
+          {/* Judul Produk */}
           <h1
             className="font-['Nohemi'] text-[40px] md:text-[56px] font-semibold leading-tight mb-2"
-            style={{ color: product.navbarColor }}
+            style={{ color: visual.navbarColor }}
           >
-            {product.title}
+            {isLoadingProduct ? (
+              <span className="inline-block w-48 h-12 bg-gray-200 animate-pulse rounded-xl" />
+            ) : (
+              productTitle
+            )}
           </h1>
 
           <p className="font-['Nohemi'] text-[18px] md:text-[20px] font-medium text-[#5D5D5D] mb-4">
@@ -265,90 +329,103 @@ export default function ProductDetailSection({
           </p>
 
           <p className="font-['Parkinsans'] text-[15px] md:text-[16px] font-normal text-[#5D5D5D] leading-relaxed max-w-2xl mb-8">
-            {product.desc}
+            {isLoadingProduct ? (
+              <span className="inline-block w-full h-16 bg-gray-200 animate-pulse rounded-xl" />
+            ) : (
+              productDesc
+            )}
           </p>
 
           {/* Card Notes */}
           <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm max-w-2xl mb-8 flex flex-col gap-5">
             <h4
               className="font-['Nohemi'] text-[18px] md:text-[20px] font-bold"
-              style={{ color: product.navbarColor }}
+              style={{ color: visual.navbarColor }}
             >
-              Notes {product.title}
+              Notes {productTitle}
             </h4>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <span
-                className="text-white text-[14px] font-medium px-4 py-1.5 rounded-full min-w-[110px] text-center"
-                style={{ backgroundColor: product.navbarColor }}
-              >
-                Top Note
-              </span>
-              <span
-                className="text-[14px] font-medium"
-                style={{ color: `${product.navbarColor}CC` }}
-              >
-                {product.topNote}
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <span
-                className="text-white text-[14px] font-medium px-4 py-1.5 rounded-full min-w-[110px] text-center"
-                style={{ backgroundColor: product.navbarColor }}
-              >
-                Middle Note
-              </span>
-              <span
-                className="text-[14px] font-medium"
-                style={{ color: `${product.navbarColor}CC` }}
-              >
-                {product.middleNote}
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <span
-                className="text-white text-[14px] font-medium px-4 py-1.5 rounded-full min-w-[110px] text-center"
-                style={{ backgroundColor: product.navbarColor }}
-              >
-                Base Note
-              </span>
-              <span
-                className="text-[14px] font-medium"
-                style={{ color: `${product.navbarColor}CC` }}
-              >
-                {product.baseNote}
-              </span>
-            </div>
+            {[
+              { label: "Top Note", value: visual.topNote },
+              { label: "Middle Note", value: visual.middleNote },
+              { label: "Base Note", value: visual.baseNote },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <span
+                  className="text-white text-[14px] font-medium px-4 py-1.5 rounded-full min-w-[110px] text-center"
+                  style={{ backgroundColor: visual.navbarColor }}
+                >
+                  {label}
+                </span>
+                <span
+                  className="text-[14px] font-medium"
+                  style={{ color: `${visual.navbarColor}CC` }}
+                >
+                  {value}
+                </span>
+              </div>
+            ))}
           </div>
 
+          {/* Harga */}
           <div className="font-['Nohemi'] flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 md:gap-8 mb-8 md:mb-12 md:mt-5">
             <span
               className="text-[22px] md:text-[24px] font-medium"
-              style={{ color: product.navbarColor }}
+              style={{ color: visual.navbarColor }}
             >
               Harga
             </span>
             <span className="text-[36px] md:text-[40px] font-semibold text-[#5D5D5D]">
-              {product.price}
+              {isLoadingProduct ? (
+                <span className="inline-block w-32 h-10 bg-gray-200 animate-pulse rounded-xl" />
+              ) : (
+                productPrice
+              )}
             </span>
           </div>
 
+          {/* Notifikasi Cart */}
+          {cartMessage && (
+            <div
+              className={`mb-4 px-4 py-2 rounded-xl text-sm font-medium ${
+                cartStatus === 'success'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-red-100 text-red-700'
+              }`}
+            >
+              {cartMessage}
+            </div>
+          )}
+
+          {/* Notifikasi Wishlist */}
+          {wishlistMessage && (
+            <div
+              className={`mb-4 px-4 py-2 rounded-xl text-sm font-medium ${
+                wishlistStatus === 'success'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-red-100 text-red-700'
+              }`}
+            >
+              {wishlistMessage}
+            </div>
+          )}
+
           {/* Tombol Aksi */}
           <div className="flex flex-wrap items-center gap-4 max-w-2xl">
+            {/* Tombol Tambah ke Keranjang */}
             <button
-              className="font-['Nohemi'] flex items-center justify-center gap-2 bg-white text-[16px] font-bold px-6 py-4 rounded-full border shadow-sm hover:bg-gray-50 active:scale-95 transition-all duration-200"
+              onClick={handleAddToCart}
+              disabled={cartStatus === 'loading'}
+              className="font-['Nohemi'] flex items-center justify-center gap-2 bg-white text-[16px] font-bold px-6 py-4 rounded-full border shadow-sm hover:bg-gray-50 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{
-                color: product.navbarColor,
-                borderColor: `${product.navbarColor}33`,
+                color: visual.navbarColor,
+                borderColor: `${visual.navbarColor}33`,
               }}
             >
-              {/* Ganti bagian Image untuk ikon cart dengan kode ini */}
               <div
-                className="w-5 h-5 md:bottom-10"
+                className="w-5 h-5"
                 style={{
-                  backgroundColor: product.navbarColor,
+                  backgroundColor: visual.navbarColor,
                   WebkitMaskImage: `url(/src/images/belanja/detail/purpose/cart.svg)`,
                   maskImage: `url(/src/images/belanja/detail/purpose/cart.svg)`,
                   WebkitMaskSize: "contain",
@@ -357,12 +434,13 @@ export default function ProductDetailSection({
                   maskRepeat: "no-repeat",
                 }}
               />
-              Tambah ke Keranjang
+              {cartStatus === 'loading' ? 'Menambahkan...' : 'Tambah ke Keranjang'}
             </button>
 
+            {/* Tombol Beli Langsung */}
             <button
               className="font-['Nohemi'] flex items-center justify-center gap-2 text-white text-[16px] font-medium px-8 py-4 rounded-full shadow-md active:scale-95 transition-all duration-200"
-              style={{ backgroundColor: product.navbarColor }}
+              style={{ backgroundColor: visual.navbarColor }}
             >
               Beli langsung
               <Image
@@ -374,15 +452,18 @@ export default function ProductDetailSection({
               />
             </button>
 
+            {/* Tombol Wishlist */}
             <button
-              className="w-14 h-14 bg-white rounded-full flex justify-center items-center border border-gray-100 shadow-sm hover:bg-gray-50 active:scale-95 transition-all duration-200"
+              onClick={handleAddToWishlist}
+              disabled={wishlistStatus === 'loading' || wishlistStatus === 'success'}
+              className="w-14 h-14 bg-white rounded-full flex justify-center items-center border border-gray-100 shadow-sm hover:bg-gray-50 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
               aria-label="Add to Wishlist"
-              style={{ borderColor: `${product.navbarColor}33` }} // Optional: border sedikit mengikuti warna produk agar senada
+              style={{ borderColor: `${visual.navbarColor}33` }}
             >
               <div
                 className="w-5 h-5"
                 style={{
-                  backgroundColor: product.navbarColor,
+                  backgroundColor: wishlistStatus === 'success' ? '#22c55e' : visual.navbarColor,
                   WebkitMaskImage: `url(/src/images/belanja/detail/purpose/love.svg)`,
                   maskImage: `url(/src/images/belanja/detail/purpose/love.svg)`,
                   WebkitMaskSize: "contain",
@@ -404,7 +485,7 @@ export default function ProductDetailSection({
               <div
                 key={`bottom-${index}`}
                 className="w-[46px] h-[46px] rounded-full flex-shrink-0"
-                style={{ backgroundColor: product.navbarColor }}
+                style={{ backgroundColor: visual.navbarColor }}
               />
             ))}
           </div>

@@ -1,13 +1,65 @@
-"use client"; // Diperlukan untuk menggunakan useState di Next.js App Router
+"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useNavbarColor } from "@/context/NavbarColorContext";
+import { logout } from "@/lib/api";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { navbarColor } = useNavbarColor();
+  const router = useRouter();
+
+  // Auth state — dibaca dari localStorage agar reaktif terhadap login/logout
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isLogoutLoading, setIsLogoutLoading] = useState(false);
+
+  // Sync auth state: saat mount dan saat storage berubah (tab lain / login/logout)
+  useEffect(() => {
+    const readAuth = () => {
+      const token = localStorage.getItem("auth_token");
+      const userRaw = localStorage.getItem("auth_user");
+      if (token && userRaw) {
+        try {
+          const user = JSON.parse(userRaw);
+          setUserEmail(user.email ?? null);
+        } catch {
+          setUserEmail(null);
+        }
+      } else {
+        setUserEmail(null);
+      }
+    };
+
+    readAuth();
+    window.addEventListener("storage", readAuth);
+    // Custom event agar bisa trigger dari tab yang sama (setelah login/logout)
+    window.addEventListener("auth-change", readAuth);
+    return () => {
+      window.removeEventListener("storage", readAuth);
+      window.removeEventListener("auth-change", readAuth);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    setIsLogoutLoading(true);
+    try {
+      await logout();
+    } catch {
+      // Lanjutkan logout lokal meski server error
+    } finally {
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_user");
+      setUserEmail(null);
+      // Beritahu komponen lain di tab yang sama
+      window.dispatchEvent(new Event("auth-change"));
+      setIsOpen(false);
+      setIsLogoutLoading(false);
+      router.push("/");
+    }
+  };
 
   // Class seragam untuk semua menu agar memiliki efek hover pill (rounded-full, bg-white, text dinamis)
  // Class seragam untuk semua menu agar memiliki efek hover pill (rounded-full, bg-white, text dinamis)
@@ -74,13 +126,44 @@ export default function Navbar() {
 
           {/* --- DESKTOP VIEW: MENU KANAN --- */}
           <div className="hidden md:flex items-center space-x-2 md:mr-2">
-            <Link href="/login" className={navLinkClass}>
-              Login
-            </Link>
-            
-            <Link href="/register" className={navLinkClass}>
-              Daftar
-            </Link>
+            {userEmail ? (
+              <>
+                {/* Email user — truncate jika panjang */}
+                <span
+                  className="max-w-[160px] truncate text-[14px] font-semibold text-white/90 px-3 py-2"
+                  title={userEmail}
+                >
+                  {userEmail}
+                </span>
+
+                <button
+                  onClick={handleLogout}
+                  disabled={isLogoutLoading}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "white";
+                    (e.currentTarget as HTMLButtonElement).style.color = "#1172BA";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(255,255,255,0.15)";
+                    (e.currentTarget as HTMLButtonElement).style.color = "white";
+                  }}
+                  className={`${navLinkClass} bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed`}
+                  style={{ color: "white" }}
+                >
+                  {isLogoutLoading ? "Keluar..." : "Logout"}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className={navLinkClass}>
+                  Login
+                </Link>
+
+                <Link href="/register" className={navLinkClass}>
+                  Daftar
+                </Link>
+              </>
+            )}
           </div>
 
           {/* --- MOBILE VIEW: HAMBURGER BUTTON --- */}
@@ -130,12 +213,40 @@ export default function Navbar() {
               style={{ borderTopColor: `${navbarColor}99`, borderTopWidth: "1px" }}
             />
 
-            <Link href="/halaman/masuk" onClick={() => setIsOpen(false)} className={navLinkClass}>
-              Login
-            </Link>
-            <Link href="/halaman/daftar" onClick={() => setIsOpen(false)} className={navLinkClass}>
-              Daftar
-            </Link>
+            {userEmail ? (
+              <>
+                {/* Email user di mobile */}
+                <span className="text-center text-[14px] font-semibold text-white/80 py-2 truncate">
+                  {userEmail}
+                </span>
+
+                <button
+                  onClick={handleLogout}
+                  disabled={isLogoutLoading}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "white";
+                    (e.currentTarget as HTMLButtonElement).style.color = "#1172BA";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(255,255,255,0.15)";
+                    (e.currentTarget as HTMLButtonElement).style.color = "white";
+                  }}
+                  className={`${navLinkClass} bg-white/15 disabled:opacity-60`}
+                  style={{ color: "white" }}
+                >
+                  {isLogoutLoading ? "Keluar..." : "Logout"}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" onClick={() => setIsOpen(false)} className={navLinkClass}>
+                  Login
+                </Link>
+                <Link href="/register" onClick={() => setIsOpen(false)} className={navLinkClass}>
+                  Daftar
+                </Link>
+              </>
+            )}
           </div>
         )}
       </nav>

@@ -2,9 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-// Import context untuk mengubah warna navbar
 import { useNavbarColor } from "@/context/NavbarColorContext";
 import KuisResultSection from "@/components/kuis/KuisResultSection";
+import {
+  getQuizQuestions,
+  submitQuiz,
+  QuizQuestion,
+  QuizAnswer,
+} from "@/lib/api";
 
 // --- DATA WARNA PRODUK ---
 const PRODUCT_COLORS = {
@@ -14,7 +19,7 @@ const PRODUCT_COLORS = {
   rebel_brave: "#E33D35",
 };
 
-// --- DATA PRODUK EVOMI ---
+// --- DATA PRODUK EVOMI (statis, untuk hasil kuis) ---
 const EVOMI_PRODUCTS = {
   peaceful_calm: {
     id: "peaceful_calm",
@@ -50,77 +55,74 @@ const EVOMI_PRODUCTS = {
   },
 };
 
-// --- DATA PERTANYAAN KUIS ---
-const QUIZ_QUESTIONS = [
+// --- DATA PERTANYAAN KUIS (fallback lokal) ---
+const FALLBACK_QUESTIONS = [
   {
-    question: "Apa aktivitas akhir pekan favoritmu?",
+    id: 1,
+    text: "Apa aktivitas akhir pekan favoritmu?",
     options: [
-      { text: "Bersantai menikmati ketenangan alam", product: "peaceful_calm" },
-      { text: "Makan malam mewah dan eksklusif", product: "purpose_prestige" },
-      { text: "Piknik santai membaca buku", product: "sweet_shy" },
-      { text: "Olahraga atau aktivitas menantang", product: "rebel_brave" },
+      { id: 1, question_id: 1, text: "Bersantai menikmati ketenangan alam", product: "peaceful_calm" },
+      { id: 2, question_id: 1, text: "Makan malam mewah dan eksklusif", product: "purpose_prestige" },
+      { id: 3, question_id: 1, text: "Piknik santai membaca buku", product: "sweet_shy" },
+      { id: 4, question_id: 1, text: "Olahraga atau aktivitas menantang", product: "rebel_brave" },
     ],
   },
   {
-    question: "Bagaimana gaya berpakaian andalanmu sehari-hari?",
+    id: 2,
+    text: "Bagaimana gaya berpakaian andalanmu sehari-hari?",
     options: [
-      { text: "Casual, simpel, dan nyaman", product: "peaceful_calm" },
-      { text: "Elegan, rapi, dan terstruktur", product: "purpose_prestige" },
-      { text: "Warna pastel dan lembut", product: "sweet_shy" },
-      { text: "Sporty, edgy, dan berani", product: "rebel_brave" },
+      { id: 5, question_id: 2, text: "Casual, simpel, dan nyaman", product: "peaceful_calm" },
+      { id: 6, question_id: 2, text: "Elegan, rapi, dan terstruktur", product: "purpose_prestige" },
+      { id: 7, question_id: 2, text: "Warna pastel dan lembut", product: "sweet_shy" },
+      { id: 8, question_id: 2, text: "Sporty, edgy, dan berani", product: "rebel_brave" },
     ],
   },
   {
-    question: "Aroma seperti apa yang paling menarik perhatianmu?",
+    id: 3,
+    text: "Aroma seperti apa yang paling menarik perhatianmu?",
     options: [
-      { text: "Aroma laut dan udara yang sejuk", product: "peaceful_calm" },
-      {
-        text: "Aroma kayu-kayuan dan rempah mewah",
-        product: "purpose_prestige",
-      },
-      { text: "Aroma bunga-bunga yang manis", product: "sweet_shy" },
-      { text: "Aroma citrus yang tajam dan segar", product: "rebel_brave" },
+      { id: 9, question_id: 3, text: "Aroma laut dan udara yang sejuk", product: "peaceful_calm" },
+      { id: 10, question_id: 3, text: "Aroma kayu-kayuan dan rempah mewah", product: "purpose_prestige" },
+      { id: 11, question_id: 3, text: "Aroma bunga-bunga yang manis", product: "sweet_shy" },
+      { id: 12, question_id: 3, text: "Aroma citrus yang tajam dan segar", product: "rebel_brave" },
     ],
   },
   {
-    question: "Kesan apa yang ingin kamu tinggalkan saat bertemu orang baru?",
+    id: 4,
+    text: "Kesan apa yang ingin kamu tinggalkan saat bertemu orang baru?",
     options: [
-      {
-        text: "Tenang, suportif, dan mudah didekati",
-        product: "peaceful_calm",
-      },
-      {
-        text: "Misterius, karismatik, dan berwibawa",
-        product: "purpose_prestige",
-      },
-      { text: "Hangat, pemalu, namun menggemaskan", product: "sweet_shy" },
-      {
-        text: "Penuh semangat, percaya diri, dan tegas",
-        product: "rebel_brave",
-      },
+      { id: 13, question_id: 4, text: "Tenang, suportif, dan mudah didekati", product: "peaceful_calm" },
+      { id: 14, question_id: 4, text: "Misterius, karismatik, dan berwibawa", product: "purpose_prestige" },
+      { id: 15, question_id: 4, text: "Hangat, pemalu, namun menggemaskan", product: "sweet_shy" },
+      { id: 16, question_id: 4, text: "Penuh semangat, percaya diri, dan tegas", product: "rebel_brave" },
     ],
   },
   {
-    question: "Pilih suasana cuaca yang paling membuat mood kamu naik:",
+    id: 5,
+    text: "Pilih suasana cuaca yang paling membuat mood kamu naik:",
     options: [
-      { text: "Pagi hari yang sejuk dan tenang", product: "peaceful_calm" },
-      {
-        text: "Malam hari yang dingin dan syahdu",
-        product: "purpose_prestige",
-      },
-      { text: "Sore hari musim semi yang hangat", product: "sweet_shy" },
-      {
-        text: "Siang hari yang terik untuk beraktivitas",
-        product: "rebel_brave",
-      },
+      { id: 17, question_id: 5, text: "Pagi hari yang sejuk dan tenang", product: "peaceful_calm" },
+      { id: 18, question_id: 5, text: "Malam hari yang dingin dan syahdu", product: "purpose_prestige" },
+      { id: 19, question_id: 5, text: "Sore hari musim semi yang hangat", product: "sweet_shy" },
+      { id: 20, question_id: 5, text: "Siang hari yang terik untuk beraktivitas", product: "rebel_brave" },
     ],
   },
 ];
 
+// Mapping urutan opsi ke personality key (untuk pertanyaan dari API yang tidak punya field product)
+const OPTION_INDEX_TO_KEY = ["peaceful_calm", "purpose_prestige", "sweet_shy", "rebel_brave"] as const;
+
+type ProductKey = keyof typeof EVOMI_PRODUCTS;
+
 export default function KuisPage() {
   const { setNavbarAndFooterColor } = useNavbarColor();
+
+  const [apiQuestions, setApiQuestions] = useState<QuizQuestion[] | null>(null);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+  const [collectedAnswers, setCollectedAnswers] = useState<QuizAnswer[]>([]);
 
   const [scores, setScores] = useState({
     peaceful_calm: 0,
@@ -129,62 +131,85 @@ export default function KuisPage() {
     rebel_brave: 0,
   });
 
-  const handleAnswer = (productKey: keyof typeof scores) => {
-    setScores((prevScores) => ({
-      ...prevScores,
-      [productKey]: prevScores[productKey] + 1,
-    }));
+  // Ambil pertanyaan dari API — fallback ke lokal jika gagal
+  useEffect(() => {
+    getQuizQuestions()
+      .then((data) => {
+        if (data && data.length > 0) setApiQuestions(data);
+        else setApiQuestions(null);
+      })
+      .catch(() => setApiQuestions(null))
+      .finally(() => setIsLoadingQuestions(false));
+  }, []);
 
-    if (currentStep < QUIZ_QUESTIONS.length - 1) {
+  // Gunakan pertanyaan API jika tersedia, fallback ke lokal
+  const questions = apiQuestions ?? FALLBACK_QUESTIONS;
+  const usingApiQuestions = apiQuestions !== null;
+
+  const handleAnswer = async (optionIndex: number, questionId: number, optionId: number) => {
+    // Tentukan product key berdasarkan index opsi (untuk scoring lokal)
+    const productKey: ProductKey = OPTION_INDEX_TO_KEY[optionIndex % 4];
+    const newScores = { ...scores, [productKey]: scores[productKey] + 1 };
+    const newAnswers = [...collectedAnswers, { question_id: questionId, option_id: optionId }];
+
+    setScores(newScores);
+    setCollectedAnswers(newAnswers);
+
+    const isLastQuestion = currentStep >= questions.length - 1;
+
+    if (!isLastQuestion) {
       setCurrentStep(currentStep + 1);
     } else {
+      // Jika menggunakan API dan user sudah login, submit jawaban
+      if (usingApiQuestions) {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        if (token) {
+          try {
+            await submitQuiz(newAnswers);
+          } catch {
+            // Submit gagal — tetap tampilkan hasil lokal
+          }
+        }
+      }
       setIsFinished(true);
     }
   };
 
   const getResult = () => {
     let highestScore = 0;
-    let resultProductKey = "peaceful_calm";
-
+    let resultProductKey: ProductKey = "peaceful_calm";
     Object.entries(scores).forEach(([key, score]) => {
       if (score > highestScore) {
         highestScore = score;
-        resultProductKey = key;
+        resultProductKey = key as ProductKey;
       }
     });
-
-    const matchPercentage = Math.round(
-      (highestScore / QUIZ_QUESTIONS.length) * 100,
-    );
-    const product =
-      EVOMI_PRODUCTS[resultProductKey as keyof typeof EVOMI_PRODUCTS];
-
+    const matchPercentage = Math.round((highestScore / questions.length) * 100);
+    const product = EVOMI_PRODUCTS[resultProductKey];
     return { product, matchPercentage };
   };
 
-  // Menentukan warna aktif saat ini berdasarkan state 'isFinished' dan hasil kuis
-  const currentColor = isFinished
-    ? PRODUCT_COLORS[getResult().product.id as keyof typeof PRODUCT_COLORS]
-    : "#1172BA";
-
-  // Mengubah warna navbar & footer secara dinamis setiap currentColor berubah
-  useEffect(() => {
-    setNavbarAndFooterColor(currentColor);
-  }, [currentColor, setNavbarAndFooterColor]);
-
-  const progressPercentage = ((currentStep + 1) / QUIZ_QUESTIONS.length) * 100;
-
-  const getResultKey = () => {
+  const getResultKey = (): ProductKey => {
     let highestScore = 0;
-    let resultProductKey = "purpose_prestige";
+    let resultProductKey: ProductKey = "purpose_prestige";
     Object.entries(scores).forEach(([key, score]) => {
       if (score > highestScore) {
         highestScore = score;
-        resultProductKey = key;
+        resultProductKey = key as ProductKey;
       }
     });
     return resultProductKey;
   };
+
+  const currentColor = isFinished
+    ? PRODUCT_COLORS[getResult().product.id as keyof typeof PRODUCT_COLORS]
+    : "#1172BA";
+
+  useEffect(() => {
+    setNavbarAndFooterColor(currentColor);
+  }, [currentColor, setNavbarAndFooterColor]);
+
+  const progressPercentage = ((currentStep + 1) / questions.length) * 100;
 
   if (isFinished) {
     return (
@@ -197,10 +222,26 @@ export default function KuisPage() {
     );
   }
 
+  // Loading skeleton saat fetch pertanyaan API
+  if (isLoadingQuestions) {
+    return (
+      <div className="w-full bg-[#F6F6F6] flex flex-col items-center justify-center min-h-screen px-4">
+        <div className="w-full max-w-[1000px] min-h-[500px] rounded-[25px] bg-white shadow-2xl overflow-hidden animate-pulse">
+          <div className="h-[200px] bg-[#1172BA]/30" />
+          <div className="p-10 space-y-4">
+            <div className="h-6 bg-gray-200 rounded w-3/4" />
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-16 bg-gray-100 rounded-2xl" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    // PERUBAHAN DI SINI: pb-0 dan penghapusan min-h-[calc...] agar tidak ada jarak sisa ke footer
-    // 1. Tambahkan 'justify-center' agar card benar-benar di tengah layar
-    // 2. Hapus/Kurangi 'pt-8' jika ingin benar-benar di tengah absolut
     <div className="w-full bg-[#F6F6F6] flex flex-col items-center justify-start min-h-screen md:mt-7 pt-10 md:pt-16 px-4 md:px-6 font-nohemi transition-colors duration-500">
       <div className="w-full max-w-[1000px] min-h-[500px] rounded-[25px] flex flex-col shadow-2xl overflow-hidden bg-white">
         {/* ================= BAGIAN ATAS CARD ================= */}
@@ -223,105 +264,58 @@ export default function KuisPage() {
           </div>
 
           <h1 className="text-[36px] font-semibold text-white tracking-tight">
-            {isFinished ? "Inilah Aromamu!" : "Temukan aromamu"}
+            Temukan aromamu
           </h1>
 
-          {!isFinished && (
-            <div className="mt-6 w-full h-2 bg-white/30 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[#A5E194] transition-all duration-500 ease-out rounded-full"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-          )}
+          <div className="mt-6 w-full h-2 bg-white/30 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#A5E194] transition-all duration-500 ease-out rounded-full"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
         </div>
+
         {/* ================= BAGIAN BAWAH CARD ================= */}
         <div className="flex-grow px-6 md:px-10 py-8 flex flex-col justify-center">
-          {!isFinished ? (
-            <div className="flex flex-col h-full justify-between">
-              {/* Warna Teks Judul Pertanyaan Dinamis */}
-              <h2
-                className="text-[20px] md:text-[24px] font-semibold leading-snug transition-colors duration-500"
-                style={{ color: currentColor }}
-              >
-                {QUIZ_QUESTIONS[currentStep].question}
-              </h2>
+          <div className="flex flex-col h-full justify-between">
+            {/* Pertanyaan */}
+            <h2
+              className="text-[20px] md:text-[24px] font-semibold leading-snug transition-colors duration-500"
+              style={{ color: currentColor }}
+            >
+              {questions[currentStep].text}
+            </h2>
 
-              {/* Menggunakan grid-cols-1 untuk mobile, grid-cols-2 untuk desktop agar rapi */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-6">
-                {QUIZ_QUESTIONS[currentStep].options.map((option, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() =>
-                      handleAnswer(option.product as keyof typeof scores)
-                    }
-                    className="bg-[#EFEFEF] hover:bg-gray-200 text-[14px] md:text-[16px] font-medium p-4 md:p-5 rounded-2xl flex justify-between items-center transition-all active:scale-[0.98] text-left"
-                    style={{ color: currentColor }}
-                  >
-                    <span>{option.text}</span>
-                    <svg
-                      className="w-5 h-5 ml-4 shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col md:flex-row items-center justify-between h-full gap-8">
-              <div className="flex-1 space-y-4 text-center md:text-left">
-                <div className="inline-block px-4 py-1.5 bg-[#A5E194]/20 text-green-700 font-semibold rounded-full text-sm">
-                  Kecocokan: {getResult().matchPercentage}%
-                </div>
-
-                {/* Warna Nama Produk Dinamis */}
-                <h2
-                  className="text-[24px] md:text-[28px] font-bold transition-colors duration-500"
+            {/* Pilihan Jawaban */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-6">
+              {questions[currentStep].options.map((option, idx) => (
+                <button
+                  key={option.id}
+                  onClick={() =>
+                    handleAnswer(idx, option.question_id, option.id)
+                  }
+                  className="bg-[#EFEFEF] hover:bg-gray-200 text-[14px] md:text-[16px] font-medium p-4 md:p-5 rounded-2xl flex justify-between items-center transition-all active:scale-[0.98] text-left"
                   style={{ color: currentColor }}
                 >
-                  {getResult().product.name}
-                </h2>
-
-                <p className="text-slate-600 text-[14px] md:text-[16px] leading-relaxed">
-                  {getResult().product.description}
-                </p>
-
-                {/* Tombol Ulangi Kuis Dinamis */}
-                <button
-                  onClick={() => window.location.reload()}
-                  className="mt-4 w-full md:w-auto px-8 py-3 text-white rounded-xl font-semibold hover:brightness-90 transition-all duration-300 shadow-md hover:shadow-lg"
-                  style={{ backgroundColor: currentColor }}
-                >
-                  Ulangi Kuis
+                  <span>{option.text}</span>
+                  <svg
+                    className="w-5 h-5 ml-4 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
                 </button>
-              </div>
-
-              {/* === SECTION HASIL DENGAN IMAGE SHAPE & CHARACTER === */}
-              <div className="flex-1 flex justify-center items-center relative w-full h-[250px] md:h-full mt-6 md:mt-0">
-                <img
-                  src={getResult().product.shapeImg}
-                  alt="Shape"
-                  className="absolute w-[200px] h-[200px] md:w-[280px] md:h-[280px] object-contain z-0"
-                />
-
-                <img
-                  src={getResult().product.characterImg}
-                  alt={getResult().product.name}
-                  className="w-[160px] h-[160px] md:w-[220px] md:h-[220px] object-contain drop-shadow-2xl z-10 -rotate-[5deg] transition-transform duration-300"
-                />
-              </div>
+              ))}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
