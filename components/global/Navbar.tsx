@@ -62,8 +62,6 @@ export default function Navbar() {
   };
 
   // Class seragam untuk semua menu agar memiliki efek hover pill (rounded-full, bg-white, text dinamis)
-  // Class seragam untuk semua menu agar memiliki efek hover pill (rounded-full, bg-white, text dinamis)
-  // Ditambahkan w-full md:w-[110px] dan flex justify-center agar lebarnya sama rata
   const navLinkClass =
     "flex justify-center items-center w-full md:w-[100px] text-[16px] py-2.5 font-bold rounded-full text-center text-white hover:bg-white hover:text-[var(--nav-color)] hover-bold-effect transition-colors duration-300";
 
@@ -108,7 +106,6 @@ export default function Navbar() {
           </div>
 
           {/* --- DESKTOP VIEW: MENU TENGAH --- */}
-          {/* Jarak diubah menjadi space-x-2 karena item sudah memiliki padding horizontal (px-5) */}
           <div className="hidden md:flex items-center space-x-2">
             <Link
               href="/"
@@ -127,7 +124,7 @@ export default function Navbar() {
             </Link>
 
             <Link
-              href="/halaman/belanja"
+              href="/belanja"
               onClick={() => setIsOpen(false)}
               className={navLinkClass}
             >
@@ -135,7 +132,7 @@ export default function Navbar() {
             </Link>
 
             <Link
-              href="/halaman/kuis"
+              href="/kuis"
               onClick={() => setIsOpen(false)}
               className={navLinkClass}
             >
@@ -144,16 +141,17 @@ export default function Navbar() {
           </div>
 
           {/* --- DESKTOP VIEW: MENU KANAN --- */}
-          <div className="hidden md:flex items-center space-x-2 md:mr-2">
+          <div className="hidden md:flex items-center space-x-3 md:mr-2">
             {userEmail ? (
               <>
-                {/* Email user — truncate jika panjang */}
-                <span
-                  className="max-w-[160px] truncate text-[14px] font-semibold text-white/90 px-3 py-2"
+                {/* Tombol profil berbentuk logo inisial huruf pertama email */}
+                <Link
+                  href="/profile"
+                  className="flex items-center justify-center w-[44px] h-[44px] rounded-full bg-white text-[var(--nav-color)] font-bold text-[18px] border border-white hover:bg-transparent hover:text-white transition-colors duration-300"
                   title={userEmail}
                 >
-                  {userEmail}
-                </span>
+                  {userEmail.charAt(0).toUpperCase()}
+                </Link>
 
                 <button
                   onClick={handleLogout}
@@ -193,7 +191,6 @@ export default function Navbar() {
               aria-label="Toggle Menu"
             >
               {isOpen ? (
-                // Icon Cross (X) saat menu terbuka
                 <svg
                   className="w-6 h-6"
                   fill="none"
@@ -208,7 +205,6 @@ export default function Navbar() {
                   />
                 </svg>
               ) : (
-                // Icon Hamburger Menu (≡) saat menu tertutup
                 <svg
                   className="w-6 h-6"
                   fill="none"
@@ -251,14 +247,14 @@ export default function Navbar() {
               Tentang
             </Link>
             <Link
-              href="/halaman/belanja"
+              href="/belanja"
               onClick={() => setIsOpen(false)}
               className={navLinkClass}
             >
               Belanja
             </Link>
             <Link
-              href="/halaman/kuis"
+              href="/kuis"
               onClick={() => setIsOpen(false)}
               className={navLinkClass}
             >
@@ -275,11 +271,16 @@ export default function Navbar() {
             />
 
             {userEmail ? (
-              <>
-                {/* Email user di mobile */}
-                <span className="text-center text-[14px] font-semibold text-white/80 py-2 truncate">
-                  {userEmail}
-                </span>
+              <div className="flex flex-col items-center space-y-3 w-full">
+                {/* Tombol profil sirkular di mobile view (posisi tengah) */}
+                <Link
+                  href="/profile"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-center w-[44px] h-[44px] rounded-full bg-white text-[var(--nav-color)] font-bold text-[18px] border border-white hover:bg-transparent hover:text-white transition-colors duration-300"
+                  title={userEmail}
+                >
+                  {userEmail.charAt(0).toUpperCase()}
+                </Link>
 
                 <button
                   onClick={handleLogout}
@@ -297,7 +298,7 @@ export default function Navbar() {
                 >
                   {isLogoutLoading ? "Keluar..." : "Logout"}
                 </button>
-              </>
+              </div>
             ) : (
               <>
                 <Link href="/login" onClick={() => setIsOpen(false)} className={navLinkClass}>

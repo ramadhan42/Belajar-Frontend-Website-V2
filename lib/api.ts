@@ -6,7 +6,7 @@
  * Token Sanctum disimpan di localStorage dengan key "auth_token".
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+const BASE_URL = process.env.NEXT_PUBLIC_URL ?? "http://127.0.0.1:8000";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -213,7 +213,7 @@ export async function getShoppingHistory(): Promise<ShoppingHistoryItem[]> {
 
 /** Base URL storage Laravel (gambar produk disimpan di storage/app/public) */
 const STORAGE_URL =
-  (process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000") +
+  (process.env.NEXT_PUBLIC_URL ?? "http://127.0.0.1:8000") +
   "/storage/";
 
 /** Konversi path gambar relatif dari Laravel menjadi URL absolut */
@@ -351,3 +351,126 @@ export async function getQuizHistory(): Promise<QuizResult[]> {
     headers: buildHeaders(true),
   });
 }
+
+
+// Helper dengan return type eksplisit agar tidak error di RequestInit.headers
+const getAuthHeaders = (): Record<string, string> => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("auth_token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+  return {};
+};
+
+// 1. API UNTUK USER PROFILE
+// SUDAH DIPERBAIKI: Menggunakan 'export', bukan 'public'
+export const userProfileApi = {
+  getProfile: async () => {
+    const res = await fetch(`${BASE_URL}/user/profile`, {
+      method: "GET",
+      headers: { 
+        "Content-Type": "application/json", 
+        ...getAuthHeaders() 
+      },
+    });
+    if (!res.ok) throw new Error("Gagal mengambil data profil");
+    return res.json();
+  },
+
+  updateProfile: async (data: { name: string; nama_lengkap?: string; alamat_lengkap?: string; email: string }) => {
+    const res = await fetch(`${BASE_URL}/user/profile`, {
+      method: "PUT",
+      headers: { 
+        "Content-Type": "application/json", 
+        ...getAuthHeaders() 
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Gagal memperbarui profil");
+    }
+    return res.json();
+  },
+};
+
+// 2. API UNTUK CART (KERANJANG)
+export const cartApi = {
+  getCart: async () => {
+    const res = await fetch(`${BASE_URL}/cart`, {
+      method: "GET",
+      headers: { 
+        "Content-Type": "application/json", 
+        ...getAuthHeaders() 
+      },
+    });
+    if (!res.ok) throw new Error("Gagal mengambil data keranjang");
+    return res.json();
+  },
+
+  addToCart: async (productId: number, quantity: number = 1) => {
+    const res = await fetch(`${BASE_URL}/cart`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json", 
+        ...getAuthHeaders() 
+      },
+      body: JSON.stringify({ product_id: productId, quantity }),
+    });
+    if (!res.ok) throw new Error("Gagal menambahkan ke keranjang");
+    return res.json();
+  },
+
+  updateQuantity: async (cartId: number, quantity: number) => {
+    const res = await fetch(`${BASE_URL}/cart/${cartId}`, {
+      method: "PUT",
+      headers: { 
+        "Content-Type": "application/json", 
+        ...getAuthHeaders() 
+      },
+      body: JSON.stringify({ quantity }),
+    });
+    if (!res.ok) throw new Error("Gagal memperbarui kuantitas");
+    return res.json();
+  },
+
+  removeFromCart: async (cartId: number) => {
+    const res = await fetch(`${BASE_URL}/cart/${cartId}`, {
+      method: "DELETE",
+      headers: { 
+        "Content-Type": "application/json", 
+        ...getAuthHeaders() 
+      },
+    });
+    if (!res.ok) throw new Error("Gagal menghapus produk dari keranjang");
+    return res.json();
+  },
+};
+
+// 3. API UNTUK WISHLIST
+export const wishlistApi = {
+  getWishlist: async () => {
+    const res = await fetch(`${BASE_URL}/wishlist`, {
+      method: "GET",
+      headers: { 
+        "Content-Type": "application/json", 
+        ...getAuthHeaders() 
+      },
+    });
+    if (!res.ok) throw new Error("Gagal mengambil data wishlist");
+    return res.json();
+  },
+
+  toggleWishlist: async (productId: number) => {
+    const res = await fetch(`${BASE_URL}/wishlist`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json", 
+        ...getAuthHeaders() 
+      },
+      body: JSON.stringify({ product_id: productId }),
+    });
+    if (!res.ok) throw new Error("Gagal mengubah status wishlist");
+    return res.json();
+  },
+};

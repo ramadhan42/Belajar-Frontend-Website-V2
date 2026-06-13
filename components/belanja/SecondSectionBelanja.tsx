@@ -154,7 +154,7 @@ export default function SecondSectionBelanja() {
                 key={product.id}
                 variants={cardVariants}
                 whileHover={{ rotate: index % 2 === 0 ? 5 : -5, scale: 1.02 }}
-                onClick={() => router.push(`/halaman/belanja/${product.id}`)}
+                onClick={() => router.push(`/belanja/${product.id}`)}
                 className="font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 cursor-pointer"
               >
                 {/* Bagian Atas: Gambar & Badge */}

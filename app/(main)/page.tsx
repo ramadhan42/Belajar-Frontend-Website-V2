@@ -1,5 +1,5 @@
 
-import Beranda from "./halaman/beranda/page";
+import Beranda from "./beranda/page";
 
 export default function Home() {
   return (
