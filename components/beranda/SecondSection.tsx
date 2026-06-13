@@ -29,7 +29,7 @@ export default function SecondSection() {
   ];
 
   // Varian Animasi untuk container (Stagger effect)
-  const containerVariants : Variants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -40,7 +40,7 @@ export default function SecondSection() {
   };
 
   // Varian Animasi untuk elemen satuan (Slide up + Fade)
-  const itemVariants : Variants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
@@ -64,13 +64,16 @@ export default function SecondSection() {
         `}</style>
         <div className="flex w-max gap-[15px] animate-slide-right-40s">
           {Array.from({ length: 80 }).map((_, index) => (
-            <div key={`top-${index}`} className="w-[46px] h-[46px] bg-[#1172BA] rounded-full flex-shrink-0 -mt-[23px]" />
+            <div
+              key={`top-${index}`}
+              className="w-[46px] h-[46px] bg-[#1172BA] rounded-full flex-shrink-0 -mt-[23px]"
+            />
           ))}
         </div>
       </div>
 
       {/* 1. Teks Judul - Animasi muncul dari bawah */}
-      <motion.h2 
+      <motion.h2
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.3 }}
@@ -84,7 +87,7 @@ export default function SecondSection() {
       </motion.h2>
 
       {/* 2. Grid 4 Gambar Karakter - Animasi Berurutan (Stagger) */}
-      <motion.div 
+      <motion.div
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
@@ -106,7 +109,9 @@ export default function SecondSection() {
                 className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-lg transition-all duration-300"
               />
             </div>
-            <h3 className={`font-heavy text-l md:text-3xl tracking-tight whitespace-pre-line md:mt-3 ${char.colorClass}`}>
+            <h3
+              className={`font-heavy text-l md:text-3xl tracking-tight whitespace-pre-line md:mt-3 ${char.colorClass}`}
+            >
               {char.name}
             </h3>
           </motion.div>
@@ -125,9 +130,26 @@ export default function SecondSection() {
           className="bg-[#0071BC] text-white text-[12px] md:text-[18.3px] font-bold px-6 md:px-9 py-3 md:py-4 rounded-full shadow-lg inline-flex items-center gap-2 mb-10 md:mb-25 md:mt-15 relative z-10 transform transition-all duration-200 ease-out hover:scale-95 hover:translate-y-1 hover:shadow-sm"
         >
           Lihat Semua Karakter
-          <svg className="w-4 h-4 md:w-[19px] md:h-[19px]" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3.80933 9.14282H14.476" stroke="#ffffff" strokeWidth="1.52381" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M9.14282 3.80957L14.4762 9.1429L9.14282 14.4762" stroke="#ffffff" strokeWidth="1.52381" strokeLinecap="round" strokeLinejoin="round" />
+          <svg
+            className="w-4 h-4 md:w-[19px] md:h-[19px]"
+            viewBox="0 0 19 19"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3.80933 9.14282H14.476"
+              stroke="#ffffff"
+              strokeWidth="1.52381"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M9.14282 3.80957L14.4762 9.1429L9.14282 14.4762"
+              stroke="#ffffff"
+              strokeWidth="1.52381"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </Link>
       </motion.div>
@@ -136,7 +158,10 @@ export default function SecondSection() {
       <div className="absolute bottom-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none">
         <div className="flex w-max gap-[15px] animate-slide-right-40s">
           {Array.from({ length: 80 }).map((_, index) => (
-            <div key={`bottom-${index}`} className="w-[46px] h-[46px] bg-[#1172BA] rounded-full flex-shrink-0" />
+            <div
+              key={`bottom-${index}`}
+              className="w-[46px] h-[46px] bg-[#1172BA] rounded-full flex-shrink-0"
+            />
           ))}
         </div>
       </div>

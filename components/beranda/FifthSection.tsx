@@ -88,9 +88,8 @@ export default function FifthSection() {
 
   return (
     <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-20 pb-25 md:pb-40 px-2 md:px-4 relative overflow-hidden">
-      
       {/* --- BACKGROUND DECORATIVE IMAGES --- */}
-      
+
       {/* Gambar 1: Atas kiri agak kebawah */}
       <div className="absolute top-[15%] md:top-[15%] left-0 -translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
         <Image

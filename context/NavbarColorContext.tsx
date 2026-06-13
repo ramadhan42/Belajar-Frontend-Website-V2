@@ -5,16 +5,18 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface NavbarColorContextType {
   navbarColor: string;
-  footerColor: string; 
+  footerColor: string;
   setNavbarAndFooterColor: (color: string) => void;
   resetColors: () => void;
 }
 
-const NavbarColorContext = createContext<NavbarColorContextType | undefined>(undefined);
+const NavbarColorContext = createContext<NavbarColorContextType | undefined>(
+  undefined,
+);
 
 export function NavbarColorProvider({ children }: { children: ReactNode }) {
   // Warna default awal
-  const [navbarColor, setNavbarColor] = useState<string>("#2B92DE"); 
+  const [navbarColor, setNavbarColor] = useState<string>("#2B92DE");
   const [footerColor, setFooterColor] = useState<string>("#1172BA"); // Default Footer
 
   const setNavbarAndFooterColor = (color: string) => {
@@ -28,7 +30,9 @@ export function NavbarColorProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <NavbarColorContext.Provider value={{ navbarColor, footerColor, setNavbarAndFooterColor, resetColors }}>
+    <NavbarColorContext.Provider
+      value={{ navbarColor, footerColor, setNavbarAndFooterColor, resetColors }}
+    >
       {children}
     </NavbarColorContext.Provider>
   );

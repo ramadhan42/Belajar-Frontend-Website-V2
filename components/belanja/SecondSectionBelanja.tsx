@@ -104,7 +104,7 @@ export default function SecondSectionBelanja() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.10,
+        staggerChildren: 0.1,
       },
     },
   };
@@ -125,7 +125,6 @@ export default function SecondSectionBelanja() {
 
   return (
     <section className="bg-white flex flex-col items-center text-center w-full pt-16 md:pt-20 pb-20 md:pb-25 px-2 md:px-4 relative overflow-hidden">
-
       {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
       <div className="absolute top-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none z-10">
         <style>{`
@@ -152,7 +151,7 @@ export default function SecondSectionBelanja() {
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: false, amount: 0.10 }}
+        viewport={{ once: false, amount: 0.1 }}
         className="relative z-10 w-full max-w-7xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 px-5 py-5 md:px-4 mt-8"
       >
         {products.map((product, index) => {
@@ -164,7 +163,7 @@ export default function SecondSectionBelanja() {
             variants={cardVariants}
             whileHover={{
               rotate: index % 2 === 0 ? 5 : -5,
-              scale: 1.02
+              scale: 1.02,
             }}
             // Navigasi ke halaman detail produk menggunakan ID dari API
             onClick={() => router.push(`/halaman/belanja/${product.id}`)}
@@ -236,7 +235,6 @@ export default function SecondSectionBelanja() {
           );
         })}
       </motion.div>
-
     </section>
   );
 }
