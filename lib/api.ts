@@ -33,9 +33,9 @@ export interface AuthResponse {
 
 export interface Product {
   id: number;
-  title: string;           // bukan "name"
+  title: string; // bukan "name"
   description?: string;
-  price: string;           // string "10000.00" dari Laravel
+  price: string; // string "10000.00" dari Laravel
   personality_type?: string;
   top_note?: string;
   middle_note?: string;
@@ -123,10 +123,7 @@ function buildHeaders(withAuth = false): HeadersInit {
   return headers;
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, options);
 
   // Coba parse JSON — beberapa endpoint mungkin return empty body (204)
@@ -213,8 +210,7 @@ export async function getShoppingHistory(): Promise<ShoppingHistoryItem[]> {
 
 /** Base URL storage Laravel (gambar produk disimpan di storage/app/public) */
 const STORAGE_URL =
-  (process.env.NEXT_PUBLIC_URL ?? "http://127.0.0.1:8000") +
-  "/storage/";
+  (process.env.NEXT_PUBLIC_URL ?? "http://127.0.0.1:8000") + "/storage/";
 
 /** Konversi path gambar relatif dari Laravel menjadi URL absolut */
 export function getProductImageUrl(path?: string): string | null {
@@ -236,6 +232,21 @@ export function formatProductPrice(price?: string | number): string {
     .replace("IDR", "Rp");
 }
 
+// Tambahkan ini di file api.ts Anda
+export const checkoutApi = {
+  processCheckout: async () => {
+    const res = await fetch(`${BASE_URL}/api/checkout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(), // Pastikan fungsi ini tersedia
+      },
+    });
+    if (!res.ok) throw new Error("Gagal melakukan checkout");
+    return res.json();
+  },
+};
+
 // ---------------------------------------------------------------------------
 // 3. Products
 // ---------------------------------------------------------------------------
@@ -247,15 +258,18 @@ export async function getProducts(): Promise<Product[]> {
     headers: buildHeaders(),
   });
   // Unwrap Laravel Resource Collection { data: [...] }
-  return Array.isArray(res) ? res : (res as { data: Product[] }).data ?? [];
+  return Array.isArray(res) ? res : ((res as { data: Product[] }).data ?? []);
 }
 
 /** GET /api/products/:id */
 export async function getProduct(id: number | string): Promise<Product> {
-  const res = await request<{ data: Product } | Product>(`/api/products/${id}`, {
-    method: "GET",
-    headers: buildHeaders(),
-  });
+  const res = await request<{ data: Product } | Product>(
+    `/api/products/${id}`,
+    {
+      method: "GET",
+      headers: buildHeaders(),
+    },
+  );
   // Unwrap Laravel Resource { data: {...} }
   return (res as { data: Product }).data ?? (res as Product);
 }
@@ -314,7 +328,9 @@ export async function addToWishlist(product_id: number): Promise<WishlistItem> {
 }
 
 /** DELETE /api/wishlists/:id */
-export async function removeFromWishlist(wishlistItemId: number): Promise<void> {
+export async function removeFromWishlist(
+  wishlistItemId: number,
+): Promise<void> {
   await request<void>(`/api/wishlists/${wishlistItemId}`, {
     method: "DELETE",
     headers: buildHeaders(true),
@@ -334,9 +350,7 @@ export async function getQuizQuestions(): Promise<QuizQuestion[]> {
 }
 
 /** POST /api/quiz/submit */
-export async function submitQuiz(
-  answers: QuizAnswer[],
-): Promise<QuizResult> {
+export async function submitQuiz(answers: QuizAnswer[]): Promise<QuizResult> {
   return request<QuizResult>("/api/quiz/submit", {
     method: "POST",
     headers: buildHeaders(true),
@@ -351,7 +365,6 @@ export async function getQuizHistory(): Promise<QuizResult[]> {
     headers: buildHeaders(true),
   });
 }
-
 
 // Helper dengan return type eksplisit agar tidak error di RequestInit.headers
 const getAuthHeaders = (): Record<string, string> => {
@@ -368,21 +381,26 @@ export const userProfileApi = {
   getProfile: async () => {
     const res = await fetch(`${BASE_URL}/user/profile`, {
       method: "GET",
-      headers: { 
-        "Content-Type": "application/json", 
-        ...getAuthHeaders() 
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
       },
     });
     if (!res.ok) throw new Error("Gagal mengambil data profil");
     return res.json();
   },
 
-  updateProfile: async (data: { name: string; nama_lengkap?: string; alamat_lengkap?: string; email: string }) => {
+  updateProfile: async (data: {
+    name: string;
+    nama_lengkap?: string;
+    alamat_lengkap?: string;
+    email: string;
+  }) => {
     const res = await fetch(`${BASE_URL}/user/profile`, {
       method: "PUT",
-      headers: { 
-        "Content-Type": "application/json", 
-        ...getAuthHeaders() 
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
       },
       body: JSON.stringify(data),
     });
@@ -399,9 +417,9 @@ export const cartApi = {
   getCart: async () => {
     const res = await fetch(`${BASE_URL}/cart`, {
       method: "GET",
-      headers: { 
-        "Content-Type": "application/json", 
-        ...getAuthHeaders() 
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
       },
     });
     if (!res.ok) throw new Error("Gagal mengambil data keranjang");
@@ -411,9 +429,9 @@ export const cartApi = {
   addToCart: async (productId: number, quantity: number = 1) => {
     const res = await fetch(`${BASE_URL}/cart`, {
       method: "POST",
-      headers: { 
-        "Content-Type": "application/json", 
-        ...getAuthHeaders() 
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
       },
       body: JSON.stringify({ product_id: productId, quantity }),
     });
@@ -424,9 +442,9 @@ export const cartApi = {
   updateQuantity: async (cartId: number, quantity: number) => {
     const res = await fetch(`${BASE_URL}/cart/${cartId}`, {
       method: "PUT",
-      headers: { 
-        "Content-Type": "application/json", 
-        ...getAuthHeaders() 
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
       },
       body: JSON.stringify({ quantity }),
     });
@@ -437,9 +455,9 @@ export const cartApi = {
   removeFromCart: async (cartId: number) => {
     const res = await fetch(`${BASE_URL}/cart/${cartId}`, {
       method: "DELETE",
-      headers: { 
-        "Content-Type": "application/json", 
-        ...getAuthHeaders() 
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
       },
     });
     if (!res.ok) throw new Error("Gagal menghapus produk dari keranjang");
@@ -447,14 +465,15 @@ export const cartApi = {
   },
 };
 
-// 3. API UNTUK WISHLIST
+// 3. API UNTUK WISHLIST (Perbaikan)
 export const wishlistApi = {
   getWishlist: async () => {
-    const res = await fetch(`${BASE_URL}/wishlist`, {
+    // Tambahkan /api/ di depan dan 's' di belakang agar sesuai route Laravel
+    const res = await fetch(`${BASE_URL}/api/wishlists`, {
       method: "GET",
-      headers: { 
-        "Content-Type": "application/json", 
-        ...getAuthHeaders() 
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
       },
     });
     if (!res.ok) throw new Error("Gagal mengambil data wishlist");
@@ -462,15 +481,28 @@ export const wishlistApi = {
   },
 
   toggleWishlist: async (productId: number) => {
-    const res = await fetch(`${BASE_URL}/wishlist`, {
+    const res = await fetch(`${BASE_URL}/api/wishlists`, {
       method: "POST",
-      headers: { 
-        "Content-Type": "application/json", 
-        ...getAuthHeaders() 
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
       },
       body: JSON.stringify({ product_id: productId }),
     });
     if (!res.ok) throw new Error("Gagal mengubah status wishlist");
+    return res.json();
+  },
+
+  // TAMBAHKAN FUNGSI INI
+  removeFromWishlist: async (wishlistId: number) => {
+    const res = await fetch(`${BASE_URL}/api/wishlists/${wishlistId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+    });
+    if (!res.ok) throw new Error("Gagal menghapus dari wishlist");
     return res.json();
   },
 };

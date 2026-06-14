@@ -1,44 +1,137 @@
-import { Package, ChevronRight } from "lucide-react";
+"use client";
+
+import { useState, useEffect } from "react";
+import { Package, ChevronRight, Loader2 } from "lucide-react";
+import Link from "next/link";
+// Sesuaikan path import di bawah ini dengan lokasi file api.ts Anda
+import { getShoppingHistory, ShoppingHistoryItem, formatProductPrice } from "@/lib/api";
 
 export default function HistoryPage() {
-  const orders = [
-    { id: "INV-20260613-001", date: "13 Jun 2026", total: 270000, status: "Menunggu Pembayaran", statusColor: "bg-yellow-100 text-yellow-800" },
-    { id: "INV-20260520-089", date: "20 Mei 2026", total: 150000, status: "Selesai", statusColor: "bg-green-100 text-green-800" },
-    { id: "INV-20260415-042", date: "15 Apr 2026", total: 320000, status: "Dibatalkan", statusColor: "bg-red-100 text-red-800" },
-  ];
+  const [history, setHistory] = useState<ShoppingHistoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Mengambil data riwayat belanja saat komponen di-mount
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Memanggil endpoint GET /api/shopping-history dari api.ts
+        const data = await getShoppingHistory();
+        setHistory(data);
+      } catch (err: any) {
+        setError(err.message || "Gagal memuat riwayat belanja. Pastikan Anda sudah login.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, []);
+
+  // Tampilan saat data sedang dimuat
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 flex flex-col items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-black animate-spin mb-4" />
+        <p className="text-gray-500 font-medium">Memuat riwayat belanja...</p>
+      </div>
+    );
+  }
+
+  // Tampilan jika terjadi error (misal token kadaluarsa atau belum login)
+  if (error) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center min-h-[400px] flex flex-col items-center justify-center">
+        <p className="text-red-500 mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="px-6 py-2 bg-black text-white rounded-xl font-medium"
+        >
+          Coba Lagi
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Riwayat Belanja</h1>
 
-      <div className="space-y-4">
-        {orders.map((order) => (
-          <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 border border-gray-100 rounded-xl hover:shadow-sm transition-all gap-4">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-gray-50 rounded-lg text-gray-600">
-                <Package className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900 text-sm mb-1">{order.id}</p>
-                <div className="flex items-center gap-3 text-sm text-gray-500">
-                  <span>{order.date}</span>
-                  <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                  <span className="font-medium text-gray-900">Rp {order.total.toLocaleString("id-ID")}</span>
+      {history.length > 0 ? (
+        <div className="space-y-4">
+          {history.map((item) => {
+            // Format tanggal dari API (created_at) ke format lokal Indonesia
+            const date = item.created_at 
+              ? new Date(item.created_at).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric"
+                }) 
+              : "Tanggal tidak diketahui";
+
+            // Membuat nomor invoice buatan dari ID item
+            const invoiceId = `INV-${item.id.toString().padStart(6, '0')}`;
+            
+            // Karena ini diambil dari riwayat pembayaran berhasil, kita set status default
+            // Jika API Laravel nantinya mengirimkan status spesifik, Anda bisa menggantinya dengan item.status
+            const status = "Selesai"; 
+            const statusColor = "bg-green-100 text-green-800";
+
+            return (
+              <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 border border-gray-100 rounded-xl hover:shadow-sm transition-all gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-gray-50 rounded-lg text-gray-600">
+                    <Package className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm mb-1">{invoiceId}</p>
+                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                      <span>{date}</span>
+                      <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                      <span className="font-medium text-gray-900">
+                        {/* Jika ada total_price, pakai itu. Jika tidak, kalikan harga produk dengan kuantitas */}
+                        {item.total_price 
+                          ? formatProductPrice(item.total_price) 
+                          : formatProductPrice((parseFloat(item.product?.price || "0") * (item.quantity || 1)))
+                        }
+                      </span>
+                    </div>
+                    {/* Tampilkan nama produk yang dibeli jika ada di respon API */}
+                    {item.product && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        {item.product.title} (x{item.quantity || 1})
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColor}`}>
+                    {status}
+                  </span>
+                  <button className="p-2 text-gray-400 hover:text-black transition-colors rounded-lg hover:bg-gray-50">
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
-            </div>
-
-            <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${order.statusColor}`}>
-                {order.status}
-              </span>
-              <button className="p-2 text-gray-400 hover:text-black transition-colors rounded-lg hover:bg-gray-50">
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-16">
+          <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
+            <Package className="w-8 h-8 text-gray-300" />
           </div>
-        ))}
-      </div>
+          <h2 className="text-lg font-medium text-gray-900 mb-2">Riwayat belanja kosong</h2>
+          <p className="text-gray-500 mb-6">Anda belum pernah melakukan pembelian produk.</p>
+          <Link href="/" className="inline-flex items-center px-6 py-2.5 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors">
+            Mulai Belanja
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

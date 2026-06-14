@@ -1,3 +1,5 @@
+"use client"; // Wajib ada di baris pertama file!
+
 import ProductDetailSection from "@/components/belanja-details/ProductDetailSection";
 import Footer from "@/components/global/Footer";
 
