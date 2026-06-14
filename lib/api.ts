@@ -415,7 +415,7 @@ export const userProfileApi = {
 // 2. API UNTUK CART (KERANJANG)
 export const cartApi = {
   getCart: async () => {
-    const res = await fetch(`${BASE_URL}/cart`, {
+    const res = await fetch(`${BASE_URL}/api/carts`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -426,21 +426,29 @@ export const cartApi = {
     return res.json();
   },
 
-  addToCart: async (productId: number, quantity: number = 1) => {
-    const res = await fetch(`${BASE_URL}/cart`, {
+  addToCart: async (productId: number, quantity: number) => {
+    // Ambil token
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+
+    const response = await fetch(`${BASE_URL}/api/carts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(),
+        // PENTING: Tambahkan header Authorization ini!
+        Authorization: token ? `Bearer ${token}` : "",
       },
       body: JSON.stringify({ product_id: productId, quantity }),
     });
-    if (!res.ok) throw new Error("Gagal menambahkan ke keranjang");
-    return res.json();
+
+    if (!response.ok) {
+      throw new Error("Gagal menambah ke keranjang");
+    }
+    return response.json();
   },
 
   updateQuantity: async (cartId: number, quantity: number) => {
-    const res = await fetch(`${BASE_URL}/cart/${cartId}`, {
+    const res = await fetch(`${BASE_URL}/api/carts/${cartId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -453,15 +461,24 @@ export const cartApi = {
   },
 
   removeFromCart: async (cartId: number) => {
-    const res = await fetch(`${BASE_URL}/cart/${cartId}`, {
+    const res = await fetch(`${BASE_URL}/api/carts/${cartId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         ...getAuthHeaders(),
       },
     });
-    if (!res.ok) throw new Error("Gagal menghapus produk dari keranjang");
-    return res.json();
+
+    // 1. Tangkap error asli dari backend
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("🔥 Error dari Laravel:", errorText);
+      throw new Error("Gagal menghapus produk dari keranjang");
+    }
+
+    // 2. Mencegah error Next.js jika backend merespons tanpa body (204 No Content)
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
   },
 };
 
