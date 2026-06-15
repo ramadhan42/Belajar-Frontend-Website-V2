@@ -10,8 +10,15 @@ const nextConfig: NextConfig = {
         port: '8000',
         pathname: '/**', // Mengizinkan semua path di bawah hostname ini
       },
+      {
+        protocol: 'https',
+        hostname: 'belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud',
+        port: '', // Biasanya kosong untuk HTTPS
+        pathname: '/storage/**',
+      },
     ],
   },
+  
   // Matikan semua indikator pengembangan
   devIndicators: {
   },
