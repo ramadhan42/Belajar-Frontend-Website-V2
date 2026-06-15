@@ -82,13 +82,14 @@ export default function Footer() {
                 Menu
               </span>
               <ul className="flex flex-col gap-2 md:gap-3 text-white">
-                <li className="text-[14px] md:text-[16px] cursor-pointer hover:underline">
+                {/* Hapus hover:underline, ganti dengan hover:font-bold */}
+                <li className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 transition-transform">
                   Beranda
                 </li>
-                <li className="text-[14px] md:text-[16px] cursor-pointer hover:underline">
+                <li className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 transition-transform">
                   Belanja
                 </li>
-                <li className="text-[14px] md:text-[16px] cursor-pointer hover:underline">
+                <li className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 transition-transform">
                   Kuis
                 </li>
               </ul>
@@ -100,13 +101,14 @@ export default function Footer() {
                 Bantuan
               </span>
               <ul className="flex flex-col gap-2 md:gap-3 text-white">
-                <li className="text-[14px] md:text-[16px] cursor-pointer hover:underline">
+                {/* Hapus hover:underline, ganti dengan hover:font-bold */}
+                <li className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 transition-transform">
                   FAQ
                 </li>
-                <li className="text-[14px] md:text-[16px] cursor-pointer hover:underline">
+                <li className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 transition-transform">
                   Pengiriman
                 </li>
-                <li className="text-[14px] md:text-[16px] cursor-pointer hover:underline">
+                <li className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 transition-transform">
                   Kontak
                 </li>
               </ul>

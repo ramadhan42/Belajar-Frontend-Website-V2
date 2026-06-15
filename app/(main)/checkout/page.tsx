@@ -85,7 +85,7 @@ function CheckoutContent() {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const ongkosKirim = 20000;
+  const ongkosKirim = 10000;
 
   // 1. Tentukan visual berdasarkan item pertama yang di-checkout
   const visual = useMemo(() => {

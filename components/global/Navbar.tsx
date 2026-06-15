@@ -158,7 +158,7 @@ export default function Navbar() {
                   disabled={isLogoutLoading}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLButtonElement).style.backgroundColor = "white";
-                    (e.currentTarget as HTMLButtonElement).style.color = "#1172BA";
+                    (e.currentTarget as HTMLButtonElement).style.color = `${navbarColor}99`;
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(255,255,255,0.15)";
@@ -287,7 +287,7 @@ export default function Navbar() {
                   disabled={isLogoutLoading}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLButtonElement).style.backgroundColor = "white";
-                    (e.currentTarget as HTMLButtonElement).style.color = "#1172BA";
+                    (e.currentTarget as HTMLButtonElement).style.color = `${navbarColor}99`;
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(255,255,255,0.15)";

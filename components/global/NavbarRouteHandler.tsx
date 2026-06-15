@@ -12,10 +12,12 @@ export default function NavbarRouteHandler() {
 
   useEffect(() => {
     // IZINKAN halaman tertentu untuk TIDAK di-reset (biarkan komponen mengatur warnanya sendiri)
-    const isSpecialPage = 
-      pathname.startsWith("/belanja/") || 
-      pathname.startsWith("/kuis/") || 
-      pathname.startsWith("/checkout");
+    const isSpecialPage =
+      pathname.startsWith("/belanja/") ||
+      pathname.startsWith("/kuis/") ||
+      pathname.startsWith("/checkout") ||
+      pathname.startsWith("/profile/") ||
+      pathname.startsWith("/profile/history"); // TAMBAHKAN INI
 
     if (!isSpecialPage) {
       resetColors();

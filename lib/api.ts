@@ -36,7 +36,7 @@ export interface Product {
   title: string; // bukan "name"
   description?: string;
   color?: string;
-  price: string; // string "10000.00" dari Laravel 
+  price: string; // string "10000.00" dari Laravel
   personality_type?: string;
   top_note?: string;
   middle_note?: string;
@@ -98,6 +98,7 @@ export interface ShoppingHistoryItem {
   product?: Product;
   quantity?: number;
   total_price?: number;
+  ongkir_price?: number;
   created_at?: string;
 }
 
@@ -448,17 +449,20 @@ export const cartApi = {
     return response.json();
   },
 
+  // ... fungsi lainnya
   updateQuantity: async (cartId: number, quantity: number) => {
-    const res = await fetch(`${BASE_URL}/api/carts/${cartId}`, {
-      method: "PUT",
+    const token = localStorage.getItem("auth_token");
+    const response = await fetch(`${BASE_URL}/api/carts/${cartId}`, {
+      method: "PUT", // Gunakan PUT untuk update
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        ...getAuthHeaders(),
       },
       body: JSON.stringify({ quantity }),
     });
-    if (!res.ok) throw new Error("Gagal memperbarui kuantitas");
-    return res.json();
+
+    if (!response.ok) throw new Error("Gagal memperbarui jumlah item");
+    return response.json();
   },
 
   removeFromCart: async (cartId: number) => {
@@ -523,4 +527,50 @@ export const wishlistApi = {
     if (!res.ok) throw new Error("Gagal menghapus dari wishlist");
     return res.json();
   },
+
+  // 👇 TAMBAHKAN KODE INI DI BAWAHNYA 👇
+  getWishlistDetail: async (id: number) => {
+    // Sesuaikan cara pemanggilan (fetch/axios) dengan fungsi Anda yang lain
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+
+    // Ganti URL_BACKEND_ANDA dengan base URL yang biasa Anda gunakan di file ini
+    const response = await fetch(`URL_BACKEND_ANDA/wishlist/${id}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Gagal mengambil detail wishlist");
+    }
+
+    return response.json();
+  },
+};
+
+// Tambahkan di dalam lib/api.ts
+export const getHistoryDetail = async (
+  id: string | number,
+): Promise<ShoppingHistoryItem> => {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+  const response = await fetch(`${baseUrl}/history/${id}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Gagal mengambil detail riwayat belanja");
+  }
+
+  return response.json();
 };
