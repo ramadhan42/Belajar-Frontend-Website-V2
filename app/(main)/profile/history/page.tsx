@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Package, ChevronRight, Loader2 } from "lucide-react";
+import { Package, ChevronRight, Loader2, ChevronLeft } from "lucide-react";
 import Link from "next/link";
-// Sesuaikan path import di bawah ini dengan lokasi file api.ts Anda
+// Sesuaikan path import dengan lokasi file api.ts Anda
 import { getShoppingHistory, ShoppingHistoryItem, formatProductPrice } from "@/lib/api";
 
 export default function HistoryPage() {
@@ -11,14 +11,16 @@ export default function HistoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Mengambil data riwayat belanja saat komponen di-mount
+  // State untuk Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Mengambil data riwayat belanja
   useEffect(() => {
     const fetchHistory = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        
-        // Memanggil endpoint GET /api/shopping-history dari api.ts
         const data = await getShoppingHistory();
         setHistory(data);
       } catch (err: any) {
@@ -31,7 +33,12 @@ export default function HistoryPage() {
     fetchHistory();
   }, []);
 
-  // Tampilan saat data sedang dimuat
+  // Logika Pagination
+  const totalPages = Math.ceil(history.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = history.slice(indexOfFirstItem, indexOfLastItem);
+
   if (isLoading) {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 flex flex-col items-center justify-center min-h-[400px]">
@@ -41,7 +48,6 @@ export default function HistoryPage() {
     );
   }
 
-  // Tampilan jika terjadi error (misal token kadaluarsa atau belum login)
   if (error) {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center min-h-[400px] flex flex-col items-center justify-center">
@@ -62,8 +68,7 @@ export default function HistoryPage() {
 
       {history.length > 0 ? (
         <div className="space-y-4">
-          {history.map((item) => {
-            // Format tanggal dari API (created_at) ke format lokal Indonesia
+          {currentItems.map((item) => {
             const date = item.created_at 
               ? new Date(item.created_at).toLocaleDateString("id-ID", {
                   day: "numeric",
@@ -72,11 +77,7 @@ export default function HistoryPage() {
                 }) 
               : "Tanggal tidak diketahui";
 
-            // Membuat nomor invoice buatan dari ID item
             const invoiceId = `INV-${item.id.toString().padStart(6, '0')}`;
-            
-            // Karena ini diambil dari riwayat pembayaran berhasil, kita set status default
-            // Jika API Laravel nantinya mengirimkan status spesifik, Anda bisa menggantinya dengan item.status
             const status = "Selesai"; 
             const statusColor = "bg-green-100 text-green-800";
 
@@ -92,14 +93,12 @@ export default function HistoryPage() {
                       <span>{date}</span>
                       <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                       <span className="font-medium text-gray-900">
-                        {/* Jika ada total_price, pakai itu. Jika tidak, kalikan harga produk dengan kuantitas */}
                         {item.total_price 
                           ? formatProductPrice(item.total_price) 
                           : formatProductPrice((parseFloat(item.product?.price || "0") * (item.quantity || 1)))
                         }
                       </span>
                     </div>
-                    {/* Tampilkan nama produk yang dibeli jika ada di respon API */}
                     {item.product && (
                       <p className="text-xs text-gray-400 mt-1">
                         {item.product.title} (x{item.quantity || 1})
@@ -119,6 +118,31 @@ export default function HistoryPage() {
               </div>
             );
           })}
+
+          {/* Kontrol Navigasi Halaman */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 pt-6 border-t border-gray-100">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 transition-all"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              
+              <span className="text-sm font-medium text-gray-600">
+                Halaman {currentPage} dari {totalPages}
+              </span>
+
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 transition-all"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-center py-16">

@@ -5,16 +5,19 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useNavbarColor } from "@/context/NavbarColorContext";
 
+// @/components/global/NavbarRouteHandler.tsx
 export default function NavbarRouteHandler() {
   const pathname = usePathname();
   const { resetColors } = useNavbarColor();
 
   useEffect(() => {
-    // Jika path BUKAN halaman detail produk, reset ke warna default
-    if (
-      !pathname.startsWith("/belanja/") ||
-      !pathname.startsWith("/kuis/")
-    ) {
+    // IZINKAN halaman tertentu untuk TIDAK di-reset (biarkan komponen mengatur warnanya sendiri)
+    const isSpecialPage = 
+      pathname.startsWith("/belanja/") || 
+      pathname.startsWith("/kuis/") || 
+      pathname.startsWith("/checkout");
+
+    if (!isSpecialPage) {
       resetColors();
     }
   }, [pathname, resetColors]);

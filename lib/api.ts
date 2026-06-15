@@ -35,7 +35,8 @@ export interface Product {
   id: number;
   title: string; // bukan "name"
   description?: string;
-  price: string; // string "10000.00" dari Laravel
+  color?: string;
+  price: string; // string "10000.00" dari Laravel 
   personality_type?: string;
   top_note?: string;
   middle_note?: string;
