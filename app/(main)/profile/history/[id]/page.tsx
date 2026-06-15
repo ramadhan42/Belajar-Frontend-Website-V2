@@ -257,7 +257,7 @@ export default function HistoryDetailPage() {
                   style={{ color: themeColor }}
                 >
                   {formatProductPrice(
-                    (parseFloat(totalPrice) + 10000).toString(),
+                    (parseFloat(String(totalPrice ?? "0")) + 10000).toString(),
                   )}
                 </span>
               </div>

@@ -146,7 +146,10 @@ export default function HistoryPage() {
                       <span className="font-bold text-gray-900">
                         {item.total_price
                           ? formatProductPrice(
-                              (parseFloat(item.total_price) + 10000).toString(),
+                              (
+                                parseFloat(String(item.total_price ?? "0")) +
+                                10000
+                              ).toString(),
                             )
                           : formatProductPrice(
                               (
