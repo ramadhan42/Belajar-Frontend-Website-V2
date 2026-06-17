@@ -57,6 +57,8 @@ export default function Footer() {
     setTimeout(() => {
       setNavModal((prev) => ({ ...prev, isOpen: false }));
       router.push(path);
+      // Tambahkan baris ini jika halaman tujuan tetap tidak terupdate
+      router.refresh();
     }, 800);
   };
 
@@ -113,25 +115,46 @@ export default function Footer() {
             {/* Menggunakan Grid agar lebih rapi di layar 360px (Galaxy S20) */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-8 gap-x-4 w-full lg:w-[45%] mt-2 lg:mt-0 text-left">
               {/* 2. Menu */}
-              <motion.div variants={itemVariants} className="flex flex-col gap-3">
+              <motion.div
+                variants={itemVariants}
+                className="flex flex-col gap-3"
+              >
                 <span className="text-[12px] md:text-[14px] text-white/70 font-medium tracking-wide">
                   Menu
                 </span>
                 <ul className="flex flex-col gap-2 md:gap-3 text-white">
-                  <li 
-                    onClick={() => handleNavAction("/", "Beranda Utama", "Mengarahkan ke halaman utama Evomi...")}
+                  <li
+                    onClick={() =>
+                      handleNavAction(
+                        "/",
+                        "Beranda Utama",
+                        "Mengarahkan ke halaman utama Evomi...",
+                      )
+                    }
                     className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Beranda
                   </li>
-                  <li 
-                    onClick={() => handleNavAction("/belanja", "Katalog Produk", "Mengarahkan ke halaman belanja Evomi...")}
+                  <li
+                    onClick={() =>
+                      handleNavAction(
+                        "/belanja",
+                        "Katalog Produk",
+                        "Mengarahkan ke halaman belanja Evomi...",
+                      )
+                    }
                     className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Belanja
                   </li>
-                  <li 
-                    onClick={() => handleNavAction("/kuis", "Kuis Persona", "Mengarahkan ke halaman Kuis Karakteristik...")}
+                  <li
+                    onClick={() =>
+                      handleNavAction(
+                        "/kuis",
+                        "Kuis Persona",
+                        "Mengarahkan ke halaman Kuis Karakteristik...",
+                      )
+                    }
                     className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Kuis
@@ -140,18 +163,48 @@ export default function Footer() {
               </motion.div>
 
               {/* 3. Bantuan */}
-              <motion.div variants={itemVariants} className="flex flex-col gap-3">
+              <motion.div
+                variants={itemVariants}
+                className="flex flex-col gap-3"
+              >
                 <span className="text-[12px] md:text-[14px] text-white/70 font-medium tracking-wide">
                   Bantuan
                 </span>
                 <ul className="flex flex-col gap-2 md:gap-3 text-white">
-                  <li className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit">
+                  <li
+                    onClick={() =>
+                      handleNavAction(
+                        "/faq",
+                        "Pusat Bantuan",
+                        "Membuka halaman FAQ...",
+                      )
+                    }
+                    className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                  >
                     FAQ
                   </li>
-                  <li className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit">
+                  <li
+                    onClick={() =>
+                      handleNavAction(
+                        "/pengiriman",
+                        "Info Logistik",
+                        "Mengecek status pengiriman...",
+                      )
+                    }
+                    className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                  >
                     Pengiriman
                   </li>
-                  <li className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit">
+                  <li
+                    onClick={() =>
+                      handleNavAction(
+                        "/kontak",
+                        "Kontak Kami",
+                        "Membuka formulir kontak...",
+                      )
+                    }
+                    className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                  >
                     Kontak
                   </li>
                 </ul>
@@ -192,13 +245,27 @@ export default function Footer() {
       {navModal.isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
           <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
-            
             {/* Ikon Dinamis Berdasarkan Tipe Modal */}
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm">
-              {navModal.type === 'loading' && (
-                <svg className="h-8 w-8 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              {navModal.type === "loading" && (
+                <svg
+                  className="h-8 w-8 text-white animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
               )}
             </div>
