@@ -3,21 +3,20 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
+// @/context/NavbarColorContext.tsx
+
 interface NavbarColorContextType {
   navbarColor: string;
   footerColor: string;
+  setNavbarColor: (color: string) => void;   // Tambahkan ini
+  setFooterColor: (color: string) => void;   // Tambahkan ini
   setNavbarAndFooterColor: (color: string) => void;
   resetColors: () => void;
 }
 
-const NavbarColorContext = createContext<NavbarColorContextType | undefined>(
-  undefined,
-);
-
 export function NavbarColorProvider({ children }: { children: ReactNode }) {
-  // Warna default awal
   const [navbarColor, setNavbarColor] = useState<string>("#2B92DE");
-  const [footerColor, setFooterColor] = useState<string>("#1172BA"); // Default Footer
+  const [footerColor, setFooterColor] = useState<string>("#1172BA");
 
   const setNavbarAndFooterColor = (color: string) => {
     setNavbarColor(color);
@@ -25,18 +24,29 @@ export function NavbarColorProvider({ children }: { children: ReactNode }) {
   };
 
   const resetColors = () => {
-    setNavbarColor("#2B92DE"); // Reset Navbar ke default awal
-    setFooterColor("#1172BA"); // Reset Footer ke warna 1172BA
+    setNavbarColor("#2B92DE");
+    setFooterColor("#1172BA");
   };
 
   return (
     <NavbarColorContext.Provider
-      value={{ navbarColor, footerColor, setNavbarAndFooterColor, resetColors }}
+      value={{ 
+        navbarColor, 
+        footerColor, 
+        setNavbarColor,       // Tambahkan ini
+        setFooterColor,       // Tambahkan ini
+        setNavbarAndFooterColor, 
+        resetColors 
+      }}
     >
       {children}
     </NavbarColorContext.Provider>
   );
 }
+
+const NavbarColorContext = createContext<NavbarColorContextType | undefined>(
+  undefined,
+);
 
 export function useNavbarColor() {
   const context = useContext(NavbarColorContext);

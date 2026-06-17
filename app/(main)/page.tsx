@@ -1,5 +1,6 @@
 
 import Beranda from "./beranda/page";
+import SolarSystem from "./halaman-contoh/page";
 
 export default function Home() {
   return (

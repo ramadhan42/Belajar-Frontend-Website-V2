@@ -1,35 +1,110 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Package, ChevronRight, Loader2, ChevronLeft } from "lucide-react";
+import {
+  Package,
+  ChevronRight,
+  Loader2,
+  ChevronLeft,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
-// Tambahkan getProductImageUrl pada import dari api
 import {
   getShoppingHistory,
   ShoppingHistoryItem,
   formatProductPrice,
   getProductImageUrl,
+  removeHistoryItem,
 } from "@/lib/api";
+import { useNavbarColor } from "@/context/NavbarColorContext";
+
+interface GroupedHistory {
+  groupId: number;
+  created_at: string;
+  items: ShoppingHistoryItem[];
+  totalGroupPrice: number;
+  totalQuantity: number;
+}
+
+// Konfigurasi tipe untuk custom modal
+interface ModalState {
+  isOpen: boolean;
+  type: "confirm" | "loading" | "success" | "error";
+  title: string;
+  message: string;
+  onConfirm?: () => void;
+  confirmText?: string;
+}
 
 export default function HistoryPage() {
+
+  const { setNavbarColor, setFooterColor } = useNavbarColor(); // Tambahkan ini
   const shippingCost = 10000;
 
-  const [history, setHistory] = useState<ShoppingHistoryItem[]>([]);
+  const [history, setHistory] = useState<GroupedHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // State untuk Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Mengambil data riwayat belanja
+  // State untuk custom modal
+  const [modal, setModal] = useState<ModalState>({
+    isOpen: false,
+    type: "loading",
+    title: "",
+    message: "",
+  });
+
+  const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
+
+  // Tambahkan useEffect untuk mengatur warna saat halaman ini dibuka
+  useEffect(() => {
+    setNavbarColor("#2B92DE");
+    setFooterColor("#1172BA");
+  }, [setNavbarColor, setFooterColor]);
+
   useEffect(() => {
     const fetchHistory = async () => {
       try {
         setIsLoading(true);
         setError(null);
         const data = await getShoppingHistory();
-        setHistory(data);
+
+        const groupedObj = data.reduce(
+          (acc: Record<string, GroupedHistory>, item: ShoppingHistoryItem) => {
+            const key = item.created_at || "unknown";
+
+            if (!acc[key]) {
+              acc[key] = {
+                groupId: item.id,
+                created_at: key,
+                items: [],
+                totalGroupPrice: 0,
+                totalQuantity: 0,
+              };
+            }
+
+            acc[key].items.push(item);
+
+            const itemTotal = item.total_price
+              ? parseFloat(String(item.total_price))
+              : parseFloat(item.product?.price || "0") * (item.quantity || 1);
+
+            acc[key].totalGroupPrice += itemTotal;
+            acc[key].totalQuantity += item.quantity || 1;
+
+            return acc;
+          },
+          {},
+        );
+
+        const groupedArray = Object.values(groupedObj).sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+
+        setHistory(groupedArray);
       } catch (err: any) {
         setError(
           err.message ||
@@ -43,11 +118,51 @@ export default function HistoryPage() {
     fetchHistory();
   }, []);
 
-  // Logika Pagination
   const totalPages = Math.ceil(history.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = history.slice(indexOfFirstItem, indexOfLastItem);
+
+  // FUNGSI TRIGGER CUSTOM MODAL
+  const confirmDeleteGroup = (e: React.MouseEvent, group: GroupedHistory) => {
+    e.preventDefault();
+    setModal({
+      isOpen: true,
+      type: "confirm",
+      title: "Hapus Riwayat",
+      message: "Apakah Anda yakin ingin menghapus seluruh pesanan ini dari riwayat belanja?",
+      confirmText: "Ya, Hapus",
+      onConfirm: async () => {
+        setModal({
+          isOpen: true,
+          type: "loading",
+          title: "Memproses...",
+          message: "Sedang menghapus riwayat pesanan Anda...",
+        });
+
+        try {
+          await Promise.all(group.items.map((i) => removeHistoryItem(i.id)));
+          setHistory((prev) => prev.filter((g) => g.groupId !== group.groupId));
+          
+          setModal({
+            isOpen: true,
+            type: "success",
+            title: "Berhasil!",
+            message: "Riwayat pesanan telah dihapus.",
+          });
+          
+          setTimeout(() => closeModal(), 1500);
+        } catch (err) {
+          setModal({
+            isOpen: true,
+            type: "error",
+            title: "Gagal",
+            message: "Terjadi kesalahan saat menghapus riwayat. Coba lagi.",
+          });
+        }
+      },
+    });
+  };
 
   if (isLoading) {
     return (
@@ -73,103 +188,107 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 relative">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Riwayat Belanja</h1>
 
       {history.length > 0 ? (
         <div className="space-y-4">
-          {currentItems.map((item) => {
-            const date = item.created_at
-              ? new Date(item.created_at).toLocaleDateString("id-ID", {
+          {currentItems.map((group) => {
+            const date = group.created_at
+              ? new Date(group.created_at).toLocaleDateString("id-ID", {
                   day: "numeric",
                   month: "short",
                   year: "numeric",
                 })
               : "Tanggal tidak diketahui";
 
-            const invoiceId = `INV-${item.id.toString().padStart(6, "0")}`;
-            const status = "Selesai";
+            const firstItem = group.items[0];
+            const invoiceId = `INV-${group.groupId.toString().padStart(6, "0")}`;
             const statusColor = "bg-green-100 text-green-800";
 
-            // Ambil URL gambar (Coba image_3 atau image_produk_belanja sesuai response API Anda)
-            const imageUrl = item.product
+            const imageUrl = firstItem.product
               ? getProductImageUrl(
-                  item.product.image_1 || item.product.image_produk_belanja,
+                  firstItem.product.image_1 ||
+                    firstItem.product.image_produk_belanja,
                 )
               : null;
 
+            const extraItemsCount = group.items.length - 1;
+
             return (
               <Link
-                href={`/profile/history/${item.id}`}
-                key={item.id}
+                href={`/profile/history/${group.groupId}`}
+                key={group.groupId}
                 className="flex flex-col sm:flex-row sm:items-center justify-between p-4 md:p-5 border border-gray-100 rounded-xl hover:shadow-md hover:border-gray-200 transition-all gap-4 cursor-pointer group bg-white"
               >
                 <div className="flex items-start gap-4 w-full sm:w-auto overflow-hidden">
-                  {/* Container Gambar Produk */}
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-lg flex-shrink-0 flex items-center justify-center border border-gray-100 overflow-hidden group-hover:bg-gray-100 transition-colors">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-lg flex-shrink-0 flex items-center justify-center border border-gray-100 overflow-hidden group-hover:bg-gray-100 transition-colors relative">
                     {imageUrl ? (
                       <img
                         src={imageUrl}
-                        alt={item.product?.title || "Produk"}
+                        alt={firstItem.product?.title || "Produk"}
                         className="w-full h-full object-cover rounded-xl p-2 hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
                       <Package className="w-6 h-6 text-gray-400" />
                     )}
+
+                    {extraItemsCount > 0 && (
+                      <span className="absolute bottom-1 right-1 bg-black/70 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+                        +{extraItemsCount}
+                      </span>
+                    )}
                   </div>
 
-                  {/* Informasi Singkat */}
                   <div className="flex-1 min-w-0 py-1">
                     <p className="font-bold text-gray-900 text-sm mb-1">
                       {invoiceId}
                     </p>
 
-                    {item.product && (
+                    {firstItem.product && (
                       <p className="font-semibold text-gray-800 text-base truncate mb-1">
-                        {item.product.title}
+                        {firstItem.product.title}{" "}
+                        {extraItemsCount > 0 && (
+                          <span className="text-gray-500 font-normal text-sm">
+                            {" "}
+                            (+{extraItemsCount} Produk Lain)
+                          </span>
+                        )}
                       </p>
                     )}
 
                     <div className="flex flex-wrap items-center gap-2 md:gap-3 text-sm text-gray-500">
                       <span>{date}</span>
                       <span className="w-1 h-1 bg-gray-300 rounded-full hidden sm:block"></span>
-
-                      {item.product && (
-                        <>
-                          <span className="text-gray-500">
-                            {item.quantity || 1} Barang
-                          </span>
-                          <span className="w-1 h-1 bg-gray-300 rounded-full hidden sm:block"></span>
-                        </>
-                      )}
-
+                      <span className="text-gray-500">
+                        {group.totalQuantity} Barang
+                      </span>
+                      <span className="w-1 h-1 bg-gray-300 rounded-full hidden sm:block"></span>
                       <span className="font-bold text-gray-900">
-                        {item.total_price
-                          ? formatProductPrice(
-                              (
-                                parseFloat(String(item.total_price ?? "0")) +
-                                10000
-                              ).toString(),
-                            )
-                          : formatProductPrice(
-                              (
-                                parseFloat(item.product?.price || "0") *
-                                  (item.quantity || 1) +
-                                10000
-                              ).toString(),
-                            )}
+                        {formatProductPrice(
+                          (group.totalGroupPrice + shippingCost).toString(),
+                        )}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Status & Navigasi */}
-                <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-0 border-gray-50">
+                <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-0 border-gray-50">
                   <span
                     className={`px-3 py-1.5 rounded-full text-xs font-bold ${statusColor}`}
                   >
-                    {status}
+                    Selesai
                   </span>
+
+                  {/* Tombol pemicu Modal Hapus */}
+                  <button
+                    onClick={(e) => confirmDeleteGroup(e, group)}
+                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors z-10"
+                    title="Hapus Riwayat"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+
                   <div className="p-2 text-gray-400 group-hover:text-black transition-colors rounded-lg group-hover:translate-x-1 duration-200">
                     <ChevronRight className="w-5 h-5" />
                   </div>
@@ -178,7 +297,6 @@ export default function HistoryPage() {
             );
           })}
 
-          {/* Kontrol Navigasi Halaman */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-4 pt-6 border-t border-gray-100">
               <button
@@ -188,12 +306,10 @@ export default function HistoryPage() {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-
               <span className="text-sm font-medium text-gray-600">
                 Halaman <span className="font-bold">{currentPage}</span> dari{" "}
                 {totalPages}
               </span>
-
               <button
                 onClick={() =>
                   setCurrentPage((p) => Math.min(p + 1, totalPages))
@@ -223,6 +339,70 @@ export default function HistoryPage() {
           >
             Mulai Belanja
           </Link>
+        </div>
+      )}
+
+      {/* ================= CUSTOM MODAL COMPONENT ================= */}
+      {modal.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+          <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
+            
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm">
+              {modal.type === 'confirm' && (
+                <Trash2 className="w-8 h-8 text-amber-400" />
+              )}
+              {modal.type === 'success' && (
+                <svg className="h-8 w-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+              {modal.type === 'error' && (
+                <svg className="h-8 w-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
+              {modal.type === 'loading' && (
+                <svg className="h-8 w-8 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold text-white uppercase tracking-wide">
+                {modal.title}
+              </h3>
+              <p className="text-sm text-blue-100/80 font-light leading-relaxed">
+                {modal.message}
+              </p>
+            </div>
+
+            {modal.type === 'confirm' && (
+              <div className="flex space-x-3 mt-4 pt-2">
+                <button
+                  onClick={closeModal}
+                  className="w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] bg-white/20 text-white hover:bg-white/30"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={modal.onConfirm}
+                  className="w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] bg-red-500 text-white hover:bg-red-600"
+                >
+                  {modal.confirmText}
+                </button>
+              </div>
+            )}
+            {(modal.type === 'success' || modal.type === 'error') && (
+              <button
+                onClick={closeModal}
+                className="w-full mt-4 bg-white text-[#1172ba] font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md hover:bg-blue-50"
+              >
+                Tutup
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

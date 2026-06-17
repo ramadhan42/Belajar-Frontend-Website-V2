@@ -16,8 +16,7 @@ export default function NavbarRouteHandler() {
       pathname.startsWith("/belanja/") ||
       pathname.startsWith("/kuis/") ||
       pathname.startsWith("/checkout") ||
-      pathname.startsWith("/profile/") ||
-      pathname.startsWith("/profile/history"); // TAMBAHKAN INI
+      pathname.startsWith("/profile/") 
 
     if (!isSpecialPage) {
       resetColors();

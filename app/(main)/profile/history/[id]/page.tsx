@@ -2,20 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Package, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Loader2, Package, CheckCircle2, Trash2 } from "lucide-react";
 
-// Import fungsi API Anda
 import {
   getShoppingHistory,
   formatProductPrice,
   getProductImageUrl,
   ShoppingHistoryItem,
+  removeHistoryItem,
 } from "@/lib/api";
-
-// Import Context untuk mengubah warna Navbar & Footer Global
 import { useNavbarColor } from "@/context/NavbarColorContext";
 
-// Pemetaan warna berdasarkan tipe kepribadian (sama dengan Product Detail)
 const VISUAL_BY_PERSONALITY: Record<string, { navbarColor: string }> = {
   purpose_prestige: { navbarColor: "#1172BA" },
   prestige: { navbarColor: "#1172BA" },
@@ -24,32 +21,50 @@ const VISUAL_BY_PERSONALITY: Record<string, { navbarColor: string }> = {
   sweet_shy: { navbarColor: "#DD74A5" },
 };
 
+// Konfigurasi tipe untuk custom modal
+interface ModalState {
+  isOpen: boolean;
+  type: "confirm" | "loading" | "success" | "error";
+  title: string;
+  message: string;
+  onConfirm?: () => void;
+  confirmText?: string;
+}
+
 export default function HistoryDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
+  const shippingCost = 10000;
 
-  // Hook Context Warna
   const { setNavbarAndFooterColor } = useNavbarColor();
 
-  const [historyDetail, setHistoryDetail] =
-    useState<ShoppingHistoryItem | null>(null);
+  const [historyGroup, setHistoryGroup] = useState<ShoppingHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 1. Fetch Data Detail History
+  // State untuk custom modal
+  const [modal, setModal] = useState<ModalState>({
+    isOpen: false,
+    type: "loading",
+    title: "",
+    message: "",
+  });
+
+  const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
+
   useEffect(() => {
     const fetchDetail = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Ambil semua riwayat dan cari berdasarkan ID
         const allHistory = await getShoppingHistory();
         const targetItem = allHistory.find((item) => item.id === Number(id));
 
         if (targetItem) {
-          setHistoryDetail(targetItem);
+          const group = allHistory.filter(item => item.created_at === targetItem.created_at);
+          setHistoryGroup(group);
         } else {
           setError("Pesanan tidak ditemukan di dalam riwayat belanja Anda.");
         }
@@ -64,23 +79,68 @@ export default function HistoryDetailPage() {
     if (id) fetchDetail();
   }, [id]);
 
-  // 2. Ubah Warna Navbar & Footer Global ketika data berhasil dimuat
   useEffect(() => {
-    if (historyDetail?.product) {
-      const personality = historyDetail.product.personality_type ?? "";
-      const newColor =
-        VISUAL_BY_PERSONALITY[personality]?.navbarColor || "#2B92DE"; // Fallback ke hitam
-
+    if (historyGroup.length > 0 && historyGroup[0].product) {
+      const personality = historyGroup[0].product.personality_type ?? "";
+      const newColor = VISUAL_BY_PERSONALITY[personality]?.navbarColor || "#1172BA";
       setNavbarAndFooterColor(newColor);
     }
+    return () => setNavbarAndFooterColor("#2B92DE");
+  }, [historyGroup, setNavbarAndFooterColor]);
 
-    // Cleanup: Kembalikan warna ke hitam (atau warna default Anda) saat user keluar dari halaman ini
-    return () => {
-      setNavbarAndFooterColor("#2B92DE");
-    };
-  }, [historyDetail, setNavbarAndFooterColor]);
+  // FUNGSI TRIGGER CUSTOM MODAL
+  const confirmDeleteItem = (item: ShoppingHistoryItem) => {
+    setModal({
+      isOpen: true,
+      type: "confirm",
+      title: "Hapus Item",
+      message: "Apakah Anda yakin ingin menghapus item ini dari riwayat belanja?",
+      confirmText: "Hapus",
+      onConfirm: async () => {
+        setModal({
+          isOpen: true,
+          type: "loading",
+          title: "Memproses...",
+          message: "Menghapus item dari riwayat...",
+        });
 
-  // TAMPILAN LOADING
+        try {
+          await removeHistoryItem(item.id);
+          const updatedGroup = historyGroup.filter(i => i.id !== item.id);
+          
+          if (updatedGroup.length === 0) {
+            setModal({
+              isOpen: true,
+              type: "success",
+              title: "Dihapus",
+              message: "Seluruh item pesanan ini telah terhapus. Kembali ke daftar riwayat...",
+            });
+            setTimeout(() => {
+              closeModal();
+              router.push("/profile/history");
+            }, 1500);
+          } else {
+            setHistoryGroup(updatedGroup);
+            setModal({
+              isOpen: true,
+              type: "success",
+              title: "Berhasil",
+              message: "Item pesanan telah dihapus.",
+            });
+            setTimeout(() => closeModal(), 1500);
+          }
+        } catch (err) {
+          setModal({
+            isOpen: true,
+            type: "error",
+            title: "Gagal",
+            message: "Terjadi kesalahan saat menghapus item.",
+          });
+        }
+      },
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] bg-gray-50">
@@ -90,8 +150,7 @@ export default function HistoryDetailPage() {
     );
   }
 
-  // TAMPILAN ERROR / NOT FOUND
-  if (error || !historyDetail || !historyDetail.product) {
+  if (error || historyGroup.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] bg-gray-50 p-4 text-center">
         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4 border border-gray-200">
@@ -101,8 +160,7 @@ export default function HistoryDetailPage() {
           {error || "Pesanan tidak ditemukan"}
         </h2>
         <p className="text-gray-500 text-sm max-w-sm mb-6">
-          Pastikan ID pesanan Anda benar atau Anda telah masuk ke akun yang
-          tepat.
+          Pastikan ID pesanan Anda benar atau Anda telah masuk ke akun yang tepat.
         </p>
         <button
           onClick={() => router.push("/profile/history")}
@@ -114,32 +172,29 @@ export default function HistoryDetailPage() {
     );
   }
 
-  // --- PREPARE DATA UNTUK RENDER ---
-  const personality = historyDetail.product.personality_type ?? "";
-  const themeColor =
-    VISUAL_BY_PERSONALITY[personality]?.navbarColor || "#000000";
+  const representativeItem = historyGroup[0];
+  const personality = representativeItem.product?.personality_type ?? "";
+  const themeColor = VISUAL_BY_PERSONALITY[personality]?.navbarColor || "#000000";
 
-  const date = historyDetail.created_at
-    ? new Date(historyDetail.created_at).toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+  const date = representativeItem.created_at
+    ? new Date(representativeItem.created_at).toLocaleDateString("id-ID", {
+        day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
       })
     : "-";
 
-  const invoiceId = `INV-${historyDetail.id.toString().padStart(6, "0")}`;
+  const invoiceId = `INV-${representativeItem.id.toString().padStart(6, "0")}`;
 
-  const totalPrice = historyDetail.total_price
-    ? historyDetail.total_price
-    : parseFloat(historyDetail.product?.price || "0") *
-      (historyDetail.quantity || 1);
+  const subtotalProducts = historyGroup.reduce((acc, curr) => {
+    const itemTotal = curr.total_price
+      ? parseFloat(String(curr.total_price))
+      : parseFloat(curr.product?.price || "0") * (curr.quantity || 1);
+    return acc + itemTotal;
+  }, 0);
+  
+  const finalTotalPrice = subtotalProducts + shippingCost;
 
-  // --- MAIN RENDER ---
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Tombol Back & Header Halaman */}
+    <div className="min-h-screen bg-gray-50 pb-20 relative">
       <div className="max-w-4xl mx-auto px-4 pt-6 pb-2">
         <button
           onClick={() => router.push("/profile/history")}
@@ -154,7 +209,6 @@ export default function HistoryDetailPage() {
       </div>
 
       <main className="max-w-4xl mx-auto w-full p-4">
-        {/* Ringkasan Status & No Invoice */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-sm text-gray-500 mb-1">Status Pesanan</p>
@@ -171,66 +225,67 @@ export default function HistoryDetailPage() {
           </div>
         </div>
 
-        {/* Detail Kartu Informasi Produk */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
           <div className="p-6 border-b border-gray-100">
-            <h2 className="font-bold text-gray-900 text-lg mb-6">
-              Informasi Produk
-            </h2>
-
-            <div className="flex flex-col sm:flex-row gap-6">
-              {/* Gambar Produk */}
-              <div className="w-full sm:w-36 h-36 bg-gray-50 rounded-xl p-3 flex-shrink-0 border border-gray-100 flex items-center justify-center overflow-hidden">
-                {historyDetail.product?.image_produk_belanja ? (
-                  <img
-                    src={
-                      getProductImageUrl(
-                        historyDetail.product.image_produk_belanja,
-                      ) ?? ""
-                    }
-                    alt={historyDetail.product.title}
-                    className="w-full h-full object-contain mix-blend-multiply drop-shadow-sm"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-                    No Image
+            <h2 className="font-bold text-gray-900 text-lg mb-6">Informasi Produk</h2>
+            
+            <div className="space-y-6">
+              {historyGroup.map((item, index) => (
+                <div key={item.id} className={`flex flex-col sm:flex-row gap-6 ${index !== 0 ? "pt-6 border-t border-gray-100" : ""}`}>
+                  <div className="w-full sm:w-36 h-36 bg-gray-50 rounded-xl p-3 flex-shrink-0 border border-gray-100 flex items-center justify-center overflow-hidden">
+                    {item.product?.image_produk_belanja ? (
+                      <img
+                        src={getProductImageUrl(item.product.image_produk_belanja) ?? ""}
+                        alt={item.product.title}
+                        className="w-full h-full object-contain mix-blend-multiply drop-shadow-sm"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">No Image</div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* Teks Informasi Produk */}
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  {historyDetail.product.title}
-                </h3>
-                <p className="text-gray-500 text-sm mb-4 line-clamp-2">
-                  {historyDetail.product.description ||
-                    "Tidak ada deskripsi produk."}
-                </p>
+                 <div className="flex-1 flex flex-col">
+                    <div className="flex justify-between items-start gap-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">
+                          {item.product?.title || "Produk Tidak Dikenal"}
+                        </h3>
+                        <p className="text-gray-500 text-sm mb-4 line-clamp-2">
+                          {item.product?.description || "Tidak ada deskripsi produk."}
+                        </p>
+                      </div>
+                      
+                      {/* Tombol Pemicu Modal Hapus Item */}
+                      <button
+                        onClick={() => confirmDeleteItem(item)}
+                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                        title="Hapus Item"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
 
-                <div className="grid grid-cols-2 gap-4 text-sm mt-auto bg-gray-50 p-4 rounded-xl border border-gray-100">
-                  <div>
-                    <p className="text-gray-500 mb-1">Harga Satuan</p>
-                    <p className="font-bold text-gray-900">
-                      {formatProductPrice(historyDetail.product.price)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 mb-1">Kuantitas</p>
-                    <p className="font-bold text-gray-900">
-                      {historyDetail.quantity || 1} Item
-                    </p>
+                    <div className="grid grid-cols-2 gap-4 text-sm mt-auto bg-gray-50 p-4 rounded-xl border border-gray-100">
+                      <div>
+                        <p className="text-gray-500 mb-1">Harga Satuan</p>
+                        <p className="font-bold text-gray-900">
+                          {formatProductPrice(item.product?.price || "0")}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 mb-1">Kuantitas</p>
+                        <p className="font-bold text-gray-900">{item.quantity || 1} Item</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
+            
           </div>
 
-          {/* Rincian Pembayaran */}
           <div className="p-6 bg-white">
-            <h2 className="font-bold text-gray-900 text-lg mb-4">
-              Rincian Pembayaran
-            </h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-4">Rincian Pembayaran</h2>
             <div className="space-y-4 text-sm">
               <div className="flex justify-between items-center text-gray-600">
                 <span>Metode Pembayaran</span>
@@ -242,29 +297,96 @@ export default function HistoryDetailPage() {
                 <span>Tanggal Pembelian</span>
                 <span className="font-medium text-gray-900">{date}</span>
               </div>
+              
+              <div className="flex justify-between items-center text-gray-600 mt-2">
+                <span>Total Subtotal Produk</span>
+                <span className="font-medium text-gray-900">{formatProductPrice(subtotalProducts.toString())}</span>
+              </div>
+              <div className="flex justify-between items-center text-gray-600">
+                <span>Ongkos Kirim</span>
+                <span className="font-medium text-gray-900">{formatProductPrice(shippingCost.toString())}</span>
+              </div>
 
               <div className="pt-6 mt-4 border-t border-dashed border-gray-200 flex justify-between items-end">
                 <div>
-                  <span className="font-bold text-gray-900 text-base">
-                    Total Belanja
-                  </span>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Sudah termasuk PPN jika ada
-                  </p>
+                  <span className="font-bold text-gray-900 text-base">Total Belanja</span>
+                  <p className="text-xs text-gray-400 mt-1">Sudah termasuk PPN jika ada</p>
                 </div>
                 <span
                   className="font-extrabold text-3xl transition-colors duration-500"
                   style={{ color: themeColor }}
                 >
-                  {formatProductPrice(
-                    (parseFloat(String(totalPrice ?? "0")) + 10000).toString(),
-                  )}
+                  {formatProductPrice(finalTotalPrice.toString())}
                 </span>
               </div>
             </div>
           </div>
         </div>
       </main>
+
+      {/* ================= CUSTOM MODAL COMPONENT ================= */}
+      {modal.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+          <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
+            
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm">
+              {modal.type === 'confirm' && (
+                <Trash2 className="w-8 h-8 text-amber-400" />
+              )}
+              {modal.type === 'success' && (
+                <svg className="h-8 w-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+              {modal.type === 'error' && (
+                <svg className="h-8 w-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
+              {modal.type === 'loading' && (
+                <svg className="h-8 w-8 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold text-white uppercase tracking-wide">
+                {modal.title}
+              </h3>
+              <p className="text-sm text-blue-100/80 font-light leading-relaxed">
+                {modal.message}
+              </p>
+            </div>
+
+            {modal.type === 'confirm' && (
+              <div className="flex space-x-3 mt-4 pt-2">
+                <button
+                  onClick={closeModal}
+                  className="w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] bg-white/20 text-white hover:bg-white/30"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={modal.onConfirm}
+                  className="w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] bg-red-500 text-white hover:bg-red-600"
+                >
+                  {modal.confirmText}
+                </button>
+              </div>
+            )}
+            {(modal.type === 'success' || modal.type === 'error') && (
+              <button
+                onClick={closeModal}
+                className="w-full mt-4 bg-white text-[#1172ba] font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md hover:bg-blue-50"
+              >
+                Tutup
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
