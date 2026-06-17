@@ -9,14 +9,15 @@ export default function WishlistDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
-  
+
   const [item, setItem] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
       // Pastikan method ini ada di api.ts Anda, sesuaikan dengan endpoint backend Anda
-      wishlistApi.getWishlistDetail(Number(id))
+      wishlistApi
+        .getWishlistDetail(Number(id))
         .then((data) => {
           setItem(data);
           setLoading(false);
@@ -40,9 +41,11 @@ export default function WishlistDetailPage() {
   if (!item || !item.product) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Produk tidak ditemukan</h2>
-        <button 
-          onClick={() => router.push('/wishlist')}
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          Produk tidak ditemukan
+        </h2>
+        <button
+          onClick={() => router.push("/wishlist")}
           className="text-blue-600 hover:underline"
         >
           Kembali ke Wishlist
@@ -56,17 +59,17 @@ export default function WishlistDetailPage() {
   const themeColor = item.product?.brand_color || "#000000";
 
   return (
-    <div 
-      className="min-h-screen flex flex-col bg-gray-50 transition-colors duration-500" 
+    <div
+      className="min-h-screen flex flex-col bg-gray-50 transition-colors duration-500"
       style={{ "--primary-color": themeColor } as React.CSSProperties}
     >
       {/* Navbar Dinamis */}
-      <nav 
+      <nav
         className="text-white p-4 shadow-md sticky top-0 z-50 flex items-center gap-4 transition-colors duration-500"
         style={{ backgroundColor: "var(--primary-color)" }}
       >
-        <button 
-          onClick={() => router.push('/wishlist')}
+        <button
+          onClick={() => router.push("/wishlist")}
           className="p-2 hover:bg-white/20 rounded-full transition"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -77,13 +80,18 @@ export default function WishlistDetailPage() {
       {/* Main Content */}
       <main className="flex-1 max-w-5xl mx-auto w-full p-6 md:py-12">
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-10 grid md:grid-cols-2 gap-10 items-start">
-          
+          {/* Kolom Gambar */}
           {/* Kolom Gambar */}
           <div className="w-full aspect-square bg-gray-50 rounded-2xl p-8 flex items-center justify-center overflow-hidden">
             {item.product?.image_produk_belanja ? (
-              <img 
-                src={getProductImageUrl(item.product.image_produk_belanja)} 
-                alt={item.product.title} 
+              <img
+                // Tambahkan fallback || "" agar jika fungsi mereturn null, src akan menerima string kosong
+                src={
+                  getProductImageUrl(
+                    item.product.image_produk_belanja as string,
+                  ) || ""
+                }
+                alt={item.product.title}
                 className="w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
               />
             ) : (
@@ -96,24 +104,27 @@ export default function WishlistDetailPage() {
             <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-2">
               {item.product.title}
             </h1>
-            
-            <p 
-              className="text-3xl font-bold mb-6 transition-colors duration-500" 
+
+            <p
+              className="text-3xl font-bold mb-6 transition-colors duration-500"
               style={{ color: "var(--primary-color)" }}
             >
               {formatProductPrice(item.product.price)}
             </p>
 
             <div className="prose prose-sm text-gray-600 mb-8 flex-1">
-              <h3 className="font-semibold text-gray-900 mb-2">Deskripsi Produk:</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Deskripsi Produk:
+              </h3>
               <p>
-                {item.product.description || "Tidak ada deskripsi yang tersedia untuk produk ini. Silakan hubungi admin untuk info lebih lanjut."}
+                {item.product.description ||
+                  "Tidak ada deskripsi yang tersedia untuk produk ini. Silakan hubungi admin untuk info lebih lanjut."}
               </p>
             </div>
 
             {/* Tombol Aksi */}
             <div className="mt-auto space-y-3">
-              <button 
+              <button
                 className="w-full text-white py-4 rounded-xl text-base font-bold shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 transform active:scale-[0.98]"
                 style={{ backgroundColor: "var(--primary-color)" }}
               >
@@ -122,12 +133,11 @@ export default function WishlistDetailPage() {
               </button>
             </div>
           </div>
-
         </div>
       </main>
 
       {/* Footer Dinamis */}
-      <footer 
+      <footer
         className="text-white p-6 mt-10 transition-colors duration-500"
         style={{ backgroundColor: "var(--primary-color)" }}
       >
