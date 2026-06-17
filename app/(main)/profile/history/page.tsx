@@ -7,6 +7,7 @@ import {
   Loader2,
   ChevronLeft,
   Trash2,
+  CheckCircle,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -37,8 +38,7 @@ interface ModalState {
 }
 
 export default function HistoryPage() {
-
-  const { setNavbarColor, setFooterColor } = useNavbarColor(); // Tambahkan ini
+  const { setNavbarColor, setFooterColor } = useNavbarColor();
   const shippingCost = 10000;
 
   const [history, setHistory] = useState<GroupedHistory[]>([]);
@@ -58,63 +58,62 @@ export default function HistoryPage() {
 
   const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
 
-  // Tambahkan useEffect untuk mengatur warna saat halaman ini dibuka
   useEffect(() => {
     setNavbarColor("#2B92DE");
     setFooterColor("#1172BA");
   }, [setNavbarColor, setFooterColor]);
 
+  const fetchHistory = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await getShoppingHistory();
+
+      const groupedObj = data.reduce(
+        (acc: Record<string, GroupedHistory>, item: ShoppingHistoryItem) => {
+          const key = item.created_at || "unknown";
+
+          if (!acc[key]) {
+            acc[key] = {
+              groupId: item.id, // Kita gunakan ID pesanan pertama sebagai representasi grup
+              created_at: key,
+              items: [],
+              totalGroupPrice: 0,
+              totalQuantity: 0,
+            };
+          }
+
+          acc[key].items.push(item);
+
+          const itemTotal = item.total_price
+            ? parseFloat(String(item.total_price))
+            : parseFloat(item.product?.price || "0") * (item.quantity || 1);
+
+          acc[key].totalGroupPrice += itemTotal;
+          acc[key].totalQuantity += item.quantity || 1;
+
+          return acc;
+        },
+        {},
+      );
+
+      const groupedArray = Object.values(groupedObj).sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+
+      setHistory(groupedArray);
+    } catch (err: any) {
+      setError(
+        err.message ||
+          "Gagal memuat riwayat belanja. Pastikan Anda sudah login.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await getShoppingHistory();
-
-        const groupedObj = data.reduce(
-          (acc: Record<string, GroupedHistory>, item: ShoppingHistoryItem) => {
-            const key = item.created_at || "unknown";
-
-            if (!acc[key]) {
-              acc[key] = {
-                groupId: item.id,
-                created_at: key,
-                items: [],
-                totalGroupPrice: 0,
-                totalQuantity: 0,
-              };
-            }
-
-            acc[key].items.push(item);
-
-            const itemTotal = item.total_price
-              ? parseFloat(String(item.total_price))
-              : parseFloat(item.product?.price || "0") * (item.quantity || 1);
-
-            acc[key].totalGroupPrice += itemTotal;
-            acc[key].totalQuantity += item.quantity || 1;
-
-            return acc;
-          },
-          {},
-        );
-
-        const groupedArray = Object.values(groupedObj).sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-        );
-
-        setHistory(groupedArray);
-      } catch (err: any) {
-        setError(
-          err.message ||
-            "Gagal memuat riwayat belanja. Pastikan Anda sudah login.",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchHistory();
   }, []);
 
@@ -123,7 +122,86 @@ export default function HistoryPage() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = history.slice(indexOfFirstItem, indexOfLastItem);
 
-  // FUNGSI TRIGGER CUSTOM MODAL
+  // FUNGSI HELPER UNTUK STATUS WARNA & LABEL
+  const getStatusConfig = (status?: string) => {
+    switch (status) {
+      case "menunggu_konfirmasi":
+        return { label: "Menunggu Konfirmasi", color: "bg-yellow-100 text-yellow-800 border-yellow-200" };
+      case "pengemasan":
+        return { label: "Dikemas", color: "bg-blue-100 text-blue-800 border-blue-200" };
+      case "dalam_perjalanan":
+        return { label: "Dalam Perjalanan", color: "bg-purple-100 text-purple-800 border-purple-200" };
+      case "diterima":
+        return { label: "Selesai", color: "bg-green-100 text-green-800 border-green-200" };
+      default:
+        // Fallback untuk riwayat lama sebelum fitur ini ada
+        return { label: status || "Selesai", color: "bg-gray-100 text-gray-800 border-gray-200" };
+    }
+  };
+
+  // FUNGSI TRIGGER CUSTOM MODAL: KONFIRMASI TERIMA BARANG
+  const confirmReceipt = (e: React.MouseEvent, group: GroupedHistory) => {
+    e.preventDefault();
+    setModal({
+      isOpen: true,
+      type: "confirm",
+      title: "Pesanan Diterima",
+      message: "Apakah Anda yakin telah menerima paket pesanan ini dengan baik? Jika ya, pesanan akan diselesaikan.",
+      confirmText: "Ya, Terima Pesanan",
+      onConfirm: async () => {
+        setModal({
+          isOpen: true,
+          type: "loading",
+          title: "Memproses...",
+          message: "Sedang menyelesaikan pesanan Anda...",
+        });
+
+        try {
+          // Asumsi backend Endpoint: PATCH /api/orders/{id}/confirm
+          const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/orders/${group.groupId}/confirm`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+            },
+          });
+
+          if (!response.ok) throw new Error("Gagal konfirmasi pesanan");
+
+          // Update UI state secara langsung agar tidak perlu reload page
+          setHistory((prev) =>
+            prev.map((g) => {
+              if (g.groupId === group.groupId) {
+                return {
+                  ...g,
+                  items: g.items.map((i) => ({ ...i, status: "diterima" })),
+                };
+              }
+              return g;
+            })
+          );
+
+          setModal({
+            isOpen: true,
+            type: "success",
+            title: "Berhasil!",
+            message: "Pesanan telah berhasil diselesaikan.",
+          });
+
+          setTimeout(() => closeModal(), 1500);
+        } catch (err) {
+          setModal({
+            isOpen: true,
+            type: "error",
+            title: "Gagal",
+            message: "Terjadi kesalahan saat mengonfirmasi pesanan. Coba lagi.",
+          });
+        }
+      },
+    });
+  };
+
+  // FUNGSI TRIGGER CUSTOM MODAL: HAPUS RIWAYAT
   const confirmDeleteGroup = (e: React.MouseEvent, group: GroupedHistory) => {
     e.preventDefault();
     setModal({
@@ -143,14 +221,14 @@ export default function HistoryPage() {
         try {
           await Promise.all(group.items.map((i) => removeHistoryItem(i.id)));
           setHistory((prev) => prev.filter((g) => g.groupId !== group.groupId));
-          
+
           setModal({
             isOpen: true,
             type: "success",
             title: "Berhasil!",
             message: "Riwayat pesanan telah dihapus.",
           });
-          
+
           setTimeout(() => closeModal(), 1500);
         } catch (err) {
           setModal({
@@ -204,7 +282,11 @@ export default function HistoryPage() {
 
             const firstItem = group.items[0];
             const invoiceId = `INV-${group.groupId.toString().padStart(6, "0")}`;
-            const statusColor = "bg-green-100 text-green-800";
+            
+            // Konfigurasi visual berdasarkan status
+            // Note: Tambahkan 'status?: string' di tipe ShoppingHistoryItem api.ts jika belum ada
+            const currentStatus = (firstItem as any).status || 'Selesai'; 
+            const statusConfig = getStatusConfig(currentStatus);
 
             const imageUrl = firstItem.product
               ? getProductImageUrl(
@@ -273,21 +355,37 @@ export default function HistoryPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-0 border-gray-50">
+                <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-0 border-gray-50">
+                  
+                  {/* Badge Status */}
                   <span
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold ${statusColor}`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold border ${statusConfig.color}`}
                   >
-                    Selesai
+                    {statusConfig.label}
                   </span>
 
-                  {/* Tombol pemicu Modal Hapus */}
-                  <button
-                    onClick={(e) => confirmDeleteGroup(e, group)}
-                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors z-10"
-                    title="Hapus Riwayat"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                  {/* Tombol Konfirmasi Diterima (Hanya muncul saat status dalam perjalanan) */}
+                  {currentStatus === "dalam_perjalanan" && (
+                    <button
+                      onClick={(e) => confirmReceipt(e, group)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white hover:bg-green-600 rounded-lg text-xs font-bold transition-colors z-10 shadow-sm"
+                      title="Konfirmasi Pesanan Diterima"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      <span className="hidden sm:inline">Diterima</span>
+                    </button>
+                  )}
+
+                  {/* Tombol Hapus (Hanya muncul jika sudah selesai/diterima agar aman) */}
+                  {(currentStatus === "diterima" || currentStatus === "Selesai") && (
+                    <button
+                      onClick={(e) => confirmDeleteGroup(e, group)}
+                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors z-10"
+                      title="Hapus Riwayat"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  )}
 
                   <div className="p-2 text-gray-400 group-hover:text-black transition-colors rounded-lg group-hover:translate-x-1 duration-200">
                     <ChevronRight className="w-5 h-5" />
@@ -346,25 +444,59 @@ export default function HistoryPage() {
       {modal.isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
           <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
-            
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm">
-              {modal.type === 'confirm' && (
-                <Trash2 className="w-8 h-8 text-amber-400" />
+              {modal.type === "confirm" && (
+                modal.title.includes("Hapus") ? <Trash2 className="w-8 h-8 text-amber-400" /> : <CheckCircle className="w-8 h-8 text-green-400" />
               )}
-              {modal.type === 'success' && (
-                <svg className="h-8 w-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              {modal.type === "success" && (
+                <svg
+                  className="h-8 w-8 text-green-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               )}
-              {modal.type === 'error' && (
-                <svg className="h-8 w-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              {modal.type === "error" && (
+                <svg
+                  className="h-8 w-8 text-red-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               )}
-              {modal.type === 'loading' && (
-                <svg className="h-8 w-8 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              {modal.type === "loading" && (
+                <svg
+                  className="h-8 w-8 text-white animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
               )}
             </div>
@@ -378,7 +510,7 @@ export default function HistoryPage() {
               </p>
             </div>
 
-            {modal.type === 'confirm' && (
+            {modal.type === "confirm" && (
               <div className="flex space-x-3 mt-4 pt-2">
                 <button
                   onClick={closeModal}
@@ -388,13 +520,15 @@ export default function HistoryPage() {
                 </button>
                 <button
                   onClick={modal.onConfirm}
-                  className="w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] bg-red-500 text-white hover:bg-red-600"
+                  className={`w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] text-white ${
+                    modal.title.includes("Hapus") ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"
+                  }`}
                 >
                   {modal.confirmText}
                 </button>
               </div>
             )}
-            {(modal.type === 'success' || modal.type === 'error') && (
+            {(modal.type === "success" || modal.type === "error") && (
               <button
                 onClick={closeModal}
                 className="w-full mt-4 bg-white text-[#1172ba] font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md hover:bg-blue-50"

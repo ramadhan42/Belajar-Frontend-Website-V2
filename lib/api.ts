@@ -1,12 +1,12 @@
 /**
  * Evomi Perfume E-Commerce — API Client
- * Base URL: https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud
+ * Base URL: http://127.0.0.1:8000
  *
  * Semua endpoint diintegrasikan dari Postman Collection "Evomi Perfume E-Commerce API".
  * Token Sanctum disimpan di localStorage dengan key "auth_token".
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_URL ?? "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
+const BASE_URL = process.env.NEXT_PUBLIC_URL ?? "http://127.0.0.1:8000";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -97,6 +97,7 @@ export interface ShoppingHistoryItem {
   id: number;
   product?: Product;
   quantity?: number;
+  status?: string;
   total_price?: number;
   ongkir_price?: number;
   created_at?: string;
@@ -220,7 +221,7 @@ export async function removeHistoryItem(orderId: number): Promise<void> {
 
 /** Base URL storage Laravel (gambar produk disimpan di storage/app/public) */
 const STORAGE_URL =
-  (process.env.NEXT_PUBLIC_URL ?? "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud") + "/storage/";
+  (process.env.NEXT_PUBLIC_URL ?? "http://127.0.0.1:8000") + "/storage/";
 
 /** Konversi path gambar relatif dari Laravel menjadi URL absolut */
 export function getProductImageUrl(path?: string): string | null {
@@ -566,7 +567,7 @@ export const getHistoryDetail = async (
   const token =
     typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
   const baseUrl =
-    process.env.NEXT_PUBLIC_API_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud/api";
+    process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
 
   const response = await fetch(`${baseUrl}/history/${id}`, {
     method: "GET",
