@@ -30,7 +30,6 @@ const VISUAL_BY_PERSONALITY: Record<string, { navbarColor: string }> = {
   sweet_shy: { navbarColor: "#DD74A5" },
 };
 
-// Konfigurasi tipe untuk custom modal
 interface ModalState {
   isOpen: boolean;
   type: "confirm" | "loading" | "success" | "error";
@@ -44,7 +43,7 @@ export default function HistoryDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
-  const shippingCost = 10000;
+  const shippingCost = 2000;
 
   const { setNavbarAndFooterColor } = useNavbarColor();
 
@@ -52,7 +51,6 @@ export default function HistoryDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // State untuk custom modal
   const [modal, setModal] = useState<ModalState>({
     isOpen: false,
     type: "loading",
@@ -62,7 +60,6 @@ export default function HistoryDetailPage() {
 
   const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
 
-  // LOGIKA STATUS: Diterima vs Selesai
   const getStatusConfig = (status?: string) => {
     switch (status) {
       case "menunggu_konfirmasi":
@@ -142,12 +139,11 @@ export default function HistoryDetailPage() {
     return () => setNavbarAndFooterColor("#2B92DE");
   }, [historyGroup, setNavbarAndFooterColor]);
 
-  // FUNGSI TRIGGER CUSTOM MODAL: KONFIRMASI TERIMA BARANG
   const handleConfirmReceipt = () => {
     setModal({
       isOpen: true,
       type: "confirm",
-      title: "Pesanan Diterima",
+      title: "Konfirmasi Pesanan",
       message:
         "Apakah Anda yakin telah menerima seluruh paket pesanan ini dengan baik? Status pesanan akan diubah menjadi Selesai.",
       confirmText: "Ya, Sudah Diterima",
@@ -160,7 +156,6 @@ export default function HistoryDetailPage() {
         });
 
         try {
-          // UPDATE LOGIC: Mengkonfirmasi semua item di dalam grup pesanan menggunakan Promise.all
           await Promise.all(
             historyGroup.map(async (item) => {
               const response = await fetch(
@@ -182,7 +177,6 @@ export default function HistoryDetailPage() {
             }),
           );
 
-          // Update state lokal semua item dalam satu transaksi checkout menjadi 'diterima'
           setHistoryGroup((prev) =>
             prev.map((item) => ({ ...item, status: "diterima" })),
           );
@@ -194,7 +188,10 @@ export default function HistoryDetailPage() {
             message: "Semua pesanan Anda telah berhasil diselesaikan.",
           });
 
-          setTimeout(() => closeModal(), 1500);
+          setTimeout(() => {
+            closeModal();
+            window.location.reload();
+          }, 1500);
         } catch (err) {
           setModal({
             isOpen: true,
@@ -207,7 +204,6 @@ export default function HistoryDetailPage() {
     });
   };
 
-  // FUNGSI TRIGGER CUSTOM MODAL: HAPUS ITEM
   const confirmDeleteItem = (item: ShoppingHistoryItem) => {
     setModal({
       isOpen: true,
@@ -233,8 +229,7 @@ export default function HistoryDetailPage() {
               isOpen: true,
               type: "success",
               title: "Dihapus",
-              message:
-                "Seluruh item pesanan ini telah terhapus. Kembali ke daftar riwayat...",
+              message: "Seluruh item pesanan ini telah terhapus.",
             });
             setTimeout(() => {
               closeModal();
@@ -262,43 +257,34 @@ export default function HistoryDetailPage() {
     });
   };
 
-  if (loading) {
+  if (loading)
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] bg-gray-50">
         <Loader2 className="animate-spin w-10 h-10 text-gray-400 mb-4" />
         <p className="text-gray-500 font-medium">Memuat detail pesanan...</p>
       </div>
     );
-  }
 
-  if (error || historyGroup.length === 0) {
+  if (error || historyGroup.length === 0)
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] bg-gray-50 p-4 text-center">
-        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4 border border-gray-200">
-          <Package className="w-10 h-10 text-gray-400" />
-        </div>
+        <Package className="w-10 h-10 text-gray-400 mb-4" />
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
           {error || "Pesanan tidak ditemukan"}
         </h2>
-        <p className="text-gray-500 text-sm max-w-sm mb-6">
-          Pastikan ID pesanan Anda benar atau Anda telah masuk ke akun yang
-          tepat.
-        </p>
         <button
           onClick={() => router.push("/profile/history")}
-          className="px-6 py-2.5 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition shadow-sm"
+          className="px-6 py-2.5 bg-black text-white rounded-xl font-medium"
         >
-          Kembali ke Riwayat Belanja
+          Kembali ke Riwayat
         </button>
       </div>
     );
-  }
 
   const representativeItem = historyGroup[0];
   const personality = representativeItem.product?.personality_type ?? "";
   const themeColor =
     VISUAL_BY_PERSONALITY[personality]?.navbarColor || "#000000";
-
   const date = representativeItem.created_at
     ? new Date(representativeItem.created_at).toLocaleDateString("id-ID", {
         day: "numeric",
@@ -308,14 +294,9 @@ export default function HistoryDetailPage() {
         minute: "2-digit",
       })
     : "-";
-
   const invoiceId = `INV-${representativeItem.id.toString().padStart(6, "0")}`;
-
-  // Ambil konfigurasi status dinamis berdasarkan item representatif
-
   const currentStatus = (representativeItem as any).status || "selesai";
   const statusConfig = getStatusConfig(currentStatus);
-
   const subtotalProducts = historyGroup.reduce((acc, curr) => {
     const itemTotal = curr.total_price
       ? parseFloat(String(curr.total_price))
@@ -330,10 +311,9 @@ export default function HistoryDetailPage() {
       <div className="max-w-4xl mx-auto px-4 pt-6 pb-2">
         <button
           onClick={() => router.push("/profile/history")}
-          className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors font-medium mb-6 w-fit"
+          className="flex items-center gap-2 text-gray-600 hover:text-black font-medium mb-6"
         >
-          <ArrowLeft className="w-5 h-5" />
-          Kembali ke Riwayat
+          <ArrowLeft className="w-5 h-5" /> Kembali ke Riwayat
         </button>
         <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
           Detail Pesanan
@@ -341,7 +321,6 @@ export default function HistoryDetailPage() {
       </div>
 
       <main className="max-w-4xl mx-auto w-full p-4">
-        {/* Card Status Dinamis */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
@@ -358,14 +337,14 @@ export default function HistoryDetailPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-            {/* Tombol Terima Pesanan (Aktif untuk semua status kecuali 'diterima' atau 'Selesai') */}
-            {currentStatus !== "diterima" && (
+            {/* Logic Update: Tombol muncul jika bukan 'selesai' DAN bukan 'pengemasan' */}
+            {currentStatus !== "menunggu_konfirmasi" && currentStatus !== "selesai" && currentStatus !== "pengemasan" && (
               <button
                 onClick={handleConfirmReceipt}
                 className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                Pesanan Diterima
+                Konfirmasi Pesanan
               </button>
             )}
 
@@ -378,6 +357,7 @@ export default function HistoryDetailPage() {
           </div>
         </div>
 
+        {/* rendering produk */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
           <div className="p-6 border-b border-gray-100">
             <h2 className="font-bold text-gray-900 text-lg mb-6">
@@ -502,112 +482,113 @@ export default function HistoryDetailPage() {
             </div>
           </div>
         </div>
-      </main>
 
-      {/* ================= CUSTOM MODAL COMPONENT ================= */}
-      {modal.isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-          <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm">
-              {modal.type === "confirm" &&
-                (modal.title.includes("Hapus") ? (
-                  <Trash2 className="w-8 h-8 text-amber-400" />
-                ) : (
-                  <CheckCircle2 className="w-8 h-8 text-green-400" />
-                ))}
-              {modal.type === "success" && (
-                <svg
-                  className="h-8 w-8 text-green-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              )}
-              {modal.type === "error" && (
-                <svg
-                  className="h-8 w-8 text-red-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              )}
-              {modal.type === "loading" && (
-                <svg
-                  className="h-8 w-8 text-white animate-spin"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
+        {/* Modal Component */}
+        {/* ================= CUSTOM MODAL COMPONENT ================= */}
+        {modal.isOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+            <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm">
+                {modal.type === "confirm" &&
+                  (modal.title.includes("Hapus") ? (
+                    <Trash2 className="w-8 h-8 text-amber-400" />
+                  ) : (
+                    <CheckCircle2 className="w-8 h-8 text-green-400" />
+                  ))}
+                {modal.type === "success" && (
+                  <svg
+                    className="h-8 w-8 text-green-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
                     stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                )}
+                {modal.type === "error" && (
+                  <svg
+                    className="h-8 w-8 text-red-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                )}
+                {modal.type === "loading" && (
+                  <svg
+                    className="h-8 w-8 text-white animate-spin"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold text-white uppercase tracking-wide">
+                  {modal.title}
+                </h3>
+                <p className="text-sm text-blue-100/80 font-light leading-relaxed">
+                  {modal.message}
+                </p>
+              </div>
+
+              {modal.type === "confirm" && (
+                <div className="flex space-x-3 mt-4 pt-2">
+                  <button
+                    onClick={closeModal}
+                    className="w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] bg-white/20 text-white hover:bg-white/30"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={modal.onConfirm}
+                    className={`w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] text-white ${
+                      modal.title.includes("Hapus")
+                        ? "bg-red-500 hover:bg-red-600"
+                        : "bg-green-500 hover:bg-green-600"
+                    }`}
+                  >
+                    {modal.confirmText}
+                  </button>
+                </div>
               )}
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold text-white uppercase tracking-wide">
-                {modal.title}
-              </h3>
-              <p className="text-sm text-blue-100/80 font-light leading-relaxed">
-                {modal.message}
-              </p>
-            </div>
-
-            {modal.type === "confirm" && (
-              <div className="flex space-x-3 mt-4 pt-2">
+              {(modal.type === "success" || modal.type === "error") && (
                 <button
                   onClick={closeModal}
-                  className="w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] bg-white/20 text-white hover:bg-white/30"
+                  className="w-full mt-4 bg-white text-[#1172ba] font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md hover:bg-blue-50"
                 >
-                  Batal
+                  Tutup
                 </button>
-                <button
-                  onClick={modal.onConfirm}
-                  className={`w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] text-white ${
-                    modal.title.includes("Hapus")
-                      ? "bg-red-500 hover:bg-red-600"
-                      : "bg-green-500 hover:bg-green-600"
-                  }`}
-                >
-                  {modal.confirmText}
-                </button>
-              </div>
-            )}
-            {(modal.type === "success" || modal.type === "error") && (
-              <button
-                onClick={closeModal}
-                className="w-full mt-4 bg-white text-[#1172ba] font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md hover:bg-blue-50"
-              >
-                Tutup
-              </button>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 }

@@ -8,10 +8,26 @@ import { Truck, Package, Clock, ShieldCheck, MapPin } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 const shippingSteps = [
-  { icon: Package, title: "Pesanan Diterima", desc: "Sistem kami memverifikasi detail pesanan Anda." },
-  { icon: Clock, title: "Proses Pengemasan", desc: "Tim kami menyiapkan parfum dengan keamanan ekstra." },
-  { icon: Truck, title: "Dalam Perjalanan", desc: "Kurir mengirimkan paket ke lokasi Anda." },
-  { icon: ShieldCheck, title: "Paket Diterima", desc: "Nikmati aroma baru dari Evomi!" },
+  {
+    icon: Package,
+    title: "Pesanan Diterima",
+    desc: "Sistem kami memverifikasi detail pesanan Anda.",
+  },
+  {
+    icon: Clock,
+    title: "Proses Pengemasan",
+    desc: "Tim kami menyiapkan parfum dengan keamanan ekstra.",
+  },
+  {
+    icon: Truck,
+    title: "Dalam Perjalanan",
+    desc: "Kurir mengirimkan paket ke lokasi Anda.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Paket Diterima",
+    desc: "Nikmati aroma baru dari Evomi!",
+  },
 ];
 
 export default function PengirimanPage() {
@@ -19,7 +35,7 @@ export default function PengirimanPage() {
     <div className="min-h-screen bg-white pt-32 pb-24 px-5 md:px-24 font-['Nohemi',sans-serif]">
       {/* Header Section */}
       <div className="max-w-3xl mx-auto text-center mb-20">
-        <motion.h1 
+        <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-[32px] md:text-[48px] font-bold text-gray-900 mb-6"
@@ -27,7 +43,8 @@ export default function PengirimanPage() {
           Informasi Pengiriman
         </motion.h1>
         <p className="text-gray-500 text-[16px] md:text-[18px]">
-          Kami memastikan setiap tetes aroma Evomi sampai ke tangan Anda dengan aman dan tepat waktu.
+          Kami memastikan setiap tetes aroma Evomi sampai ke tangan Anda dengan
+          aman dan tepat waktu.
         </p>
       </div>
 
@@ -38,7 +55,7 @@ export default function PengirimanPage() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {shippingSteps.map((step, index) => (
-            <motion.div 
+            <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -49,7 +66,9 @@ export default function PengirimanPage() {
                 <step.icon size={28} />
               </div>
               <h3 className="font-bold text-gray-900 mb-2">{step.title}</h3>
-              <p className="text-[14px] text-gray-600 leading-relaxed">{step.desc}</p>
+              <p className="text-[14px] text-gray-600 leading-relaxed">
+                {step.desc}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -69,11 +88,13 @@ export default function PengirimanPage() {
         </div>
         <div className="p-8 bg-[#1172BA] text-white rounded-[32px]">
           <h3 className="text-[20px] font-bold mb-4">Lacak Pesanan Anda</h3>
-          <p className="mb-6 opacity-90">Masukkan nomor resi Anda untuk mengetahui posisi paket terkini.</p>
+          <p className="mb-6 opacity-90">
+            Masukkan nomor resi Anda untuk mengetahui posisi paket terkini.
+          </p>
           <div className="flex gap-2">
-            <input 
-              placeholder="Masukkan Resi..." 
-              className="w-full h-[48px] rounded-full px-4 text-gray-900 outline-none"
+            <input
+              placeholder="Masukkan Resi..."
+              className="w-full h-[48px] rounded-full px-4 text-gray-900 outline-none bg-white"
             />
             <button className="bg-white text-[#1172BA] px-6 rounded-full font-bold hover:bg-gray-100 transition-colors">
               Lacak

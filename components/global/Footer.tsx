@@ -6,10 +6,10 @@ import { motion, Variants } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useNavbarColor } from "@/context/NavbarColorContext";
 
-// Tipe data untuk konfigurasi status modal footer
+// Menambahkan tipe "error" ke dalam status modal
 interface NavModalState {
   isOpen: boolean;
-  type: "confirm" | "loading" | "success";
+  type: "confirm" | "loading" | "success" | "error";
   title: string;
   message: string;
 }
@@ -17,6 +17,10 @@ interface NavModalState {
 export default function Footer() {
   const { footerColor } = useNavbarColor();
   const router = useRouter();
+
+  // State untuk Input Email Buletin
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // State untuk Custom Modal di Footer
   const [navModal, setNavModal] = useState<NavModalState>({
@@ -45,7 +49,6 @@ export default function Footer() {
 
   // --- LOGIC CUSTOM MODAL NAVIGASI ---
   const handleNavAction = (path: string, title: string, message: string) => {
-    // Munculkan modal transisi
     setNavModal({
       isOpen: true,
       type: "loading",
@@ -53,23 +56,99 @@ export default function Footer() {
       message,
     });
 
-    // Simulasi delay singkat agar animasi modal terlihat (800ms) lalu pindah rute
     setTimeout(() => {
       setNavModal((prev) => ({ ...prev, isOpen: false }));
       router.push(path);
-      // Tambahkan baris ini jika halaman tujuan tetap tidak terupdate
       router.refresh();
     }, 800);
+  };
+
+  // --- LOGIC BERLANGGANAN BULETIN ---
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email) {
+      setNavModal({
+        isOpen: true,
+        type: "error",
+        title: "Perhatian",
+        message: "Harap masukkan alamat email Anda terlebih dahulu.",
+      });
+      setTimeout(
+        () => setNavModal((prev) => ({ ...prev, isOpen: false })),
+        3000,
+      );
+      return;
+    }
+
+    // Munculkan Modal Loading
+    setNavModal({
+      isOpen: true,
+      type: "loading",
+      title: "Memproses...",
+      message: "Sedang mendaftarkan email Anda ke Buletin Evomi.",
+    });
+    setIsSubmitting(true);
+
+    try {
+      // Panggil API Laravel yang sudah kita buat
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_URL || ""}/api/newsletter/subscribe`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ email }),
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Gagal mendaftar buletin.");
+      }
+
+      // Jika berhasil, munculkan Modal Success
+      setNavModal({
+        isOpen: true,
+        type: "success",
+        title: "Berhasil!",
+        message: "Terima kasih telah berlangganan Buletin Evomi.",
+      });
+      setEmail(""); // Kosongkan input setelah berhasil
+    } catch (error: any) {
+      // Jika gagal/error, munculkan Modal Error
+      setNavModal({
+        isOpen: true,
+        type: "error",
+        title: "Pendaftaran Gagal",
+        message:
+          error.message || "Terjadi kesalahan pada server. Coba lagi nanti.",
+      });
+    } finally {
+      setIsSubmitting(false);
+      // Tutup otomatis setelah 3 detik jika statusnya sukses/error
+      setTimeout(() => {
+        setNavModal((prev) => {
+          // Hanya tutup jika modal bukan sedang 'loading' navigasi
+          if (prev.type === "success" || prev.type === "error") {
+            return { ...prev, isOpen: false };
+          }
+          return prev;
+        });
+      }, 3000);
+    }
   };
 
   return (
     <>
       <footer
-        // Penyesuaian padding untuk layar mobile (px-5) hingga desktop (md:px-24)
         className="w-full py-10 md:py-16 px-5 md:px-12 lg:px-24 transition-colors duration-0 relative"
         style={{
           fontFamily: "'Nohemi', sans-serif",
-          backgroundColor: footerColor || "#1172BA", // Fallback color jika context kosong
+          backgroundColor: footerColor || "#1172BA",
         }}
       >
         <motion.div
@@ -93,26 +172,35 @@ export default function Footer() {
                 cerita tentang setiap karakter aroma.
               </p>
 
-              {/* BAGIAN INPUT & TOMBOL */}
-              <div className="flex flex-row gap-2 w-full mt-3">
+              {/* BAGIAN INPUT & TOMBOL (DIUBAH MENJADI FORM) */}
+              <form
+                onSubmit={handleSubscribe}
+                className="flex flex-row gap-2 w-full mt-3"
+              >
                 <input
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting}
                   placeholder="email@kamu.com"
-                  className="flex-grow bg-white rounded-full outline-none px-4 md:px-5 h-[44px] md:h-[48px] text-[13px] md:text-[14px] text-gray-600 placeholder-gray-400 shadow-sm min-w-0"
+                  className="flex-grow bg-white rounded-full outline-none px-4 md:px-5 h-[44px] md:h-[48px] text-[13px] md:text-[14px] text-gray-600 placeholder-gray-400 shadow-sm min-w-0 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
                 <button
-                  className="bg-white flex-shrink-0 w-[85px] md:w-[100px] h-[44px] md:h-[48px] rounded-full text-[13px] md:text-[14px] font-bold hover:bg-gray-100 transition-colors shadow-sm"
-                  style={{
-                    color: footerColor || "#1172BA", // font color tombol mengikuti warna footer untuk kontras yang baik
-                  }}
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-shrink-0 w-[85px] md:w-[100px] h-[44px] md:h-[48px] rounded-full text-[13px] md:text-[14px] font-bold transition-all shadow-sm bg-white text-[var(--btn-color)] border border-[var(--btn-color)] hover:bg-[var(--btn-color)] hover:text-white disabled:opacity-70 disabled:cursor-not-allowed"
+                  style={
+                    {
+                      "--btn-color": footerColor,
+                    } as React.CSSProperties
+                  }
                 >
-                  Daftar
+                  {isSubmitting ? "..." : "Daftar"}
                 </button>
-              </div>
+              </form>
             </motion.div>
 
             {/* Grup Kanan: Menu, Bantuan, Social */}
-            {/* Menggunakan Grid agar lebih rapi di layar 360px (Galaxy S20) */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-8 gap-x-4 w-full lg:w-[45%] mt-2 lg:mt-0 text-left">
               {/* 2. Menu */}
               <motion.div
@@ -241,7 +329,7 @@ export default function Footer() {
         </motion.div>
       </footer>
 
-      {/* ================= CUSTOM MODAL COMPONENT (Z-INDEX SUPER TINGGI) ================= */}
+      {/* ================= CUSTOM MODAL COMPONENT ================= */}
       {navModal.isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
           <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
@@ -268,6 +356,36 @@ export default function Footer() {
                   ></path>
                 </svg>
               )}
+              {navModal.type === "success" && (
+                <svg
+                  className="h-8 w-8 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              )}
+              {navModal.type === "error" && (
+                <svg
+                  className="h-8 w-8 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              )}
             </div>
 
             {/* Teks Modal */}
@@ -279,6 +397,18 @@ export default function Footer() {
                 {navModal.message}
               </p>
             </div>
+
+            {/* Tombol Tutup Manual (Hanya muncul saat error/berhasil) */}
+            {(navModal.type === "success" || navModal.type === "error") && (
+              <button
+                onClick={() =>
+                  setNavModal((prev) => ({ ...prev, isOpen: false }))
+                }
+                className="mt-4 px-6 py-2 bg-white/20 hover:bg-white/30 text-white rounded-full text-sm font-bold transition-colors"
+              >
+                Tutup
+              </button>
+            )}
           </div>
         </div>
       )}

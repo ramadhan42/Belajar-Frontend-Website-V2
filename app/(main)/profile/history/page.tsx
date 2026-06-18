@@ -39,7 +39,7 @@ interface ModalState {
 
 export default function HistoryPage() {
   const { setNavbarColor, setFooterColor } = useNavbarColor();
-  const shippingCost = 10000;
+  const shippingCost = 2000;
 
   const [history, setHistory] = useState<GroupedHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -126,16 +126,36 @@ export default function HistoryPage() {
   const getStatusConfig = (status?: string) => {
     switch (status) {
       case "menunggu_konfirmasi":
-        return { label: "Menunggu Konfirmasi", color: "bg-yellow-100 text-yellow-800 border-yellow-200" };
+        return {
+          label: "Menunggu Konfirmasi",
+          color: "bg-yellow-100 text-yellow-800 border-yellow-200",
+        };
       case "pengemasan":
-        return { label: "Dikemas", color: "bg-blue-100 text-blue-800 border-blue-200" };
+        return {
+          label: "Dikemas",
+          color: "bg-blue-100 text-blue-800 border-blue-200",
+        };
       case "dalam_perjalanan":
-        return { label: "Dalam Perjalanan", color: "bg-purple-100 text-purple-800 border-purple-200" };
+        return {
+          label: "Dalam Perjalanan",
+          color: "bg-purple-100 text-purple-800 border-purple-200",
+        };
       case "diterima":
-        return { label: "Selesai", color: "bg-green-100 text-green-800 border-green-200" };
+        return {
+          label: "Sampai Tujuan",
+          color: "bg-green-100 text-green-800 border-green-200",
+        };
+      case "selesai":
+        return {
+          label: "Selesai",
+          color: "bg-green-100 text-green-800 border-green-200",
+        };
       default:
         // Fallback untuk riwayat lama sebelum fitur ini ada
-        return { label: status || "Selesai", color: "bg-gray-100 text-gray-800 border-gray-200" };
+        return {
+          label: status || "Selesai",
+          color: "bg-gray-100 text-gray-800 border-gray-200",
+        };
     }
   };
 
@@ -146,7 +166,8 @@ export default function HistoryPage() {
       isOpen: true,
       type: "confirm",
       title: "Pesanan Diterima",
-      message: "Apakah Anda yakin telah menerima paket pesanan ini dengan baik? Jika ya, pesanan akan diselesaikan.",
+      message:
+        "Apakah Anda yakin telah menerima paket pesanan ini dengan baik? Jika ya, pesanan akan diselesaikan.",
       confirmText: "Ya, Terima Pesanan",
       onConfirm: async () => {
         setModal({
@@ -158,13 +179,16 @@ export default function HistoryPage() {
 
         try {
           // Asumsi backend Endpoint: PATCH /api/orders/{id}/confirm
-          const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/orders/${group.groupId}/confirm`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_URL}/api/orders/${group.groupId}/confirm`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+              },
             },
-          });
+          );
 
           if (!response.ok) throw new Error("Gagal konfirmasi pesanan");
 
@@ -178,7 +202,7 @@ export default function HistoryPage() {
                 };
               }
               return g;
-            })
+            }),
           );
 
           setModal({
@@ -208,7 +232,8 @@ export default function HistoryPage() {
       isOpen: true,
       type: "confirm",
       title: "Hapus Riwayat",
-      message: "Apakah Anda yakin ingin menghapus seluruh pesanan ini dari riwayat belanja?",
+      message:
+        "Apakah Anda yakin ingin menghapus seluruh pesanan ini dari riwayat belanja?",
       confirmText: "Ya, Hapus",
       onConfirm: async () => {
         setModal({
@@ -282,10 +307,10 @@ export default function HistoryPage() {
 
             const firstItem = group.items[0];
             const invoiceId = `INV-${group.groupId.toString().padStart(6, "0")}`;
-            
+
             // Konfigurasi visual berdasarkan status
             // Note: Tambahkan 'status?: string' di tipe ShoppingHistoryItem api.ts jika belum ada
-            const currentStatus = (firstItem as any).status || 'Selesai'; 
+            const currentStatus = (firstItem as any).status || "Selesai";
             const statusConfig = getStatusConfig(currentStatus);
 
             const imageUrl = firstItem.product
@@ -356,7 +381,6 @@ export default function HistoryPage() {
                 </div>
 
                 <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-0 border-gray-50">
-                  
                   {/* Badge Status */}
                   <span
                     className={`px-3 py-1.5 rounded-full text-xs font-bold border ${statusConfig.color}`}
@@ -376,12 +400,14 @@ export default function HistoryPage() {
                     </button>
                   )}
 
-                  {/* Tombol Hapus (Hanya muncul jika sudah selesai/diterima agar aman) */}
-                  {(currentStatus === "diterima" || currentStatus === "Selesai") && (
+                  {/* PERBAIKAN: Tombol Hapus (Hanya muncul jika sudah selesai/diterima) */}
+                  {/* Ubah "Selesai" menjadi "selesai" menyesuaikan data dari backend */}
+                  {(currentStatus === "diterima" ||
+                    currentStatus === "selesai") && (
                     <button
                       onClick={(e) => confirmDeleteGroup(e, group)}
-                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors z-10"
-                      title="Hapus Riwayat"
+                      className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-lg transition-colors z-10 shadow-sm bg-red-50 border border-red-100"
+                      title="Hapus Riwayat Pesanan"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -445,9 +471,12 @@ export default function HistoryPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
           <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm">
-              {modal.type === "confirm" && (
-                modal.title.includes("Hapus") ? <Trash2 className="w-8 h-8 text-amber-400" /> : <CheckCircle className="w-8 h-8 text-green-400" />
-              )}
+              {modal.type === "confirm" &&
+                (modal.title.includes("Hapus") ? (
+                  <Trash2 className="w-8 h-8 text-amber-400" />
+                ) : (
+                  <CheckCircle className="w-8 h-8 text-green-400" />
+                ))}
               {modal.type === "success" && (
                 <svg
                   className="h-8 w-8 text-green-400"
@@ -521,7 +550,9 @@ export default function HistoryPage() {
                 <button
                   onClick={modal.onConfirm}
                   className={`w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] text-white ${
-                    modal.title.includes("Hapus") ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"
+                    modal.title.includes("Hapus")
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-green-500 hover:bg-green-600"
                   }`}
                 >
                   {modal.confirmText}

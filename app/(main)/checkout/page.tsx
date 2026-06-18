@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import {
   getCartItems,
   getProduct,
@@ -22,7 +22,7 @@ interface CheckoutItemType {
   price: number;
   quantity: number;
   image: string;
-  personality_type: string; // Tambahkan ini agar bisa menentukan warna
+  personality_type: string;
 }
 
 const VISUAL_BY_PERSONALITY: Record<
@@ -62,6 +62,10 @@ const VISUAL_BY_PERSONALITY: Record<
 
 const VISUAL_FALLBACK = VISUAL_BY_PERSONALITY["purpose_prestige"];
 
+// XENDIT AUTH KEY (dari parameter curl Anda)
+const XENDIT_AUTH =
+  "Basic eG5kX2RldmVsb3BtZW50X3RLblFjYm5aVDVzbEFKYjJqSTVVeUQ3cVQ3VWRZUHE4cUp6MmdFNjFySXo3YUEyZklSTGdiOEJ2TEZsZDo=";
+
 function CheckoutContent() {
   const [modal, setModal] = useState<{
     isOpen: boolean;
@@ -85,7 +89,14 @@ function CheckoutContent() {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const ongkosKirim = 10000;
+  // STATE UNTUK QRIS XENDIT
+  const [qrisData, setQrisData] = useState<{
+    id: string;
+    qr_string: string;
+  } | null>(null);
+  const [isQrisModalOpen, setIsQrisModalOpen] = useState(false);
+
+  const ongkosKirim = 2000;
 
   // 1. Tentukan visual berdasarkan item pertama yang di-checkout
   const visual = useMemo(() => {
@@ -96,11 +107,10 @@ function CheckoutContent() {
   // 2. Set warna navbar & footer saat visual berubah
   useEffect(() => {
     setNavbarAndFooterColor(visual.navbarColor);
-    // Cleanup saat meninggalkan halaman (opsional: kembalikan ke warna default)
     return () => setNavbarAndFooterColor("#000000");
   }, [visual.navbarColor, setNavbarAndFooterColor]);
 
-  // 3. Fetch Data
+  // 3. Fetch Data Awal
   useEffect(() => {
     const fetchCheckoutData = async () => {
       try {
@@ -122,7 +132,7 @@ function CheckoutContent() {
             quantity: item.quantity,
             image:
               getProductImageUrl(
-                item.product?.image_produk_belanja || item.product?.image_1,
+                item.product?.image_produk_belanja || item.product?.image_1
               ) || "/placeholder.jpg",
             personality_type: item.product?.personality_type || "prestige",
           }));
@@ -138,7 +148,7 @@ function CheckoutContent() {
               quantity: 1,
               image:
                 getProductImageUrl(
-                  productData.image_produk_belanja || productData.image_1,
+                  productData.image_produk_belanja || productData.image_1
                 ) || "/placeholder.jpg",
               personality_type: productData.personality_type || "prestige",
             },
@@ -158,13 +168,14 @@ function CheckoutContent() {
 
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0,
+    0
   );
   const totalTagihan = subtotal + ongkosKirim;
 
-  const handleCheckout = async () => {
-    setIsProcessing(true);
+  // 4. Proses Simpan Pesanan ke Internal API (Dipanggil setelah QRIS Berhasil / COD)
+  const processInternalCheckout = async () => {
     try {
+      setIsProcessing(true);
       const res = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/checkout`, {
         method: "POST",
         headers: {
@@ -180,10 +191,8 @@ function CheckoutContent() {
       });
 
       const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.message || "Gagal memproses pembayaran");
+      if (!res.ok) throw new Error(data.message || "Gagal memproses pembayaran");
 
-      // Tampilkan modal sukses
       setModal({
         isOpen: true,
         title: "Berhasil!",
@@ -191,7 +200,6 @@ function CheckoutContent() {
         type: "success",
       });
     } catch (err: any) {
-      // Tampilkan modal error
       setModal({
         isOpen: true,
         title: "Gagal",
@@ -202,6 +210,94 @@ function CheckoutContent() {
       setIsProcessing(false);
     }
   };
+
+  // 5. Handler Klik Tombol "Bayar Sekarang"
+  const handleCheckout = async () => {
+    if (paymentMethod === "qris") {
+      setIsProcessing(true);
+      try {
+        const orderId = `evomi-id-${Date.now()}`; // Generate Unique Reference ID
+        const expiresAt = new Date(Date.now() + 15 * 60000).toISOString(); // Berlaku 15 Menit
+
+        const res = await fetch("https://api.xendit.co/qr_codes", {
+          method: "POST",
+          headers: {
+            "api-version": "2022-07-31",
+            "Content-Type": "application/json",
+            Authorization: XENDIT_AUTH,
+          },
+          body: JSON.stringify({
+            reference_id: orderId,
+            type: "DYNAMIC",
+            currency: "IDR",
+            amount: totalTagihan,
+            expires_at: expiresAt,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || "Gagal menggenerate QRIS dari sistem");
+        }
+
+        // Buka modal QRIS dan set datanya
+        setQrisData({ id: data.id, qr_string: data.qr_string });
+        setIsQrisModalOpen(true);
+      } catch (err: any) {
+        setModal({
+          isOpen: true,
+          title: "Gagal",
+          message: err.message || "Gagal membuat QR Code",
+          type: "error",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    } else {
+      // Pembayaran COD / Non-QRIS
+      await processInternalCheckout();
+    }
+  };
+
+  // 6. Polling Status QRIS Xendit (Setiap 3 Detik)
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const checkQrisStatus = async () => {
+      if (!qrisData || !isQrisModalOpen) return;
+
+      try {
+        const res = await fetch(`https://api.xendit.co/qr_codes/${qrisData.id}`, {
+          method: "GET",
+          headers: {
+            "api-version": "2022-07-31",
+            Authorization: XENDIT_AUTH,
+          },
+        });
+        const data = await res.json();
+
+        // FIX: Xendit Dynamic QR Code menjadi INACTIVE ketika sukses dibayar.
+        if (data.status === "INACTIVE" || data.status === "COMPLETED" || data.status === "SUCCEEDED") {
+          // Jika Berhasil -> Hentikan polling, Tutup Modal QR, Panggil Internal API
+          clearInterval(interval);
+          setIsQrisModalOpen(false);
+          await processInternalCheckout();
+        }
+      } catch (error) {
+        console.error("Gagal mengecek status QRIS:", error);
+      }
+    };
+
+    // Jalankan interval jika modal terbuka
+    if (isQrisModalOpen) {
+      interval = setInterval(checkQrisStatus, 3000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isQrisModalOpen, qrisData]);
 
   if (isLoading) {
     return (
@@ -230,7 +326,7 @@ function CheckoutContent() {
 
   return (
     <section className="bg-[#F6F6F6] w-full pt-6 pb-24 relative overflow-hidden">
-      {/* Animasi Lingkaran Bawah (Sama dengan ProductDetailSection) */}
+      {/* Animasi Lingkaran Bawah */}
       <style>{`
         @keyframes slideRightSeamless {
           0% { transform: translateX(-50%); }
@@ -298,10 +394,11 @@ function CheckoutContent() {
                 {["qris", "cash"].map((m) => (
                   <label
                     key={m}
-                    className={`border-2 rounded-2xl p-4 cursor-pointer flex flex-col items-center gap-1 transition-all ${paymentMethod === m ? "bg-gray-50" : "border-gray-100"}`}
+                    className={`border-2 rounded-2xl p-4 cursor-pointer flex flex-col items-center gap-1 transition-all ${
+                      paymentMethod === m ? "bg-gray-50" : "border-gray-100"
+                    }`}
                     style={{
-                      borderColor:
-                        paymentMethod === m ? visual.navbarColor : "",
+                      borderColor: paymentMethod === m ? visual.navbarColor : "",
                     }}
                   >
                     <input
@@ -313,16 +410,15 @@ function CheckoutContent() {
                     <span
                       className="font-bold uppercase"
                       style={{
-                        color:
-                          paymentMethod === m ? visual.navbarColor : "#333",
+                        color: paymentMethod === m ? visual.navbarColor : "#333",
                       }}
                     >
                       {m === "qris" ? "QRIS" : "Cash on Delivery"}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 text-center">
                       {m === "qris"
-                        ? "Gopay, OVO, Dana, LinkAja"
-                        : "Bayar saat barang sampai"}
+                        ? "Scan menggunakan M-Banking atau E-Wallet"
+                        : "Bayar saat barang sampai di tujuan"}
                     </span>
                   </label>
                 ))}
@@ -386,9 +482,10 @@ function CheckoutContent() {
               <button
                 onClick={handleCheckout}
                 disabled={isProcessing}
-                className="w-full text-white px-6 py-4 rounded-full font-bold text-lg transition-all active:scale-95 shadow-lg disabled:bg-gray-300"
+                className="w-full text-white px-6 py-4 rounded-full font-bold text-lg transition-all active:scale-95 shadow-lg disabled:bg-gray-300 flex items-center justify-center gap-2"
                 style={{ backgroundColor: visual.navbarColor }}
               >
+                {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
                 {isProcessing ? "Memproses..." : "Bayar Sekarang"}
               </button>
             </div>
@@ -396,7 +493,7 @@ function CheckoutContent() {
         </div>
       </div>
 
-      {/* Divider Lingkaran (Sama dengan ProductDetailSection) */}
+      {/* DIVIDER LINGKARAN */}
       <div className="absolute bottom-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none z-0">
         <div className="flex w-max gap-[15px] animate-slide-right-40s">
           {Array.from({ length: 80 }).map((_, i) => (
@@ -409,6 +506,42 @@ function CheckoutContent() {
         </div>
       </div>
 
+      {/* MODAL QRIS */}
+      {isQrisModalOpen && qrisData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-sm p-6 relative shadow-xl transform transition-all text-center">
+            <button
+              onClick={() => setIsQrisModalOpen(false)}
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <h3 className="text-xl font-bold font-['Nohemi'] mb-2" style={{ color: visual.navbarColor }}>
+              Selesaikan Pembayaran
+            </h3>
+            <p className="text-sm text-gray-500 font-['Parkinsans'] mb-6">
+              Scan QR Code ini menggunakan aplikasi e-wallet atau m-banking Anda.
+            </p>
+
+            <div className="bg-white p-4 rounded-2xl border-2 border-gray-100 inline-block shadow-sm">
+              {/* Render String QRIS ke dalam gambar menggunakan Public API */}
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrisData.qr_string)}`}
+                alt="QRIS Payment"
+                className="w-48 h-48 mx-auto"
+              />
+            </div>
+
+            <div className="mt-6 p-4 rounded-xl bg-blue-50 text-blue-800 text-sm font-['Parkinsans'] flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+              Menunggu pembayaran...
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL STATUS */}
       <StatusModal
         isOpen={modal.isOpen}
         onClose={() => {
@@ -430,7 +563,7 @@ export default function CheckoutPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="animate-spin" />
+          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
         </div>
       }
     >
