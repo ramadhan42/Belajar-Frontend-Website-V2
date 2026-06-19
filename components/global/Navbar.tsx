@@ -6,6 +6,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useNavbarColor } from "@/context/NavbarColorContext";
 import { logout } from "@/lib/api";
+// Tambahkan import framer-motion untuk animasi
+import { motion, AnimatePresence } from "framer-motion";
 
 // Tipe data untuk konfigurasi status modal navbar
 interface NavModalState {
@@ -123,6 +125,7 @@ export default function Navbar() {
         message: "Sampai jumpa kembali di Evomi!",
       });
 
+      // Timeout disamakan dengan durasi animasi loading bar
       setTimeout(() => {
         setNavModal((prev) => ({ ...prev, isOpen: false }));
         router.push("/");
@@ -347,61 +350,94 @@ export default function Navbar() {
         )}
       </nav>
 
-      {/* ================= CUSTOM MODAL COMPONENT (Z-INDEX SUPER TINGGI) ================= */}
-      {navModal.isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-          <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
-            
-            {/* Ikon Dinamis Berdasarkan Tipe Modal */}
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm">
-              {navModal.type === 'confirm' && (
-                <svg className="h-8 w-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              )}
-              {navModal.type === 'success' && (
-                <svg className="h-8 w-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-              {navModal.type === 'loading' && (
-                <svg className="h-8 w-8 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              )}
-            </div>
-
-            {/* Teks Modal */}
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold text-white uppercase tracking-wide">
-                {navModal.title}
-              </h3>
-              <p className="text-sm text-blue-100/80 font-light leading-relaxed">
-                {navModal.message}
-              </p>
-            </div>
-
-            {/* Tombol Aksi (Hanya muncul jika tipe modal adalah konfirmasi) */}
-            {navModal.type === 'confirm' && (
-              <div className="flex space-x-3 mt-4 pt-2">
-                <button
-                  onClick={() => setNavModal((prev) => ({ ...prev, isOpen: false }))}
-                  className="w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] bg-white/20 text-white hover:bg-white/30"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={navModal.onConfirm}
-                  className="w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] bg-red-500 text-white hover:bg-red-600"
-                >
-                  {navModal.confirmText}
-                </button>
+      {/* ================= CUSTOM MODAL COMPONENT (DI-UPGRADE) ================= */}
+      <AnimatePresence>
+        {navModal.isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            onClick={() => {
+              // Boleh tutup jika klik overlay pada saat di tahap konfirmasi
+              if (navModal.type === "confirm") {
+                setNavModal((prev) => ({ ...prev, isOpen: false }));
+              }
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative bg-white rounded-[24px] p-8 max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
+            >
+              {/* Ikon Dinamis */}
+              <div className={`mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5 transition-colors duration-300
+                ${navModal.type === 'success' ? 'bg-green-50 text-green-500' : ''}
+                ${navModal.type === 'confirm' ? 'bg-amber-50 text-amber-500' : ''}
+                ${navModal.type === 'loading' ? 'bg-blue-50 text-blue-500' : ''}
+              `}>
+                {navModal.type === 'confirm' && (
+                  <motion.svg initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", bounce: 0.5 }} className="h-10 w-10 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </motion.svg>
+                )}
+                {navModal.type === 'success' && (
+                  <motion.svg initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5 }} className="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </motion.svg>
+                )}
+                {navModal.type === 'loading' && (
+                  <svg className="h-10 w-10 animate-spin text-[#1172BA]" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-      )}
+
+              {/* Teks Modal */}
+              <div className="space-y-3">
+                <h3 className="text-[20px] font-bold text-gray-800 tracking-wide">
+                  {navModal.title}
+                </h3>
+                <p className="text-[14px] text-gray-500 leading-relaxed">
+                  {navModal.message}
+                </p>
+              </div>
+
+              {/* Tombol Aksi (Hanya muncul jika tipe modal adalah konfirmasi) */}
+              {navModal.type === 'confirm' && (
+                <div className="flex space-x-3 mt-6">
+                  <button
+                    onClick={() => setNavModal((prev) => ({ ...prev, isOpen: false }))}
+                    className="w-full font-bold py-3 rounded-xl transition-all text-[14px] bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={navModal.onConfirm}
+                    className="w-full font-bold py-3 rounded-xl transition-all text-[14px] bg-red-500 text-white hover:bg-red-600"
+                  >
+                    {navModal.confirmText}
+                  </button>
+                </div>
+              )}
+
+              {/* Animated Progress Bar di Bawah (Visual Timer - Untuk Success Logout) */}
+              {navModal.type === "success" && (
+                <motion.div
+                  initial={{ width: "100%" }}
+                  animate={{ width: "0%" }}
+                  transition={{ duration: 1.2, ease: "linear" }}
+                  className="absolute bottom-0 left-0 h-[4px] bg-green-500"
+                />
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

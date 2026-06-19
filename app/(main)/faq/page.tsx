@@ -136,7 +136,6 @@ export default function FAQPage() {
         )}
       </div>
 
-      {/* Contact Section tetap sama */}
       {/* Contact Section */}
       <motion.div
         initial={{ opacity: 0 }}
