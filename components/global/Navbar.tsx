@@ -63,7 +63,12 @@ export default function Navbar() {
   }, []);
 
   // --- LOGIC CUSTOM MODAL NAVIGASI ---
-  const handleNavAction = (e: React.MouseEvent, path: string, title: string, message: string) => {
+  const handleNavAction = (
+    e: React.MouseEvent,
+    path: string,
+    title: string,
+    message: string,
+  ) => {
     e.preventDefault(); // Mencegah routing instan bawaan <Link>
     setIsOpen(false); // Tutup menu mobile jika sedang terbuka
 
@@ -116,7 +121,7 @@ export default function Navbar() {
       setUserEmail(null);
       window.dispatchEvent(new Event("auth-change"));
       setIsLogoutLoading(false);
-      
+
       // Tampilkan pesan sukses sebentar
       setNavModal({
         isOpen: true,
@@ -161,9 +166,16 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="md:ml-2 flex-shrink-0 mb-1 md:mb-2.5">
-            <Link 
+            <Link
               href="/"
-              onClick={(e) => handleNavAction(e, "/", "Beranda Utama", "Mengarahkan ke halaman utama Evomi...")}
+              onClick={(e) =>
+                handleNavAction(
+                  e,
+                  "/",
+                  "Beranda Utama",
+                  "Mengarahkan ke halaman utama Evomi...",
+                )
+              }
             >
               <Image
                 src="/src/images/navbar/evomi-logo.png"
@@ -178,30 +190,58 @@ export default function Navbar() {
 
           {/* DESKTOP VIEW: MENU TENGAH */}
           <div className="hidden md:flex items-center space-x-2">
-            <Link 
-              href="/" 
-              onClick={(e) => handleNavAction(e, "/", "Beranda Utama", "Mengarahkan ke halaman utama Evomi...")}
+            <Link
+              href="/"
+              onClick={(e) =>
+                handleNavAction(
+                  e,
+                  "/",
+                  "Beranda Utama",
+                  "Mengarahkan ke halaman utama Evomi...",
+                )
+              }
               className={navLinkClass}
             >
               Beranda
             </Link>
-            <Link 
-              href="/#third-section" 
-              onClick={(e) => handleNavAction(e, "/#third-section", "Tentang Evomi", "Mengarahkan ke informasi tentang Evomi...")}
+            <Link
+              href="/#third-section"
+              onClick={(e) =>
+                handleNavAction(
+                  e,
+                  "/#third-section",
+                  "Tentang Evomi",
+                  "Mengarahkan ke informasi tentang Evomi...",
+                )
+              }
               className={navLinkClass}
             >
               Tentang
             </Link>
             <Link
               href="/belanja"
-              onClick={(e) => handleNavAction(e, "/belanja", "Katalog Produk", "Mengarahkan ke halaman belanja Evomi...")}
+              onClick={(e) =>
+                handleNavAction(
+                  e,
+                  "/belanja",
+                  "Katalog Produk",
+                  "Mengarahkan ke halaman belanja Evomi...",
+                )
+              }
               className={navLinkClass}
             >
               Belanja
             </Link>
             <Link
               href="/kuis"
-              onClick={(e) => handleNavAction(e, "/kuis", "Kuis Persona", "Mengarahkan ke halaman Kuis Karakteristik...")}
+              onClick={(e) =>
+                handleNavAction(
+                  e,
+                  "/kuis",
+                  "Kuis Persona",
+                  "Mengarahkan ke halaman Kuis Karakteristik...",
+                )
+              }
               className={navLinkClass}
             >
               Kuis
@@ -214,7 +254,14 @@ export default function Navbar() {
               <>
                 <Link
                   href="/profile"
-                  onClick={(e) => handleNavAction(e, "/profile", "Profil Pengguna", "Membuka halaman profil Anda...")}
+                  onClick={(e) =>
+                    handleNavAction(
+                      e,
+                      "/profile",
+                      "Profil Pengguna",
+                      "Membuka halaman profil Anda...",
+                    )
+                  }
                   className="flex items-center justify-center w-[44px] h-[44px] rounded-full bg-white text-[var(--nav-color)] font-bold text-[18px] border border-white hover:bg-transparent hover:text-white transition-colors duration-300"
                   title={userEmail}
                 >
@@ -225,12 +272,18 @@ export default function Navbar() {
                   onClick={confirmLogout}
                   disabled={isLogoutLoading}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "white";
-                    (e.currentTarget as HTMLButtonElement).style.color = `${navbarColor}99`;
+                    (
+                      e.currentTarget as HTMLButtonElement
+                    ).style.backgroundColor = "white";
+                    (e.currentTarget as HTMLButtonElement).style.color =
+                      `${navbarColor}99`;
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(255,255,255,0.15)";
-                    (e.currentTarget as HTMLButtonElement).style.color = "white";
+                    (
+                      e.currentTarget as HTMLButtonElement
+                    ).style.backgroundColor = "rgba(255,255,255,0.15)";
+                    (e.currentTarget as HTMLButtonElement).style.color =
+                      "white";
                   }}
                   className={`${navLinkClass} bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed`}
                   style={{ color: "white" }}
@@ -240,16 +293,30 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link 
-                  href="/login" 
-                  onClick={(e) => handleNavAction(e, "/login", "Halaman Masuk", "Mengarahkan ke halaman masuk...")}
+                <Link
+                  href="/login"
+                  onClick={(e) =>
+                    handleNavAction(
+                      e,
+                      "/login",
+                      "Halaman Masuk",
+                      "Mengarahkan ke halaman masuk...",
+                    )
+                  }
                   className={navLinkClass}
                 >
                   Login
                 </Link>
-                <Link 
-                  href="/register" 
-                  onClick={(e) => handleNavAction(e, "/register", "Halaman Pendaftaran", "Mengarahkan ke halaman pendaftaran...")}
+                <Link
+                  href="/register"
+                  onClick={(e) =>
+                    handleNavAction(
+                      e,
+                      "/register",
+                      "Halaman Pendaftaran",
+                      "Mengarahkan ke halaman pendaftaran...",
+                    )
+                  }
                   className={navLinkClass}
                 >
                   Daftar
@@ -265,9 +332,33 @@ export default function Navbar() {
               className="text-white focus:outline-none p-2"
             >
               {isOpen ? (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               ) : (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
               )}
             </button>
           </div>
@@ -277,44 +368,88 @@ export default function Navbar() {
         {isOpen && (
           <div
             className="md:hidden absolute left-0 right-0 top-full mt-3 px-6 py-5 flex flex-col space-y-2 shadow-xl rounded-2xl border z-40 transition-colors duration-0"
-            style={{ backgroundColor: navbarColor, borderColor: `${navbarColor}99` }}
+            style={{
+              backgroundColor: navbarColor,
+              borderColor: `${navbarColor}99`,
+            }}
           >
-            <Link 
-              href="/" 
-              onClick={(e) => handleNavAction(e, "/", "Beranda Utama", "Mengarahkan ke halaman utama Evomi...")} 
+            <Link
+              href="/"
+              onClick={(e) =>
+                handleNavAction(
+                  e,
+                  "/",
+                  "Beranda Utama",
+                  "Mengarahkan ke halaman utama Evomi...",
+                )
+              }
               className={navLinkClass}
             >
               Beranda
             </Link>
-            <Link 
-              href="/#third-section" 
-              onClick={(e) => handleNavAction(e, "/#third-section", "Tentang Evomi", "Mengarahkan ke informasi tentang Evomi...")} 
+            <Link
+              href="/#third-section"
+              onClick={(e) =>
+                handleNavAction(
+                  e,
+                  "/#third-section",
+                  "Tentang Evomi",
+                  "Mengarahkan ke informasi tentang Evomi...",
+                )
+              }
               className={navLinkClass}
             >
               Tentang
             </Link>
             <Link
               href="/belanja"
-              onClick={(e) => handleNavAction(e, "/belanja", "Katalog Produk", "Mengarahkan ke halaman belanja Evomi...")}
+              onClick={(e) =>
+                handleNavAction(
+                  e,
+                  "/belanja",
+                  "Katalog Produk",
+                  "Mengarahkan ke halaman belanja Evomi...",
+                )
+              }
               className={navLinkClass}
             >
               Belanja
             </Link>
             <Link
               href="/kuis"
-              onClick={(e) => handleNavAction(e, "/kuis", "Kuis Persona", "Mengarahkan ke halaman Kuis Karakteristik...")}
+              onClick={(e) =>
+                handleNavAction(
+                  e,
+                  "/kuis",
+                  "Kuis Persona",
+                  "Mengarahkan ke halaman Kuis Karakteristik...",
+                )
+              }
               className={navLinkClass}
             >
               Kuis
             </Link>
 
-            <div className="my-3 transition-colors duration-300" style={{ borderTopColor: `${navbarColor}99`, borderTopWidth: "1px" }} />
+            <div
+              className="my-3 transition-colors duration-300"
+              style={{
+                borderTopColor: `${navbarColor}99`,
+                borderTopWidth: "1px",
+              }}
+            />
 
             {userEmail ? (
               <div className="flex flex-col items-center space-y-3 w-full">
                 <Link
                   href="/profile"
-                  onClick={(e) => handleNavAction(e, "/profile", "Profil Pengguna", "Membuka halaman profil Anda...")}
+                  onClick={(e) =>
+                    handleNavAction(
+                      e,
+                      "/profile",
+                      "Profil Pengguna",
+                      "Membuka halaman profil Anda...",
+                    )
+                  }
                   className="flex items-center justify-center w-[44px] h-[44px] rounded-full bg-white text-[var(--nav-color)] font-bold text-[18px] border border-white hover:bg-transparent hover:text-white transition-colors duration-300"
                 >
                   {userEmail.charAt(0).toUpperCase()}
@@ -330,16 +465,30 @@ export default function Navbar() {
               </div>
             ) : (
               <>
-                <Link 
-                  href="/login" 
-                  onClick={(e) => handleNavAction(e, "/login", "Halaman Masuk", "Mengarahkan ke halaman masuk...")} 
+                <Link
+                  href="/login"
+                  onClick={(e) =>
+                    handleNavAction(
+                      e,
+                      "/login",
+                      "Halaman Masuk",
+                      "Mengarahkan ke halaman masuk...",
+                    )
+                  }
                   className={navLinkClass}
                 >
                   Login
                 </Link>
-                <Link 
-                  href="/register" 
-                  onClick={(e) => handleNavAction(e, "/register", "Halaman Pendaftaran", "Mengarahkan ke halaman pendaftaran...")} 
+                <Link
+                  href="/register"
+                  onClick={(e) =>
+                    handleNavAction(
+                      e,
+                      "/register",
+                      "Halaman Pendaftaran",
+                      "Mengarahkan ke halaman pendaftaran...",
+                    )
+                  }
                   className={navLinkClass}
                 >
                   Daftar
@@ -374,25 +523,68 @@ export default function Navbar() {
               className="relative bg-white rounded-[24px] p-8 max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
             >
               {/* Ikon Dinamis */}
-              <div className={`mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5 transition-colors duration-300
-                ${navModal.type === 'success' ? 'bg-green-50 text-green-500' : ''}
-                ${navModal.type === 'confirm' ? 'bg-amber-50 text-amber-500' : ''}
-                ${navModal.type === 'loading' ? 'bg-blue-50 text-blue-500' : ''}
-              `}>
-                {navModal.type === 'confirm' && (
-                  <motion.svg initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", bounce: 0.5 }} className="h-10 w-10 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <div
+                className={`mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5 transition-colors duration-300
+                ${navModal.type === "success" ? "bg-green-50 text-green-500" : ""}
+                ${navModal.type === "confirm" ? "bg-amber-50 text-amber-500" : ""}
+                ${navModal.type === "loading" ? "bg-blue-50 text-blue-500" : ""}
+              `}
+              >
+                {navModal.type === "confirm" && (
+                  <motion.svg
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", bounce: 0.5 }}
+                    className="h-10 w-10 text-amber-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </motion.svg>
                 )}
-                {navModal.type === 'success' && (
-                  <motion.svg initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5 }} className="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                {navModal.type === "success" && (
+                  <motion.svg
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="h-10 w-10 text-green-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 13l4 4L19 7"
+                    />
                   </motion.svg>
                 )}
-                {navModal.type === 'loading' && (
-                  <svg className="h-10 w-10 animate-spin text-[#1172BA]" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                {navModal.type === "loading" && (
+                  <svg
+                    className="h-10 w-10 animate-spin text-[#1172BA]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                 )}
               </div>
@@ -408,10 +600,12 @@ export default function Navbar() {
               </div>
 
               {/* Tombol Aksi (Hanya muncul jika tipe modal adalah konfirmasi) */}
-              {navModal.type === 'confirm' && (
+              {navModal.type === "confirm" && (
                 <div className="flex space-x-3 mt-6">
                   <button
-                    onClick={() => setNavModal((prev) => ({ ...prev, isOpen: false }))}
+                    onClick={() =>
+                      setNavModal((prev) => ({ ...prev, isOpen: false }))
+                    }
                     className="w-full font-bold py-3 rounded-xl transition-all text-[14px] bg-gray-100 text-gray-700 hover:bg-gray-200"
                   >
                     Batal
