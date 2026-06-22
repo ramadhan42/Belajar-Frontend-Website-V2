@@ -20,14 +20,13 @@ import {
 import { useNavbarColor } from "@/context/NavbarColorContext";
 
 interface GroupedHistory {
-  groupId: number;
+  groupId: string; // PERBAIKAN: Diubah dari number menjadi string untuk mendukung UUID/MongoDB ObjectId
   created_at: string;
   items: ShoppingHistoryItem[];
   totalGroupPrice: number;
   totalQuantity: number;
 }
 
-// Konfigurasi tipe untuk custom modal
 interface ModalState {
   isOpen: boolean;
   type: "confirm" | "loading" | "success" | "error";
@@ -48,7 +47,6 @@ export default function HistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // State untuk custom modal
   const [modal, setModal] = useState<ModalState>({
     isOpen: false,
     type: "loading",
@@ -75,7 +73,7 @@ export default function HistoryPage() {
 
           if (!acc[key]) {
             acc[key] = {
-              groupId: item.id, // Kita gunakan ID pesanan pertama sebagai representasi grup
+              groupId: String(item.id), // PERBAIKAN: Pastikan ID disimpan sebagai string aman
               created_at: key,
               items: [],
               totalGroupPrice: 0,
@@ -122,7 +120,6 @@ export default function HistoryPage() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = history.slice(indexOfFirstItem, indexOfLastItem);
 
-  // FUNGSI HELPER UNTUK STATUS WARNA & LABEL
   const getStatusConfig = (status?: string) => {
     switch (status) {
       case "menunggu_konfirmasi":
@@ -151,7 +148,6 @@ export default function HistoryPage() {
           color: "bg-green-100 text-green-800 border-green-200",
         };
       default:
-        // Fallback untuk riwayat lama sebelum fitur ini ada
         return {
           label: status || "Selesai",
           color: "bg-gray-100 text-gray-800 border-gray-200",
@@ -159,7 +155,6 @@ export default function HistoryPage() {
     }
   };
 
-  // FUNGSI TRIGGER CUSTOM MODAL: KONFIRMASI TERIMA BARANG
   const confirmReceipt = (e: React.MouseEvent, group: GroupedHistory) => {
     e.preventDefault();
     setModal({
@@ -178,7 +173,6 @@ export default function HistoryPage() {
         });
 
         try {
-          // Asumsi backend Endpoint: PATCH /api/orders/{id}/confirm
           const response = await fetch(
             `${process.env.NEXT_PUBLIC_URL}/api/orders/${group.groupId}/confirm`,
             {
@@ -192,7 +186,6 @@ export default function HistoryPage() {
 
           if (!response.ok) throw new Error("Gagal konfirmasi pesanan");
 
-          // Update UI state secara langsung agar tidak perlu reload page
           setHistory((prev) =>
             prev.map((g) => {
               if (g.groupId === group.groupId) {
@@ -225,7 +218,6 @@ export default function HistoryPage() {
     });
   };
 
-  // FUNGSI TRIGGER CUSTOM MODAL: HAPUS RIWAYAT
   const confirmDeleteGroup = (e: React.MouseEvent, group: GroupedHistory) => {
     e.preventDefault();
     setModal({
@@ -306,10 +298,13 @@ export default function HistoryPage() {
               : "Tanggal tidak diketahui";
 
             const firstItem = group.items[0];
-            const invoiceId = `INV-${group.groupId.toString().padStart(6, "0")}`;
 
-            // Konfigurasi visual berdasarkan status
-            // Note: Tambahkan 'status?: string' di tipe ShoppingHistoryItem api.ts jika belum ada
+            // KODE BARU (MENAMPILKAN ID SECARA UTUH):
+            const isNumericId = /^\d+$/.test(group.groupId);
+            const invoiceId = isNumericId
+              ? `#INV-${group.groupId}` // Langsung tampilkan seluruh angka tanpa batasan pad
+              : `#${group.groupId.toUpperCase()}`; // Tampilkan seluruh hash alfanumerik utuh
+
             const currentStatus = (firstItem as any).status || "Selesai";
             const statusConfig = getStatusConfig(currentStatus);
 
@@ -381,14 +376,12 @@ export default function HistoryPage() {
                 </div>
 
                 <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-0 border-gray-50">
-                  {/* Badge Status */}
                   <span
                     className={`px-3 py-1.5 rounded-full text-xs font-bold border ${statusConfig.color}`}
                   >
                     {statusConfig.label}
                   </span>
 
-                  {/* Tombol Konfirmasi Diterima (Hanya muncul saat status dalam perjalanan) */}
                   {currentStatus === "dalam_perjalanan" && (
                     <button
                       onClick={(e) => confirmReceipt(e, group)}
@@ -400,8 +393,6 @@ export default function HistoryPage() {
                     </button>
                   )}
 
-                  {/* PERBAIKAN: Tombol Hapus (Hanya muncul jika sudah selesai/diterima) */}
-                  {/* Ubah "Selesai" menjadi "selesai" menyesuaikan data dari backend */}
                   {(currentStatus === "diterima" ||
                     currentStatus === "selesai") && (
                     <button

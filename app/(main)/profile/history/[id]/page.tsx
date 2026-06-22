@@ -83,8 +83,8 @@ export default function HistoryDetailPage() {
       case "diterima":
         return {
           label: "Diterima",
-          color: "bg-blue-100 text-blue-800 border-blue-200",
-          icon: <CheckCircle2 className="w-5 h-5 text-blue-600" />,
+          color: "bg-teal-100 text-teal-800 border-teal-200",
+          icon: <CheckCircle2 className="w-5 h-5 text-teal-600" />,
         };
       case "selesai":
         return {
@@ -108,7 +108,11 @@ export default function HistoryDetailPage() {
         setError(null);
 
         const allHistory = await getShoppingHistory();
-        const targetItem = allHistory.find((item) => item.id === Number(id));
+        // const targetItem = allHistory.find((item) => String(item.id) === String(id));
+        // PERBAIKAN: Jadikan string agar cocok dengan ObjectId / UUID / Numerik
+        const targetItem = allHistory.find(
+          (item) => String(item.id) === String(id),
+        );
 
         if (targetItem) {
           const group = allHistory.filter(
@@ -177,8 +181,9 @@ export default function HistoryDetailPage() {
             }),
           );
 
+          // Update lokal ke 'selesai' agar tombol konfirmasi otomatis tersembunyi
           setHistoryGroup((prev) =>
-            prev.map((item) => ({ ...item, status: "diterima" })),
+            prev.map((item) => ({ ...item, status: "selesai" })),
           );
 
           setModal({
@@ -190,7 +195,7 @@ export default function HistoryDetailPage() {
 
           setTimeout(() => {
             closeModal();
-            window.location.reload();
+            router.refresh();
           }, 1500);
         } catch (err) {
           setModal({
@@ -274,7 +279,7 @@ export default function HistoryDetailPage() {
         </h2>
         <button
           onClick={() => router.push("/profile/history")}
-          className="px-6 py-2.5 bg-black text-white rounded-xl font-medium"
+          className="px-6 py-2.5 bg-black text-white rounded-xl font-medium shadow-sm transition-transform active:scale-95"
         >
           Kembali ke Riwayat
         </button>
@@ -294,7 +299,7 @@ export default function HistoryDetailPage() {
         minute: "2-digit",
       })
     : "-";
-  const invoiceId = `INV-${representativeItem.id.toString().padStart(6, "0")}`;
+  const invoiceId = `${representativeItem.id.toString().padStart(6, "0")}`;
   const currentStatus = (representativeItem as any).status || "selesai";
   const statusConfig = getStatusConfig(currentStatus);
   const subtotalProducts = historyGroup.reduce((acc, curr) => {
@@ -311,11 +316,11 @@ export default function HistoryDetailPage() {
       <div className="max-w-4xl mx-auto px-4 pt-6 pb-2">
         <button
           onClick={() => router.push("/profile/history")}
-          className="flex items-center gap-2 text-gray-600 hover:text-black font-medium mb-6"
+          className="flex items-center gap-2 text-gray-600 hover:text-black font-medium mb-6 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" /> Kembali ke Riwayat
         </button>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
           Detail Pesanan
         </h1>
       </div>
@@ -337,21 +342,23 @@ export default function HistoryDetailPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-            {/* Logic Update: Tombol muncul jika bukan 'selesai' DAN bukan 'pengemasan' */}
-            {currentStatus !== "menunggu_konfirmasi" && currentStatus !== "selesai" && currentStatus !== "pengemasan" && (
-              <button
-                onClick={handleConfirmReceipt}
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                Konfirmasi Pesanan
-              </button>
-            )}
+            {currentStatus !== "menunggu_konfirmasi" &&
+              currentStatus !== "selesai" &&
+              currentStatus !== "diterima" &&
+              currentStatus !== "pengemasan" && (
+                <button
+                  onClick={handleConfirmReceipt}
+                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5 active:scale-95"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Konfirmasi Pesanan
+                </button>
+              )}
 
             <div className="sm:text-right">
               <p className="text-xs text-gray-400 mb-0.5">No. Invoice</p>
               <p className="font-bold text-gray-900 bg-gray-50 px-3 py-1 rounded-lg inline-block border border-gray-100 text-sm">
-                {invoiceId}
+                #{invoiceId}
               </p>
             </div>
           </div>
@@ -400,13 +407,13 @@ export default function HistoryDetailPage() {
                         </p>
                       </div>
 
-                      {/* Tombol Pemicu Modal Hapus Item */}
+                      {/* Perbaikan Bug Case-sensitivity 'selesai' huruf kecil */}
                       {((item as any).status === "diterima" ||
-                        (item as any).status === "Selesai" ||
+                        (item as any).status === "selesai" ||
                         !item.status) && (
                         <button
                           onClick={() => confirmDeleteItem(item)}
-                          className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
                           title="Hapus Item"
                         >
                           <Trash2 className="w-5 h-5" />
@@ -442,7 +449,9 @@ export default function HistoryDetailPage() {
               <div className="flex justify-between items-center text-gray-600">
                 <span>Metode Pembayaran</span>
                 <span className="font-medium text-gray-900 bg-gray-100 px-3 py-1 rounded-md">
-                  Transfer / E-Wallet
+                  {/* Mengambil data payment_method dari API */}
+                  {(representativeItem as any).metode_pembayaran ||
+                    "Tidak diketahui"}
                 </span>
               </div>
               <div className="flex justify-between items-center text-gray-600">
@@ -483,36 +492,31 @@ export default function HistoryDetailPage() {
           </div>
         </div>
 
-        {/* Modal Component */}
-        {/* ================= CUSTOM MODAL COMPONENT ================= */}
+        {/* Modern Minimalist Dynamic Accent Modal */}
         {modal.isOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-            <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
-              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-fade-in">
+            <div className="bg-white border border-gray-100 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
+              <div
+                className="mx-auto flex items-center justify-center h-16 w-16 rounded-full transition-colors"
+                style={{
+                  backgroundColor: `${modal.title.includes("Hapus") ? "#FEF2F2" : `${themeColor}15`}`,
+                }}
+              >
                 {modal.type === "confirm" &&
                   (modal.title.includes("Hapus") ? (
-                    <Trash2 className="w-8 h-8 text-amber-400" />
+                    <Trash2 className="w-8 h-8 text-red-500" />
                   ) : (
-                    <CheckCircle2 className="w-8 h-8 text-green-400" />
+                    <CheckCircle2
+                      className="w-8 h-8"
+                      style={{ color: themeColor }}
+                    />
                   ))}
                 {modal.type === "success" && (
-                  <svg
-                    className="h-8 w-8 text-green-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
+                  <CheckCircle2 className="w-8 h-8 text-green-500" />
                 )}
                 {modal.type === "error" && (
                   <svg
-                    className="h-8 w-8 text-red-400"
+                    className="h-8 w-8 text-red-500"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -526,33 +530,18 @@ export default function HistoryDetailPage() {
                   </svg>
                 )}
                 {modal.type === "loading" && (
-                  <svg
-                    className="h-8 w-8 text-white animate-spin"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
+                  <Loader2
+                    className="h-8 w-8 animate-spin"
+                    style={{ color: themeColor }}
+                  />
                 )}
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-xl font-bold text-white uppercase tracking-wide">
+                <h3 className="text-xl font-bold text-gray-900 tracking-wide uppercase">
                   {modal.title}
                 </h3>
-                <p className="text-sm text-blue-100/80 font-light leading-relaxed">
+                <p className="text-sm text-gray-500 font-normal leading-relaxed">
                   {modal.message}
                 </p>
               </div>
@@ -561,17 +550,18 @@ export default function HistoryDetailPage() {
                 <div className="flex space-x-3 mt-4 pt-2">
                   <button
                     onClick={closeModal}
-                    className="w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] bg-white/20 text-white hover:bg-white/30"
+                    className="w-full font-semibold py-3 rounded-xl transition-all text-sm shadow-sm bg-gray-100 text-gray-700 hover:bg-gray-200"
                   >
                     Batal
                   </button>
                   <button
                     onClick={modal.onConfirm}
-                    className={`w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] text-white ${
-                      modal.title.includes("Hapus")
-                        ? "bg-red-500 hover:bg-red-600"
-                        : "bg-green-500 hover:bg-green-600"
-                    }`}
+                    className="w-full font-semibold py-3 rounded-xl transition-all text-sm shadow-sm text-white hover:opacity-90 active:scale-95"
+                    style={{
+                      backgroundColor: modal.title.includes("Hapus")
+                        ? "#EF4444"
+                        : themeColor,
+                    }}
                   >
                     {modal.confirmText}
                   </button>
@@ -580,7 +570,8 @@ export default function HistoryDetailPage() {
               {(modal.type === "success" || modal.type === "error") && (
                 <button
                   onClick={closeModal}
-                  className="w-full mt-4 bg-white text-[#1172ba] font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md hover:bg-blue-50"
+                  className="w-full mt-4 text-white font-semibold py-3 rounded-xl transition-all text-sm shadow-sm hover:opacity-90 active:scale-95"
+                  style={{ backgroundColor: themeColor }}
                 >
                   Tutup
                 </button>

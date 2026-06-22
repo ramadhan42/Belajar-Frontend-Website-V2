@@ -62,7 +62,7 @@ const VISUAL_BY_PERSONALITY: Record<
 
 const VISUAL_FALLBACK = VISUAL_BY_PERSONALITY["purpose_prestige"];
 
-// XENDIT AUTH KEY (dari parameter curl Anda)
+// XENDIT AUTH KEY
 const XENDIT_AUTH =
   "Basic eG5kX2RldmVsb3BtZW50X3RLblFjYm5aVDVzbEFKYjJqSTVVeUQ3cVQ3VWRZUHE4cUp6MmdFNjFySXo3YUEyZklSTGdiOEJ2TEZsZDo=";
 
@@ -78,13 +78,22 @@ function CheckoutContent() {
     message: "",
     type: "success",
   });
+
+  // State untuk Data Pengiriman
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    courier: "JNE",
+  });
+
   const { setNavbarAndFooterColor } = useNavbarColor();
   const searchParams = useSearchParams();
   const type = searchParams.get("type");
   const productId = searchParams.get("productId");
 
   const [items, setItems] = useState<CheckoutItemType[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState("qris");
+  const [paymentMethod, setPaymentMethod] = useState("qris"); // "qris" atau "cash"
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -93,24 +102,25 @@ function CheckoutContent() {
   const [qrisData, setQrisData] = useState<{
     id: string;
     qr_string: string;
+    invoice_id: string;
   } | null>(null);
   const [isQrisModalOpen, setIsQrisModalOpen] = useState(false);
 
   const ongkosKirim = 2000;
 
-  // 1. Tentukan visual berdasarkan item pertama yang di-checkout
+  // Tentukan visual berdasarkan item pertama yang di-checkout
   const visual = useMemo(() => {
     const firstItemType = items[0]?.personality_type;
     return VISUAL_BY_PERSONALITY[firstItemType ?? ""] ?? VISUAL_FALLBACK;
   }, [items]);
 
-  // 2. Set warna navbar & footer saat visual berubah
+  // Set warna navbar & footer saat visual berubah
   useEffect(() => {
     setNavbarAndFooterColor(visual.navbarColor);
     return () => setNavbarAndFooterColor("#000000");
   }, [visual.navbarColor, setNavbarAndFooterColor]);
 
-  // 3. Fetch Data Awal
+  // Fetch Data Awal
   useEffect(() => {
     const fetchCheckoutData = async () => {
       try {
@@ -132,7 +142,7 @@ function CheckoutContent() {
             quantity: item.quantity,
             image:
               getProductImageUrl(
-                item.product?.image_produk_belanja || item.product?.image_1
+                item.product?.image_produk_belanja || item.product?.image_1,
               ) || "/placeholder.jpg",
             personality_type: item.product?.personality_type || "prestige",
           }));
@@ -148,7 +158,7 @@ function CheckoutContent() {
               quantity: 1,
               image:
                 getProductImageUrl(
-                  productData.image_produk_belanja || productData.image_1
+                  productData.image_produk_belanja || productData.image_1,
                 ) || "/placeholder.jpg",
               personality_type: productData.personality_type || "prestige",
             },
@@ -168,42 +178,68 @@ function CheckoutContent() {
 
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
   const totalTagihan = subtotal + ongkosKirim;
 
-  // 4. Proses Simpan Pesanan ke Internal API (Dipanggil setelah QRIS Berhasil / COD)
-  const processInternalCheckout = async () => {
+  // Fungsi untuk memproses data internal ke Laravel backend
+  const processInternalCheckout = async (customInvoiceId: string) => {
     try {
       setIsProcessing(true);
+
+      // Konversi value string ke format yang rapi dan sesuai permintaan backend Anda
+      const formattedPaymentMethod = paymentMethod === "qris" ? "QRIS" : "Cash on Delivery";
+
+      // 1. Kirim data transaksi ke OrderController
       const res = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
           Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
         body: JSON.stringify({
+          invoice_id: customInvoiceId,
           items: items,
-          payment_method: paymentMethod,
+          payment_method: formattedPaymentMethod, // Mengirim "QRIS" atau "Cash on Delivery"
           total: totalTagihan,
+          recipient_name: formData.name,
+          recipient_phone: formData.phone,
+          recipient_address: formData.address,
+          courier: formData.courier,
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Gagal memproses pembayaran");
+      if (!res.ok) throw new Error("Gagal memproses pembuatan pesanan");
+
+      // 2. Simpan ke sistem Order Tracking (Melacak Perjalanan Paket)
+      await fetch(`${process.env.NEXT_PUBLIC_URL}/api/trackings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+        body: JSON.stringify({
+          order_id: customInvoiceId,
+          status: "Menunggu Konfirmasi",
+          courier: formData.courier,
+          recipient_name: formData.name,
+          recipient_phone: formData.phone,
+          recipient_address: formData.address,
+          timeline: [{ status: "Pesanan dibuat", date: new Date().toISOString() }]
+        }),
+      });
 
       setModal({
         isOpen: true,
         title: "Berhasil!",
-        message: "Pembayaran Anda telah kami terima.",
+        message: "Pesanan Anda berhasil dibuat dan sedang diproses.",
         type: "success",
       });
     } catch (err: any) {
       setModal({
         isOpen: true,
         title: "Gagal",
-        message: err.message || "Terjadi kesalahan.",
+        message: err.message || "Terjadi kesalahan sistem.",
         type: "error",
       });
     } finally {
@@ -211,13 +247,18 @@ function CheckoutContent() {
     }
   };
 
-  // 5. Handler Klik Tombol "Bayar Sekarang"
   const handleCheckout = async () => {
+    if (!formData.name || !formData.address || !formData.phone) {
+      alert("Mohon lengkapi data pengiriman!");
+      return;
+    }
+
+    const invoiceId = `INV-${Math.floor(Math.random() * 1000000)}`;
+
     if (paymentMethod === "qris") {
       setIsProcessing(true);
       try {
-        const orderId = `evomi-id-${Date.now()}`; // Generate Unique Reference ID
-        const expiresAt = new Date(Date.now() + 15 * 60000).toISOString(); // Berlaku 15 Menit
+        const expiresAt = new Date(Date.now() + 15 * 60000).toISOString(); // Masa berlaku QRIS 15 Menit
 
         const res = await fetch("https://api.xendit.co/qr_codes", {
           method: "POST",
@@ -227,7 +268,7 @@ function CheckoutContent() {
             Authorization: XENDIT_AUTH,
           },
           body: JSON.stringify({
-            reference_id: orderId,
+            reference_id: invoiceId,
             type: "DYNAMIC",
             currency: "IDR",
             amount: totalTagihan,
@@ -238,11 +279,17 @@ function CheckoutContent() {
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.message || "Gagal menggenerate QRIS dari sistem");
+          throw new Error(
+            data.message || "Gagal menggenerate QRIS dari sistem"
+          );
         }
 
-        // Buka modal QRIS dan set datanya
-        setQrisData({ id: data.id, qr_string: data.qr_string });
+        // Tampilkan modal QRIS dan simpan data reference
+        setQrisData({
+          id: data.id,
+          qr_string: data.qr_string,
+          invoice_id: invoiceId,
+        });
         setIsQrisModalOpen(true);
       } catch (err: any) {
         setModal({
@@ -255,12 +302,12 @@ function CheckoutContent() {
         setIsProcessing(false);
       }
     } else {
-      // Pembayaran COD / Non-QRIS
-      await processInternalCheckout();
+      // Jika COD (cash), langsung tembak ke internal checkout API Laravel
+      await processInternalCheckout(invoiceId);
     }
   };
 
-  // 6. Polling Status QRIS Xendit (Setiap 3 Detik)
+  // Polling Status QRIS Xendit
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -268,28 +315,33 @@ function CheckoutContent() {
       if (!qrisData || !isQrisModalOpen) return;
 
       try {
-        const res = await fetch(`https://api.xendit.co/qr_codes/${qrisData.id}`, {
-          method: "GET",
-          headers: {
-            "api-version": "2022-07-31",
-            Authorization: XENDIT_AUTH,
+        const res = await fetch(
+          `https://api.xendit.co/qr_codes/${qrisData.id}`,
+          {
+            method: "GET",
+            headers: {
+              "api-version": "2022-07-31",
+              Authorization: XENDIT_AUTH,
+            },
           },
-        });
+        );
         const data = await res.json();
 
-        // FIX: Xendit Dynamic QR Code menjadi INACTIVE ketika sukses dibayar.
-        if (data.status === "INACTIVE" || data.status === "COMPLETED" || data.status === "SUCCEEDED") {
-          // Jika Berhasil -> Hentikan polling, Tutup Modal QR, Panggil Internal API
+        if (
+          data.status === "INACTIVE" ||
+          data.status === "COMPLETED" ||
+          data.status === "SUCCEEDED"
+        ) {
           clearInterval(interval);
           setIsQrisModalOpen(false);
-          await processInternalCheckout();
+          // Bila sukses terbayar di Xendit, simpan pesanan ke database Laravel
+          await processInternalCheckout(qrisData.invoice_id);
         }
       } catch (error) {
         console.error("Gagal mengecek status QRIS:", error);
       }
     };
 
-    // Jalankan interval jika modal terbuka
     if (isQrisModalOpen) {
       interval = setInterval(checkQrisStatus, 3000);
     }
@@ -326,7 +378,6 @@ function CheckoutContent() {
 
   return (
     <section className="bg-[#F6F6F6] w-full pt-6 pb-24 relative overflow-hidden">
-      {/* Animasi Lingkaran Bawah */}
       <style>{`
         @keyframes slideRightSeamless {
           0% { transform: translateX(-50%); }
@@ -345,7 +396,6 @@ function CheckoutContent() {
           >
             Penyelesaian Pesanan
           </h1>
-          {/* Karakter SVG */}
           <div className="hidden md:block w-20 h-20">
             <Image
               src={visual.characterPath}
@@ -358,31 +408,63 @@ function CheckoutContent() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* KIRI: Form */}
+          {/* KIRI: Form Pengiriman & Metode Pembayaran */}
           <div className="lg:col-span-8 space-y-6">
-            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6 md:p-8">
+            <div className="bg-white rounded-[24px] shadow-sm p-6 md:p-8">
               <h2
                 className="text-xl font-bold font-['Nohemi'] mb-6"
                 style={{ color: visual.navbarColor }}
               >
                 Informasi Pengiriman
               </h2>
+
               <div className="space-y-4 font-['Parkinsans']">
                 <input
                   type="text"
                   placeholder="Nama Penerima"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 outline-none transition-all"
-                  style={{ "--tw-ring-color": visual.navbarColor } as any}
+                  className="w-full px-4 py-3 rounded-xl border-2 outline-none transition-colors"
+                  style={{ borderColor: visual.navbarColor }}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                 />
+
+                <input
+                  type="tel"
+                  placeholder="Nomor HP"
+                  className="w-full px-4 py-3 rounded-xl border-2 outline-none transition-colors"
+                  style={{ borderColor: visual.navbarColor }}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                />
+
                 <textarea
                   placeholder="Alamat Lengkap"
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 outline-none resize-none transition-all"
-                  style={{ "--tw-ring-color": visual.navbarColor } as any}
+                  className="w-full px-4 py-3 rounded-xl border-2 outline-none transition-colors"
+                  style={{ borderColor: visual.navbarColor }}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
                 />
+
+                <select
+                  className="w-full px-4 py-3 rounded-xl border-2 outline-none bg-white transition-colors"
+                  style={{ borderColor: visual.navbarColor }}
+                  onChange={(e) =>
+                    setFormData({ ...formData, courier: e.target.value })
+                  }
+                >
+                  <option value="JNE">JNE Express</option>
+                  <option value="J&T">J&T Express</option>
+                  <option value="SiCepat">SiCepat Ekspres</option>
+                  <option value="Grab">GrabExpress</option>
+                </select>
               </div>
             </div>
 
+            {/* Section Pilihan Metode Pembayaran */}
             <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6 md:p-8">
               <h2
                 className="text-xl font-bold font-['Nohemi'] mb-6"
@@ -426,7 +508,7 @@ function CheckoutContent() {
             </div>
           </div>
 
-          {/* KANAN: Ringkasan */}
+          {/* KANAN: Ringkasan Pesanan */}
           <div className="lg:col-span-4">
             <div className="bg-white rounded-[24px] p-6 shadow-md border border-gray-100 sticky top-24">
               <h2
@@ -493,7 +575,7 @@ function CheckoutContent() {
         </div>
       </div>
 
-      {/* DIVIDER LINGKARAN */}
+      {/* DIVIDER DEKORASI LINGKARAN */}
       <div className="absolute bottom-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none z-0">
         <div className="flex w-max gap-[15px] animate-slide-right-40s">
           {Array.from({ length: 80 }).map((_, i) => (
@@ -506,7 +588,7 @@ function CheckoutContent() {
         </div>
       </div>
 
-      {/* MODAL QRIS */}
+      {/* MODAL QRIS MODAL */}
       {isQrisModalOpen && qrisData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white rounded-3xl w-full max-w-sm p-6 relative shadow-xl transform transition-all text-center">
@@ -516,8 +598,11 @@ function CheckoutContent() {
             >
               <X className="w-5 h-5" />
             </button>
-            
-            <h3 className="text-xl font-bold font-['Nohemi'] mb-2" style={{ color: visual.navbarColor }}>
+
+            <h3
+              className="text-xl font-bold font-['Nohemi'] mb-2"
+              style={{ color: visual.navbarColor }}
+            >
               Selesaikan Pembayaran
             </h3>
             <p className="text-sm text-gray-500 font-['Parkinsans'] mb-6">
@@ -525,9 +610,10 @@ function CheckoutContent() {
             </p>
 
             <div className="bg-white p-4 rounded-2xl border-2 border-gray-100 inline-block shadow-sm">
-              {/* Render String QRIS ke dalam gambar menggunakan Public API */}
-              <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrisData.qr_string)}`}
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
+                  qrisData.qr_string
+                )}`}
                 alt="QRIS Payment"
                 className="w-48 h-48 mx-auto"
               />
@@ -546,8 +632,7 @@ function CheckoutContent() {
         isOpen={modal.isOpen}
         onClose={() => {
           setModal({ ...modal, isOpen: false });
-          if (modal.type === "success")
-            window.location.href = "/profile/history";
+          if (modal.type === "success") window.location.href = "/profile/history";
         }}
         title={modal.title}
         message={modal.message}

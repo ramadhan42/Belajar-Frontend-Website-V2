@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Truck, Package, Clock, ShieldCheck, MapPin } from "lucide-react";
 
@@ -31,6 +32,20 @@ const shippingSteps = [
 ];
 
 export default function PengirimanPage() {
+  const router = useRouter();
+  const [orderId, setOrderId] = useState("");
+
+  // Ubah bagian ini di dalam PengirimanPage
+  const handleLacak = () => {
+    if (!orderId.trim()) {
+      alert("Silakan masukkan ID Order pesanan Anda terlebih dahulu.");
+      return;
+    }
+    // Sebelumnya: `/profile/history/${orderId.trim()}`
+    // Ubah rute menjadi halaman lacak paket yang baru kita buat:
+    router.push(`/pengiriman/${orderId.trim()}`); 
+  };
+
   return (
     <div className="min-h-screen bg-white pt-32 pb-24 px-5 md:px-24 font-['Nohemi',sans-serif]">
       {/* Header Section */}
@@ -86,17 +101,28 @@ export default function PengirimanPage() {
             <li>• Luar Pulau Jawa: 3-5 hari kerja</li>
           </ul>
         </div>
+        
+        {/* Section Lacak Pesanan yang Diperbarui */}
         <div className="p-8 bg-[#1172BA] text-white rounded-[32px]">
           <h3 className="text-[20px] font-bold mb-4">Lacak Pesanan Anda</h3>
           <p className="mb-6 opacity-90">
-            Masukkan nomor resi Anda untuk mengetahui posisi paket terkini.
+            Masukkan ID order pesanan Anda untuk mengetahui posisi paket terkini.
           </p>
           <div className="flex gap-2">
             <input
-              placeholder="Masukkan Resi..."
-              className="w-full h-[48px] rounded-full px-4 text-gray-900 outline-none bg-white"
+              type="text"
+              value={orderId}
+              onChange={(e) => setOrderId(e.target.value)}
+              placeholder="Masukkan ID order pesanan Anda..."
+              className="w-full h-[48px] rounded-full px-4 text-gray-900 outline-none bg-white text-sm"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleLacak();
+              }}
             />
-            <button className="bg-white text-[#1172BA] px-6 rounded-full font-bold hover:bg-gray-100 transition-colors">
+            <button 
+              onClick={handleLacak}
+              className="bg-white text-[#1172BA] px-6 rounded-full font-bold hover:bg-gray-100 transition-colors active:scale-95"
+            >
               Lacak
             </button>
           </div>
