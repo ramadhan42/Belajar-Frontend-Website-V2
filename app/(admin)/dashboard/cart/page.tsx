@@ -107,7 +107,7 @@ export default function CartPage() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
                   Harga
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
                   Aksi
                 </th>
               </tr>
@@ -162,7 +162,7 @@ export default function CartPage() {
                       currency: "IDR",
                     }).format(Number(c.product.price))}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4">
                     <button
                       onClick={() => {
                         setDeleteId(c.id);

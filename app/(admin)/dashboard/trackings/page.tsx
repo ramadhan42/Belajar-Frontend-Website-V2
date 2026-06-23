@@ -119,7 +119,7 @@ export default function TrackingsPage() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
                   Status
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
                   Aksi
                 </th>
               </tr>
@@ -142,7 +142,7 @@ export default function TrackingsPage() {
                       {t.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4">
                     <button
                       onClick={() => {
                         setSelectedTracking(t);

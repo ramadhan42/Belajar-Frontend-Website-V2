@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Package, ShoppingBag, Users, TrendingUp } from "lucide-react";
+import { useRouter } from "next/navigation"; // 1. Import useRouter
+import {
+  Package,
+  ShoppingBag,
+  Users,
+  TrendingUp,
+  ImageIcon,
+} from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -12,18 +19,33 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Tipe data disesuaikan dengan fleksibilitas key API
+// Pembaruan Tipe Data sesuai JSON Response Anda
 interface Order {
-  id: number | string;
-  customer_name?: string;
-  total_amount?: number | string;
-  total_price?: number | string; // Berjaga-jaga jika API pakai total_price
-  grand_total?: number | string; // Berjaga-jaga jika API pakai grand_total
-  status?: string;
+  id: string;
+  user_id: number;
+  product_id: number;
+  quantity: number;
+  total_price: string | number;
+  status: string;
   created_at: string;
+  updated_at: string;
+  metode_pembayaran: string;
+  product?: {
+    id: number;
+    title: string;
+    price: string;
+    image_1: string;
+    personality_type: string;
+  };
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }
 
 export default function HomeDashboard() {
+  const router = useRouter(); // 2. Inisialisasi router
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState({
     totalProducts: 0,
@@ -35,6 +57,43 @@ export default function HomeDashboard() {
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "http://127.0.0.1:8000";
+
+  // Konfigurasi Map Status (Label & Warna Tailwind)
+  const getStatusConfig = (status: string) => {
+    const normalizedStatus = status?.toLowerCase();
+    switch (normalizedStatus) {
+      case "menunggu_konfirmasi":
+        return {
+          label: "Menunggu Konfirmasi",
+          class: "bg-orange-50 text-orange-600 border border-orange-100",
+        };
+      case "pengemasan":
+        return {
+          label: "Pengemasan",
+          class: "bg-purple-50 text-purple-600 border border-purple-100",
+        };
+      case "dalam_perjalanan":
+        return {
+          label: "Dalam Perjalanan",
+          class: "bg-blue-50 text-blue-600 border border-blue-100",
+        };
+      case "diterima":
+        return {
+          label: "Diterima",
+          class: "bg-emerald-50 text-emerald-600 border border-emerald-100",
+        };
+      case "selesai":
+        return {
+          label: "Selesai",
+          class: "bg-emerald-50 text-emerald-600 border border-emerald-100",
+        };
+      default:
+        return {
+          label: status || "Diproses",
+          class: "bg-gray-50 text-gray-600 border border-gray-100",
+        };
+    }
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -54,15 +113,14 @@ export default function HomeDashboard() {
 
         const ordersList = orders?.data || orders || [];
 
-        // 1. PERBAIKAN: Mengambil total_revenue sesuai struktur JSON Postman Anda
         setDashboardData({
           totalProducts: products?.data?.length || products?.length || 0,
           totalOrders: ordersList.length || 0,
           activeUsers: users?.data?.length || users?.length || 0,
-          totalRevenue: revenue?.data?.total_revenue || 0, 
+          totalRevenue: revenue?.data?.total_revenue || 0,
         });
 
-        // 2. Olah Data Grafik Penjualan
+        // Olah Data Grafik Penjualan
         const salesByDate = ordersList.reduce((acc: any, order: Order) => {
           const date = new Date(order.created_at).toLocaleDateString("id-ID", {
             day: "numeric",
@@ -72,11 +130,10 @@ export default function HomeDashboard() {
           if (!acc[date]) {
             acc[date] = 0;
           }
-          
-          // PERBAIKAN: Antisipasi jika API memakai nama key lain, dan paksa jadi Number
-          const amount = Number(order.total_amount || order.total_price || order.grand_total || 0);
+
+          const amount = Number(order.total_price || 0);
           acc[date] += amount;
-          
+
           return acc;
         }, {});
 
@@ -87,7 +144,7 @@ export default function HomeDashboard() {
 
         setChartData(formattedChartData);
 
-        // 3. Olah Pesanan Terbaru
+        // Olah Pesanan Terbaru
         const sortedOrders = [...ordersList].sort(
           (a, b) =>
             new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
@@ -105,7 +162,7 @@ export default function HomeDashboard() {
 
   // Utility format Rupiah
   const formatRupiah = (value: number | string) => {
-    const numberValue = Number(value) || 0; // Memastikan NaN berubah jadi 0
+    const numberValue = Number(value) || 0;
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
@@ -113,18 +170,21 @@ export default function HomeDashboard() {
     }).format(numberValue);
   };
 
+  // 3. Tambahkan properti route untuk card yang bisa diklik
   const stats = [
     {
       title: "Total Products",
       value: dashboardData.totalProducts.toString(),
       icon: Package,
       trend: "Aktif",
+      route: "/dashboard/products",
     },
     {
       title: "Total Orders",
       value: dashboardData.totalOrders.toString(),
       icon: ShoppingBag,
       trend: "Bulan ini",
+      route: "/dashboard/orders",
     },
     {
       title: "Active Users",
@@ -165,7 +225,10 @@ export default function HomeDashboard() {
           return (
             <div
               key={index}
-              className="bg-white p-6 rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-50/50 hover:shadow-[0_4px_25px_rgb(0,0,0,0.06)] transition-all"
+              onClick={() => stat.route && router.push(stat.route)} // 4. Tambahkan onClick function
+              className={`bg-white p-6 rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-50/50 hover:shadow-[0_4px_25px_rgb(0,0,0,0.06)] transition-all ${
+                stat.route ? "cursor-pointer hover:border-gray-200" : "" // 5. Tambahkan cursor-pointer jika route tersedia
+              }`}
             >
               <div className="flex justify-between items-start">
                 <div>
@@ -257,48 +320,62 @@ export default function HomeDashboard() {
           </div>
         </div>
 
-        {/* Recent Orders Section */}
+        {/* Versi Lengkap Recent Orders Section dengan Gambar & Status */}
         <div className="bg-white p-6 rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-50/50 min-h-[400px]">
           <h2 className="text-lg font-semibold text-gray-900 mb-6">
             Pesanan Terbaru
           </h2>
 
           {recentOrders.length > 0 ? (
-            <div className="space-y-5">
+            <div className="space-y-4">
               {recentOrders.map((order, index) => {
-                // PERBAIKAN: Ambil nilai yang tidak undefined/null
-                const orderAmount = order.total_amount || order.total_price || order.grand_total || 0;
-                
+                const statusConfig = getStatusConfig(order.status);
+
                 return (
                   <div
                     key={index}
-                    className="flex items-center justify-between border-b border-gray-50 pb-4 last:border-0 last:pb-0"
+                    className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0 gap-2"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 font-medium text-sm">
-                        {order.customer_name?.charAt(0) || "U"}
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Thumbnail Gambar 1 Produk */}
+                      <div className="w-12 h-12 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
+                        {order.product?.image_1 ? (
+                          <img
+                            src={`${baseUrl}/storage/${order.product.image_1}`}
+                            alt={order.product.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "";
+                            }}
+                          />
+                        ) : (
+                          <ImageIcon className="w-5 h-5 text-gray-400" />
+                        )}
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {order.customer_name || `Order #${order.id}`}
+
+                      {/* Detail Informasi Pesanan */}
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                          {order.id}
                         </p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {new Date(order.created_at).toLocaleDateString("id-ID")}
+                        <p className="text-sm font-bold text-gray-900 truncate mt-0.5">
+                          {order.product?.title || "Produk Hilang"}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate mt-0.5 capitalize">
+                          Oleh: {order.user?.name || "Anonim"}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">
-                        {formatRupiah(orderAmount)}
+
+                    {/* Harga & Badge Status */}
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-bold text-gray-900">
+                        {formatRupiah(order.total_price)}
                       </p>
                       <span
-                        className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-md font-medium ${
-                          order.status?.toLowerCase() === "pending"
-                            ? "bg-amber-50 text-amber-600"
-                            : "bg-emerald-50 text-emerald-600"
-                        }`}
+                        className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-md font-semibold ${statusConfig.class}`}
                       >
-                        {order.status || "Berhasil"}
+                        {statusConfig.label}
                       </span>
                     </div>
                   </div>

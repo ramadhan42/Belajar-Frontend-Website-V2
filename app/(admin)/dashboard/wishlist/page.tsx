@@ -105,7 +105,7 @@ export default function WishlistPage() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
                   Harga
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
                   Aksi
                 </th>
               </tr>
@@ -149,7 +149,7 @@ export default function WishlistPage() {
                       currency: "IDR",
                     }).format(Number(w.product.price))}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4">
                     <button
                       onClick={() => {
                         setDeleteId(w.id);

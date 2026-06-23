@@ -304,7 +304,7 @@ export default function ProductsPage() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Aksi
                 </th>
               </tr>
@@ -365,7 +365,7 @@ export default function ProductsPage() {
                         {product.stock_status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right space-x-3">
+                    <td className="px-6 py-4 space-x-3">
                       <button
                         onClick={() => handleOpenEdit(product)}
                         className="text-gray-400 hover:text-blue-600 transition-colors"

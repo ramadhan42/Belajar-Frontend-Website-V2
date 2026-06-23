@@ -74,7 +74,7 @@ export default function MessagesPage() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Email</th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Subject</th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Pesan Singkat</th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">Tanggal</th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Tanggal</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -86,7 +86,7 @@ export default function MessagesPage() {
                   <td className="px-6 py-4 text-sm text-gray-500 italic max-w-xs truncate">
                     {m.message.length > 50 ? `${m.message.substring(0, 50)}...` : m.message}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-400 text-right">
+                  <td className="px-6 py-4 text-sm text-gray-400">
                     {new Date(m.created_at).toLocaleDateString("id-ID", {
                       day: 'numeric', month: 'short', year: 'numeric'
                     })}

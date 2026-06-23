@@ -10,15 +10,20 @@ import {
   Edit2,
   Package,
   Truck,
+  ImageIcon, // Tambahkan impor ImageIcon
 } from "lucide-react";
 
+// Update interface untuk mencakup image_1
 interface Order {
   id: string;
   total_price: string | number;
   status: string;
   metode_pembayaran: string;
   created_at: string;
-  product: { title: string };
+  product: { 
+    title: string;
+    image_1?: string; 
+  };
   user: { name: string; email: string };
 }
 
@@ -73,7 +78,6 @@ export default function OrdersPage() {
   const handleUpdateStatus = async () => {
     if (!selectedOrder) return;
 
-    // 1. Ambil token dari localStorage
     const token = localStorage.getItem("auth_token");
 
     try {
@@ -86,28 +90,21 @@ export default function OrdersPage() {
         {
           method: "POST",
           headers: {
-            // 2. Tambahkan Header Authorization
             Authorization: `Bearer ${token}`,
-            // 'Accept': 'application/json' // Opsional: baik untuk memastikan respon dalam format JSON
           },
           body: formData,
         },
       );
 
       if (!res.ok) {
-        // Jika token tidak valid atau kadaluwarsa (401), redirect ke login
         if (res.status === 401) {
           alert("Sesi Anda telah berakhir. Silakan login kembali.");
           window.location.href = "/login";
           return;
         }
-
-        const errorData = await res.json();
-        console.error("Detail Error API:", errorData);
         throw new Error("Gagal mengupdate status");
       }
 
-      // Update UI jika berhasil
       setOrders(
         orders.map((o) =>
           o.id === selectedOrder.id ? { ...o, status: newStatus } : o,
@@ -160,6 +157,7 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6">
+      {/* ... Modal Update Status & Delete Modal tetap sama ... */}
       {isStatusModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
@@ -237,7 +235,7 @@ export default function OrdersPage() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
                   Status
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
                   Aksi
                 </th>
               </tr>
@@ -253,9 +251,29 @@ export default function OrdersPage() {
                 )
                 .map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50/50">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {order.id}
+                    {/* Pembaruan Kolom Order ID dengan Gambar */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
+                          {order.product?.image_1 ? (
+                            <img
+                              src={`${baseUrl}/storage/${order.product.image_1}`}
+                              alt={order.product?.title || "Produk"}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = ""; // Fallback sederhana saat gambar gagal dimuat
+                              }}
+                            />
+                          ) : (
+                            <ImageIcon className="w-5 h-5 text-gray-400" />
+                          )}
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">
+                          {order.id}
+                        </span>
+                      </div>
                     </td>
+
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {order.user?.name}
                     </td>
@@ -278,7 +296,7 @@ export default function OrdersPage() {
                         );
                       })()}
                     </td>
-                    <td className="px-6 py-4 text-right flex justify-end gap-2">
+                    <td className="px-6 py-4 flex gap-2">
                       <button
                         onClick={() => {
                           setSelectedOrder(order);
