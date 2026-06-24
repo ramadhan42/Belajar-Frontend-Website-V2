@@ -119,7 +119,9 @@ export default function ProductsPage() {
     try {
       const res = await fetch(`${baseUrl}/api/products/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("auth_token")}`},
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
       });
 
       if (!res.ok) throw new Error("Gagal menghapus dari server");
@@ -403,7 +405,7 @@ export default function ProductsPage() {
                     className="hover:bg-gray-50/40 transition-colors group"
                   >
                     {/* Mengagak-tengahkan konten Produk dengan penyeimbang struktur flex (sama seperti cart) */}
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 pl-15">
                       <div className="flex items-center gap-4 justify-center max-w-xs mx-auto text-left">
                         <div className="h-12 w-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
                           {product.image_produk_belanja || product.image_1 ? (
@@ -511,7 +513,11 @@ export default function ProductsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} encType="multipart/form-data" className="p-6">
+            <form
+              onSubmit={handleSubmit}
+              encType="multipart/form-data"
+              className="p-6"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Kiri */}
                 <div className="space-y-4">
@@ -593,7 +599,6 @@ export default function ProductsPage() {
                       </select>
                     </div>
                   </div>
-                  
 
                   <div>
                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">

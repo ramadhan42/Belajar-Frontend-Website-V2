@@ -544,7 +544,7 @@ export const wishlistApi = {
       typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
 
     // Ganti URL_BACKEND_ANDA dengan base URL yang biasa Anda gunakan di file ini
-    const response = await fetch(`URL_BACKEND_ANDA/wishlist/${id}`, {
+    const response = await fetch(`${BASE_URL}/api/wishlist/${id}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

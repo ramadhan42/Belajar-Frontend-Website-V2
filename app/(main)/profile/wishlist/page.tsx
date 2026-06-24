@@ -129,7 +129,7 @@ export default function WishlistPage() {
             <div
               key={item.id}
               // 5. Menambahkan event klik untuk pergi ke page folder detail [id]
-              onClick={() => router.push(`/profile/wishlist/${item.id}`)}
+              // onClick={() => router.push(`/profile/wishlist/${item.id}`)}
               className="border border-gray-100 rounded-xl p-4 relative bg-white hover:shadow-lg transition-all duration-300 cursor-pointer group"
             >
               {/* Tombol Trash / Hapus */}

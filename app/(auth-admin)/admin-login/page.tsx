@@ -1,14 +1,38 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  X,
+} from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // 1. TAMBAHKAN IMPORT INI
 
 export default function AdminLoginPage() {
+  const router = useRouter(); // 2. INISIALISASI ROUTER
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // app/login/page.tsx
+  // State untuk mengontrol Custom Modal
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    type: "success" | "warning" | "error";
+    message: string;
+  }>({
+    isOpen: false,
+    type: "success",
+    message: "",
+  });
+
+  const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -26,25 +50,51 @@ export default function AdminLoginPage() {
       const data = await res.json();
 
       if (res.ok && data.token) {
-        // Simpan token ke localStorage
-        localStorage.setItem("auth_token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        window.location.href = "/dashboard";
+        // Gunakan Number() untuk berjaga-jaga jika API mereturn ID dalam bentuk string "1"
+        if (data.user && Number(data.user.id) === 1) {
+          localStorage.setItem("auth_token", data.token);
+          localStorage.setItem("user", JSON.stringify(data.user));
+
+          setModal({
+            isOpen: true,
+            type: "success",
+            message: "Login berhasil! Mengarahkan ke dashboard...",
+          });
+
+          setTimeout(() => {
+            router.push("/dashboard"); // 3. UBAH BAGIAN INI (Gunakan router.push)
+          }, 1500);
+        } else {
+          setModal({
+            isOpen: true,
+            type: "warning",
+            message:
+              "Akses Ditolak: Anda tidak memiliki izin sebagai Administrator.",
+          });
+        }
       } else {
-        alert(data.message || "Login gagal, periksa email/password");
+        setModal({
+          isOpen: true,
+          type: "error",
+          message:
+            data.message ||
+            "Login gagal, periksa kembali email dan password Anda.",
+        });
       }
     } catch (error) {
-      alert("Terjadi kesalahan koneksi ke server");
+      setModal({
+        isOpen: true,
+        type: "error",
+        message: "Terjadi kesalahan koneksi ke server. Silakan coba lagi.",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    // Background diubah menjadi bg-white (putih polos)
-    <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        {/* Brand Logo / Nama */}
         <h2 className="mt-4 text-2xl font-semibold text-gray-900">
           Admin Portal
         </h2>
@@ -54,7 +104,6 @@ export default function AdminLoginPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-[420px]">
-        {/* Card disesuaikan dengan border dan shadow dari UI Dashboard */}
         <div className="bg-white py-8 px-6 shadow-[0_2px_20px_rgb(0,0,0,0.04)] sm:rounded-2xl sm:px-10 border border-gray-100 transition-all">
           <form className="space-y-6" onSubmit={handleLogin}>
             {/* Input Email */}
@@ -163,11 +212,63 @@ export default function AdminLoginPage() {
           </form>
         </div>
 
-        {/* Footer info */}
         <p className="mt-8 text-center text-xs text-gray-400">
           &copy; {new Date().getFullYear()} Evomi. All rights reserved.
         </p>
       </div>
+
+      {/* CUSTOM MODAL */}
+      {modal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-300">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 relative animate-in zoom-in-95 fade-in duration-200">
+            {/* Tombol Close (hanya muncul jika bukan sukses) */}
+            {modal.type !== "success" && (
+              <button
+                onClick={closeModal}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+
+            <div className="text-center mt-2">
+              {/* Ikon Dinamis */}
+              <div className="flex justify-center mb-4">
+                {modal.type === "success" && (
+                  <CheckCircle2 className="w-14 h-14 text-emerald-500 animate-bounce" />
+                )}
+                {modal.type === "warning" && (
+                  <AlertTriangle className="w-14 h-14 text-amber-500" />
+                )}
+                {modal.type === "error" && (
+                  <XCircle className="w-14 h-14 text-red-500" />
+                )}
+              </div>
+
+              {/* Judul & Pesan Dinamis */}
+              <h3 className="text-lg font-bold text-gray-900 capitalize mb-2">
+                {modal.type === "success"
+                  ? "Berhasil!"
+                  : modal.type === "warning"
+                    ? "Akses Ditolak"
+                    : "Gagal"}
+              </h3>
+              <p className="text-sm text-gray-600 mb-6">{modal.message}</p>
+
+              {/* Tombol Mengerti (hanya muncul jika bukan sukses) */}
+              {modal.type !== "success" && (
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-gray-900 hover:bg-gray-800 transition-colors shadow-sm"
+                >
+                  Mengerti
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation"; // Tambahkan ini
+import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
   UserCircle,
   ShoppingCart,
-  Heart, // Ikon untuk Wishlist
+  Heart,
   ShoppingBag,
   MessageSquare,
   Truck,
   LogOut,
-  ShoppingBasket, // Ikon untuk Cart
+  ShoppingBasket,
+  Users, // 1. Tambahkan ikon Users
 } from "lucide-react";
 
 const menuItems = [
@@ -26,21 +27,22 @@ const menuItems = [
     icon: MessageSquare,
     path: "/dashboard/messages",
   },
-  { name: "Cart", icon: ShoppingBasket, path: "/dashboard/cart" }, // Dipisah
-  { name: "Wishlist", icon: Heart, path: "/dashboard/wishlist" }, // Dipisah
+  { name: "Cart", icon: ShoppingBasket, path: "/dashboard/cart" },
+  { name: "Wishlist", icon: Heart, path: "/dashboard/wishlist" },
+  // 2. Tambahkan menu All Users di sini
+  { name: "All Users", icon: Users, path: "/dashboard/users" }, 
   { name: "User Profile", icon: UserCircle, path: "/dashboard/profile" },
 ];
 
 export default function SidebarAdmin() {
   const pathname = usePathname();
-  const router = useRouter(); // Tambahkan hook router
+  const router = useRouter();
 
   const handleLogout = async () => {
     const baseUrl = process.env.NEXT_PUBLIC_URL || "http://127.0.0.1:8000";
     const token = localStorage.getItem("auth_token");
 
     try {
-      // Panggil API Logout
       await fetch(`${baseUrl}/api/logout`, {
         method: "POST",
         headers: {
@@ -51,9 +53,7 @@ export default function SidebarAdmin() {
     } catch (error) {
       console.error("Gagal logout:", error);
     } finally {
-      // Hapus token dari localStorage apapun hasil dari API
       localStorage.removeItem("auth_token");
-      // Arahkan ke halaman login
       router.push("/admin-login");
     }
   };
@@ -103,14 +103,13 @@ export default function SidebarAdmin() {
       {/* Logout Area */}
       <div className="p-4 border-t border-gray-100">
         <button
-          onClick={handleLogout} // Tambahkan event handler
+          onClick={handleLogout}
           className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-colors"
         >
           <LogOut size={20} />
           <span className="text-sm font-medium">Logout</span>
         </button>
       </div>
-      
     </aside>
   );
 }

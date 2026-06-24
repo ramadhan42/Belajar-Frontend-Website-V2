@@ -177,7 +177,7 @@ export default function WishlistPage() {
                     className="hover:bg-gray-50/40 transition-colors group"
                   >
                     {/* TD Produk dibuat agak ke tengah dengan flex terpusat */}
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 pl-15">
                       <div className="flex items-center gap-4 justify-center max-w-xs mx-auto text-left">
                         {/* Container Gambar */}
                         <div className="h-12 w-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
