@@ -13,12 +13,28 @@ export default function WishlistDetailPage() {
   const [item, setItem] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // useEffect(() => {
+  //   if (id) {
+  //     // Pastikan method ini ada di api.ts Anda, sesuaikan dengan endpoint backend Anda
+  //     wishlistApi
+  //       .getWishlistDetail(Number(id))
+  //       .then((data) => {
+  //         setItem(data);
+  //         setLoading(false);
+  //       })
+  //       .catch((err) => {
+  //         console.error("Gagal memuat detail:", err);
+  //         setLoading(false);
+  //       });
+  //   }
+  // }, [id]);
+
   useEffect(() => {
     if (id) {
-      // Pastikan method ini ada di api.ts Anda, sesuaikan dengan endpoint backend Anda
       wishlistApi
         .getWishlistDetail(Number(id))
         .then((data) => {
+          console.log("Struktur data API Detail Wishlist:", data); // <-- TAMBAHKAN INI
           setItem(data);
           setLoading(false);
         })

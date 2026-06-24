@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; // 1. Import useRouter untuk navigasi halaman
 import {
   ShoppingCart,
   Trash2,
@@ -25,6 +26,7 @@ interface ModalConfig {
 }
 
 export default function WishlistPage() {
+  const router = useRouter(); // 2. Inisialisasi router Next.js
   const [wishlists, setWishlists] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,7 +58,8 @@ export default function WishlistPage() {
   };
 
   // Trigger modal konfirmasi
-  const confirmRemove = (id: number) => {
+  const confirmRemove = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation(); // 3. Mencegah navigasi detail terbuka saat menekan tombol Hapus
     setItemToDelete(id);
     triggerModal(
       "warning",
@@ -70,14 +73,16 @@ export default function WishlistPage() {
       try {
         await wishlistApi.removeFromWishlist(itemToDelete);
         setWishlists(wishlists.filter((item) => item.id !== itemToDelete));
-        closeModal();
+        // Mengubah isi modal menjadi penanda sukses setelah berhasil delete
+        triggerModal("success", "Produk berhasil dihapus dari daftar wishlist Anda.");
       } catch (err) {
         triggerModal("error", "Gagal menghapus item dari wishlist.");
       }
     }
   };
 
-  const handleAddToCart = async (productId: number, wishlistItemId: number) => {
+  const handleAddToCart = async (e: React.MouseEvent, productId: number, wishlistItemId: number) => {
+    e.stopPropagation(); // 4. Mencegah navigasi detail terbuka saat menekan tombol Masukkan Keranjang
     const token =
       typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
 
@@ -117,29 +122,30 @@ export default function WishlistPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {wishlists.map((item) => {
-          // Memprioritaskan image_1, dengan fallback ke image_produk_belanja jika image_1 kosong
           const imageToDisplay =
             item.product?.image_3 || item.product?.image_produk_belanja;
 
           return (
             <div
               key={item.id}
-              className="border border-gray-100 rounded-xl p-4 relative bg-white hover:shadow-lg transition-all duration-300"
+              // 5. Menambahkan event klik untuk pergi ke page folder detail [id]
+              onClick={() => router.push(`/profile/wishlist/${item.id}`)}
+              className="border border-gray-100 rounded-xl p-4 relative bg-white hover:shadow-lg transition-all duration-300 cursor-pointer group"
             >
+              {/* Tombol Trash / Hapus */}
               <button
-                onClick={() => confirmRemove(item.id)}
-                className="absolute top-3 right-3 z-10 p-[15px] bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors shadow-sm"
+                onClick={(e) => confirmRemove(e, item.id)}
+                className="absolute top-3 right-3 z-10 p-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors shadow-sm"
               >
-                <Trash2 className="w-5 h-5" />
+                <Trash2 className="w-4 h-4" />
               </button>
 
-              <div className="w-full h-52 rounded-xl mb-4 flex items-center justify-center overflow-hidden">
+              <div className="w-full h-52 rounded-xl mb-4 flex items-center justify-center overflow-hidden bg-gray-50">
                 {imageToDisplay ? (
                   <img
                     src={getProductImageUrl(imageToDisplay) ?? ""}
                     alt={item.product?.title || "Gambar Produk"}
-                    // object-cover membuat gambar pas memenuhi box. group-hover:scale-110 membuat gambar membesar saat CARD di-hover
-                    className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   />
                 ) : (
                   <span className="text-gray-400">No Image</span>
@@ -155,8 +161,9 @@ export default function WishlistPage() {
                 </p>
               </div>
 
+              {/* Tombol Masukkan Keranjang */}
               <button
-                onClick={() => handleAddToCart(item.product_id, item.id)}
+                onClick={(e) => handleAddToCart(e, item.product_id, item.id)}
                 className="w-full bg-black text-white py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition"
               >
                 <ShoppingCart className="w-4 h-4 inline mr-2" />
@@ -167,9 +174,10 @@ export default function WishlistPage() {
         })}
       </div>
 
+      {/* MODAL GLOBAL (SUKSES, ERROR, & KONFIRMASI WARNING) */}
       {modal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-gray-100">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 relative">
             <button
               onClick={closeModal}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
@@ -180,7 +188,7 @@ export default function WishlistPage() {
             <div className="text-center mt-2">
               <div className="flex justify-center mb-4">
                 {modal.type === "success" && (
-                  <CheckCircle2 className="w-14 h-14 text-green-500" />
+                  <CheckCircle2 className="w-14 h-14 text-green-500 animate-bounce" />
                 )}
                 {modal.type === "warning" && (
                   <AlertTriangle className="w-14 h-14 text-amber-500" />
@@ -203,12 +211,14 @@ export default function WishlistPage() {
                 {modal.type === "warning" ? (
                   <>
                     <button
+                      type="button"
                       onClick={closeModal}
                       className="flex-1 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-sm font-medium"
                     >
                       Batal
                     </button>
                     <button
+                      type="button"
                       onClick={executeRemove}
                       className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-medium"
                     >
@@ -217,8 +227,9 @@ export default function WishlistPage() {
                   </>
                 ) : (
                   <button
+                    type="button"
                     onClick={closeModal}
-                    className={`w-full py-2.5 rounded-xl text-sm font-medium text-white ${modal.type === "success" ? "bg-green-600" : "bg-red-600"}`}
+                    className={`w-full py-2.5 rounded-xl text-sm font-medium text-white ${modal.type === "success" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}`}
                   >
                     Mengerti
                   </button>
