@@ -72,6 +72,7 @@ export default function WishlistPage() {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json", // Penting untuk API Laravel
+          "Content-Type": "application/json", // Tambahkan ini
         },
       });
 

@@ -22,7 +22,8 @@ interface UserProfile {
   updated_at: string;
   nama_lengkap: string | null;
   alamat_lengkap: string | null;
-  phone?: string;
+  phone: string | null;
+  avatar_profile: string | null;
 }
 
 export default function ProfilePage() {
@@ -55,22 +56,21 @@ export default function ProfilePage() {
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const token = localStorage.getItem("auth_token");
-    const formData = new FormData(e.currentTarget);
-    const payload = Object.fromEntries(formData.entries());
+    const formData = new FormData(e.currentTarget); // Otomatis menangani file
 
     try {
       const res = await fetch(`${baseUrl}/api/user/profile`, {
-        method: "PUT",
+        method: "POST", // Ubah ke POST jika PUT bermasalah dengan FormData
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          // Jangan set Content-Type secara manual saat pakai FormData
         },
-        body: JSON.stringify(payload),
+        body: formData,
       });
 
       if (res.ok) {
         setIsEditModalOpen(false);
-        fetchProfile(); // Refresh data
+        fetchProfile();
       }
     } catch (error) {
       alert("Gagal memperbarui profil");
@@ -86,7 +86,6 @@ export default function ProfilePage() {
       <h1 className="text-2xl font-extrabold text-gray-800 tracking-tight">
         Profil Saya
       </h1>
-
       {/* Profile Card */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -96,10 +95,18 @@ export default function ProfilePage() {
         <div className="h-32 bg-gradient-to-r from-gray-800 to-gray-700"></div>
         <div className="px-8 pb-8">
           <div className="flex flex-col sm:flex-row sm:items-end -mt-1 gap-4">
-            <div className="h-24 w-24 rounded-2xl bg-white p-1.5 shadow-lg">
-              <div className="h-full w-full rounded-xl bg-gray-900 flex items-center justify-center text-white text-3xl font-bold">
-                {profile.name.charAt(0).toUpperCase()}
-              </div>
+            <div className="h-24 w-24 rounded-2xl bg-white p-1.5 shadow-lg overflow-hidden">
+              {profile.avatar_profile ? (
+                <img
+                  src={`${baseUrl}/storage/${profile.avatar_profile}`}
+                  className="h-full w-full object-cover rounded-xl"
+                  alt="Avatar"
+                />
+              ) : (
+                <div className="h-full w-full rounded-xl bg-gray-900 flex items-center justify-center text-white text-3xl font-bold">
+                  {profile.name.charAt(0).toUpperCase()}
+                </div>
+              )}
             </div>
             <div className="flex-1 pb-1">
               <h2 className="text-2xl font-bold text-gray-900">
@@ -138,8 +145,8 @@ export default function ProfilePage() {
           </div>
         </div>
       </motion.div>
-
       {/* Modal Edit */}
+      {/* // Ganti bagian AnimatePresence di page.tsx dengan ini: */}
       <AnimatePresence>
         {isEditModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -151,26 +158,82 @@ export default function ProfilePage() {
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             />
             <motion.form
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               onSubmit={handleUpdate}
-              className="bg-white p-8 rounded-3xl w-full max-w-lg shadow-2xl relative z-10 space-y-5"
+              className="bg-white p-8 rounded-3xl w-full max-w-md shadow-2xl relative z-10 space-y-6"
             >
-              <h2 className="text-xl font-bold text-gray-900">
-                Edit Informasi Profil
-              </h2>
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-gray-900">Edit Profil</h2>
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Input File Avatar dengan Preview */}
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative group">
+                  <div className="h-24 w-24 rounded-full bg-gray-100 border-4 border-white shadow-md overflow-hidden flex items-center justify-center">
+                    <input
+                      type="file"
+                      name="avatar_profile"
+                      id="avatar_profile"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            const img = document.getElementById(
+                              "preview-avatar",
+                            ) as HTMLImageElement;
+                            if (img) img.src = ev.target?.result as string;
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    <img
+                      id="preview-avatar"
+                      src={
+                        profile.avatar_profile
+                          ? `${baseUrl}/storage/${profile.avatar_profile}`
+                          : undefined
+                      }
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                  <label
+                    htmlFor="avatar_profile"
+                    className="absolute bottom-0 right-0 bg-gray-900 text-white p-2 rounded-full cursor-pointer hover:bg-gray-700 transition-colors shadow-lg"
+                  >
+                    <Edit2 size={14} />
+                  </label>
+                </div>
+                <span className="text-xs text-gray-400 font-medium">
+                  Klik icon pensil untuk ganti foto
+                </span>
+              </div>
 
               <div className="space-y-4">
                 <InputField
-                  label="Nama Lengkap"
-                  name="name"
-                  defaultValue={profile.nama_lengkap}
-                />
-                <InputField
-                  label="Nama"
+                  label="Username"
                   name="name"
                   defaultValue={profile.name}
+                />
+                <InputField
+                  label="Nama Lengkap"
+                  name="nama_lengkap"
+                  defaultValue={profile.nama_lengkap || ""}
                 />
                 <InputField
                   label="Email"
@@ -185,19 +248,19 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="flex-1 py-3 rounded-xl font-semibold border hover:bg-gray-50"
+                  className="flex-1 py-3 rounded-xl font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-all"
+                  className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-black transition-all"
                 >
-                  Simpan
+                  Simpan Perubahan
                 </button>
               </div>
             </motion.form>

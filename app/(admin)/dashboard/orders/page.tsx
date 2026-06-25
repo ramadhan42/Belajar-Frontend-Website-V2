@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation"; // Import router dari next/navigation
 import { useState, useEffect } from "react";
 import {
   Search,
@@ -11,7 +12,11 @@ import {
   Package,
   Truck,
   Image as ImageIcon,
+  ClosedCaption,
+  ClosedCaptionIcon,
+  Cross,
 } from "lucide-react";
+import { CgClose } from "react-icons/cg";
 
 interface Order {
   id: string;
@@ -27,6 +32,11 @@ interface Order {
 }
 
 export default function OrdersPage() {
+  // Tambahkan ini di bagian atas komponen bersama state lainnya
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const router = useRouter(); // Inisialisasi router
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,6 +51,11 @@ export default function OrdersPage() {
   const [newStatus, setNewStatus] = useState("");
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "http://127.0.0.1:8000";
+  
+  // Tambahkan useEffect ini agar halaman kembali ke 1 saat mencari
+useEffect(() => {
+  setCurrentPage(1);
+}, [searchTerm]);
 
   // 1. Tambahkan state di dalam OrdersPage
   const [successModal, setSuccessModal] = useState<{
@@ -59,6 +74,14 @@ export default function OrdersPage() {
 
   // Daftar opsi status yang diperbagus untuk Modal Selector
   const statusOptions = [
+    {
+      id: "dibatalkan",
+      label: "Order Dibatalkan",
+      desc: "Pesanan baru telah dibatalkan",
+      color: "border-red-200 bg-red-50/50 text-red-700",
+      activeColor: "ring-2 ring-red-500 bg-red-50 border-red-500",
+      icon: <CgClose className="w-5 h-5 text-red-600" />,
+    },
     {
       id: "menunggu_konfirmasi",
       label: "Menunggu Konfirmasi",
@@ -84,6 +107,14 @@ export default function OrdersPage() {
       icon: <Truck className="w-5 h-5 text-purple-600" />,
     },
     {
+      id: "diterima",
+      label: "Diterima Pelanggan",
+      desc: "Pesanan telah diterima oleh pelanggan dengan baik",
+      color: "border-emerald-200 bg-emerald-50/50 text-emerald-700",
+      activeColor: "ring-2 ring-emerald-500 bg-emerald-50 border-emerald-500",
+      icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />,
+    },
+    {
       id: "selesai",
       label: "Selesai",
       desc: "Pesanan telah diterima oleh pelanggan dengan baik",
@@ -95,6 +126,11 @@ export default function OrdersPage() {
 
   const getStatusConfig = (status: string) => {
     switch (status) {
+      case "dibatalkan":
+        return {
+          color: "bg-red-50 text-red-700 border border-red-200",
+          icon: <CgClose size={12} />,
+        };
       case "menunggu_konfirmasi":
         return {
           color: "bg-yellow-50 text-yellow-700 border border-yellow-200",
@@ -188,15 +224,32 @@ export default function OrdersPage() {
   // 3. Update fungsi handleDelete
   const handleDelete = async () => {
     if (!deleteId) return;
+
+    // Ambil token dari storage
+    const token = localStorage.getItem("auth_token");
+
     try {
-      await fetch(`${baseUrl}/api/admin/orders/${deleteId}`, {
+      const res = await fetch(`${baseUrl}/api/orders/${deleteId}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`, // PENTING: Wajib kirim token
+          "Content-Type": "application/json",
+        },
       });
-      setOrders(orders.filter((o) => o.id !== deleteId));
-      setIsDeleteModalOpen(false);
-      showSuccess("Pesanan berhasil dihapus dari sistem."); // <--- Panggil di sini
+
+      // Cek apakah response berhasil
+      if (res.ok) {
+        setOrders(orders.filter((o) => o.id !== deleteId));
+        setIsDeleteModalOpen(false);
+        showSuccess("Pesanan berhasil dihapus dari sistem.");
+        fetchOrders(); // Refresh data
+      } else {
+        const errorData = await res.json();
+        console.error("Gagal menghapus:", errorData.message);
+        // Tambahkan alert/notifikasi error di sini
+      }
     } catch (error) {
-      console.error("Gagal menghapus:", error);
+      console.error("Kesalahan koneksi:", error);
     }
   };
 

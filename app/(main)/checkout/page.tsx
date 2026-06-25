@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation"; // Import router dari next/navigation
 import { useState, useEffect, Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -67,6 +68,7 @@ const XENDIT_AUTH =
   "Basic eG5kX2RldmVsb3BtZW50X3RLblFjYm5aVDVzbEFKYjJqSTVVeUQ3cVQ3VWRZUHE4cUp6MmdFNjFySXo3YUEyZklSTGdiOEJ2TEZsZDo=";
 
 function CheckoutContent() {
+  const router = useRouter(); // Inisialisasi router
   const [modal, setModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -188,7 +190,8 @@ function CheckoutContent() {
       setIsProcessing(true);
 
       // Konversi value string ke format yang rapi dan sesuai permintaan backend Anda
-      const formattedPaymentMethod = paymentMethod === "qris" ? "QRIS" : "Cash on Delivery";
+      const formattedPaymentMethod =
+        paymentMethod === "qris" ? "QRIS" : "Cash on Delivery";
 
       // 1. Kirim data transaksi ke OrderController
       const res = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/checkout`, {
@@ -225,7 +228,9 @@ function CheckoutContent() {
           recipient_name: formData.name,
           recipient_phone: formData.phone,
           recipient_address: formData.address,
-          timeline: [{ status: "Pesanan dibuat", date: new Date().toISOString() }]
+          timeline: [
+            { status: "Pesanan dibuat", date: new Date().toISOString() },
+          ],
         }),
       });
 
@@ -280,7 +285,7 @@ function CheckoutContent() {
 
         if (!res.ok) {
           throw new Error(
-            data.message || "Gagal menggenerate QRIS dari sistem"
+            data.message || "Gagal menggenerate QRIS dari sistem",
           );
         }
 
@@ -367,7 +372,8 @@ function CheckoutContent() {
       <div className="max-w-4xl mx-auto px-4 py-20 text-center">
         <p className="text-red-500 mb-4 font-['Nohemi']">{error}</p>
         <button
-          onClick={() => window.history.back()}
+          // Gunakan router.back() untuk kembali ke halaman sebelumnya
+          onClick={() => router.back()}
           className="px-6 py-2 bg-black text-white rounded-xl"
         >
           Kembali
@@ -480,7 +486,8 @@ function CheckoutContent() {
                       paymentMethod === m ? "bg-gray-50" : "border-gray-100"
                     }`}
                     style={{
-                      borderColor: paymentMethod === m ? visual.navbarColor : "",
+                      borderColor:
+                        paymentMethod === m ? visual.navbarColor : "",
                     }}
                   >
                     <input
@@ -492,7 +499,8 @@ function CheckoutContent() {
                     <span
                       className="font-bold uppercase"
                       style={{
-                        color: paymentMethod === m ? visual.navbarColor : "#333",
+                        color:
+                          paymentMethod === m ? visual.navbarColor : "#333",
                       }}
                     >
                       {m === "qris" ? "QRIS" : "Cash on Delivery"}
@@ -606,13 +614,14 @@ function CheckoutContent() {
               Selesaikan Pembayaran
             </h3>
             <p className="text-sm text-gray-500 font-['Parkinsans'] mb-6">
-              Scan QR Code ini menggunakan aplikasi e-wallet atau m-banking Anda.
+              Scan QR Code ini menggunakan aplikasi e-wallet atau m-banking
+              Anda.
             </p>
 
             <div className="bg-white p-4 rounded-2xl border-2 border-gray-100 inline-block shadow-sm">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
-                  qrisData.qr_string
+                  qrisData.qr_string,
                 )}`}
                 alt="QRIS Payment"
                 className="w-48 h-48 mx-auto"
@@ -632,7 +641,10 @@ function CheckoutContent() {
         isOpen={modal.isOpen}
         onClose={() => {
           setModal({ ...modal, isOpen: false });
-          if (modal.type === "success") window.location.href = "/profile/history";
+          // Gunakan router.push untuk navigasi SPA (Single Page Application)
+          if (modal.type === "success") {
+            router.push("/profile/history");
+          }
         }}
         title={modal.title}
         message={modal.message}

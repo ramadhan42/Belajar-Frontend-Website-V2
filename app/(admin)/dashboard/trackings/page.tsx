@@ -13,17 +13,29 @@ import {
   Hash,
   CheckCircle2,
   Globe,
+  Phone,
+  Calendar,
+  Plus,
+  Trash2,
 } from "lucide-react";
+
+interface TimelineItem {
+  status: string;
+  time: string;
+  description?: string;
+}
 
 interface Tracking {
   id: number;
   order_id: string;
   tracking_number: string | null;
   status: string;
+  estimated_delivery?: string;
   courier: string;
   recipient_name: string;
+  recipient_phone?: string;
   recipient_address: string;
-  timeline: { status: string; time: string; description?: string }[];
+  timeline: TimelineItem[];
 }
 
 export default function TrackingsPage() {
@@ -34,6 +46,9 @@ export default function TrackingsPage() {
   const [selectedTracking, setSelectedTracking] = useState<Tracking | null>(
     null,
   );
+
+  // State khusus untuk timeline agar bisa dinamis (tambah/hapus)
+  const [editTimeline, setEditTimeline] = useState<TimelineItem[]>([]);
 
   // State untuk notifikasi
   const [notification, setNotification] = useState<{
@@ -47,7 +62,6 @@ export default function TrackingsPage() {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  // Daftar kurir untuk dropdown
   const COURIER_LIST = [
     "JNE",
     "JNE Express",
@@ -85,73 +99,101 @@ export default function TrackingsPage() {
       t.recipient_name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  // === FUNGSI TIMELINE ===
+  const handleTimelineChange = (
+    index: number,
+    field: keyof TimelineItem,
+    value: string,
+  ) => {
+    const newTimeline = [...editTimeline];
+    newTimeline[index] = { ...newTimeline[index], [field]: value };
+    setEditTimeline(newTimeline);
+  };
+
+  const addTimelineItem = () => {
+    setEditTimeline([...editTimeline, { status: "", time: "", description: "" }]);
+  };
+
+  const removeTimelineItem = (index: number) => {
+    const newTimeline = editTimeline.filter((_, i) => i !== index);
+    setEditTimeline(newTimeline);
+  };
+
+  // Helper function: mengubah format YYYY-MM-DD HH:mm:ss menjadi YYYY-MM-DDThh:mm untuk input datetime-local
+  const formatTimeForInput = (timeStr?: string) => {
+    if (!timeStr) return "";
+    return timeStr.replace(" ", "T").substring(0, 16);
+  };
+
+  // === FUNGSI UPDATE ===
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  const formData = new FormData(e.currentTarget);
-  const token = localStorage.getItem("auth_token");
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const token = localStorage.getItem("auth_token");
 
-  try {
-    const res = await fetch(
-      `${baseUrl}/api/trackings/${selectedTracking?.order_id}`,
-      {
-        method: "PUT",
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          // Tambahkan header Accept agar Laravel mengerti respon yang diharapkan
-          "Accept": "application/json" 
+    if (!selectedTracking) return;
+
+    const formValues = Object.fromEntries(formData.entries());
+
+    const jsonPayload = {
+      order_id: formValues.order_id as string,
+      tracking_number: (formValues.tracking_number as string) || null,
+      status: formValues.status as string,
+      estimated_delivery: (formValues.estimated_delivery as string) || null,
+      courier: formValues.courier as string,
+      recipient_name: formValues.recipient_name as string,
+      recipient_phone: (formValues.recipient_phone as string) || null,
+      recipient_address: formValues.recipient_address as string,
+      timeline: editTimeline,
+    };
+
+    try {
+      const res = await fetch(
+        `${baseUrl}/api/trackings/${selectedTracking.order_id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(jsonPayload),
         },
-        body: formData,
-      },
-    );
+      );
 
-    const result = await res.json(); // Ambil data hasil update dari server
+      if (!res.ok) throw new Error("Gagal memperbarui data");
 
-    if (!res.ok) throw new Error("Gagal memperbarui data");
+      setTrackings((prevTrackings) =>
+        prevTrackings.map((t) =>
+          t.order_id === selectedTracking.order_id
+            ? ({ ...t, ...jsonPayload } as Tracking)
+            : t,
+        ),
+      );
 
-    // 1. UPDATE STATE SECARA LOKAL
-    // Kita buat array baru dengan mencari data yang di-edit dan menggantinya
-    setTrackings((prevTrackings) =>
-      prevTrackings.map((t) =>
-        t.order_id === selectedTracking?.order_id 
-          ? { ...t, ...Object.fromEntries(formData.entries()) } // Update object dengan data baru
-          : t
-      )
-    );
+      setIsEditModalOpen(false);
+      showNotification("Data tracking berhasil diperbarui!", "success");
+    } catch (error) {
+      showNotification("Gagal memperbarui data. Periksa koneksi Anda.", "error");
+    }
+  };
 
-    // 2. Tutup modal & tampilkan notifikasi
-    setIsEditModalOpen(false);
-    showNotification("Data tracking berhasil diperbarui!", "success");
-
-  } catch (error) {
-    showNotification(
-      "Gagal memperbarui data. Periksa koneksi Anda.",
-      "error",
-    );
-  }
-};
-
-  // FUNGSI CONFIG STATUS DENGAN WARNA DAN IKON YANG BERBEDA
   const getStatusConfig = (status?: string) => {
-    // Kita hapus .toLowerCase() dan trim agar sesuai dengan data dari database Anda
-    // Kita gunakan perbandingan string yang presisi
     const currentStatus = status || "";
-
     switch (currentStatus) {
       case "Menunggu Konfirmasi":
         return {
           color: "bg-yellow-50 text-yellow-700 border-yellow-200",
           icon: <Clock size={12} />,
         };
+      case "Pesanan Diproses":
       case "Pengemasan":
         return {
           color: "bg-blue-50 text-blue-700 border-blue-200",
           icon: <Package size={12} />,
         };
+      case "Paket Diserahkan ke Kurir":
       case "Sedang Dikirim":
-        return {
-          color: "bg-blue-50 text-blue-700 border-blue-200",
-          icon: <Truck size={12} />,
-        };
       case "Dalam Perjalanan":
         return {
           color: "bg-purple-50 text-purple-700 border-purple-200",
@@ -265,7 +307,6 @@ export default function TrackingsPage() {
                         </div>
                       </div>
                     </td>
-                    {/* EDIT BAGIAN STATUS AGAR RATA TENGAH DENGAN STYLE SAMA SEPERTI ORDER TABLE */}
                     <td className="px-6 py-4 text-center">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider shadow-sm border ${statusConfig.color}`}
@@ -278,6 +319,7 @@ export default function TrackingsPage() {
                       <button
                         onClick={() => {
                           setSelectedTracking(t);
+                          setEditTimeline(t.timeline || []);
                           setIsEditModalOpen(true);
                         }}
                         className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 border border-gray-150 bg-white shadow-sm transition-colors"
@@ -306,19 +348,19 @@ export default function TrackingsPage() {
 
       {/* Modal Edit */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-all">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-all py-10">
           <form
             onSubmit={handleUpdate}
-            className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] border border-gray-100 animate-in fade-in zoom-in-95 duration-200"
           >
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0 rounded-t-2xl">
               <div>
                 <h2 className="text-lg font-bold text-gray-900">
                   Edit Data Tracking
                 </h2>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Update informasi logistik pengiriman pesanan
+                  Update informasi dan timeline logistik pengiriman pesanan
                 </p>
               </div>
               <button
@@ -330,116 +372,265 @@ export default function TrackingsPage() {
               </button>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-6 space-y-4">
-              {/* Row 1: Order ID & No Resi */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
-                    Order ID
-                  </label>
-                  <div className="relative">
-                    <Hash className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <input
-                      name="order_id"
-                      defaultValue={selectedTracking?.order_id}
-                      readOnly
-                      className="w-full bg-gray-50 border border-gray-200 pl-9 pr-3 py-2.5 rounded-xl text-sm font-mono font-semibold text-gray-500 cursor-not-allowed outline-none"
-                    />
+            {/* Modal Body (Scrollable) */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              {/* SECTION: INFO PENGIRIMAN */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-gray-900 border-b pb-2">
+                  Informasi Utama
+                </h3>
+
+                {/* Row 1: Order ID & No Resi */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                      Order ID
+                    </label>
+                    <div className="relative">
+                      <Hash className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <input
+                        name="order_id"
+                        defaultValue={selectedTracking?.order_id}
+                        readOnly
+                        className="w-full bg-gray-50 border border-gray-200 pl-9 pr-3 py-2.5 rounded-xl text-sm font-mono font-semibold text-gray-500 cursor-not-allowed outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                      Nomor Resi
+                    </label>
+                    <div className="relative">
+                      <Truck className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <input
+                        name="tracking_number"
+                        defaultValue={selectedTracking?.tracking_number || ""}
+                        className="w-full border border-gray-200 pl-9 pr-3 py-2.5 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                        placeholder="Contoh: RESI987654320"
+                      />
+                    </div>
                   </div>
                 </div>
 
+                {/* Row 2: Status & Kurir */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                      Status Utama
+                    </label>
+                    <select
+                      name="status"
+                      defaultValue={selectedTracking?.status}
+                      className="w-full border border-gray-200 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                    >
+                      <option value="Menunggu Konfirmasi">Menunggu Konfirmasi</option>
+                      <option value="Pesanan Diproses">Pesanan Diproses</option>
+                      <option value="Pengemasan">Pengemasan</option>
+                      <option value="Sedang Dikirim">Sedang Dikirim</option>
+                      <option value="Dalam Perjalanan">Dalam Perjalanan</option>
+                      <option value="Selesai">Selesai / Diterima</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-400 uppercase block">
+                      Penyedia Kurir
+                    </label>
+                    <select
+                      name="courier"
+                      defaultValue={selectedTracking?.courier}
+                      className="w-full border border-gray-200 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none"
+                    >
+                      {COURIER_LIST.map((kurir) => (
+                        <option key={kurir} value={kurir}>
+                          {kurir}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Row 3: Tanggal Estimasi */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
-                    Nomor Resi
+                    Estimasi Pengiriman
                   </label>
                   <div className="relative">
-                    <Truck className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    {/* Menggunakan type="date" agar kalender muncul saat diklik */}
                     <input
-                      name="tracking_number"
-                      defaultValue={selectedTracking?.tracking_number || ""}
-                      className="w-full border border-gray-200 pl-9 pr-3 py-2.5 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
-                      placeholder="Contoh: JX123456789"
+                      type="date"
+                      name="estimated_delivery"
+                      defaultValue={
+                        selectedTracking?.estimated_delivery
+                          ? selectedTracking.estimated_delivery.substring(0, 10)
+                          : ""
+                      }
+                      className="w-full border border-gray-200 pl-9 pr-3 py-2.5 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none transition-all"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Row 2: Status & Kurir */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
-                    Status Pengiriman
-                  </label>
-                  <select
-                    name="status"
-                    defaultValue={selectedTracking?.status}
-                    className="w-full border border-gray-200 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                  >
-                    <option value="Menunggu Konfirmasi">
-                      Menunggu Konfirmasi
-                    </option>
-                    <option value="Pengemasan">Pengemasan</option>
-                    <option value="Dalam Perjalanan">Dalam Perjalanan</option>
-                    <option value="Selesai">Selesai / Diterima</option>
-                  </select>
+              {/* SECTION: INFO PENERIMA */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-gray-900 border-b pb-2">
+                  Informasi Penerima
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                      Nama Penerima
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <input
+                        name="recipient_name"
+                        defaultValue={selectedTracking?.recipient_name}
+                        className="w-full border border-gray-200 pl-9 pr-3 py-2.5 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none"
+                        placeholder="Nama Lengkap Penerima"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                      No. HP / Whatsapp
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <input
+                        name="recipient_phone"
+                        defaultValue={selectedTracking?.recipient_phone || ""}
+                        className="w-full border border-gray-200 pl-9 pr-3 py-2.5 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none"
+                        placeholder="081234567890"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* Field Kurir dengan Dropdown */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-400 uppercase">
-                    Penyedia Kurir
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                    Alamat Penerima
                   </label>
-                  <select
-                    name="courier"
-                    defaultValue={selectedTracking?.courier}
-                    className="w-full border border-gray-200 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none"
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <textarea
+                      name="recipient_address"
+                      defaultValue={selectedTracking?.recipient_address}
+                      rows={2}
+                      className="w-full border border-gray-200 pl-9 pr-3 py-2 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none transition-all resize-none"
+                      placeholder="Alamat Pengiriman Lengkap..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION: TIMELINE PENGIRIMAN */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <h3 className="text-sm font-bold text-gray-900">
+                    Timeline Perjalanan
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={addTimelineItem}
+                    className="text-xs flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md transition-colors"
                   >
-                    {COURIER_LIST.map((kurir) => (
-                      <option key={kurir} value={kurir}>
-                        {kurir}
-                      </option>
+                    <Plus size={14} /> Tambah Log
+                  </button>
+                </div>
+
+                {editTimeline.length === 0 ? (
+                  <p className="text-sm text-gray-400 italic text-center py-4">
+                    Belum ada riwayat timeline.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {editTimeline.map((item, index) => (
+                      <div
+                        key={index}
+                        className="bg-gray-50 border border-gray-200 p-3 rounded-xl relative group"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => removeTimelineItem(index)}
+                          className="absolute right-2 top-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Hapus Log"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pr-8">
+                          <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase block mb-1">
+                              Status
+                            </label>
+                            {/* FIX UNCONTROLLED INPUT ERROR: value={item.status || ""} */}
+                            <input
+                              type="text"
+                              value={item.status || ""}
+                              onChange={(e) =>
+                                handleTimelineChange(index, "status", e.target.value)
+                              }
+                              className="w-full border border-gray-200 px-3 py-2 rounded-lg text-sm font-semibold text-gray-900 outline-none focus:border-gray-400"
+                              placeholder="Pesanan Diproses"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase block mb-1">
+                              Waktu
+                            </label>
+                            {/* MENGGUNAKAN DATETIME-LOCAL AGAR BISA PICK DATE & HOUR */}
+                            <input
+                              type="datetime-local"
+                              value={formatTimeForInput(item.time)}
+                              onChange={(e) => {
+                                // Ketika user pilih tanggal dari picker, format balikan-nya ke "YYYY-MM-DD HH:mm:ss"
+                                const val = e.target.value;
+                                const formattedForBackend = val
+                                  ? val.replace("T", " ") + ":00"
+                                  : "";
+                                handleTimelineChange(
+                                  index,
+                                  "time",
+                                  formattedForBackend
+                                );
+                              }}
+                              className="w-full border border-gray-200 px-3 py-2 rounded-lg text-sm font-mono font-medium text-gray-900 outline-none focus:border-gray-400"
+                            />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase block mb-1">
+                              Deskripsi Tambahan
+                            </label>
+                            {/* FIX UNCONTROLLED INPUT ERROR */}
+                            <textarea
+                              value={item.description || ""}
+                              onChange={(e) =>
+                                handleTimelineChange(
+                                  index,
+                                  "description",
+                                  e.target.value
+                                )
+                              }
+                              rows={1}
+                              className="w-full border border-gray-200 px-3 py-2 rounded-lg text-sm text-gray-900 outline-none focus:border-gray-400 resize-none"
+                              placeholder="Keterangan lebih detail..."
+                            />
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Row 3: Nama Penerima */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
-                  Nama Penerima
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <input
-                    name="recipient_name"
-                    defaultValue={selectedTracking?.recipient_name}
-                    className="w-full border border-gray-200 pl-9 pr-3 py-2.5 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                    placeholder="Nama Lengkap Penerima"
-                  />
-                </div>
-              </div>
-
-              {/* Row 4: Alamat Lengkap */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
-                  Alamat Penerima
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <textarea
-                    name="recipient_address"
-                    defaultValue={selectedTracking?.recipient_address}
-                    rows={3}
-                    className="w-full border border-gray-200 pl-9 pr-3 py-2 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none transition-all resize-none"
-                    placeholder="Alamat Pengiriman Lengkap..."
-                  />
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex gap-3 justify-end">
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex gap-3 justify-end shrink-0 rounded-b-2xl">
               <button
                 type="button"
                 onClick={() => setIsEditModalOpen(false)}
