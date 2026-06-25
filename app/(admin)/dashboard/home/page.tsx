@@ -191,6 +191,7 @@ export default function HomeDashboard() {
       value: dashboardData.activeUsers.toString(),
       icon: Users,
       trend: "Terdaftar",
+      route: "/dashboard/users",
     },
     {
       title: "Total Revenue",

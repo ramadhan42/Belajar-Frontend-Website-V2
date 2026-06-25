@@ -32,7 +32,7 @@ interface Order {
 }
 
 export default function OrdersPage() {
-  // Tambahkan ini di bagian atas komponen bersama state lainnya
+  // State Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -51,13 +51,12 @@ export default function OrdersPage() {
   const [newStatus, setNewStatus] = useState("");
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "http://127.0.0.1:8000";
-  
-  // Tambahkan useEffect ini agar halaman kembali ke 1 saat mencari
-useEffect(() => {
-  setCurrentPage(1);
-}, [searchTerm]);
 
-  // 1. Tambahkan state di dalam OrdersPage
+  // Kembali ke halaman 1 saat pencarian berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   const [successModal, setSuccessModal] = useState<{
     isOpen: boolean;
     message: string;
@@ -66,13 +65,24 @@ useEffect(() => {
     message: "",
   });
 
-  // 2. Fungsi helper untuk memicu modal
   const showSuccess = (message: string) => {
     setSuccessModal({ isOpen: true, message });
     setTimeout(() => setSuccessModal({ isOpen: false, message: "" }), 2500);
   };
 
-  // Daftar opsi status yang diperbagus untuk Modal Selector
+  // 1. LOGIKA FILTER DAN PAGINATION
+  const filteredOrders = orders.filter(
+    (o) =>
+      o.id.includes(searchTerm) ||
+      o.user?.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage) || 1;
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const statusOptions = [
     {
       id: "dibatalkan",
@@ -197,7 +207,7 @@ useEffect(() => {
       );
 
       setIsStatusModalOpen(false);
-      showSuccess("Status pesanan berhasil diperbarui."); // <--- Panggil di sini
+      showSuccess("Status pesanan berhasil diperbarui.");
     } catch (error) {
       console.error("Gagal update status:", error);
       alert("Gagal mengupdate status. Periksa console.");
@@ -221,32 +231,28 @@ useEffect(() => {
     fetchOrders();
   }, [baseUrl]);
 
-  // 3. Update fungsi handleDelete
   const handleDelete = async () => {
     if (!deleteId) return;
 
-    // Ambil token dari storage
     const token = localStorage.getItem("auth_token");
 
     try {
       const res = await fetch(`${baseUrl}/api/orders/${deleteId}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${token}`, // PENTING: Wajib kirim token
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
 
-      // Cek apakah response berhasil
       if (res.ok) {
         setOrders(orders.filter((o) => o.id !== deleteId));
         setIsDeleteModalOpen(false);
         showSuccess("Pesanan berhasil dihapus dari sistem.");
-        fetchOrders(); // Refresh data
+        fetchOrders();
       } else {
         const errorData = await res.json();
         console.error("Gagal menghapus:", errorData.message);
-        // Tambahkan alert/notifikasi error di sini
       }
     } catch (error) {
       console.error("Kesalahan koneksi:", error);
@@ -382,7 +388,8 @@ useEffect(() => {
           </div>
         </div>
       )}
-      {/* // 5. Tambahkan JSX ini di bagian bawah return (sebelum penutup div utama) */}
+
+      {/* NOTIFIKASI SUKSES */}
       {successModal.isOpen && (
         <div className="fixed bottom-6 right-6 z-[60] animate-in slide-in-from-right-10 fade-in duration-300">
           <div className="bg-white border border-emerald-100 shadow-xl rounded-2xl p-4 flex items-center gap-3 pr-6">
@@ -396,12 +403,14 @@ useEffect(() => {
           </div>
         </div>
       )}
+
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Pesanan</h1>
         <p className="text-gray-500 mt-1">
           Kelola daftar pesanan masuk dari pelanggan.
         </p>
       </div>
+
       <div className="bg-white rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-50">
           <div className="relative w-full max-w-md">
@@ -441,106 +450,120 @@ useEffect(() => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {orders
-                .filter(
-                  (o) =>
-                    o.id.includes(searchTerm) ||
-                    o.user?.name
-                      .toLowerCase()
-                      .includes(searchTerm.toLowerCase()),
-                )
-                .map((order) => (
-                  <tr
-                    key={order.id}
-                    className="hover:bg-gray-50/40 transition-colors group"
-                  >
-                    <td className="px-6 py-4 text-center">
-                      <span className="text-xs font-bold font-mono text-gray-900 bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg shadow-sm">
-                        #{order.id}
+              {/* 2. GUNAKAN PAGINATED ORDERS UNTUK MAP */}
+              {paginatedOrders.map((order) => (
+                <tr
+                  key={order.id}
+                  className="hover:bg-gray-50/40 transition-colors group"
+                >
+                  <td className="px-6 py-4 text-center">
+                    <span className="text-xs font-bold font-mono text-gray-900 bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg shadow-sm">
+                      #{order.id}
+                    </span>
+                  </td>
+
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-semibold text-gray-900">
+                      {order.user?.name || "No Name"}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {order.user?.email || "No Email"}
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3 text-left">
+                      <div className="w-10 h-10 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                        {order.product?.image_1 ? (
+                          <img
+                            src={`${baseUrl}/storage/${order.product.image_1}`}
+                            alt={order.product?.title || "Produk"}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "";
+                            }}
+                          />
+                        ) : (
+                          <ImageIcon className="w-5 h-5 text-gray-400" />
+                        )}
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900 truncate max-w-[240px]">
+                        {order.product?.title || "Tanpa Nama"}
                       </span>
-                    </td>
+                    </div>
+                  </td>
 
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-semibold text-gray-900">
-                        {order.user?.name || "No Name"}
-                      </div>
-                      <div className="text-xs text-gray-400 mt-0.5">
-                        {order.user?.email || "No Email"}
-                      </div>
-                    </td>
+                  <td className="px-6 py-4 text-center text-sm font-bold text-gray-900">
+                    {formatRupiah(order.total_price)}
+                  </td>
 
-                    {/* MERUBAH TD PRODUK DAN FLEX WRAPPER MENJADI RATA KIRI SEJAJAR */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3 text-left">
-                        <div className="w-10 h-10 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                          {order.product?.image_1 ? (
-                            <img
-                              src={`${baseUrl}/storage/${order.product.image_1}`}
-                              alt={order.product?.title || "Produk"}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = "";
-                              }}
-                            />
-                          ) : (
-                            <ImageIcon className="w-5 h-5 text-gray-400" />
-                          )}
-                        </div>
-                        <span className="text-sm font-semibold text-gray-900 truncate max-w-[240px]">
-                          {order.product?.title || "Tanpa Nama"}
+                  <td className="px-6 py-4 text-center text-left">
+                    {(() => {
+                      const config = getStatusConfig(order.status);
+                      return (
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider shadow-sm border ${config.color}`}
+                        >
+                          {config.icon}
+                          {order.status.replace("_", " ")}
                         </span>
-                      </div>
-                    </td>
+                      );
+                    })()}
+                  </td>
 
-                    <td className="px-6 py-4 text-center text-sm font-bold text-gray-900">
-                      {formatRupiah(order.total_price)}
-                    </td>
-
-                    <td className="px-6 py-4 text-center text-left">
-                      {(() => {
-                        const config = getStatusConfig(order.status);
-                        return (
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider shadow-sm border ${config.color}`}
-                          >
-                            {config.icon}
-                            {order.status.replace("_", " ")}
-                          </span>
-                        );
-                      })()}
-                    </td>
-
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex gap-2 justify-center">
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setNewStatus(order.status);
-                            setIsStatusModalOpen(true);
-                          }}
-                          className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 border border-gray-150 bg-white shadow-sm transition-colors"
-                          title="Ubah status"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setDeleteId(order.id);
-                            setIsDeleteModalOpen(true);
-                          }}
-                          className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 border border-gray-150 bg-white shadow-sm transition-colors"
-                          title="Hapus pesanan"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                  <td className="px-6 py-4 text-center">
+                    <div className="flex gap-2 justify-center">
+                      <button
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setNewStatus(order.status);
+                          setIsStatusModalOpen(true);
+                        }}
+                        className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 border border-gray-150 bg-white shadow-sm transition-colors"
+                        title="Ubah status"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDeleteId(order.id);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 border border-gray-150 bg-white shadow-sm transition-colors"
+                        title="Hapus pesanan"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
+
+          {/* 3. NAVIGASI PAGINATION DI TENGAH BAWAH */}
+          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-center gap-4 bg-gray-50/50">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+              className="px-5 py-2 rounded-xl bg-white border border-gray-200 text-sm font-semibold hover:bg-gray-50 disabled:opacity-50 transition-colors shadow-sm"
+            >
+              Prev
+            </button>
+            <span className="text-sm font-bold text-gray-700 min-w-[60px] text-center">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+              className="px-5 py-2 rounded-xl bg-white border border-gray-200 text-sm font-semibold hover:bg-gray-50 disabled:opacity-50 transition-colors shadow-sm"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
+
       {/* MODAL DELETE */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm">

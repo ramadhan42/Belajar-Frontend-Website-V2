@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Trash2, CheckCircle2, Package } from "lucide-react";
+import {
+  Search,
+  Trash2,
+  CheckCircle2,
+  Package,
+  ChevronLeft,
+  ChevronRight,
+  ShoppingCart,
+} from "lucide-react";
 
 interface CartItem {
   id: number;
@@ -21,20 +29,22 @@ export default function CartPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // STATE PAGINATION
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   // Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  // Tambahkan di state declarations
   const [notification, setNotification] = useState<{
     isOpen: boolean;
     message: string;
   } | null>(null);
 
-  // Fungsi untuk memicu notifikasi
   const showNotification = (message: string) => {
     setNotification({ isOpen: true, message });
-    setTimeout(() => setNotification(null), 3000); // Otomatis hilang setelah 3 detik
+    setTimeout(() => setNotification(null), 3000);
   };
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "http://127.0.0.1:8000";
@@ -59,6 +69,11 @@ export default function CartPage() {
     fetchCarts();
   }, []);
 
+  // Reset ke halaman 1 setiap kali user melakukan pencarian
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   const handleDelete = async () => {
     if (!deleteId) return;
     const token = localStorage.getItem("auth_token");
@@ -68,21 +83,31 @@ export default function CartPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Update state
       setCarts(carts.filter((c) => c.id !== deleteId));
       setIsDeleteModalOpen(false);
-
-      // Tampilkan notifikasi sukses
       showNotification("Item berhasil dihapus dari keranjang.");
+
+      // Cek apakah halaman yang sedang aktif kosong setelah dihapus
+      const remainingOnPage = paginatedCarts.length - 1;
+      if (remainingOnPage === 0 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      }
     } catch (error) {
       console.error("Gagal menghapus cart:", error);
     }
   };
 
+  // LOGIKA FILTER DAN PAGINATION
   const filteredCarts = carts.filter(
     (c) =>
       c.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.product.title.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  const totalPages = Math.ceil(filteredCarts.length / itemsPerPage) || 1;
+  const paginatedCarts = filteredCarts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const formatRupiah = (value: number | string) => {
@@ -103,126 +128,113 @@ export default function CartPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Custom Notification Modal */}
+      {/* Notifikasi Pop-up */}
       {notification?.isOpen && (
-        <div className="fixed bottom-6 right-6 z-[60] bg-white border border-emerald-100 shadow-xl rounded-2xl p-4 flex items-center gap-3 animate-in slide-in-from-right-5 fade-in duration-300">
-          <div className="bg-emerald-100 p-2 rounded-full">
+        <div className="fixed bottom-6 right-6 z-[60] bg-white border border-emerald-100 shadow-xl rounded-2xl p-4 flex items-center gap-3 animate-in slide-in-from-right-5 fade-in duration-300 pr-6">
+          <div className="bg-emerald-100 p-2 rounded-full shrink-0">
             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
           </div>
           <div>
             <h4 className="text-sm font-bold text-gray-900">Berhasil!</h4>
-            <p className="text-xs text-gray-500">{notification.message}</p>
+            <p className="text-xs font-medium text-gray-500 mt-0.5">{notification.message}</p>
           </div>
         </div>
       )}
+
+      {/* Header Page */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Cart / Keranjang</h1>
-        <p className="text-gray-500 mt-1">
-          Daftar item produk parfum yang sedang tersimpan di keranjang belanja
-          pelanggan.
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Cart / Keranjang</h1>
+        <p className="text-gray-500 mt-1.5 text-sm">
+          Daftar item produk parfum yang sedang tersimpan di keranjang belanja pelanggan.
         </p>
       </div>
 
+      {/* Card Wrapper */}
       <div className="bg-white rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+        
         {/* Search Bar */}
-        <div className="p-6 border-b border-gray-50">
+        <div className="p-5 sm:p-6 border-b border-gray-50">
           <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3.5 top-2.5 h-5 w-5 text-gray-400" />
             <input
               type="text"
               placeholder="Cari user atau nama produk..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50/50 focus:outline-none focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+              className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900 outline-none transition-all shadow-sm"
             />
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+        {/* Tabel Responsif */}
+        <div className="overflow-x-auto w-full">
           <table className="w-full border-collapse min-w-[800px]">
             <thead>
-              <tr className="bg-gray-50/70 border-b border-gray-100">
-                {/* TH Produk dibuat text-center agar pas dengan konten */}
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[300px]">
+              <tr className="bg-gray-50/80 border-b border-gray-100">
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-left w-[320px]">
                   Produk
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-left">
                   Pelanggan
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[140px]">
                   Kuantitas
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-left">
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-left w-[180px]">
                   Harga Satuan
                 </th>
-                {/* TH Aksi diselaraskan ke tengah */}
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[100px]">
                   Aksi
                 </th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-gray-50">
-              {filteredCarts.length > 0 ? (
-                filteredCarts.map((c) => (
-                  <tr
-                    key={c.id}
-                    className="hover:bg-gray-50/40 transition-colors group"
-                  >
-                    {/* TD Produk dibuat agak ke tengah dengan penyeimbang struktur flex */}
-                    <td className="px-6 py-4 pl-15">
-                      <div className="flex items-center gap-4 justify-center max-w-xs mx-auto text-left">
-                        {/* Container Gambar */}
-                        <div className="h-12 w-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+              {paginatedCarts.length > 0 ? (
+                paginatedCarts.map((c) => (
+                  <tr key={c.id} className="hover:bg-gray-50/60 transition-colors group">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-4 text-left">
+                        <div className="h-12 w-12 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm group-hover:border-gray-300 transition-colors">
                           {c.product.image_1 ? (
                             <img
                               src={`${baseUrl}/storage/${c.product.image_1}`}
                               alt={c.product.title}
                               className="h-full w-full object-cover"
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src =
-                                  "/placeholder-product.png";
+                                (e.target as HTMLImageElement).src = "/placeholder-product.png";
                               }}
                             />
                           ) : (
                             <Package className="h-5 w-5 text-gray-400" />
                           )}
                         </div>
-
-                        {/* Info Produk */}
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-gray-900 truncate">
+                          <p className="text-sm font-bold text-gray-900 truncate">
                             {c.product.title || "Tanpa Nama"}
                           </p>
-                          <p className="text-xs text-gray-500 mt-0.5 capitalize truncate">
-                            {c.product.personality_type?.replace("_", " ")}
+                          <p className="text-xs font-medium text-gray-500 mt-0.5 capitalize truncate">
+                            {c.product.personality_type?.replace(/_/g, " ")}
                           </p>
                         </div>
                       </div>
                     </td>
 
                     <td className="px-6 py-4">
-                      <div className="text-sm font-semibold text-gray-900">
-                        {c.user.name}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-0.5">
-                        {c.user.email}
-                      </div>
+                      <div className="text-sm font-bold text-gray-900 truncate">{c.user.name}</div>
+                      <div className="text-xs font-medium text-gray-500 mt-0.5 truncate">{c.user.email}</div>
                     </td>
 
-                    <td className="px-6 py-4 text-center text-sm font-bold text-gray-600">
-                      {c.quantity}{" "}
-                      <span className="text-xs font-medium text-gray-400">
-                        pcs
+                    <td className="px-6 py-4 text-center">
+                      <span className="inline-flex items-center justify-center px-3 py-1 rounded-lg bg-gray-50 border border-gray-200 text-sm font-bold text-gray-700 shadow-sm min-w-[3rem]">
+                        {c.quantity}
                       </span>
                     </td>
 
-                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                    <td className="px-6 py-4 text-sm font-bold text-gray-900">
                       {formatRupiah(c.product.price)}
                     </td>
 
-                    {/* TD Aksi diposisikan pas di tengah */}
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-center">
                         <button
@@ -230,8 +242,8 @@ export default function CartPage() {
                             setDeleteId(c.id);
                             setIsDeleteModalOpen(true);
                           }}
-                          className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors shadow-sm bg-white border border-gray-150"
-                          title="Hapus item"
+                          className="p-2.5 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 border border-gray-200 bg-white shadow-sm transition-all duration-200"
+                          title="Hapus item dari keranjang"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -241,40 +253,67 @@ export default function CartPage() {
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-12 text-center text-sm text-gray-400 font-medium"
-                  >
-                    Tidak ada item di dalam keranjang belanja.
+                  <td colSpan={5} className="py-16 text-center">
+                    <div className="flex flex-col items-center justify-center text-gray-400">
+                      <ShoppingCart size={48} className="mb-4 text-gray-300" />
+                      <p className="text-sm font-bold text-gray-900">Keranjang Kosong</p>
+                      <p className="text-sm font-medium text-gray-500 mt-1">Tidak ada item yang sesuai dengan pencarian Anda.</p>
+                    </div>
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+
+          {/* Navigasi Pagination */}
+          {filteredCarts.length > 0 && (
+            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-center gap-4 bg-gray-50/50">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+                className="px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:hover:bg-white transition-all shadow-sm flex items-center gap-1.5"
+              >
+                <ChevronLeft size={16} /> Prev
+              </button>
+              <div className="text-sm font-bold text-gray-700 min-w-[80px] text-center bg-white px-4 py-2.5 rounded-xl border border-gray-200 shadow-sm">
+                {currentPage} <span className="text-gray-400 font-medium mx-1.5">/</span> {totalPages}
+              </div>
+              <button
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+                className="px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:hover:bg-white transition-all shadow-sm flex items-center gap-1.5"
+              >
+                Next <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* MODAL DELETE YANG DIPERBAGUS */}
+      {/* Modal Delete yang Diperbagus */}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-bold text-gray-900">
-              Hapus dari Keranjang?
-            </h3>
-            <p className="text-sm text-gray-500 mt-2">
-              Item ini akan dikeluarkan secara permanen dari daftar keranjang
-              belanja pengguna.
-            </p>
-            <div className="flex gap-3 mt-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-all">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                <Trash2 size={24} className="text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Hapus Item?</h3>
+              <p className="text-sm font-medium text-gray-500 mt-2 leading-relaxed">
+                Item ini akan dikeluarkan secara permanen dari daftar keranjang belanja pengguna.
+              </p>
+            </div>
+            
+            <div className="flex gap-3 mt-8">
               <button
                 onClick={() => setIsDeleteModalOpen(false)}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-sm font-semibold text-gray-700 transition-colors"
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-100 bg-white text-sm font-bold text-gray-700 transition-colors shadow-sm"
               >
                 Batal
               </button>
               <button
                 onClick={handleDelete}
-                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 shadow-sm transition-colors"
+                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 shadow-sm transition-colors"
               >
                 Ya, Hapus
               </button>
