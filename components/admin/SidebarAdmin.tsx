@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Package,
   UserCircle,
-  ShoppingCart,
   Heart,
   ShoppingBag,
   MessageSquare,

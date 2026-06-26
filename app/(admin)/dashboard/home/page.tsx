@@ -117,7 +117,7 @@ export default function HomeDashboard() {
           totalProducts: products?.data?.length || products?.length || 0,
           totalOrders: ordersList.length || 0,
           activeUsers: users?.data?.length || users?.length || 0,
-          totalRevenue: revenue?.data?.total_revenue || 0,
+          totalRevenue: revenue?.data?.total_revenue_clean || 0,
         });
 
         // Olah Data Grafik Penjualan
@@ -198,6 +198,7 @@ export default function HomeDashboard() {
       value: formatRupiah(dashboardData.totalRevenue),
       icon: TrendingUp,
       trend: "Pendapatan",
+      route: "/dashboard/orders",
     },
   ];
 
