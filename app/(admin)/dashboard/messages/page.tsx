@@ -25,7 +25,7 @@ export default function MessagesPage() {
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
 
   const fetchMessages = async () => {
     setIsLoading(true);

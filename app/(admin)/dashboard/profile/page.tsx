@@ -32,7 +32,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
 
   const fetchProfile = async () => {
     setIsLoading(true);

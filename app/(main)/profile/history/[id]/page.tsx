@@ -163,7 +163,7 @@ export default function HistoryDetailPage() {
           await Promise.all(
             historyGroup.map(async (item) => {
               const response = await fetch(
-                `${process.env.NEXT_PUBLIC_URL}/api/orders/${item.id}/confirm`,
+                `${process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud"}/api/orders/${item.id}/confirm`,
                 {
                   method: "PATCH",
                   headers: {
