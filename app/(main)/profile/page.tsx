@@ -78,7 +78,7 @@ export default function ProfilePage() {
     }
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud"}/user/profile`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud/api"}/user/profile`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
