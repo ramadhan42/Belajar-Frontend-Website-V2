@@ -79,7 +79,7 @@ export default function ProfilePage() {
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/user/profile`, {
-        method: "PUT",
+        method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
