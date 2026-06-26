@@ -27,7 +27,7 @@ export default function ProfilePage() {
 
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/user/profile`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://belajar-frontend-website-v2.vercel.app/api"}/user/profile`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,

@@ -25,7 +25,7 @@ export default function MessagesPage() {
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "http://127.0.0.1:8000";
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-frontend-website-v2.vercel.app";
 
   const fetchMessages = async () => {
     setIsLoading(true);
