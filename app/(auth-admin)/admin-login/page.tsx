@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/login`, {
+      const res = await fetch(`https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
