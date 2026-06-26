@@ -32,7 +32,7 @@ export default function WishlistPage() {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
+  const baseUrl = process.env.NEXT_PUBLIC_URL;
 
   const fetchWishlists = async () => {
     setIsLoading(true);

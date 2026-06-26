@@ -8,6 +8,7 @@ import {
   Calendar,
   Edit2,
   ShieldCheck,
+  CheckCircle, // Tambahkan import CheckCircle
   Clock,
   Phone,
 } from "lucide-react";
@@ -31,7 +32,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
+  const baseUrl = process.env.NEXT_PUBLIC_URL;
 
   const fetchProfile = async () => {
     setIsLoading(true);
@@ -134,19 +135,23 @@ export default function ProfilePage() {
               label="Nomor Telepon"
               value={profile.phone || "Belum diatur"}
             />
+            {/* Bagian Status Verifikasi yang Diperbarui */}
             <InfoItem
-              icon={ShieldCheck}
+              icon={profile.id === 1 ? CheckCircle : ShieldCheck}
               label="Status Verifikasi"
               value={
-                profile.email_verified_at ? "Terverifikasi" : "Belum Verifikasi"
+                profile.id === 1
+                  ? "Admin User"
+                  : profile.email_verified_at
+                  ? "Terverifikasi"
+                  : "Belum Verifikasi"
               }
-              status={!!profile.email_verified_at}
+              status={profile.id === 1 ? true : !!profile.email_verified_at}
             />
           </div>
         </div>
       </motion.div>
       {/* Modal Edit */}
-      {/* // Ganti bagian AnimatePresence di page.tsx dengan ini: */}
       <AnimatePresence>
         {isEditModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -308,7 +313,7 @@ function InfoItem({
           className={
             status !== undefined
               ? status
-                ? "text-green-600"
+                ? "text-green-600 font-bold"
                 : "text-amber-600"
               : ""
           }

@@ -10,7 +10,8 @@ import {
   ChevronLeft, 
   ChevronRight, 
   Trash2, 
-  AlertTriangle 
+  AlertTriangle,
+  ShieldCheck
 } from "lucide-react";
 
 interface UserData {
@@ -40,7 +41,7 @@ export default function UsersPage() {
   const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
+  const baseUrl = process.env.NEXT_PUBLIC_URL;
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -95,6 +96,8 @@ export default function UsersPage() {
   };
 
   const openDeleteModal = (user: UserData) => {
+    // Proteksi tambahan di UI agar ID 1 tidak masuk ke modal delete
+    if (user.id === 1) return; 
     setUserToDelete(user);
     setIsDeleteModalOpen(true);
   };
@@ -102,6 +105,13 @@ export default function UsersPage() {
   // Fungsi Eksekusi Hapus User
   const confirmDelete = async () => {
     if (!userToDelete) return;
+    
+    // Proteksi di eksekusi fungsi
+    if (userToDelete.id === 1) {
+      alert("Admin utama tidak dapat dihapus.");
+      setIsDeleteModalOpen(false);
+      return;
+    }
     
     setIsDeleting(true);
     const token = localStorage.getItem("auth_token");
@@ -174,7 +184,7 @@ export default function UsersPage() {
                 <thead className="bg-gray-50/80 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500">
                   <tr>
                     <th className="px-6 py-4 font-semibold">ID</th>
-                    <th className="px-6 py-4 font-semibold pl-25">Pengguna</th>
+                    <th className="px-6 py-4 font-semibold">Pengguna</th>
                     <th className="px-6 py-4 font-semibold">Alamat / Info</th>
                     <th className="px-6 py-4 font-semibold">Bergabung</th>
                     <th className="px-6 py-4 font-semibold text-center">Aksi</th>
@@ -187,17 +197,28 @@ export default function UsersPage() {
                         <td className="px-6 py-4 font-medium text-gray-900">
                           #{user.id}
                         </td>
-                        <td className="px-6 py-4 pl-5">
+                        <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                              <User className="w-4 h-4" />
+                            <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm">
+                              {user.id === 1 ? (
+                                <ShieldCheck className="w-5 h-5 text-blue-600" />
+                              ) : (
+                                <User className="w-5 h-5" />
+                              )}
                             </div>
                             <div>
-                              <div className="font-semibold text-gray-900">
-                                {user.name}
+                              <div className="flex items-center gap-2">
+                                <div className="font-semibold text-gray-900">
+                                  {user.email}
+                                </div>
+                                {user.id === 1 && (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-blue-50 text-blue-600 border border-blue-100">
+                                    ADMIN USER
+                                  </span>
+                                )}
                               </div>
-                              <div className="text-xs text-gray-500">
-                                {user.email}
+                              <div className="text-xs text-gray-500 mt-0.5">
+                                {user.name}
                               </div>
                             </div>
                           </div>
@@ -219,10 +240,17 @@ export default function UsersPage() {
                             >
                               <Eye className="w-5 h-5" />
                             </button>
+                            
+                            {/* Logic Render Button Hapus */}
                             <button
-                              onClick={() => openDeleteModal(user)}
-                              className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Hapus Pengguna"
+                              onClick={() => user.id !== 1 && openDeleteModal(user)}
+                              disabled={user.id === 1}
+                              className={`inline-flex items-center justify-center p-2 rounded-lg transition-colors ${
+                                user.id === 1 
+                                  ? "text-gray-300 cursor-not-allowed" 
+                                  : "text-gray-400 hover:text-red-600 hover:bg-red-50"
+                              }`}
+                              title={user.id === 1 ? "Admin tidak dapat dihapus" : "Hapus Pengguna"}
                             >
                               <Trash2 className="w-5 h-5" />
                             </button>
@@ -323,7 +351,7 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* Modal View Detail Pengguna (Tetap sama seperti sebelumnya) */}
+      {/* Modal View Detail Pengguna */}
       {isViewModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
@@ -336,10 +364,17 @@ export default function UsersPage() {
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
-                  <User className="w-8 h-8" />
+                  {selectedUser.id === 1 ? <ShieldCheck className="w-8 h-8" /> : <User className="w-8 h-8" />}
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-gray-900">{selectedUser.name}</h4>
+                  <h4 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    {selectedUser.name}
+                    {selectedUser.id === 1 && (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-blue-50 text-blue-600 border border-blue-100">
+                        ADMIN
+                      </span>
+                    )}
+                  </h4>
                   <p className="text-sm text-gray-500">{selectedUser.email}</p>
                 </div>
               </div>

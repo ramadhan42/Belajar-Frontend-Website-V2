@@ -77,7 +77,7 @@ export default function TrackingsPage() {
     "Ninja Express",
   ];
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
+  const baseUrl = process.env.NEXT_PUBLIC_URL;
 
   const fetchTrackings = async () => {
     setIsLoading(true);

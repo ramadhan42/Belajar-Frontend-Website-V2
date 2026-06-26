@@ -56,7 +56,7 @@ export default function HomeDashboard() {
   const [chartData, setChartData] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
+  const baseUrl = process.env.NEXT_PUBLIC_URL;
 
   // Konfigurasi Map Status (Label & Warna Tailwind)
   const getStatusConfig = (status: string) => {

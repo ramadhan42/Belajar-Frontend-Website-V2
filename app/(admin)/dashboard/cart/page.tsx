@@ -47,7 +47,7 @@ export default function CartPage() {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "http://127.0.0.1:8000";
+  const baseUrl = process.env.NEXT_PUBLIC_URL;
 
   const fetchCarts = async () => {
     setIsLoading(true);
