@@ -45,7 +45,7 @@ export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [newStatus, setNewStatus] = useState("");
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "http://127.0.0.1:8000";
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
 
   useEffect(() => {
     setCurrentPage(1);

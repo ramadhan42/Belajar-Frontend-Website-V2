@@ -40,7 +40,7 @@ export default function UsersPage() {
   const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "http://127.0.0.1:8000";
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
 
   const fetchUsers = async () => {
     setLoading(true);

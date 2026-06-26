@@ -38,7 +38,7 @@ export default function SidebarAdmin() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    const baseUrl = process.env.NEXT_PUBLIC_URL || "http://127.0.0.1:8000";
+    const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
     const token = localStorage.getItem("auth_token");
 
     try {
