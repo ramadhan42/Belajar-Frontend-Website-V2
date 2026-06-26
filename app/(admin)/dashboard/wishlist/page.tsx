@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Trash2, Heart, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Trash2, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface WishlistItem {
   id: number;

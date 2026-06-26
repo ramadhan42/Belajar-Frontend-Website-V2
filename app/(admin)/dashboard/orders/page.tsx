@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation"; // Import router dari next/navigation
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   Search,
@@ -12,9 +12,7 @@ import {
   Package,
   Truck,
   Image as ImageIcon,
-  ClosedCaption,
-  ClosedCaptionIcon,
-  Cross,
+  Wallet, // <-- Tambahkan Wallet icon di sini
 } from "lucide-react";
 import { CgClose } from "react-icons/cg";
 
@@ -32,27 +30,23 @@ interface Order {
 }
 
 export default function OrdersPage() {
-  // State Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const router = useRouter(); // Inisialisasi router
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // State untuk Delete Modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  // State untuk Modal Update Status
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [newStatus, setNewStatus] = useState("");
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "http://127.0.0.1:8000";
 
-  // Kembali ke halaman 1 saat pencarian berubah
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
@@ -80,7 +74,14 @@ export default function OrdersPage() {
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage) || 1;
   const paginatedOrders = filteredOrders.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
+  );
+
+  // ---> KALKULASI TOTAL REVENUE <---
+  // Menjumlahkan total_price dari seluruh order yang tampil (filtered)
+  const totalRevenue = filteredOrders.reduce(
+    (sum, order) => sum + Number(order.total_price || 0),
+    0,
   );
 
   const statusOptions = [
@@ -277,7 +278,7 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* MODAL UPDATE STATUS */}
+      {/* Modal Update */}
       {isStatusModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-all">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
@@ -389,21 +390,32 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* NOTIFIKASI SUKSES */}
-      {successModal.isOpen && (
-        <div className="fixed bottom-6 right-6 z-[60] animate-in slide-in-from-right-10 fade-in duration-300">
-          <div className="bg-white border border-emerald-100 shadow-xl rounded-2xl p-4 flex items-center gap-3 pr-6">
-            <div className="bg-emerald-100 p-2 rounded-full">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-gray-900">Berhasil!</h4>
-              <p className="text-xs text-gray-500">{successModal.message}</p>
+      {/* Modal Delete */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-gray-900">Hapus Pesanan?</h3>
+            <p className="text-sm text-gray-500 mt-2">
+              Tindakan ini bersifat permanen dan tidak dapat dibatalkan dari
+              sistem logistik.
+            </p>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-sm font-semibold text-gray-700 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => handleDelete()}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm"
+              >
+                Ya, Hapus
+              </button>
             </div>
           </div>
         </div>
       )}
-
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Pesanan</h1>
         <p className="text-gray-500 mt-1">
@@ -541,55 +553,54 @@ export default function OrdersPage() {
             </tbody>
           </table>
 
-          {/* 3. NAVIGASI PAGINATION DI TENGAH BAWAH */}
-          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-center gap-4 bg-gray-50/50">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-              className="px-5 py-2 rounded-xl bg-white border border-gray-200 text-sm font-semibold hover:bg-gray-50 disabled:opacity-50 transition-colors shadow-sm"
-            >
-              Prev
-            </button>
-            <span className="text-sm font-bold text-gray-700 min-w-[60px] text-center">
-              {currentPage} / {totalPages}
-            </span>
-            <button
-              disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-              className="px-5 py-2 rounded-xl bg-white border border-gray-200 text-sm font-semibold hover:bg-gray-50 disabled:opacity-50 transition-colors shadow-sm"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      </div>
+          {/* 3. FOOTER: TOTAL REVENUE & PAGINATION (DESIGN BARU) */}
+          <div className="px-6 py-5 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-6 bg-gray-50/50">
+            {/* Widget Total Pendapatan */}
+            <div className="flex items-center gap-4 bg-white px-5 py-3 rounded-2xl border border-gray-200 shadow-sm w-full sm:w-auto">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
+                <Wallet className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Total Pendapatan
+                </p>
+                <p className="text-xl font-black text-gray-900 mt-0.5">
+                  {formatRupiah(totalRevenue)}
+                </p>
+              </div>
+            </div>
 
-      {/* MODAL DELETE */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-bold text-gray-900">Hapus Pesanan?</h3>
-            <p className="text-sm text-gray-500 mt-2">
-              Tindakan ini bersifat permanen dan tidak dapat dibatalkan dari
-              sistem logistik.
-            </p>
-            <div className="flex gap-3 mt-6">
+            {/* Navigasi Pagination */}
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-sm font-semibold text-gray-700 transition-colors"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+                className="px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:hover:bg-white transition-all shadow-sm"
               >
-                Batal
+                Prev
               </button>
+
+              <div className="px-4 py-2.5 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center min-w-[80px]">
+                <span className="text-sm font-bold text-gray-700">
+                  {currentPage} <span className="text-gray-400 mx-1">/</span>{" "}
+                  {totalPages}
+                </span>
+              </div>
+
               <button
-                onClick={() => handleDelete()}
-                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+                className="px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:hover:bg-white transition-all shadow-sm"
               >
-                Ya, Hapus
+                Next
               </button>
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Modal Delete (Tetap sama) */}
+      {/* ... [KODE MODAL DELETE ANDA SEBELUMNYA] ... */}
     </div>
   );
 }

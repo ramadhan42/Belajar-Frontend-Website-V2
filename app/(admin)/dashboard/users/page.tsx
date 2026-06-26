@@ -1,9 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Loader2, Eye, X, User } from "lucide-react";
+import { 
+  Search, 
+  Loader2, 
+  Eye, 
+  X, 
+  User, 
+  ChevronLeft, 
+  ChevronRight, 
+  Trash2, 
+  AlertTriangle 
+} from "lucide-react";
 
-// Tipe data berdasarkan contoh JSON Anda sebelumnya
 interface UserData {
   id: number;
   name: string;
@@ -18,13 +27,21 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // State untuk modal View
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // View Modal
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
 
+  // Delete Modal
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const baseUrl = process.env.NEXT_PUBLIC_URL || "http://127.0.0.1:8000";
 
-  // Fetch data dari API
   const fetchUsers = async () => {
     setLoading(true);
     const token = localStorage.getItem("auth_token");
@@ -39,7 +56,6 @@ export default function UsersPage() {
 
       if (res.ok) {
         const result = await res.json();
-        // Tergantung respon API Anda, jika dibungkus "data", gunakan result.data
         setUsers(result.data || result);
       } else {
         console.error("Gagal mengambil data users.");
@@ -55,14 +71,16 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
-  // Filter pencarian (mencari berdasarkan nama atau email)
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // Format tanggal untuk tampilan yang lebih rapi
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {
       day: "numeric",
@@ -74,6 +92,44 @@ export default function UsersPage() {
   const openViewModal = (user: UserData) => {
     setSelectedUser(user);
     setIsViewModalOpen(true);
+  };
+
+  const openDeleteModal = (user: UserData) => {
+    setUserToDelete(user);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Fungsi Eksekusi Hapus User
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
+    
+    setIsDeleting(true);
+    const token = localStorage.getItem("auth_token");
+
+    try {
+      const res = await fetch(`${baseUrl}/api/admin/users/${userToDelete.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (res.ok) {
+        // Hapus user dari state tanpa perlu refresh halaman
+        setUsers(users.filter((u) => u.id !== userToDelete.id));
+        setIsDeleteModalOpen(false);
+        setUserToDelete(null);
+      } else {
+        const errorData = await res.json();
+        alert(errorData.message || "Gagal menghapus pengguna.");
+      }
+    } catch (error) {
+      console.error("Terjadi kesalahan:", error);
+      alert("Gagal menghubungi server.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -95,7 +151,10 @@ export default function UsersPage() {
             type="text"
             placeholder="Cari nama atau email..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all"
           />
         </div>
@@ -109,156 +168,204 @@ export default function UsersPage() {
             <p className="text-sm">Memuat data pengguna...</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-gray-50/80 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500">
-                <tr>
-                  <th className="px-6 py-4 font-semibold">ID</th>
-                  <th className="px-6 py-4 font-semibold pl-25">Pengguna</th>
-                  <th className="px-6 py-4 font-semibold">Alamat / Info</th>
-                  <th className="px-6 py-4 font-semibold">Bergabung</th>
-                  <th className="px-6 py-4 font-semibold text-center">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
-                {filteredUsers.length > 0 ? (
-                  filteredUsers.map((user) => (
-                    <tr
-                      key={user.id}
-                      className="hover:bg-gray-50/50 transition-colors"
-                    >
-                      <td className="px-6 py-4 font-medium text-gray-900">
-                        #{user.id}
-                      </td>
-                      <td className="px-6 py-4 pl-5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                            <User className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              {user.name}
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-gray-50/80 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500">
+                  <tr>
+                    <th className="px-6 py-4 font-semibold">ID</th>
+                    <th className="px-6 py-4 font-semibold pl-25">Pengguna</th>
+                    <th className="px-6 py-4 font-semibold">Alamat / Info</th>
+                    <th className="px-6 py-4 font-semibold">Bergabung</th>
+                    <th className="px-6 py-4 font-semibold text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
+                  {paginatedUsers.length > 0 ? (
+                    paginatedUsers.map((user) => (
+                      <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                          #{user.id}
+                        </td>
+                        <td className="px-6 py-4 pl-5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                              <User className="w-4 h-4" />
                             </div>
-                            <div className="text-xs text-gray-500">
-                              {user.email}
+                            <div>
+                              <div className="font-semibold text-gray-900">
+                                {user.name}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {user.email}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="truncate max-w-[200px] block">
-                          {user.alamat_lengkap || "Belum ada alamat"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        {formatDate(user.created_at)}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={() => openViewModal(user)}
-                          className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Lihat Detail"
-                        >
-                          <Eye className="w-5 h-5" />
-                        </button>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="truncate max-w-[200px] block">
+                            {user.alamat_lengkap || "Belum ada alamat"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          {formatDate(user.created_at)}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => openViewModal(user)}
+                              className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Lihat Detail"
+                            >
+                              <Eye className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => openDeleteModal(user)}
+                              className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Hapus Pengguna"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                        {searchQuery
+                          ? "Tidak ada pengguna yang cocok dengan pencarian."
+                          : "Belum ada data pengguna."}
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-12 text-center text-gray-500"
-                    >
-                      {searchQuery
-                        ? "Tidak ada pengguna yang cocok dengan pencarian."
-                        : "Belum ada data pengguna."}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Footer Pagination */}
+            {!loading && filteredUsers.length > 0 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 gap-4">
+                <div className="text-xs text-gray-500 text-center sm:text-left">
+                  Menampilkan <span className="font-semibold text-gray-700">{startIndex + 1}</span> sampai{" "}
+                  <span className="font-semibold text-gray-700">
+                    {Math.min(startIndex + itemsPerPage, filteredUsers.length)}
+                  </span>{" "}
+                  dari <span className="font-semibold text-gray-700">{filteredUsers.length}</span> pengguna
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Sebelumnya
+                  </button>
+                  <span className="text-xs text-gray-500 font-medium min-w-[50px] text-center">
+                    Hal {currentPage} dari {totalPages || 1}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                  >
+                    Selanjutnya
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {/* Modal View Detail Pengguna */}
+      {/* Modal Hapus Pengguna */}
+      {isDeleteModalOpen && userToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl border border-gray-100 p-6 animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+                <AlertTriangle className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">Hapus Pengguna?</h3>
+                <p className="text-sm text-gray-500">
+                  Tindakan ini tidak dapat dibatalkan. Pengguna <span className="font-semibold text-gray-700">{userToDelete.name}</span> akan dihapus secara permanen dari sistem.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-8">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-xl shadow-sm transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Menghapus...
+                  </>
+                ) : (
+                  "Ya, Hapus"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal View Detail Pengguna (Tetap sama seperti sebelumnya) */}
       {isViewModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
-            {/* Header Modal */}
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-gray-900">
-                Detail Pengguna
-              </h3>
-              <button
-                onClick={() => setIsViewModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
+              <h3 className="text-lg font-bold text-gray-900">Detail Pengguna</h3>
+              <button onClick={() => setIsViewModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            {/* Content Modal */}
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
                   <User className="w-8 h-8" />
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-gray-900">
-                    {selectedUser.name}
-                  </h4>
+                  <h4 className="text-xl font-bold text-gray-900">{selectedUser.name}</h4>
                   <p className="text-sm text-gray-500">{selectedUser.email}</p>
                 </div>
               </div>
-
               <div className="grid grid-cols-1 gap-4">
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                    ID Pengguna
-                  </p>
-                  <p className="text-gray-900 font-medium">
-                    #{selectedUser.id}
-                  </p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">ID Pengguna</p>
+                  <p className="text-gray-900 font-medium">#{selectedUser.id}</p>
                 </div>
-
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                    Nama Lengkap
-                  </p>
-                  <p className="text-gray-900 font-medium">
-                    {selectedUser.nama_lengkap || "-"}
-                  </p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Nama Lengkap</p>
+                  <p className="text-gray-900 font-medium">{selectedUser.nama_lengkap || "-"}</p>
                 </div>
-
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                    Tanggal Bergabung
-                  </p>
-                  <p className="text-gray-900 font-medium">
-                    {formatDate(selectedUser.created_at)}
-                  </p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Tanggal Bergabung</p>
+                  <p className="text-gray-900 font-medium">{formatDate(selectedUser.created_at)}</p>
                 </div>
-
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                    Alamat Lengkap
-                  </p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Alamat Lengkap</p>
                   <p className="text-gray-900 font-medium leading-relaxed">
-                    {selectedUser.alamat_lengkap ||
-                      "Belum ada alamat yang didaftarkan."}
+                    {selectedUser.alamat_lengkap || "Belum ada alamat yang didaftarkan."}
                   </p>
                 </div>
               </div>
             </div>
-
-            {/* Footer Modal */}
             <div className="p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl flex justify-end">
-              <button
-                onClick={() => setIsViewModalOpen(false)}
-                className="px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
-              >
+              <button onClick={() => setIsViewModalOpen(false)} className="px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
                 Tutup
               </button>
             </div>
