@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Search, Mail, Eye, X, Calendar, ChevronLeft, ChevronRight, Inbox } from "lucide-react";
+import { SITE_STRINGS } from "@/components/constans/strings";
 
 interface ContactMessage {
   id: number;
@@ -25,7 +26,7 @@ export default function MessagesPage() {
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
+  const baseUrl = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
 
   const fetchMessages = async () => {
     setIsLoading(true);

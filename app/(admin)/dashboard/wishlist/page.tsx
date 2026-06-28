@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Search, Trash2, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { SITE_STRINGS } from "@/components/constans/strings";
 
 interface WishlistItem {
   id: number;
@@ -32,7 +33,7 @@ export default function WishlistPage() {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
+  const baseUrl = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
 
   const fetchWishlists = async () => {
     setIsLoading(true);

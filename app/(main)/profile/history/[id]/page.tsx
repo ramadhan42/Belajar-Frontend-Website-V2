@@ -21,6 +21,10 @@ import {
   removeHistoryItem,
 } from "@/lib/api";
 import { useNavbarColor } from "@/context/NavbarColorContext";
+import { SITE_STRINGS } from "@/components/constans/strings";
+
+const BASE_URL =
+  process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
 
 const VISUAL_BY_PERSONALITY: Record<string, { navbarColor: string }> = {
   purpose_prestige: { navbarColor: "#1172BA" },
@@ -163,7 +167,7 @@ export default function HistoryDetailPage() {
           await Promise.all(
             historyGroup.map(async (item) => {
               const response = await fetch(
-                `${process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud"}/api/orders/${item.id}/confirm`,
+                `${process.env.NEXT_PUBLIC_URL || BASE_URL}/api/orders/${item.id}/confirm`,
                 {
                   method: "PATCH",
                   headers: {

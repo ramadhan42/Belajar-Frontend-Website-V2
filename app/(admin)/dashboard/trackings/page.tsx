@@ -18,6 +18,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import { SITE_STRINGS } from "@/components/constans/strings";
 
 interface TimelineItem {
   status: string;
@@ -77,7 +78,7 @@ export default function TrackingsPage() {
     "Ninja Express",
   ];
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
+  const baseUrl = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
 
   const fetchTrackings = async () => {
     setIsLoading(true);

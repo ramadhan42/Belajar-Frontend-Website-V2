@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { SITE_STRINGS } from "@/components/constans/strings";
+
+
+const BASE_URL =
+  process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -27,7 +32,7 @@ export default function ProfilePage() {
 
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud/api"}/user/profile`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || BASE_URL + "/api"}/user/profile`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,

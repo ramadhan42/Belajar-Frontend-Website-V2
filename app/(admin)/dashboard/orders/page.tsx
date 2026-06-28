@@ -15,6 +15,7 @@ import {
   Wallet, // <-- Tambahkan Wallet icon di sini
 } from "lucide-react";
 import { CgClose } from "react-icons/cg";
+import { SITE_STRINGS } from "@/components/constans/strings";
 
 interface Order {
   id: string;
@@ -45,7 +46,7 @@ export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [newStatus, setNewStatus] = useState("");
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
+  const baseUrl = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
 
   useEffect(() => {
     setCurrentPage(1);

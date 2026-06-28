@@ -18,6 +18,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { SITE_STRINGS } from "@/components/constans/strings";
 
 // Pembaruan Tipe Data sesuai JSON Response Anda
 interface Order {
@@ -56,7 +57,7 @@ export default function HomeDashboard() {
   const [chartData, setChartData] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
+  const baseUrl = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
 
   // Konfigurasi Map Status (Label & Warna Tailwind)
   const getStatusConfig = (status: string) => {

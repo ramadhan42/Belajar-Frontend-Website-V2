@@ -3,11 +3,15 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Send, Loader2 } from "lucide-react";
+import { SITE_STRINGS } from "@/components/constans/strings";
 
 // Memastikan halaman selalu fresh saat diakses
 export const dynamic = "force-dynamic";
 
 export default function KontakPage() {
+  const BASE_URL =
+    process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -38,7 +42,7 @@ export default function KontakPage() {
     try {
       // Ganti URL dengan endpoint API Laravel Anda.
       // Disarankan menggunakan environment variable: process.env.NEXT_PUBLIC_API_URL + '/api/contact'
-      const response = await fetch("https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud/api/contact", {
+      const response = await fetch(BASE_URL + "/api/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

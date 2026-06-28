@@ -10,6 +10,7 @@ import {
   X,
   CheckCircle2,
 } from "lucide-react";
+import { SITE_STRINGS } from "@/components/constans/strings";
 
 interface Product {
   id: number | string;
@@ -43,7 +44,7 @@ export default function ProductsPage() {
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud";
+  const baseUrl = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
 
   const [message, setMessage] = useState<{
     text: string;

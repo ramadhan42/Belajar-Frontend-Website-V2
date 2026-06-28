@@ -14,6 +14,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation"; // 1. TAMBAHKAN IMPORT INI
+import { SITE_STRINGS } from "@/components/constans/strings";
+
+const BASE_URL =
+  process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
 
 export default function AdminLoginPage() {
   const router = useRouter(); // 2. INISIALISASI ROUTER
@@ -38,7 +42,7 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_URL || "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud"}/api/login`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_URL || BASE_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
