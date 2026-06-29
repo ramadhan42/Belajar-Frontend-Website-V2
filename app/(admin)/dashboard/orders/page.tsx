@@ -46,7 +46,7 @@ export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [newStatus, setNewStatus] = useState("");
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
+  const baseUrl = SITE_STRINGS.base_url.url_backend;
 
   useEffect(() => {
     setCurrentPage(1);

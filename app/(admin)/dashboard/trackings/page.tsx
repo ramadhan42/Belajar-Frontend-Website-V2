@@ -43,13 +43,15 @@ export default function TrackingsPage() {
   const [trackings, setTrackings] = useState<Tracking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // STATE PAGINATION
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedTracking, setSelectedTracking] = useState<Tracking | null>(null);
+  const [selectedTracking, setSelectedTracking] = useState<Tracking | null>(
+    null,
+  );
 
   // State khusus untuk timeline agar bisa dinamis (tambah/hapus)
   const [editTimeline, setEditTimeline] = useState<TimelineItem[]>([]);
@@ -78,7 +80,7 @@ export default function TrackingsPage() {
     "Ninja Express",
   ];
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
+  const baseUrl = SITE_STRINGS.base_url.url_backend;
 
   const fetchTrackings = async () => {
     setIsLoading(true);
@@ -112,7 +114,7 @@ export default function TrackingsPage() {
   const totalPages = Math.ceil(filteredTrackings.length / itemsPerPage) || 1;
   const paginatedTrackings = filteredTrackings.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   // === FUNGSI TIMELINE ===
@@ -127,7 +129,10 @@ export default function TrackingsPage() {
   };
 
   const addTimelineItem = () => {
-    setEditTimeline([...editTimeline, { status: "", time: "", description: "" }]);
+    setEditTimeline([
+      ...editTimeline,
+      { status: "", time: "", description: "" },
+    ]);
   };
 
   const removeTimelineItem = (index: number) => {
@@ -189,7 +194,10 @@ export default function TrackingsPage() {
       setIsEditModalOpen(false);
       showNotification("Data tracking berhasil diperbarui!", "success");
     } catch (error) {
-      showNotification("Gagal memperbarui data. Periksa koneksi Anda.", "error");
+      showNotification(
+        "Gagal memperbarui data. Periksa koneksi Anda.",
+        "error",
+      );
     }
   };
 
@@ -197,18 +205,33 @@ export default function TrackingsPage() {
     const currentStatus = status || "";
     switch (currentStatus) {
       case "Menunggu Konfirmasi":
-        return { color: "bg-yellow-50 text-yellow-700 border-yellow-200", icon: <Clock size={12} /> };
+        return {
+          color: "bg-yellow-50 text-yellow-700 border-yellow-200",
+          icon: <Clock size={12} />,
+        };
       case "Pesanan Diproses":
       case "Pengemasan":
-        return { color: "bg-blue-50 text-blue-700 border-blue-200", icon: <Package size={12} /> };
+        return {
+          color: "bg-blue-50 text-blue-700 border-blue-200",
+          icon: <Package size={12} />,
+        };
       case "Paket Diserahkan ke Kurir":
       case "Sedang Dikirim":
       case "Dalam Perjalanan":
-        return { color: "bg-purple-50 text-purple-700 border-purple-200", icon: <Truck size={12} /> };
+        return {
+          color: "bg-purple-50 text-purple-700 border-purple-200",
+          icon: <Truck size={12} />,
+        };
       case "Selesai":
-        return { color: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: <CheckCircle2 size={12} /> };
+        return {
+          color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+          icon: <CheckCircle2 size={12} />,
+        };
       default:
-        return { color: "bg-gray-50 text-gray-600 border-gray-200", icon: <X size={12} /> };
+        return {
+          color: "bg-gray-50 text-gray-600 border-gray-200",
+          icon: <X size={12} />,
+        };
     }
   };
 
@@ -224,7 +247,9 @@ export default function TrackingsPage() {
     <div className="space-y-6 pb-12">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Trackings Order</h1>
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+          Trackings Order
+        </h1>
         <p className="text-gray-500 mt-1.5 text-sm">
           Pantau dan kelola status pengiriman pesanan pelanggan.
         </p>
@@ -331,21 +356,23 @@ export default function TrackingsPage() {
                   </tr>
                 );
               })}
-              
+
               {/* Empty State */}
               {paginatedTrackings.length === 0 && (
                 <tr>
                   <td colSpan={5} className="text-center py-16">
                     <div className="flex flex-col items-center justify-center text-gray-400">
                       <Package size={40} className="mb-3 text-gray-300" />
-                      <p className="text-sm font-medium text-gray-500">Tidak ada data tracking yang ditemukan.</p>
+                      <p className="text-sm font-medium text-gray-500">
+                        Tidak ada data tracking yang ditemukan.
+                      </p>
                     </div>
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
-          
+
           {/* NAVIGASI PAGINATION */}
           {filteredTrackings.length > 0 && (
             <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-center gap-4 bg-gray-50/50">
@@ -357,7 +384,9 @@ export default function TrackingsPage() {
                 Prev
               </button>
               <div className="text-sm font-bold text-gray-700 min-w-[80px] text-center bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
-                {currentPage} <span className="text-gray-400 font-medium mx-1">/</span> {totalPages}
+                {currentPage}{" "}
+                <span className="text-gray-400 font-medium mx-1">/</span>{" "}
+                {totalPages}
               </div>
               <button
                 disabled={currentPage >= totalPages}
@@ -402,7 +431,8 @@ export default function TrackingsPage() {
               {/* SECTION: INFO PENGIRIMAN */}
               <div className="space-y-4 bg-white">
                 <h3 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
-                  <Package size={16} className="text-gray-400" /> Informasi Utama
+                  <Package size={16} className="text-gray-400" /> Informasi
+                  Utama
                 </h3>
 
                 {/* Row 1: Order ID & No Resi */}
@@ -449,7 +479,9 @@ export default function TrackingsPage() {
                       defaultValue={selectedTracking?.status}
                       className="w-full border border-gray-200 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none transition-all shadow-sm cursor-pointer"
                     >
-                      <option value="Menunggu Konfirmasi">Menunggu Konfirmasi</option>
+                      <option value="Menunggu Konfirmasi">
+                        Menunggu Konfirmasi
+                      </option>
                       <option value="Pesanan Diproses">Pesanan Diproses</option>
                       <option value="Pengemasan">Pengemasan</option>
                       <option value="Sedang Dikirim">Sedang Dikirim</option>
@@ -500,7 +532,8 @@ export default function TrackingsPage() {
               {/* SECTION: INFO PENERIMA */}
               <div className="space-y-4">
                 <h3 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
-                  <User size={16} className="text-gray-400" /> Informasi Penerima
+                  <User size={16} className="text-gray-400" /> Informasi
+                  Penerima
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -556,7 +589,8 @@ export default function TrackingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                   <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                    <Clock size={16} className="text-gray-400" /> Timeline Perjalanan
+                    <Clock size={16} className="text-gray-400" /> Timeline
+                    Perjalanan
                   </h3>
                   <button
                     type="button"
@@ -569,7 +603,9 @@ export default function TrackingsPage() {
 
                 {editTimeline.length === 0 ? (
                   <div className="bg-gray-50/50 border border-dashed border-gray-200 rounded-xl py-6 flex flex-col items-center justify-center">
-                    <p className="text-sm font-medium text-gray-400">Belum ada riwayat timeline.</p>
+                    <p className="text-sm font-medium text-gray-400">
+                      Belum ada riwayat timeline.
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -596,7 +632,11 @@ export default function TrackingsPage() {
                               type="text"
                               value={item.status || ""}
                               onChange={(e) =>
-                                handleTimelineChange(index, "status", e.target.value)
+                                handleTimelineChange(
+                                  index,
+                                  "status",
+                                  e.target.value,
+                                )
                               }
                               className="w-full border border-gray-200 px-3 py-2 rounded-xl text-sm font-bold text-gray-900 outline-none focus:ring-2 focus:ring-gray-900 shadow-sm"
                               placeholder="Pesanan Diproses"
@@ -611,8 +651,14 @@ export default function TrackingsPage() {
                               value={formatTimeForInput(item.time)}
                               onChange={(e) => {
                                 const val = e.target.value;
-                                const formattedForBackend = val ? val.replace("T", " ") + ":00" : "";
-                                handleTimelineChange(index, "time", formattedForBackend);
+                                const formattedForBackend = val
+                                  ? val.replace("T", " ") + ":00"
+                                  : "";
+                                handleTimelineChange(
+                                  index,
+                                  "time",
+                                  formattedForBackend,
+                                );
                               }}
                               className="w-full border border-gray-200 px-3 py-2 rounded-xl text-sm font-mono font-bold text-gray-900 outline-none focus:ring-2 focus:ring-gray-900 shadow-sm"
                             />
@@ -623,7 +669,13 @@ export default function TrackingsPage() {
                             </label>
                             <textarea
                               value={item.description || ""}
-                              onChange={(e) => handleTimelineChange(index, "description", e.target.value)}
+                              onChange={(e) =>
+                                handleTimelineChange(
+                                  index,
+                                  "description",
+                                  e.target.value,
+                                )
+                              }
                               rows={1}
                               className="w-full border border-gray-200 px-3 py-2 rounded-xl text-sm font-medium text-gray-900 outline-none focus:ring-2 focus:ring-gray-900 resize-none shadow-sm"
                               placeholder="Keterangan lebih detail..."
@@ -666,7 +718,9 @@ export default function TrackingsPage() {
               : "bg-white border-red-100 text-red-800"
           }`}
         >
-          <div className={`p-2 rounded-full ${notification.type === "success" ? "bg-emerald-100" : "bg-red-100"}`}>
+          <div
+            className={`p-2 rounded-full ${notification.type === "success" ? "bg-emerald-100" : "bg-red-100"}`}
+          >
             {notification.type === "success" ? (
               <CheckCircle2 size={18} className="text-emerald-600" />
             ) : (
@@ -674,8 +728,12 @@ export default function TrackingsPage() {
             )}
           </div>
           <div>
-             <h4 className="text-sm font-bold text-gray-900">{notification.type === "success" ? "Berhasil!" : "Gagal!"}</h4>
-             <p className="text-xs font-medium text-gray-500 mt-0.5">{notification.message}</p>
+            <h4 className="text-sm font-bold text-gray-900">
+              {notification.type === "success" ? "Berhasil!" : "Gagal!"}
+            </h4>
+            <p className="text-xs font-medium text-gray-500 mt-0.5">
+              {notification.message}
+            </p>
           </div>
         </div>
       )}

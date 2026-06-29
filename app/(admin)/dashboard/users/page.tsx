@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  Search, 
-  Loader2, 
-  Eye, 
-  X, 
-  User, 
-  ChevronLeft, 
-  ChevronRight, 
-  Trash2, 
+import {
+  Search,
+  Loader2,
+  Eye,
+  X,
+  User,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
   AlertTriangle,
-  ShieldCheck
+  ShieldCheck,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
 
@@ -42,7 +42,7 @@ export default function UsersPage() {
   const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
+  const baseUrl = SITE_STRINGS.base_url.url_backend;
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -81,7 +81,10 @@ export default function UsersPage() {
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedUsers = filteredUsers.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {
@@ -98,7 +101,7 @@ export default function UsersPage() {
 
   const openDeleteModal = (user: UserData) => {
     // Proteksi tambahan di UI agar ID 1 tidak masuk ke modal delete
-    if (user.id === 1) return; 
+    if (user.id === 1) return;
     setUserToDelete(user);
     setIsDeleteModalOpen(true);
   };
@@ -106,14 +109,14 @@ export default function UsersPage() {
   // Fungsi Eksekusi Hapus User
   const confirmDelete = async () => {
     if (!userToDelete) return;
-    
+
     // Proteksi di eksekusi fungsi
     if (userToDelete.id === 1) {
       alert("Admin utama tidak dapat dihapus.");
       setIsDeleteModalOpen(false);
       return;
     }
-    
+
     setIsDeleting(true);
     const token = localStorage.getItem("auth_token");
 
@@ -188,13 +191,18 @@ export default function UsersPage() {
                     <th className="px-6 py-4 font-semibold">Pengguna</th>
                     <th className="px-6 py-4 font-semibold">Alamat / Info</th>
                     <th className="px-6 py-4 font-semibold">Bergabung</th>
-                    <th className="px-6 py-4 font-semibold text-center">Aksi</th>
+                    <th className="px-6 py-4 font-semibold text-center">
+                      Aksi
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
                   {paginatedUsers.length > 0 ? (
                     paginatedUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                      <tr
+                        key={user.id}
+                        className="hover:bg-gray-50/50 transition-colors"
+                      >
                         <td className="px-6 py-4 font-medium text-gray-900">
                           #{user.id}
                         </td>
@@ -241,17 +249,23 @@ export default function UsersPage() {
                             >
                               <Eye className="w-5 h-5" />
                             </button>
-                            
+
                             {/* Logic Render Button Hapus */}
                             <button
-                              onClick={() => user.id !== 1 && openDeleteModal(user)}
+                              onClick={() =>
+                                user.id !== 1 && openDeleteModal(user)
+                              }
                               disabled={user.id === 1}
                               className={`inline-flex items-center justify-center p-2 rounded-lg transition-colors ${
-                                user.id === 1 
-                                  ? "text-gray-300 cursor-not-allowed" 
+                                user.id === 1
+                                  ? "text-gray-300 cursor-not-allowed"
                                   : "text-gray-400 hover:text-red-600 hover:bg-red-50"
                               }`}
-                              title={user.id === 1 ? "Admin tidak dapat dihapus" : "Hapus Pengguna"}
+                              title={
+                                user.id === 1
+                                  ? "Admin tidak dapat dihapus"
+                                  : "Hapus Pengguna"
+                              }
                             >
                               <Trash2 className="w-5 h-5" />
                             </button>
@@ -261,7 +275,10 @@ export default function UsersPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                      <td
+                        colSpan={5}
+                        className="px-6 py-12 text-center text-gray-500"
+                      >
                         {searchQuery
                           ? "Tidak ada pengguna yang cocok dengan pencarian."
                           : "Belum ada data pengguna."}
@@ -276,16 +293,26 @@ export default function UsersPage() {
             {!loading && filteredUsers.length > 0 && (
               <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 gap-4">
                 <div className="text-xs text-gray-500 text-center sm:text-left">
-                  Menampilkan <span className="font-semibold text-gray-700">{startIndex + 1}</span> sampai{" "}
+                  Menampilkan{" "}
+                  <span className="font-semibold text-gray-700">
+                    {startIndex + 1}
+                  </span>{" "}
+                  sampai{" "}
                   <span className="font-semibold text-gray-700">
                     {Math.min(startIndex + itemsPerPage, filteredUsers.length)}
                   </span>{" "}
-                  dari <span className="font-semibold text-gray-700">{filteredUsers.length}</span> pengguna
+                  dari{" "}
+                  <span className="font-semibold text-gray-700">
+                    {filteredUsers.length}
+                  </span>{" "}
+                  pengguna
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
                     disabled={currentPage === 1}
                     className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                   >
@@ -296,7 +323,9 @@ export default function UsersPage() {
                     Hal {currentPage} dari {totalPages || 1}
                   </span>
                   <button
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
                     disabled={currentPage === totalPages || totalPages === 0}
                     className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                   >
@@ -319,9 +348,15 @@ export default function UsersPage() {
                 <AlertTriangle className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Hapus Pengguna?</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">
+                  Hapus Pengguna?
+                </h3>
                 <p className="text-sm text-gray-500">
-                  Tindakan ini tidak dapat dibatalkan. Pengguna <span className="font-semibold text-gray-700">{userToDelete.name}</span> akan dihapus secara permanen dari sistem.
+                  Tindakan ini tidak dapat dibatalkan. Pengguna{" "}
+                  <span className="font-semibold text-gray-700">
+                    {userToDelete.name}
+                  </span>{" "}
+                  akan dihapus secara permanen dari sistem.
                 </p>
               </div>
             </div>
@@ -357,15 +392,24 @@ export default function UsersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-gray-900">Detail Pengguna</h3>
-              <button onClick={() => setIsViewModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+              <h3 className="text-lg font-bold text-gray-900">
+                Detail Pengguna
+              </h3>
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
-                  {selectedUser.id === 1 ? <ShieldCheck className="w-8 h-8" /> : <User className="w-8 h-8" />}
+                  {selectedUser.id === 1 ? (
+                    <ShieldCheck className="w-8 h-8" />
+                  ) : (
+                    <User className="w-8 h-8" />
+                  )}
                 </div>
                 <div>
                   <h4 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -381,27 +425,45 @@ export default function UsersPage() {
               </div>
               <div className="grid grid-cols-1 gap-4">
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">ID Pengguna</p>
-                  <p className="text-gray-900 font-medium">#{selectedUser.id}</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    ID Pengguna
+                  </p>
+                  <p className="text-gray-900 font-medium">
+                    #{selectedUser.id}
+                  </p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Nama Lengkap</p>
-                  <p className="text-gray-900 font-medium">{selectedUser.nama_lengkap || "-"}</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    Nama Lengkap
+                  </p>
+                  <p className="text-gray-900 font-medium">
+                    {selectedUser.nama_lengkap || "-"}
+                  </p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Tanggal Bergabung</p>
-                  <p className="text-gray-900 font-medium">{formatDate(selectedUser.created_at)}</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    Tanggal Bergabung
+                  </p>
+                  <p className="text-gray-900 font-medium">
+                    {formatDate(selectedUser.created_at)}
+                  </p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Alamat Lengkap</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    Alamat Lengkap
+                  </p>
                   <p className="text-gray-900 font-medium leading-relaxed">
-                    {selectedUser.alamat_lengkap || "Belum ada alamat yang didaftarkan."}
+                    {selectedUser.alamat_lengkap ||
+                      "Belum ada alamat yang didaftarkan."}
                   </p>
                 </div>
               </div>
             </div>
             <div className="p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl flex justify-end">
-              <button onClick={() => setIsViewModalOpen(false)} className="px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
+              >
                 Tutup
               </button>
             </div>

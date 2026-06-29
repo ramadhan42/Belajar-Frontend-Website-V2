@@ -33,7 +33,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
+  const baseUrl = SITE_STRINGS.base_url.url_backend;
 
   const fetchProfile = async () => {
     setIsLoading(true);
@@ -144,8 +144,8 @@ export default function ProfilePage() {
                 profile.id === 1
                   ? "Admin User"
                   : profile.email_verified_at
-                  ? "Terverifikasi"
-                  : "Belum Verifikasi"
+                    ? "Terverifikasi"
+                    : "Belum Verifikasi"
               }
               status={profile.id === 1 ? true : !!profile.email_verified_at}
             />

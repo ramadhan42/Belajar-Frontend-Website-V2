@@ -78,7 +78,7 @@ export default function SixthSection() {
         />
 
         {/* --- TULISAN MELAYANG ATAS --- */}
-        <div className="absolute top-5 md:top-20 left-0 md:left-2 w-full px-4 md:px-60 z-30 flex justify-between items-center text-white text-sm md:text-lg font-medium">
+        <div className="absolute top-5 md:top-20 left-0 md:left-20 w-full px-4 md:px-60 z-30 flex justify-between items-center text-white text-sm md:text-lg font-medium">
           {/* Purpose Prestige (Kiri Atas) - Ditambahkan translate-x untuk menggeser ke kiri */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -103,10 +103,10 @@ export default function SixthSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left mr-30 md:mr-80 translate-x-[-15px] md:translate-x-[35px]"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left mr-30 md:mr-80 translate-x-[-5px] md:translate-x-[-105px]"
           >
             <span className="text-[12px] md:text-[22px] font-medium">
-              Rabel{"\n"}Brave
+              Rebel{"\n"}Brave
             </span>
             <img
               src="/src/images/section 6/rabel.png"
@@ -139,7 +139,7 @@ export default function SixthSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left translate-x-[-15px] "
           >
             <span className="text-[12px] md:text-[22px] font-medium">
               Peaceful{"\n"}Calm
@@ -157,7 +157,7 @@ export default function SixthSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left ml-20 translate-x-[35px] md:translate-x-[80px]"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left ml-20 translate-x-[35px] md:translate-x-[5px]"
           >
             <span className="text-[12px] md:text-[22px] font-medium">
               Sweet{"\n"}Shy

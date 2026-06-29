@@ -15,6 +15,7 @@ import {
   ShoppingBasket,
   Users, // 1. Tambahkan ikon Users
 } from "lucide-react";
+import { SITE_STRINGS } from "../constans/strings";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
@@ -29,7 +30,7 @@ const menuItems = [
   { name: "Cart", icon: ShoppingBasket, path: "/dashboard/cart" },
   { name: "Wishlist", icon: Heart, path: "/dashboard/wishlist" },
   // 2. Tambahkan menu All Users di sini
-  { name: "All Users", icon: Users, path: "/dashboard/users" }, 
+  { name: "All Users", icon: Users, path: "/dashboard/users" },
   { name: "User Profile", icon: UserCircle, path: "/dashboard/profile" },
 ];
 
@@ -38,7 +39,7 @@ export default function SidebarAdmin() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    const baseUrl = process.env.NEXT_PUBLIC_URL;
+    const baseUrl = SITE_STRINGS.base_url.url_backend;
     const token = localStorage.getItem("auth_token");
 
     try {

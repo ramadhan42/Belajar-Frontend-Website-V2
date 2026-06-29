@@ -44,7 +44,7 @@ export default function ProductsPage() {
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
+  const baseUrl = SITE_STRINGS.base_url.url_backend;
 
   const [message, setMessage] = useState<{
     text: string;

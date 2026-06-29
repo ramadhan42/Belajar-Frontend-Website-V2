@@ -74,14 +74,21 @@ export default function WishlistPage() {
         await wishlistApi.removeFromWishlist(itemToDelete);
         setWishlists(wishlists.filter((item) => item.id !== itemToDelete));
         // Mengubah isi modal menjadi penanda sukses setelah berhasil delete
-        triggerModal("success", "Produk berhasil dihapus dari daftar wishlist Anda.");
+        triggerModal(
+          "success",
+          "Produk berhasil dihapus dari daftar wishlist Anda.",
+        );
       } catch (err) {
         triggerModal("error", "Gagal menghapus item dari wishlist.");
       }
     }
   };
 
-  const handleAddToCart = async (e: React.MouseEvent, productId: number, wishlistItemId: number) => {
+  const handleAddToCart = async (
+    e: React.MouseEvent,
+    productId: number,
+    wishlistItemId: number,
+  ) => {
     e.stopPropagation(); // 4. Mencegah navigasi detail terbuka saat menekan tombol Masukkan Keranjang
     const token =
       typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;

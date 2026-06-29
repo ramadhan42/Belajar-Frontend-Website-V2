@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import { login } from '@/lib/api';
+import Link from "next/link";
+import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { login } from "@/lib/api";
 
 // Tipe data untuk konfigurasi status modal
 interface ModalState {
   isOpen: boolean;
-  type: 'success' | 'warning' | 'error';
+  type: "success" | "warning" | "error";
   title: string;
   message: string;
 }
@@ -16,23 +16,23 @@ interface ModalState {
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // State baru untuk mengontrol custom modal
   const [modal, setModal] = useState<ModalState>({
     isOpen: false,
-    type: 'success',
-    title: '',
-    message: '',
+    type: "success",
+    title: "",
+    message: "",
   });
 
   const closeModal = () => {
     setModal((prev) => ({ ...prev, isOpen: false }));
     // Jika login sukses, arahkan rute setelah modal ditutup oleh user
-    if (modal.type === 'success') {
-      router.push('/');
+    if (modal.type === "success") {
+      router.push("/");
     }
   };
 
@@ -45,38 +45,44 @@ export default function LoginPage() {
       setIsLoading(false);
       setModal({
         isOpen: true,
-        type: 'warning',
-        title: 'Keamanan Lemah',
-        message: 'Password harus memiliki minimal 6 karakter demi keamanan akun Evomi Anda.',
+        type: "warning",
+        title: "Keamanan Lemah",
+        message:
+          "Password harus memiliki minimal 6 karakter demi keamanan akun Evomi Anda.",
       });
       return;
     }
 
     try {
       const res = await login(email, password);
-      
+
       // Simpan token & user ke localStorage
-      localStorage.setItem('auth_token', res.token);
-      localStorage.setItem('auth_user', JSON.stringify(res.user));
-      
+      localStorage.setItem("auth_token", res.token);
+
+      console.log("auth_token : " + res.token);
+      localStorage.setItem("auth_user", JSON.stringify(res.user));
+
       // Beritahu Navbar (dan komponen lain) bahwa auth state berubah
-      window.dispatchEvent(new Event('auth-change'));
+      window.dispatchEvent(new Event("auth-change"));
 
       // 2. TRIGGER MODAL BERHASIL (SUCCESS MODAL)
       setModal({
         isOpen: true,
-        type: 'success',
-        title: 'Selamat Datang!',
-        message: 'Login berhasil. Selamat melanjutkan petualangan aroma Anda bersama Evomi.',
+        type: "success",
+        title: "Selamat Datang!",
+        message:
+          "Login berhasil. Selamat melanjutkan petualangan aroma Anda bersama Evomi.",
       });
-
     } catch (err: unknown) {
       // 3. TRIGGER MODAL GAGAL (ERROR MODAL)
-      const errorMsg = err instanceof Error ? err.message : 'Login gagal. Periksa kembali email dan password Anda.';
+      const errorMsg =
+        err instanceof Error
+          ? err.message
+          : "Login gagal. Periksa kembali email dan password Anda.";
       setModal({
         isOpen: true,
-        type: 'error',
-        title: 'Akses Ditolak',
+        type: "error",
+        title: "Akses Ditolak",
         message: errorMsg,
       });
     } finally {
@@ -147,13 +153,13 @@ export default function LoginPage() {
           disabled={isLoading}
           className="w-full bg-white text-[#1172ba] font-bold py-4 rounded-2xl shadow-lg shadow-blue-950/10 hover:bg-blue-50 active:scale-[0.99] transition-all uppercase tracking-widest text-sm mt-4 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Memproses...' : 'Masuk Sekarang'}
+          {isLoading ? "Memproses..." : "Masuk Sekarang"}
         </button>
       </form>
 
       <div className="text-center pt-2">
         <p className="text-sm text-white/70">
-          Belum punya akun?{' '}
+          Belum punya akun?{" "}
           <Link
             href="/register"
             className="text-white font-bold hover:underline underline-offset-4 tracking-wider"
@@ -167,22 +173,51 @@ export default function LoginPage() {
       {modal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
           <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
-            
             {/* Bagian Icon Dinamis */}
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm">
-              {modal.type === 'success' && (
-                <svg className="h-8 w-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              {modal.type === "success" && (
+                <svg
+                  className="h-8 w-8 text-green-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               )}
-              {modal.type === 'warning' && (
-                <svg className="h-8 w-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              {modal.type === "warning" && (
+                <svg
+                  className="h-8 w-8 text-amber-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
                 </svg>
               )}
-              {modal.type === 'error' && (
-                <svg className="h-8 w-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              {modal.type === "error" && (
+                <svg
+                  className="h-8 w-8 text-red-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               )}
             </div>
@@ -201,14 +236,14 @@ export default function LoginPage() {
             <button
               onClick={closeModal}
               className={`w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] ${
-                modal.type === 'success' 
-                  ? 'bg-green-500 text-white hover:bg-green-600' 
-                  : modal.type === 'warning'
-                  ? 'bg-amber-500 text-white hover:bg-amber-600'
-                  : 'bg-white text-[#1172ba] hover:bg-blue-50'
+                modal.type === "success"
+                  ? "bg-green-500 text-white hover:bg-green-600"
+                  : modal.type === "warning"
+                    ? "bg-amber-500 text-white hover:bg-amber-600"
+                    : "bg-white text-[#1172ba] hover:bg-blue-50"
               }`}
             >
-              {modal.type === 'success' ? 'Lanjutkan' : 'Mengerti'}
+              {modal.type === "success" ? "Lanjutkan" : "Mengerti"}
             </button>
           </div>
         </div>

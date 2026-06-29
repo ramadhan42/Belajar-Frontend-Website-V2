@@ -9,8 +9,7 @@ import { SITE_STRINGS } from "@/components/constans/strings";
 export const dynamic = "force-dynamic";
 
 export default function KontakPage() {
-  const BASE_URL =
-    process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
+  const BASE_URL = SITE_STRINGS.base_url.url_backend_local;
 
   const [formData, setFormData] = useState({
     name: "",

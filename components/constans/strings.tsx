@@ -8,6 +8,7 @@ export const SITE_STRINGS = {
   base_url: {
     url_backend_deploy: "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud",
     url_backend_local: "http://127.0.0.1:8000",
+    url_backend : "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud", // ubah jika ingin menggunakan local / online be
   },
   meta: {
     title: "Evomi | Premium Fragrance & Perfume",

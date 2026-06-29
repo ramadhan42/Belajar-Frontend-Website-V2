@@ -14,6 +14,7 @@ import {
 } from "@/lib/api";
 import { useNavbarColor } from "@/context/NavbarColorContext";
 import StatusModal from "@/components/StatusModal";
+import { SITE_STRINGS } from "@/components/constans/strings";
 
 // Tipe data untuk item checkout
 interface CheckoutItemType {
@@ -68,6 +69,8 @@ const XENDIT_AUTH =
   "Basic eG5kX2RldmVsb3BtZW50X3RLblFjYm5aVDVzbEFKYjJqSTVVeUQ3cVQ3VWRZUHE4cUp6MmdFNjFySXo3YUEyZklSTGdiOEJ2TEZsZDo=";
 
 function CheckoutContent() {
+  const BASE_URL = SITE_STRINGS.base_url.url_backend;
+
   const router = useRouter(); // Inisialisasi router
   const [modal, setModal] = useState<{
     isOpen: boolean;
@@ -186,24 +189,41 @@ function CheckoutContent() {
 
   // Fungsi untuk memproses data internal ke Laravel backend
   const processInternalCheckout = async (customInvoiceId: string) => {
+    // const token = localStorage.getItem("auth_token");
+
+    // Pastikan token dibersihkan dari spasi ekstra atau kutip yang tidak sengaja terbawa
+    const rawToken = localStorage.getItem("auth_token");
+    const token = rawToken ? rawToken.replace(/['"]+/g, "").trim() : null;
+
+    console.log("token : " + token);
+
+    // 2. Jika tidak ada token, hentikan proses dan minta login
+    if (!token) {
+      alert("Sesi Anda telah habis. Silakan login kembali untuk melanjutkan.");
+      router.push("/login"); // Arahkan ke halaman login
+      return;
+    }
+
     try {
       setIsProcessing(true);
 
-      // Konversi value string ke format yang rapi dan sesuai permintaan backend Anda
       const formattedPaymentMethod =
         paymentMethod === "qris" ? "QRIS" : "Cash on Delivery";
 
       // 1. Kirim data transaksi ke OrderController
-      const res = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/checkout`, {
+      // UBAH: Gunakan BASE_URL, jangan hardcode http://127.0.0.1:8000
+      const res = await fetch(`${BASE_URL}/api/checkout`, {
         method: "POST",
+        mode: "cors",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           invoice_id: customInvoiceId,
           items: items,
-          payment_method: formattedPaymentMethod, // Mengirim "QRIS" atau "Cash on Delivery"
+          payment_method: formattedPaymentMethod,
           total: totalTagihan,
           recipient_name: formData.name,
           recipient_phone: formData.phone,
@@ -212,14 +232,27 @@ function CheckoutContent() {
         }),
       });
 
-      if (!res.ok) throw new Error("Gagal memproses pembuatan pesanan");
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error(
+          "🔥 DETAIL ERROR LARAVEL:",
+          JSON.stringify(errorData, null, 2),
+        );
+        throw new Error(
+          errorData.error_detail ||
+            errorData.message ||
+            "Gagal memproses pembuatan pesanan",
+        );
+      }
 
-      // 2. Simpan ke sistem Order Tracking (Melacak Perjalanan Paket)
-      await fetch(`${process.env.NEXT_PUBLIC_URL}/api/trackings`, {
+      // 2. Simpan ke sistem Order Tracking
+      // UBAH: Gunakan BASE_URL di sini juga
+      await fetch(`${BASE_URL}/api/trackings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`, // Gunakan variabel token yang sudah dibersihkan
         },
         body: JSON.stringify({
           order_id: customInvoiceId,

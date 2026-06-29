@@ -48,7 +48,7 @@ export default function CartPage() {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
+  const baseUrl = SITE_STRINGS.base_url.url_backend;
 
   const fetchCarts = async () => {
     setIsLoading(true);
@@ -172,19 +172,19 @@ export default function CartPage() {
           <table className="w-full border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-gray-50/80 border-b border-gray-100">
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-left w-[320px]">
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[320px]">
                   Produk
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-left">
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
                   Pelanggan
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[140px]">
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
                   Kuantitas
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-left w-[180px]">
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
                   Harga Satuan
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[100px]">
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
                   Aksi
                 </th>
               </tr>
@@ -221,7 +221,7 @@ export default function CartPage() {
                       </div>
                     </td>
 
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-center">
                       <div className="text-sm font-bold text-gray-900 truncate">{c.user.name}</div>
                       <div className="text-xs font-medium text-gray-500 mt-0.5 truncate">{c.user.email}</div>
                     </td>
@@ -232,7 +232,7 @@ export default function CartPage() {
                       </span>
                     </td>
 
-                    <td className="px-6 py-4 text-sm font-bold text-gray-900">
+                    <td className="px-6 py-4 text-sm font-bold text-gray-900 text-center">
                       {formatRupiah(c.product.price)}
                     </td>
 

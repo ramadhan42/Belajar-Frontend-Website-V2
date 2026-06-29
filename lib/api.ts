@@ -8,7 +8,7 @@
 
 import { SITE_STRINGS } from "@/components/constans/strings";
 
-const BASE_URL = process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
+const BASE_URL = SITE_STRINGS.base_url.url_backend;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -211,7 +211,8 @@ export async function getShoppingHistory(): Promise<ShoppingHistoryItem[]> {
 
 // Tambahkan di file api.ts
 export async function removeHistoryItem(orderId: number): Promise<void> {
-  await request<void>(`/api/orders/${orderId}`, { // Sesuaikan URL dengan route di Laravel
+  await request<void>(`/api/orders/${orderId}`, {
+    // Sesuaikan URL dengan route di Laravel
     method: "DELETE",
     headers: buildHeaders(true),
   });
@@ -222,8 +223,7 @@ export async function removeHistoryItem(orderId: number): Promise<void> {
 // ---------------------------------------------------------------------------
 
 /** Base URL storage Laravel (gambar produk disimpan di storage/app/public) */
-const STORAGE_URL =
-  (process.env.NEXT_PUBLIC_URL || BASE_URL) + "/storage/";
+const STORAGE_URL = (process.env.NEXT_PUBLIC_URL || BASE_URL) + "/storage/";
 
 /** Konversi path gambar relatif dari Laravel menjadi URL absolut */
 export function getProductImageUrl(path?: string): string | null {
@@ -568,8 +568,7 @@ export const getHistoryDetail = async (
 ): Promise<ShoppingHistoryItem> => {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_URL || BASE_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || BASE_URL;
 
   const response = await fetch(`${baseUrl}/history/${id}`, {
     method: "GET",

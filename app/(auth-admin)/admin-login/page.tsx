@@ -16,8 +16,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation"; // 1. TAMBAHKAN IMPORT INI
 import { SITE_STRINGS } from "@/components/constans/strings";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
+const BASE_URL = SITE_STRINGS.base_url.url_backend;
 
 export default function AdminLoginPage() {
   const router = useRouter(); // 2. INISIALISASI ROUTER
@@ -42,14 +41,17 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_URL || BASE_URL}/api/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: (e.target as any).email.value,
-          password: (e.target as any).password.value,
-        }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_URL || BASE_URL}/api/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: (e.target as any).email.value,
+            password: (e.target as any).password.value,
+          }),
+        },
+      );
 
       const data = await res.json();
 
