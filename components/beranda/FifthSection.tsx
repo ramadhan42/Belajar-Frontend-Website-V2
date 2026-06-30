@@ -149,8 +149,8 @@ export default function FifthSection() {
           <span className="text-[#FF8A84]">Evomi</span>
         </h2>
 
-        <p className="font-['Nohemi'] text-[14px] md:text-[20px] text-[#5D5D5D] max-w-2xl mb-10 md:mb-16 px-4">
-          <b>Empat karakter aroma yang mewakili sisi berbeda dari dirimu.</b>
+        <p className="font-['Nohemi'] text-[14px] md:text-[20px] text-[#5D5D5D] max-w-2xl mb-10 md:mb-16 px-4 font-normal">
+          Empat karakter aroma yang mewakili sisi berbeda dari dirimu.
         </p>
       </motion.div>
 
@@ -171,7 +171,7 @@ export default function FifthSection() {
           >
             {/* Bagian Atas: Gambar & Badge */}
             <div
-              className={`relative w-full aspect-square flex justify-center items-center p-3 md:p-6 ${product.imgBg}`}
+              className={`relative w-full aspect-square flex justify-center items-center p-3 md:p-6 md:py-15 ${product.imgBg}`}
             >
               <span
                 className={`absolute top-2 left-2 md:top-5 md:left-5 bg-white px-2 py-1 md:px-4 md:py-1.5 rounded-full text-[8px] md:text-[14px] font-bold ${product.textColor}`}
@@ -182,18 +182,19 @@ export default function FifthSection() {
               <Image
                 src={product.path}
                 alt={product.title}
-                width={340}
-                height={340}
-                className="object-contain drop-shadow-xl w-[85%] md:w-full"
+                width={500}
+                height={500}
+                // Tambahkan scale-110 atau scale-125 untuk membesarkan ukuran visualnya
+                className="object-contain drop-shadow-xl w-[95%] md:w-full scale-120 md:scale-145 transition-transform translate-y-13 z0"
               />
             </div>
 
             {/* Bagian Bawah: Teks & Info Produk */}
             <div
-              className={`p-3 md:p-6 flex flex-col flex-grow text-left ${product.cardBg}`}
+              className={`p-3 md:p-6 flex flex-col flex-grow text-left ${product.cardBg} z-20`}
             >
               <h3
-                className={`text-[13px] md:text-[20px] font-bold mb-1 md:mb-2 ${product.textColor}`}
+                className={`text-[13px] md:text-[20px] font-bold mb-1 md:mb-2 ${product.textColor} tracking-tighter leading-tight`}
               >
                 {product.title}
               </h3>

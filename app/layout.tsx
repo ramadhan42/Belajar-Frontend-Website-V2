@@ -6,8 +6,8 @@ import BeaconListener from "@/components/BeaconListener"; // Import komponen bar
 const nohemi = localFont({
   src: [
     { path: "./fonts/Nohemi-Regular.otf", weight: "400", style: "normal" },
-    { path: "./fonts/Nohemi-SemiBold.otf", weight: "600", style: "normal" },
-    { path: "./fonts/Nohemi-Bold.otf", weight: "700", style: "normal" },
+    { path: "./fonts/Nohemi-SemiBold.otf", weight: "600", style: "bold" },
+    { path: "./fonts/Nohemi-Bold.otf", weight: "700", style: "bolder" },
   ],
   variable: "--font-nohemi",
 });

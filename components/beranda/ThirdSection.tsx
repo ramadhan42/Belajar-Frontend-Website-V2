@@ -7,22 +7,38 @@ export default function ThirdSection() {
   const brandValues = [
     {
       title: "Self\nAwareness",
-      description:
-        "Setiap aroma dirancang untuk merepresentasikan versi diri, emosi, dan karakter manusia yang berbeda, sehingga parfum menjadi medium ekspresi personal, bukan sekadar wewangian.",
+      description: (
+        <>
+          Setiap aroma dirancang untuk <b>merepresentasikan versi diri</b>,
+          emosi, dan karakter manusia yang berbeda, sehingga parfum menjadi
+          medium ekspresi personal, <b>bukan sekadar wewangian</b>.
+        </>
+      ),
       icon: "/src/images/section 3/star-medium.png",
       hoverClass: "hover:rotate-[5deg] md:hover:rotate-[5deg]",
     },
     {
       title: "Environment\nFriendly",
-      description:
-        "Mengusung kepedulian terhadap lingkungan melalui pemanfaatan daur ulang tutup botol plastik menjadi bagian dari identitas produk, sebagai bentuk kontribusi kecil dalam mengurangi limbah plastik sekaligus menghadirkan nilai sustainability.",
+      description: (
+        <>
+          Mengusung <b>kepedulian terhadap lingkungan</b> melalui pemanfaatan
+          daur ulang tutup botol plastik menjadi bagian dari identitas produk,
+          sebagai bentuk kontribusi kecil dalam mengurangi limbah plastik
+          sekaligus menghadirkan nilai <b>sustainability</b>.
+        </>
+      ),
       icon: "/src/images/section 3/peaceful-calm.png",
       hoverClass: "hover:-rotate-[5deg] md:hover:-rotate-[5deg]",
     },
     {
       title: "Playful Design\nConcept",
-      description:
-        "Dikemas dengan pendekatan visual yang playful, ekspresif, dan dekat dengan generasi muda agar pengalaman menggunakan parfum terasa lebih personal dan menyenangkan.",
+      description: (
+        <>
+          Dikemas dengan pendekatan <b>visual yang playful, ekspresif,</b> dan
+          dekat dengan generasi muda agar pengalaman menggunakan parfum terasa
+          lebih personal dan menyenangkan.
+        </>
+      ),
       icon: "/src/images/section 3/triangle.png",
       hoverClass: "hover:rotate-[5deg] md:hover:rotate-[5deg]",
     },
@@ -77,9 +93,12 @@ export default function ThirdSection() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.2 }}
+        // Opsional: Jika card terasa terlalu sempit setelah jarak dijauhkan,
+        // kamu bisa mengubah max-w-6xl menjadi max-w-7xl di baris ini 👇
         className="flex justify-center w-full max-w-6xl mt-2 md:mt-4 mb-8 relative z-10"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 w-full px-20 md:px-10 pt-6 md:pt-10 pb-6 md:pb-10">
+        {/* Ubah bagian gap-12 md:gap-8 menjadi gap-16 md:gap-14 (atau md:gap-16) 👇 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-14 w-full px-20 md:px-10 pt-6 md:pt-10 pb-6 md:pb-10">
           {brandValues.map((card, index) => (
             <motion.div
               key={index}
