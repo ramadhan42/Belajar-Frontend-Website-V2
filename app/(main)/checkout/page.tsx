@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"; // Import router dari next/navigati
 import { useState, useEffect, Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { Loader2, X } from "lucide-react";
+import { Banknote, CheckCircle2, Loader2, MapPin, Phone, QrCode, Truck, User, X } from "lucide-react";
 import {
   getCartItems,
   getProduct,
@@ -449,104 +449,171 @@ function CheckoutContent() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* KIRI: Form Pengiriman & Metode Pembayaran */}
           <div className="lg:col-span-8 space-y-6">
-            <div className="bg-white rounded-[24px] shadow-sm p-6 md:p-8">
+            
+            {/* Form Informasi Pengiriman */}
+            <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-6 md:p-8 transition-all">
               <h2
-                className="text-xl font-bold font-['Nohemi'] mb-6"
+                className="text-xl font-bold font-['Nohemi'] mb-6 flex items-center gap-2"
                 style={{ color: visual.navbarColor }}
               >
+                <MapPin className="w-5 h-5" />
                 Informasi Pengiriman
               </h2>
 
-              <div className="space-y-4 font-['Parkinsans']">
-                <input
-                  type="text"
-                  placeholder="Nama Penerima"
-                  className="w-full px-4 py-3 rounded-xl border-2 outline-none transition-colors"
-                  style={{ borderColor: visual.navbarColor }}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                />
+              <div className="space-y-5 font-['Parkinsans']">
+                {/* Grid untuk Nama dan Nomor HP */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <User className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Nama Penerima"
+                      className="w-full pl-11 pr-4 py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
+                      style={{
+                        ...(formData.name ? { borderColor: visual.navbarColor } : {}),
+                      }}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                    />
+                  </div>
 
-                <input
-                  type="tel"
-                  placeholder="Nomor HP"
-                  className="w-full px-4 py-3 rounded-xl border-2 outline-none transition-colors"
-                  style={{ borderColor: visual.navbarColor }}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                />
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Phone className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
+                    </div>
+                    <input
+                      type="tel"
+                      placeholder="Nomor HP"
+                      className="w-full pl-11 pr-4 py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
+                      style={{
+                        ...(formData.phone ? { borderColor: visual.navbarColor } : {}),
+                      }}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
 
-                <textarea
-                  placeholder="Alamat Lengkap"
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-xl border-2 outline-none transition-colors"
-                  style={{ borderColor: visual.navbarColor }}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                />
+                <div className="relative group">
+                  <div className="absolute top-3.5 left-0 pl-4 pointer-events-none">
+                    <MapPin className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
+                  </div>
+                  <textarea
+                    placeholder="Alamat Lengkap"
+                    rows={3}
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm resize-none"
+                    style={{
+                      ...(formData.address ? { borderColor: visual.navbarColor } : {}),
+                    }}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                  />
+                </div>
 
-                <select
-                  className="w-full px-4 py-3 rounded-xl border-2 outline-none bg-white transition-colors"
-                  style={{ borderColor: visual.navbarColor }}
-                  onChange={(e) =>
-                    setFormData({ ...formData, courier: e.target.value })
-                  }
-                >
-                  <option value="JNE">JNE Express</option>
-                  <option value="J&T">J&T Express</option>
-                  <option value="SiCepat">SiCepat Ekspres</option>
-                  <option value="Grab">GrabExpress</option>
-                </select>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Truck className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
+                  </div>
+                  <select
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm appearance-none cursor-pointer"
+                    style={{
+                      ...(formData.courier ? { borderColor: visual.navbarColor } : {}),
+                    }}
+                    onChange={(e) =>
+                      setFormData({ ...formData, courier: e.target.value })
+                    }
+                  >
+                    <option value="JNE">JNE Express</option>
+                    <option value="J&T">J&T Express</option>
+                    <option value="SiCepat">SiCepat Ekspres</option>
+                    <option value="Grab">GrabExpress</option>
+                  </select>
+                  {/* Custom Arrow for Select */}
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Section Pilihan Metode Pembayaran */}
-            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6 md:p-8">
+            <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-6 md:p-8 transition-all">
               <h2
-                className="text-xl font-bold font-['Nohemi'] mb-6"
+                className="text-xl font-bold font-['Nohemi'] mb-6 flex items-center gap-2"
                 style={{ color: visual.navbarColor }}
               >
+                <Banknote className="w-5 h-5" />
                 Metode Pembayaran
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-['Parkinsans']">
-                {["qris", "cash"].map((m) => (
-                  <label
-                    key={m}
-                    className={`border-2 rounded-2xl p-4 cursor-pointer flex flex-col items-center gap-1 transition-all ${
-                      paymentMethod === m ? "bg-gray-50" : "border-gray-100"
-                    }`}
-                    style={{
-                      borderColor:
-                        paymentMethod === m ? visual.navbarColor : "",
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      className="hidden"
-                      checked={paymentMethod === m}
-                      onChange={() => setPaymentMethod(m)}
-                    />
-                    <span
-                      className="font-bold uppercase"
+                {[
+                  { id: "qris", title: "QRIS", desc: "Scan via M-Banking / E-Wallet", icon: QrCode },
+                  { id: "cash", title: "Cash on Delivery", desc: "Bayar saat barang sampai", icon: Banknote }
+                ].map((m) => {
+                  const isSelected = paymentMethod === m.id;
+                  const Icon = m.icon;
+                  
+                  return (
+                    <label
+                      key={m.id}
+                      className={`relative border-2 rounded-2xl p-5 cursor-pointer flex flex-col gap-2 transition-all duration-300 overflow-hidden ${
+                        isSelected 
+                          ? "shadow-sm transform scale-[1.02]" 
+                          : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/50"
+                      }`}
                       style={{
-                        color:
-                          paymentMethod === m ? visual.navbarColor : "#333",
+                        borderColor: isSelected ? visual.navbarColor : "",
+                        backgroundColor: isSelected ? `${visual.navbarColor}08` : "", // Efek transparan 8% (glass/tinted)
                       }}
                     >
-                      {m === "qris" ? "QRIS" : "Cash on Delivery"}
-                    </span>
-                    <span className="text-xs text-gray-500 text-center">
-                      {m === "qris"
-                        ? "Scan menggunakan M-Banking atau E-Wallet"
-                        : "Bayar saat barang sampai di tujuan"}
-                    </span>
-                  </label>
-                ))}
+                      {/* Checkmark Indicator */}
+                      {isSelected && (
+                        <div className="absolute top-4 right-4">
+                          <CheckCircle2 className="w-5 h-5" style={{ color: visual.navbarColor }} />
+                        </div>
+                      )}
+                      
+                      <input
+                        type="radio"
+                        className="hidden"
+                        checked={isSelected}
+                        onChange={() => setPaymentMethod(m.id)}
+                      />
+                      
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center mb-1 transition-colors"
+                        style={{ 
+                          backgroundColor: isSelected ? visual.navbarColor : "#F3F4F6",
+                          color: isSelected ? "#FFF" : "#9CA3AF"
+                        }}
+                      >
+                        <Icon className="w-5 h-5" />
+                      </div>
+
+                      <div>
+                        <span
+                          className="block font-bold text-base mb-0.5"
+                          style={{
+                            color: isSelected ? visual.navbarColor : "#374151",
+                          }}
+                        >
+                          {m.title}
+                        </span>
+                        <span className="text-sm text-gray-500 block leading-tight">
+                          {m.desc}
+                        </span>
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
             </div>
+
           </div>
 
           {/* KANAN: Ringkasan Pesanan */}

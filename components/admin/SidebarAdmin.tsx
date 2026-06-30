@@ -14,6 +14,7 @@ import {
   LogOut,
   ShoppingBasket,
   Users, // 1. Tambahkan ikon Users
+  Mail
 } from "lucide-react";
 import { SITE_STRINGS } from "../constans/strings";
 
@@ -29,8 +30,9 @@ const menuItems = [
   },
   { name: "Cart", icon: ShoppingBasket, path: "/dashboard/cart" },
   { name: "Wishlist", icon: Heart, path: "/dashboard/wishlist" },
-  // 2. Tambahkan menu All Users di sini
   { name: "All Users", icon: Users, path: "/dashboard/users" },
+  // 2. Tambahkan menu Subscribers di sini
+  { name: "Subscribers", icon: Mail, path: "/dashboard/subscribers" }, 
   { name: "User Profile", icon: UserCircle, path: "/dashboard/profile" },
 ];
 
