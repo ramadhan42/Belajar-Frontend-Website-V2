@@ -148,7 +148,7 @@ export default function HeroSection() {
             animate={
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ duration: 0.6, delay: 1.0 }}
             className="absolute left-[20%] md:left-[20%] top-[-10%] md:top-[-10%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
           >
             <Image
@@ -163,7 +163,7 @@ export default function HeroSection() {
             animate={
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
-            transition={{ duration: 0.6, delay: 0.5 }}
+            transition={{ duration: 0.6, delay: 1.0 }}
             className="absolute left-[38%] top-[4.8%] w-[9%] h-[9%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
           >
             <Image
@@ -178,7 +178,7 @@ export default function HeroSection() {
             animate={
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
-            transition={{ duration: 0.6, delay: 0.6 }}
+            transition={{ duration: 0.6, delay: 1.0 }}
             className="absolute right-[36%] top-[-13%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
           >
             <Image
@@ -193,7 +193,7 @@ export default function HeroSection() {
             animate={
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
-            transition={{ duration: 0.6, delay: 0.7 }}
+            transition={{ duration: 0.6, delay: 1.0 }}
             className="absolute right-[20%] md:right-[20%] top-[-2.4%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
           >
             <Image

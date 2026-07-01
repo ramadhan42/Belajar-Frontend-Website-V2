@@ -13,6 +13,7 @@ import {
 } from "@/lib/api";
 
 import { useParams, useRouter } from "next/navigation"; // Tambahkan useRouter
+import { Loader2 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Data visual statis — hanya warna UI, dipetakan dari personality_type
@@ -180,6 +181,17 @@ export default function ProductDetailSection({
       );
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-10 h-10 animate-spin text-gray-400 mb-4" />
+        <p className="text-gray-500 font-['Parkinsans']">
+          Mempersiapkan pesanan...
+        </p>
+      </div>
+    );
+  }
 
   // Subtitle dari data API
   const subtitle = product

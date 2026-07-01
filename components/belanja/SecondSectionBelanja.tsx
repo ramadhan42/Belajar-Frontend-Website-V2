@@ -10,6 +10,7 @@ import {
   formatProductPrice,
   Product,
 } from "@/lib/api";
+import { Loader2 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Data visual statis — hanya warna & badge, dipetakan dari personality_type

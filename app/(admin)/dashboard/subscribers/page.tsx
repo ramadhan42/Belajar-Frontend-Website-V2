@@ -62,6 +62,14 @@ export default function SubscribersPage() {
     }).format(date);
   };
 
+  if (isLoading) {
+    return (
+      <div className="w-full h-[80vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-8 max-w-7xl mx-auto w-full">
       {/* Header Section */}
@@ -116,9 +124,15 @@ export default function SubscribersPage() {
                 // Loading Skeleton
                 [...Array(5)].map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-8"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-48"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-32"></div></td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded w-8"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded w-48"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded w-32"></div>
+                    </td>
                   </tr>
                 ))
               ) : subscribers.length > 0 ? (
@@ -158,7 +172,7 @@ export default function SubscribersPage() {
             </tbody>
           </table>
         </div>
-        
+
         {/* Footer info (Optional) */}
         {!isLoading && subscribers.length > 0 && (
           <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50">

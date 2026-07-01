@@ -79,7 +79,13 @@ export default function ProfilePage() {
     }
   };
 
-  if (isLoading) return <div className="text-gray-500">Memuat profil...</div>;
+  if (isLoading) {
+    return (
+      <div className="w-full h-[80vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
   if (!profile)
     return <div className="text-red-500">Data tidak ditemukan.</div>;
 

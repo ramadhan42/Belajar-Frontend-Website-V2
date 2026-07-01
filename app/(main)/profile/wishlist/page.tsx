@@ -114,12 +114,14 @@ export default function WishlistPage() {
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="p-8 text-center">
-        <Loader2 className="animate-spin mx-auto" />
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 flex flex-col items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-gray-400 animate-spin mb-4" />
+        <p className="text-gray-500 font-medium">Memuat wishlist...</p>
       </div>
     );
+  }
 
   return (
     <div className="relative bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">

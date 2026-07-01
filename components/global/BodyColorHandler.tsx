@@ -21,15 +21,14 @@ export default function BodyColorHandler() {
     } else if (pathname === "/layanan") {
       body.style.backgroundColor = "#f0f0f0";
     } else if (pathname === "/kuis") {
-      body.style.backgroundColor = "#F6F6F6"; 
-    } 
+      body.style.backgroundColor = "#F6F6F6";
+    }
     // Menggunakan startsWith untuk menangkap rute dinamis /belanja/[id]
     else if (pathname.startsWith("/belanja/")) {
       body.style.backgroundColor = "#F6F6F6";
-    } 
-    else if (pathname.startsWith("/profile/")) {
+    } else if (pathname.startsWith("/profile/")) {
       body.style.backgroundColor = "#F6F6F6";
-    } 
+    }
     // Default warna untuk halaman lainnya
     else {
       body.style.backgroundColor = "transparent";

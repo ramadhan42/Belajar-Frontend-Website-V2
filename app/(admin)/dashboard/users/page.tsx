@@ -146,6 +146,14 @@ export default function UsersPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="w-full h-[80vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header & Pencarian */}
@@ -176,167 +184,158 @@ export default function UsersPage() {
 
       {/* Tabel */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        {loading ? (
-          <div className="flex flex-col justify-center items-center h-64 text-gray-400">
-            <Loader2 className="w-8 h-8 animate-spin mb-4" />
-            <p className="text-sm">Memuat data pengguna...</p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-gray-50/80 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500">
-                  <tr>
-                    <th className="px-6 py-4 font-semibold">ID</th>
-                    <th className="px-6 py-4 font-semibold">Pengguna</th>
-                    <th className="px-6 py-4 font-semibold">Alamat / Info</th>
-                    <th className="px-6 py-4 font-semibold">Bergabung</th>
-                    <th className="px-6 py-4 font-semibold text-center">
-                      Aksi
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
-                  {paginatedUsers.length > 0 ? (
-                    paginatedUsers.map((user) => (
-                      <tr
-                        key={user.id}
-                        className="hover:bg-gray-50/50 transition-colors"
-                      >
-                        <td className="px-6 py-4 font-medium text-gray-900">
-                          #{user.id}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm">
-                              {user.id === 1 ? (
-                                <ShieldCheck className="w-5 h-5 text-blue-600" />
-                              ) : (
-                                <User className="w-5 h-5" />
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-gray-50/80 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500">
+                <tr>
+                  <th className="px-6 py-4 font-semibold">ID</th>
+                  <th className="px-6 py-4 font-semibold">Pengguna</th>
+                  <th className="px-6 py-4 font-semibold">Alamat / Info</th>
+                  <th className="px-6 py-4 font-semibold">Bergabung</th>
+                  <th className="px-6 py-4 font-semibold text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
+                {paginatedUsers.length > 0 ? (
+                  paginatedUsers.map((user) => (
+                    <tr
+                      key={user.id}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        #{user.id}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm">
+                            {user.id === 1 ? (
+                              <ShieldCheck className="w-5 h-5 text-blue-600" />
+                            ) : (
+                              <User className="w-5 h-5" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <div className="font-semibold text-gray-900">
+                                {user.email}
+                              </div>
+                              {user.id === 1 && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-blue-50 text-blue-600 border border-blue-100">
+                                  ADMIN USER
+                                </span>
                               )}
                             </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <div className="font-semibold text-gray-900">
-                                  {user.email}
-                                </div>
-                                {user.id === 1 && (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-blue-50 text-blue-600 border border-blue-100">
-                                    ADMIN USER
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-xs text-gray-500 mt-0.5">
-                                {user.name}
-                              </div>
+                            <div className="text-xs text-gray-500 mt-0.5">
+                              {user.name}
                             </div>
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="truncate max-w-[200px] block">
-                            {user.alamat_lengkap || "Belum ada alamat"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          {formatDate(user.created_at)}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => openViewModal(user)}
-                              className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="Lihat Detail"
-                            >
-                              <Eye className="w-5 h-5" />
-                            </button>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="truncate max-w-[200px] block">
+                          {user.alamat_lengkap || "Belum ada alamat"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {formatDate(user.created_at)}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => openViewModal(user)}
+                            className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Lihat Detail"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
 
-                            {/* Logic Render Button Hapus */}
-                            <button
-                              onClick={() =>
-                                user.id !== 1 && openDeleteModal(user)
-                              }
-                              disabled={user.id === 1}
-                              className={`inline-flex items-center justify-center p-2 rounded-lg transition-colors ${
-                                user.id === 1
-                                  ? "text-gray-300 cursor-not-allowed"
-                                  : "text-gray-400 hover:text-red-600 hover:bg-red-50"
-                              }`}
-                              title={
-                                user.id === 1
-                                  ? "Admin tidak dapat dihapus"
-                                  : "Hapus Pengguna"
-                              }
-                            >
-                              <Trash2 className="w-5 h-5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-6 py-12 text-center text-gray-500"
-                      >
-                        {searchQuery
-                          ? "Tidak ada pengguna yang cocok dengan pencarian."
-                          : "Belum ada data pengguna."}
+                          {/* Logic Render Button Hapus */}
+                          <button
+                            onClick={() =>
+                              user.id !== 1 && openDeleteModal(user)
+                            }
+                            disabled={user.id === 1}
+                            className={`inline-flex items-center justify-center p-2 rounded-lg transition-colors ${
+                              user.id === 1
+                                ? "text-gray-300 cursor-not-allowed"
+                                : "text-gray-400 hover:text-red-600 hover:bg-red-50"
+                            }`}
+                            title={
+                              user.id === 1
+                                ? "Admin tidak dapat dihapus"
+                                : "Hapus Pengguna"
+                            }
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-12 text-center text-gray-500"
+                    >
+                      {searchQuery
+                        ? "Tidak ada pengguna yang cocok dengan pencarian."
+                        : "Belum ada data pengguna."}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-            {/* Footer Pagination */}
-            {!loading && filteredUsers.length > 0 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 gap-4">
-                <div className="text-xs text-gray-500 text-center sm:text-left">
-                  Menampilkan{" "}
-                  <span className="font-semibold text-gray-700">
-                    {startIndex + 1}
-                  </span>{" "}
-                  sampai{" "}
-                  <span className="font-semibold text-gray-700">
-                    {Math.min(startIndex + itemsPerPage, filteredUsers.length)}
-                  </span>{" "}
-                  dari{" "}
-                  <span className="font-semibold text-gray-700">
-                    {filteredUsers.length}
-                  </span>{" "}
-                  pengguna
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.max(prev - 1, 1))
-                    }
-                    disabled={currentPage === 1}
-                    className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    Sebelumnya
-                  </button>
-                  <span className="text-xs text-gray-500 font-medium min-w-[50px] text-center">
-                    Hal {currentPage} dari {totalPages || 1}
-                  </span>
-                  <button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                    }
-                    disabled={currentPage === totalPages || totalPages === 0}
-                    className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
-                  >
-                    Selanjutnya
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
+          {/* Footer Pagination */}
+          {!loading && filteredUsers.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 gap-4">
+              <div className="text-xs text-gray-500 text-center sm:text-left">
+                Menampilkan{" "}
+                <span className="font-semibold text-gray-700">
+                  {startIndex + 1}
+                </span>{" "}
+                sampai{" "}
+                <span className="font-semibold text-gray-700">
+                  {Math.min(startIndex + itemsPerPage, filteredUsers.length)}
+                </span>{" "}
+                dari{" "}
+                <span className="font-semibold text-gray-700">
+                  {filteredUsers.length}
+                </span>{" "}
+                pengguna
               </div>
-            )}
-          </>
-        )}
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Sebelumnya
+                </button>
+                <span className="text-xs text-gray-500 font-medium min-w-[50px] text-center">
+                  Hal {currentPage} dari {totalPages || 1}
+                </span>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                >
+                  Selanjutnya
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       </div>
 
       {/* Modal Hapus Pengguna */}

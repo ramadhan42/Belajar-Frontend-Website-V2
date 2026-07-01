@@ -6,9 +6,10 @@
 
 export const SITE_STRINGS = {
   base_url: {
-    url_backend_deploy: "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud",
+    url_backend_deploy:
+      "https://belajar-be-website-evomi-v2-main-gbcsym.free.laravel.cloud",
     url_backend_local: "http://127.0.0.1:8000",
-    url_backend : "http://127.0.0.1:8000", // ubah jika ingin menggunakan local / online backend
+    url_backend: "http://127.0.0.1:8000", // ubah jika ingin menggunakan local / online backend
   },
   meta: {
     title: "Evomi | Premium Fragrance & Perfume",
@@ -94,8 +95,3 @@ export const SITE_STRINGS = {
 // Type definition untuk autocompletion dan type-safety di seluruh aplikasi
 export type SiteStrings = typeof SITE_STRINGS;
 // """
-
-// with open("strings.ts", "w", encoding="utf-8") as f:
-//     f.write(code_content)
-
-// print("File strings.ts berhasil dibuat.")

@@ -26,10 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${nohemi.variable}`}>
       <body className={`antialiased`}>
-          {/* Sisipkan BeaconListener di sini agar memantau penutupan browser di semua rute */}
-          <BeaconListener />
-          
-          <main className="min-h-screen">{children}</main>
+        {/* Sisipkan BeaconListener di sini agar memantau penutupan browser di semua rute */}
+        <BeaconListener />
+        <main className="min-h-screen">{children}</main>
       </body>
     </html>
   );

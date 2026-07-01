@@ -8,8 +8,8 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 interface NavbarColorContextType {
   navbarColor: string;
   footerColor: string;
-  setNavbarColor: (color: string) => void;   // Tambahkan ini
-  setFooterColor: (color: string) => void;   // Tambahkan ini
+  setNavbarColor: (color: string) => void; // Tambahkan ini
+  setFooterColor: (color: string) => void; // Tambahkan ini
   setNavbarAndFooterColor: (color: string) => void;
   resetColors: () => void;
 }
@@ -30,13 +30,13 @@ export function NavbarColorProvider({ children }: { children: ReactNode }) {
 
   return (
     <NavbarColorContext.Provider
-      value={{ 
-        navbarColor, 
-        footerColor, 
-        setNavbarColor,       // Tambahkan ini
-        setFooterColor,       // Tambahkan ini
-        setNavbarAndFooterColor, 
-        resetColors 
+      value={{
+        navbarColor,
+        footerColor,
+        setNavbarColor, // Tambahkan ini
+        setFooterColor, // Tambahkan ini
+        setNavbarAndFooterColor,
+        resetColors,
       }}
     >
       {children}

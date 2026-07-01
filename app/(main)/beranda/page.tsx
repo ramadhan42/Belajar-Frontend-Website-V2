@@ -5,8 +5,6 @@ import ThirdSection from "@/components/beranda/ThirdSection";
 import FifthSection from "@/components/beranda/FifthSection";
 import SixthSection from "@/components/beranda/SixthSection";
 import SeventhSection from "@/components/beranda/SeventhSection";
-import Footer from "@/components/global/Footer";
-import Navbar from "@/components/global/Navbar";
 
 export default function Beranda() {
   return (
