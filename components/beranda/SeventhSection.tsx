@@ -1,9 +1,45 @@
 "use client";
 
-import React from "react";
-import { motion, Variants } from "framer-motion";
+import React, { useState } from "react";
+import { motion, Variants, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+
+// Tipe data untuk status modal
+interface NavModalState {
+  isOpen: boolean;
+  type: "loading";
+  title: string;
+  message: string;
+}
 
 export default function SeventhSection() {
+  const router = useRouter();
+
+  // State untuk Custom Modal di SeventhSection
+  const [navModal, setNavModal] = useState<NavModalState>({
+    isOpen: false,
+    type: "loading",
+    title: "",
+    message: "",
+  });
+
+  // Fungsi routing dengan delay animasi
+  const handleQuizRouting = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setNavModal({
+      isOpen: true,
+      type: "loading",
+      title: "Kuis Persona",
+      message: "Mengarahkan ke halaman Kuis Karakteristik...",
+    });
+
+    // Simulasi delay 800ms agar animasi terlihat sebelum pindah halaman
+    setTimeout(() => {
+      setNavModal((prev) => ({ ...prev, isOpen: false }));
+      router.push("/kuis");
+    }, 800);
+  };
+
   // Varian untuk kontainer (mengatur urutan munculnya anak elemen)
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -56,7 +92,8 @@ export default function SeventhSection() {
         {/* 1. SISI KIRI (Teks & Tombol) */}
         <motion.div
           variants={itemVariants}
-          className="relative z-10 top-10 flex flex-col justify-center items-center md:items-start w-full md:w-auto max-w-xl gap-8 mb-15 text-center md:text-left"
+          // PERBAIKAN: Naikkan z-10 menjadi z-50 agar tombol tidak tertimpa elemen/gambar transparan lain
+          className="relative z-50 top-10 flex flex-col justify-center items-center md:items-start w-full md:w-auto max-w-xl gap-8 mb-15 text-center md:text-left"
         >
           <h2 className="font-nohemi font-semibold text-[36px] md:text-[55px] leading-[1.1] whitespace-pre-line">
             <span className="text-[#1172BA]">Temukan</span>
@@ -69,7 +106,11 @@ export default function SeventhSection() {
             <span className="text-[#5EA14A]">kuis</span>
           </h2>
 
-          <button className="font-['Nohemi'] mt-5 text-[22px] text-white bg-[#1172BA] px-12 py-2 rounded-full shadow-md hover:scale-95 transition-all">
+          <button
+            onClick={handleQuizRouting}
+            // PERBAIKAN: Tambahkan relative, z-50, dan cursor-pointer untuk memastikan interaksi aman
+            className="relative z-50 cursor-pointer font-['Nohemi'] mt-5 text-[22px] text-white bg-[#1172BA] px-12 py-2 rounded-full shadow-md hover:scale-95 transition-all"
+          >
             Mulai Kuis
           </button>
         </motion.div>
@@ -89,25 +130,20 @@ export default function SeventhSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        // Dioptimalkan untuk S20 (lebar 360px): menggunakan right-[18%] agar pas di sisi kiri botol dan gap-1.5 agar hemat ruang
-        className="absolute z-30 flex flex-row flex-wrap justify-center gap-1.5 md:gap-4 
-                   bottom-[30%] md:bottom-auto md:top-[160px] right-[18%] sm:right-[25%] md:right-[280px]"
+        className="absolute z-30 flex flex-row flex-wrap justify-center gap-1.5 md:gap-4 bottom-[30%] md:bottom-auto md:top-[160px] right-[18%] sm:right-[25%] md:right-[280px]"
       >
-        {/* Badge 1: Rebel (Nilai translate-x dikurangi agar lebih ke kiri) */}
+        {/* Badge 1: Rebel */}
         <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#E33D35] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[5px] md:translate-x-[80px] md:translate-y-25">
           Rebel
         </div>
-
-        {/* Badge 2: Sweet (Nilai translate-x dikurangi agar lebih ke kiri) */}
+        {/* Badge 2: Sweet */}
         <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#DD74A5] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[-30px] md:translate-x-[160px] md:translate-y-1">
           Sweet
         </div>
-
         {/* Badge 3: Prestige */}
         <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5CB2ED] transition-transform hover:scale-105 cursor-pointer translate-x-[-15px] translate-y-[44px] md:translate-x-[150px] md:translate-y-50">
           Prestige
         </div>
-
         {/* Badge 4: Calm */}
         <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5EA14A] transition-transform hover:scale-105 cursor-pointer translate-x-[-30px] translate-y-[10px] md:translate-x-[210px] md:translate-y-25">
           Calm
@@ -151,6 +187,59 @@ export default function SeventhSection() {
           />
         </div>
       </div>
+
+      {/* ================= CUSTOM MODAL ROUTING COMPONENT ================= */}
+      <AnimatePresence>
+        {navModal.isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative bg-white rounded-[24px] p-8 max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
+            >
+              {/* Ikon Loading Dinamis */}
+              <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5 transition-colors duration-300 bg-blue-50 text-blue-500">
+                <svg
+                  className="h-10 w-10 animate-spin text-[#1172BA]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              </div>
+
+              {/* Teks Modal */}
+              <div className="space-y-3">
+                <h3 className="text-[20px] font-bold text-gray-800 tracking-wide">
+                  {navModal.title}
+                </h3>
+                <p className="text-[14px] text-gray-500 leading-relaxed">
+                  {navModal.message}
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

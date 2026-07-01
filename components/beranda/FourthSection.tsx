@@ -16,6 +16,18 @@ export default function FourthSection() {
 
   return (
     <section className="relative bg-white w-full min-h-[350px] sm:min-h-[500px] md:min-h-[800px] flex justify-center items-center pt-10 sm:pt-16 md:pt-20 pb-20 sm:pb-28 md:pb-40 overflow-hidden">
+      {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
+      <div className="absolute top-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none z-20">
+        <div className="flex w-max gap-[15px] animate-slide-right-40s -translate-y-1/2">
+          {Array.from({ length: 80 }).map((_, index) => (
+            <div
+              key={`top-${index}`}
+              className="w-[46px] h-[46px] bg-[#1172BA] rounded-full flex-shrink-0"
+            />
+          ))}
+        </div>
+      </div>
+
       {/* 1. Background Image (z-0) */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -88,7 +100,6 @@ export default function FourthSection() {
 
       {/* --- DIVIDER ANIMASI BAWAH (WAVE) --- */}
       <div className="absolute bottom-0 left-0 w-full leading-[0] overflow-hidden z-20">
-        {/* ... (Style tag tetap sama) ... */}
         <style>{`
           @keyframes wave-divider-fast { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
           @keyframes wave-divider-slow { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }

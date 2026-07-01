@@ -167,7 +167,8 @@ export default function FifthSection() {
             animate="active"
             key={product.id}
             variants={cardVariants}
-            className={`font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-100 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
+            // 👇 Ubah duration-100 menjadi duration-300 di bawah ini
+            className={`font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
           >
             {/* Bagian Atas: Gambar & Badge */}
             <div
