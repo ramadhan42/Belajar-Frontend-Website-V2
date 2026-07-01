@@ -141,7 +141,7 @@ export default function SeventhSection() {
           Sweet
         </div>
         {/* Badge 3: Prestige */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5CB2ED] transition-transform hover:scale-105 cursor-pointer translate-x-[-15px] translate-y-[44px] md:translate-x-[150px] md:translate-y-50">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5CB2ED] transition-transform hover:scale-105 cursor-pointer translate-x-[-15px] translate-y-[44px] md:translate-x-[150px] md:translate-y-54">
           Prestige
         </div>
         {/* Badge 4: Calm */}

@@ -48,6 +48,19 @@ export default function HeroSection() {
   // Gabungkan kondisi: Animasi jalan JIKA loading screen selesai DAN area Hero sedang terlihat
   const shouldAnimate = isReady && isScrollVisible;
 
+  // Tambahkan definisikan keyframe ini di file Anda atau global CSS
+  const floatAnimation = {
+    animate: {
+      y: [0, 20, 0], // Melayang turun 20px lalu kembali ke atas
+    },
+    transition: {
+      duration: 3, // Mengatur durasi satu siklus gerakan (perlahan)
+      ease: "easeInOut", // Gerakan halus
+      repeat: Infinity, // Mengulang terus menerus
+      repeatType: "loop", // Jenis pengulangan loop
+    },
+  };
+
   return (
     <section
       ref={sectionRef}
@@ -277,69 +290,131 @@ export default function HeroSection() {
           </motion.div>
 
           {/* GAMBAR UTAMA (4 Botol) */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/3 -translate-y-1/15 z-10 w-[76.1%] h-[100%] flex items-center justify-between gap-1 md:gap-4 bg-transparent cursor-pointer">
+          <div className="absolute top-80 left-1/2 -translate-x-1/3 -translate-y-1/80 z-10 w-[76.1%] h-[100%] flex items-center justify-between gap-1 md:gap-4 bg-transparent cursor-pointer">
+            
+            {/* Botol 1 - Purpose Prestige (Diperbesar 2x, Miring Kanan 3°) */}
             <motion.div
               animate={
                 shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
               }
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full left-[5.7%] top-[2.5%]"
+              className="relative w-full h-full left-[10.7%] top-[13.5%]"
             >
-              <Image
-                src="/src/images/section 1/botol-purpose-prestige.png"
-                alt="Botol Purpose Prestige"
-                fill
-                className="object-contain gambar-utama-hover"
-                priority
-              />
+              {/* Wrapper khusus animasi melayang */}
+              <motion.div
+                animate={shouldAnimate ? { y: [-10, 10, -10] } : {}}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1.1,
+                }}
+                className="relative w-full h-full"
+              >
+                {/* Wrapper khusus Ukuran 2x & Miring Kanan 3° */}
+                <div className="w-full h-full scale-175 rotate-3">
+                  <Image
+                    src="/src/images/section 1/botol-purpose-prestige.png"
+                    alt="Botol Purpose Prestige"
+                    fill
+                    className="object-contain gambar-utama-hover"
+                    priority
+                  />
+                </div>
+              </motion.div>
             </motion.div>
 
+            {/* Botol 2 - Rabel Brave (Diperbesar 2x, Miring Kiri 3°) */}
             <motion.div
               animate={
                 shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
               }
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full left-[2.7%] top-[18%] z-30"
+              className="relative w-full h-full left-[11.7%] top-[23%] z-30"
             >
-              <Image
-                src="/src/images/section 1/botol-rabel-brave.png"
-                alt="Botol Rabel Brave"
-                fill
-                className="object-contain gambar-utama-hover"
-                priority
-              />
+              <motion.div
+                animate={shouldAnimate ? { y: [-10, 10, -10] } : {}}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1.4,
+                }}
+                className="relative w-full h-full"
+              >
+                {/* Wrapper khusus Ukuran 2x & Miring Kiri 3° */}
+                <div className="w-full h-full scale-175 -rotate-3">
+                  <Image
+                    src="/src/images/section 1/botol-rabel-brave.png"
+                    alt="Botol Rabel Brave"
+                    fill
+                    className="object-contain gambar-utama-hover"
+                    priority
+                  />
+                </div>
+              </motion.div>
             </motion.div>
 
+            {/* Botol 3 - Peaceful Calm (Diperbesar 2x, Miring Kanan 4°) */}
             <motion.div
               animate={
                 shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
               }
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full right-[2%]"
+              className="relative w-full h-full top-[14%] left-[3%]"
             >
-              <Image
-                src="/src/images/section 1/botol-peaceful-calm.png"
-                alt="Botol Peaceful Calm"
-                fill
-                className="object-contain gambar-utama-hover"
-                priority
-              />
+              <motion.div
+                animate={shouldAnimate ? { y: [-10, 10, -10] } : {}}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1.7,
+                }}
+                className="relative w-full h-full"
+              >
+                {/* Wrapper khusus Ukuran 2x & Miring Kanan 4° */}
+                <div className="w-full h-full scale-175 rotate-4">
+                  <Image
+                    src="/src/images/section 1/botol-peaceful-calm.png"
+                    alt="Botol Peaceful Calm"
+                    fill
+                    className="object-contain gambar-utama-hover"
+                    priority
+                  />
+                </div>
+              </motion.div>
             </motion.div>
 
+            {/* Botol 4 - Sweet Shy (Diperbesar 2x, Miring Kiri 4°) */}
             <motion.div
               animate={
                 shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
               }
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full right-[4.5%] top-[14%] z-30"
+              className="relative w-full h-full left-[5.5%] top-[18%] z-30"
             >
-              <Image
-                src="/src/images/section 1/botol-sweet-shy.png"
-                alt="Botol Sweet Shy"
-                fill
-                className="object-contain gambar-utama-hover"
-                priority
-              />
+              <motion.div
+                animate={shouldAnimate ? { y: [-10, 10, -10] } : {}}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 2.0,
+                }}
+                className="relative w-full h-full"
+              >
+                {/* Wrapper khusus Ukuran 2x & Miring Kiri 4° */}
+                <div className="w-full h-full scale-175 -rotate-4">
+                  <Image
+                    src="/src/images/section 1/botol-sweet-shy.png"
+                    alt="Botol Sweet Shy"
+                    fill
+                    className="object-contain gambar-utama-hover"
+                    priority
+                  />
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>

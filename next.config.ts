@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
         port: '', // Biasanya kosong untuk HTTPS
         pathname: '/storage/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'ramadhan.alwaysdata.net',
+        port: '',
+        pathname: '/storage/**',
+      },
     ],
   },
   

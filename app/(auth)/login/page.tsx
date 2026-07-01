@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api";
+import { Eye, EyeOff } from "lucide-react";
 
 // Tipe data untuk konfigurasi status modal
 interface ModalState {
@@ -16,11 +17,13 @@ interface ModalState {
 export default function LoginPage() {
   const router = useRouter();
 
+  // State untuk form login
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // State baru untuk mengontrol custom modal
+  // State untuk mengontrol custom modal
   const [modal, setModal] = useState<ModalState>({
     isOpen: false,
     type: "success",
@@ -36,11 +39,10 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleLoginSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // 1. CONTOH VALIDASI AWAL (WARNING MODAL)
     if (password.length < 6) {
       setIsLoading(false);
       setModal({
@@ -56,16 +58,10 @@ export default function LoginPage() {
     try {
       const res = await login(email, password);
 
-      // Simpan token & user ke localStorage
       localStorage.setItem("auth_token", res.token);
-
-      console.log("auth_token : " + res.token);
       localStorage.setItem("auth_user", JSON.stringify(res.user));
-
-      // Beritahu Navbar (dan komponen lain) bahwa auth state berubah
       window.dispatchEvent(new Event("auth-change"));
 
-      // 2. TRIGGER MODAL BERHASIL (SUCCESS MODAL)
       setModal({
         isOpen: true,
         type: "success",
@@ -74,7 +70,6 @@ export default function LoginPage() {
           "Login berhasil. Selamat melanjutkan petualangan aroma Anda bersama Evomi.",
       });
     } catch (err: unknown) {
-      // 3. TRIGGER MODAL GAGAL (ERROR MODAL)
       const errorMsg =
         err instanceof Error
           ? err.message
@@ -92,6 +87,7 @@ export default function LoginPage() {
 
   return (
     <div className="space-y-8 relative">
+      {/* HEADER */}
       <div className="text-center space-y-2">
         <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight uppercase">
           Masuk
@@ -101,7 +97,8 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <form className="space-y-5" onSubmit={handleSubmit}>
+      {/* FORM LOGIN */}
+      <form className="space-y-5 animate-fade-in" onSubmit={handleLoginSubmit}>
         <div className="space-y-2">
           <label
             htmlFor="email"
@@ -129,23 +126,34 @@ export default function LoginPage() {
             >
               Password
             </label>
+            {/* ROUTE KE HALAMAN RESET PASSWORD */}
             <Link
-              href="#"
+              href="/reset-password"
               className="text-[10px] text-white/60 hover:text-white uppercase tracking-wider transition-colors"
             >
               Lupa?
             </Link>
           </div>
-          <input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-            className="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 text-white placeholder:text-white/40 focus:bg-white/20 focus:border-white/40 outline-none transition-all duration-200"
-          />
+
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              className="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 pr-12 text-white placeholder:text-white/40 focus:bg-white/20 focus:border-white/40 outline-none transition-all duration-200"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
         </div>
 
         <button

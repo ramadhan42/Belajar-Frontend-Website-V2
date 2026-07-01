@@ -228,7 +228,10 @@ const STORAGE_URL = (process.env.NEXT_PUBLIC_URL || BASE_URL) + "/storage/";
 /** Konversi path gambar relatif dari Laravel menjadi URL absolut */
 export function getProductImageUrl(path?: string): string | null {
   if (!path) return null;
-  if (path.startsWith("http")) return path;
+  // 1. Jika sudah berupa URL absolut (http:// atau https://), langsung kembalikan
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
   return STORAGE_URL + path;
 }
 

@@ -15,7 +15,7 @@ interface NavbarColorContextType {
 }
 
 export function NavbarColorProvider({ children }: { children: ReactNode }) {
-  const [navbarColor, setNavbarColor] = useState<string>("#2B92DE");
+  const [navbarColor, setNavbarColor] = useState<string>("#0f62a2ff");
   const [footerColor, setFooterColor] = useState<string>("#1172BA");
 
   const setNavbarAndFooterColor = (color: string) => {
@@ -24,7 +24,7 @@ export function NavbarColorProvider({ children }: { children: ReactNode }) {
   };
 
   const resetColors = () => {
-    setNavbarColor("#2B92DE");
+    setNavbarColor("#0f62a2ff");
     setFooterColor("#1172BA");
   };
 
