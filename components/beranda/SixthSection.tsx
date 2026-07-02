@@ -123,13 +123,13 @@ export default function SixthSection() {
           viewport={{ once: false, amount: 0.3 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           // Perubahan: Ganti w-full dengan w-fit dan h-fit. Hapus flex & justify-center.
-          className="relative py-35 z-20 w-fit h-fit max-w-[400px] sm:max-w-[1206px] md:max-w-[400px] lg:max-w-[1206px]"
+          className="relative py-35 z-20 w-fit md-h-fit max-w-[400px] sm:max-w-[1206px] md:max-w-[400px] lg:max-w-[1206px] bg-black"
         >
           <img
             src="src/images/section 6/packaging.png"
             alt="Packaging Main"
             // Perubahan: Tambahkan w-full, h-auto, dan block agar gambar proporsional mengikuti div
-            className="w-full h-auto block object-contain drop-shadow-xl transition-all duration-500 ease-out hover:rotate-2 hover:scale-[1.02] cursor-pointer bg-transparent"
+            className="w-full h-auto block object-contain drop-shadow-xl transition-all duration-500 ease-out hover:rotate-2 hover:scale-[1.02] cursor-pointer bg-white"
           />
         </motion.div>
 

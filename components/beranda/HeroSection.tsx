@@ -146,7 +146,7 @@ export default function HeroSection() {
               shouldAnimate ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }
             }
             transition={{ duration: 1.0, delay: 0.8, ease: "easeOut" }}
-            className="absolute left-[-14%] top-[19.4%] w-[36.1%] h-[65.5%] z-0 rounded-l-2xl overflow-hidden sayap-hover-effect cursor-pointer"
+            className="absolute left-[-14%] top-[25.4%] w-[36.1%] h-[65.5%] z-0 rounded-l-2xl overflow-hidden sayap-hover-effect cursor-pointer"
           >
             <Image
               src="/src/images/section 1/gambar-sayap-kiri.png"
@@ -162,7 +162,7 @@ export default function HeroSection() {
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute left-[20%] md:left-[20%] top-[-10%] md:top-[-10%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
+            className="absolute left-[20%] md:left-[20%] top-[-28%] md:top-[-10%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/purpose-prestige.png"
@@ -177,7 +177,7 @@ export default function HeroSection() {
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute left-[38%] top-[4.8%] w-[9%] h-[9%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
+            className="absolute left-[38%] top-[-15.8%] md:top-[1.8%] w-[9%] h-[9%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/rabel-brave.png"
@@ -192,7 +192,7 @@ export default function HeroSection() {
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute right-[36%] top-[-13%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
+            className="absolute right-[36%] top-[-32%] md:top-[-10.8%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/peaceful-calm.png"
@@ -207,7 +207,7 @@ export default function HeroSection() {
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute right-[20%] md:right-[20%] top-[-2.4%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
+            className="absolute right-[20%] md:right-[20%] top-[-21.4%] md:top-[-2.8%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/sweet-shy.png"
@@ -225,7 +225,7 @@ export default function HeroSection() {
                 : { opacity: 0, scale: 0.9 }
             }
             transition={{ duration: 0.5, delay: 0.8 }}
-            className="rotate-[15deg] origin-bottom-right badge-kiri-rotate cursor-pointer absolute left-[2%] md:left-[7.8%] bottom-[-10%] md:bottom-[-2.4%] mt-4 md:mt-10 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
+            className="rotate-[15deg] origin-bottom-right badge-kiri-rotate cursor-pointer absolute left-[2%] md:left-[7.8%] bottom-[-10%] md:bottom-[-8.4%] mt-4 md:mt-10 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
           >
             <svg
               className="w-2 h-2 sm:w-3 sm:h-3 md:w-5 md:h-5"
@@ -248,7 +248,7 @@ export default function HeroSection() {
                 : { opacity: 0, scale: 0.9 }
             }
             transition={{ duration: 0.5, delay: 0.85 }}
-            className="rotate-[-12deg] origin-bottom-left cursor-pointer absolute left-0 right-0 mx-auto w-max bottom-[-42%] md:bottom-[-25%] mt-4 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[8px] sm:text-[11px] md:text-[14px] font-bold px-2.5 py-1.5 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30 transition-transform duration-300 hover:scale-105"
+            className="rotate-[-12deg] origin-bottom-left cursor-pointer absolute left-0 right-0 mx-auto w-max bottom-[-42%] md:bottom-[-28%] mt-4 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[8px] sm:text-[11px] md:text-[14px] font-bold px-2.5 py-1.5 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30 transition-transform duration-300 hover:scale-105"
           >
             <p className="whitespace-nowrap">Concentration 20%</p>
           </motion.div>
@@ -290,7 +290,7 @@ export default function HeroSection() {
           </motion.div>
 
           {/* GAMBAR UTAMA (4 Botol) */}
-          <div className="absolute top-80 left-1/2 -translate-x-1/3 -translate-y-1/80 z-10 w-[76.1%] h-[100%] flex items-center justify-between gap-1 md:gap-4 bg-transparent cursor-pointer">
+          <div className="absolute top-20 md:top-80 left-1/2 -translate-x-1/3 -translate-y-1/80 z-10 w-[76.1%] h-[100%] flex items-center justify-between gap-1 md:gap-4 bg-transparent cursor-pointer">
             
             {/* Botol 1 - Purpose Prestige (Diperbesar 2x, Miring Kanan 3°) */}
             <motion.div
@@ -298,7 +298,7 @@ export default function HeroSection() {
                 shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
               }
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full left-[10.7%] top-[13.5%]"
+              className="relative w-full h-full left-[10.7%] top-[15.5%]"
             >
               {/* Wrapper khusus animasi melayang */}
               <motion.div
