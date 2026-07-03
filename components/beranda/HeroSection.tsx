@@ -144,12 +144,14 @@ export default function HeroSection() {
           </motion.div>
 
           {/* Floating Texts */}
+
+          {/* purpose */}
           <motion.div
             animate={
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute left-[20%] md:left-[20%] top-[-28%] md:top-[-13%] w-[9%] h-[9%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
+            className="absolute left-[20%] md:left-[28%] top-[-28%] md:top-[4%] w-[8%] h-[8%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/purpose-prestige.png"
@@ -159,12 +161,13 @@ export default function HeroSection() {
             />
           </motion.div>
 
+          {/* rebel */}
           <motion.div
             animate={
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute left-[38%] top-[-15.8%] md:top-[1.8%] w-[9%] h-[9%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
+            className="absolute left-[42%] top-[-15.8%] md:top-[12.8%] w-[6%] h-[6%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/rabel-brave.png"
@@ -174,12 +177,13 @@ export default function HeroSection() {
             />
           </motion.div>
 
+          {/* peaceful */}
           <motion.div
             animate={
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute right-[36%] top-[-32%] md:top-[-10.8%] w-[9%] h-[9%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
+            className="absolute right-[38%] top-[-32%] md:top-[3.8%] w-[7%] h-[7%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/peaceful-calm.png"
@@ -189,12 +193,13 @@ export default function HeroSection() {
             />
           </motion.div>
 
+          {/* sweet shy */}
           <motion.div
             animate={
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute right-[20%] md:right-[20%] top-[-21.4%] md:top-[-4.8%] w-[11%] h-[11%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
+            className="absolute right-[20%] md:right-[28%] top-[-21.4%] md:top-[10.8%] w-[6%] h-[6%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/sweet-shy.png"
@@ -205,6 +210,8 @@ export default function HeroSection() {
           </motion.div>
 
           {/* Badges */}
+
+          {/* Eau de parfum */}
           <motion.div
             animate={
               shouldAnimate
@@ -212,7 +219,7 @@ export default function HeroSection() {
                 : { opacity: 0, scale: 0.7 }
             }
             transition={{ duration: 0.5, delay: 0.8 }}
-            className="rotate-[15deg] origin-bottom-right badge-kiri-rotate cursor-pointer absolute left-[2%] md:left-[8.8%] bottom-[-10%] md:bottom-[12.4%] mt-2 md:mt-5 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
+            className="rotate-[15deg] origin-bottom-right badge-kiri-rotate cursor-pointer absolute left-[2%] md:left-[12.8%] bottom-[-10%] md:bottom-[12.4%] mt-2 md:mt-5 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
           >
             <svg
               className="w-2 h-2 sm:w-3 sm:h-3 md:w-5 md:h-5"
@@ -228,6 +235,7 @@ export default function HeroSection() {
             <p className="whitespace-nowrap">Eau de Parfum</p>
           </motion.div>
 
+          {/* Recycle Bottle */}
           <motion.div
             animate={
               shouldAnimate
@@ -235,9 +243,9 @@ export default function HeroSection() {
                 : { opacity: 0, scale: 0.7 }
             }
             transition={{ duration: 0.5, delay: 0.9 }}
-            className="rotate-[-12deg] origin-bottom-leftbadge-kanan-rotate cursor-pointer absolute right-[2%] md:right-[2.7%] bottom-[-23%] md:bottom-[12.4%] mt-2 md:mt-5 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
+            className="rotate-[-12deg] origin-bottom-leftbadge-kanan-rotate cursor-pointer absolute right-[2%] md:right-[7.7%] bottom-[-23%] md:bottom-[12.4%] mt-2 md:mt-5 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
           >
-            <div className="relative w-2 h-2 sm:w-3 sm:h-3 md:w-5 md:h-5">
+            <div className="relative w-2 h-2 sm:w-3 sm:h-3 md:w-4 md:h-4">
               <Image
                 src="/src/images/section 1/recycle.png"
                 alt="Recycle Icon"
@@ -249,7 +257,7 @@ export default function HeroSection() {
           </motion.div>
 
           {/* GAMBAR UTAMA (4 Botol) */}
-          <div className="relative top-20 md:top-65 left-1/2 -translate-x-2/5 -translate-y-1/2 z-10 w-[76.1%] h-[70%] flex items-center justify-between gap-1 md:gap-4 bg-transparent cursor-pointer">
+          <div className="relative top-20 md:top-65 left-1/2 -translate-x-2/5 -translate-y-1/2 z-10 w-[76.1%] h-[60%] flex items-center justify-between gap-1 md:gap-4 bg-transparent cursor-pointer">
             
             {/* Botol 1 - Purpose Prestige */}
             <motion.div
@@ -257,7 +265,7 @@ export default function HeroSection() {
                 shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
               }
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full left-[15.7%] top-[22.5%]"
+              className="relative w-full h-full left-[19.7%] top-[22.5%]"
             >
               <motion.div
                 animate={shouldAnimate ? { y: [-10, 10, -10] } : {}}
@@ -287,7 +295,7 @@ export default function HeroSection() {
                 shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
               }
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full left-[9.7%] top-[32%] z-30"
+              className="relative w-full h-full left-[10.7%] top-[32%] z-30"
             >
               <motion.div
                 animate={shouldAnimate ? { y: [-10, 10, -10] } : {}}
@@ -317,7 +325,7 @@ export default function HeroSection() {
                 shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
               }
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full top-[23%] left-[1%]"
+              className="relative w-full h-full top-[23%] right-[1%]"
             >
               <motion.div
                 animate={shouldAnimate ? { y: [-10, 10, -10] } : {}}
@@ -347,7 +355,7 @@ export default function HeroSection() {
                 shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
               }
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full left-[-5.5%] top-[27%] z-30"
+              className="relative w-full h-full left-[-9.5%] top-[27%] z-30"
             >
               <motion.div
                 animate={shouldAnimate ? { y: [-10, 10, -10] } : {}}
@@ -379,7 +387,7 @@ export default function HeroSection() {
         <div className="animate-marquee flex items-center gap-4 sm:gap-6 md:gap-8">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center gap-4 sm:gap-6 md:gap-8">
-              <span className="text-[12px] sm:text-[16px] md:text-[23px] font-medium whitespace-nowrap text-white">
+              <span className="text-[12px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
@@ -391,7 +399,7 @@ export default function HeroSection() {
                 />
               </div>
 
-              <span className="text-[12px] sm:text-[16px] md:text-[23px] font-medium whitespace-nowrap text-white">
+              <span className="text-[12px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
@@ -403,7 +411,7 @@ export default function HeroSection() {
                 />
               </div>
 
-              <span className="text-[12px] sm:text-[16px] md:text-[23px] font-medium whitespace-nowrap text-white">
+              <span className="text-[12px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
@@ -415,7 +423,7 @@ export default function HeroSection() {
                 />
               </div>
 
-              <span className="text-[12px] sm:text-[16px] md:text-[23px] font-medium whitespace-nowrap text-white">
+              <span className="text-[12px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
