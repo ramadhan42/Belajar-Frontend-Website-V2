@@ -60,7 +60,7 @@ export default function HistoryPage() {
   const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
 
   useEffect(() => {
-    setNavbarColor("#2B92DE");
+    setNavbarColor("#0f62a2ff");
     setFooterColor("#1172BA");
   }, [setNavbarColor, setFooterColor]);
 

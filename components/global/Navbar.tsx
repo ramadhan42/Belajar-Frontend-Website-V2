@@ -142,9 +142,9 @@ export default function Navbar() {
     "flex justify-center items-center w-full md:w-[100px] text-[16px] py-2.5 font-bold rounded-full text-center text-white hover:bg-white hover:text-[var(--nav-color)] hover-bold-effect transition-colors duration-300";
 
   return (
-    <div className="p-4 md:p-4 w-full relative z-50 md:mt-5">
+    <div className="p-4 w-full relative z-50">
       <nav
-        className="text-white rounded-[25px] px-6 md:px-6 py-3 md:px-8 md:py-4 relative w-[100%] max-w-[1240px] mx-auto transition-colors duration-0"
+        className="text-white rounded-[25px] px-6 py-3 md:px-8 md:py-2 relative w-[100%] max-w-[4200px] mx-auto transition-colors duration-0"
         style={
           {
             backgroundColor: navbarColor,

@@ -85,7 +85,7 @@ export default function SixthSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent left-0 md:left-25 p-2 rounded-full md:p-0 whitespace-pre-line text-left translate-x-[-15px] md:translate-x-[-80px]"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent left-0 md:left-25 p-2 rounded-full md:p-0 whitespace-pre-line text-left translate-y-[-15px] translate-x-[-15px] md:translate-x-[-80px] md:translate-y-[-60px]"
           >
             <span className="text-[12px] md:text-[22px] font-medium">
               Purpose{"\n"}Prestige
@@ -103,7 +103,7 @@ export default function SixthSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left mr-30 md:mr-80 translate-x-[-5px] md:translate-x-[-105px]"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left mr-30 md:mr-80 translate-y-[-15px] translate-x-[-5px] md:translate-x-[-105px] md:translate-y-[-58px]"
           >
             <span className="text-[12px] md:text-[22px] font-medium">
               Rebel{"\n"}Brave
@@ -122,14 +122,17 @@ export default function SixthSection() {
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
           viewport={{ once: false, amount: 0.3 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          // Perubahan: Ganti w-full dengan w-fit dan h-fit. Hapus flex & justify-center.
-          className="relative py-35 z-20 w-fit md-h-fit max-w-[400px] sm:max-w-[1206px] md:max-w-[400px] lg:max-w-[1206px] bg-black"
+          // Perbaikan:
+          // 1. Menggunakan w-full dengan mx-auto agar selalu di tengah.
+          // 2. max-w diatur progresif membesar dari mobile ke desktop.
+          // 3. Mengganti py-35 menjadi py-[20px] di mobile dan py-[35px] di desktop.
+          className="relative z-20 w-full h-fit py-[42px] md:py-[82px] max-w-[90%] sm:max-w-[400px] md:max-w-[800px] lg:max-w-[1206px] bg-transparent mx-auto"
         >
           <img
             src="src/images/section 6/packaging.png"
             alt="Packaging Main"
-            // Perubahan: Tambahkan w-full, h-auto, dan block agar gambar proporsional mengikuti div
-            className="w-full h-auto block object-contain drop-shadow-xl transition-all duration-500 ease-out hover:rotate-2 hover:scale-[1.02] cursor-pointer bg-white"
+            // Tidak ada yang diubah di sini, pengaturan ini sudah tepat
+            className="w-full h-auto block object-contain drop-shadow-xl transition-all duration-500 ease-out hover:rotate-2 hover:scale-[1.02] cursor-pointer bg-transparent"
           />
         </motion.div>
 
@@ -141,7 +144,7 @@ export default function SixthSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left translate-x-[-15px] "
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left translate-y-[10px] translate-x-[-15px] md:translate-y-[38px]"
           >
             <span className="text-[12px] md:text-[22px] font-medium">
               Peaceful{"\n"}Calm
@@ -159,7 +162,7 @@ export default function SixthSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left ml-20 translate-x-[35px] md:translate-x-[5px]"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left ml-20 translate-x-[24px] translate-y-[10px] md:translate-x-[1px] md:translate-y-[48px]"
           >
             <span className="text-[12px] md:text-[22px] font-medium">
               Sweet{"\n"}Shy
@@ -174,7 +177,7 @@ export default function SixthSection() {
       </div>
 
       {/* Divider Marquee Looping */}
-      <div className="absolute bottom-7 md:bottom-15 left-0 w-full overflow-hidden py-2.5 md:py-4 border-y border-white/10 z-40 bg-[#0071BC]">
+      <div className="absolute bottom-7 md:bottom-10 left-0 w-full overflow-hidden py-2.5 md:py-4 border-y border-white/10 z-40 bg-[#0071BC]">
         <div className="animate-marquee flex items-center gap-4 sm:gap-6 md:gap-8">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center gap-4 sm:gap-6 md:gap-8">

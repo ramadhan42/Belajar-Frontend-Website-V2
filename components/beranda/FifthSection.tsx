@@ -17,7 +17,7 @@ export default function FifthSection() {
       descColor: "text-[#1172BAB2]",
       price: "Rp189.000",
       btnBg: "bg-[#1172BA]",
-      hoverClass: "hover:-rotate-[5deg]",
+      hoverClass: "hover:-rotate-[3deg]",
     },
     {
       id: 2,
@@ -31,7 +31,7 @@ export default function FifthSection() {
       descColor: "text-[#5EA14A]",
       price: "Rp199.000",
       btnBg: "bg-[#5EA14A]",
-      hoverClass: "hover:rotate-[5deg]",
+      hoverClass: "hover:rotate-[3deg]",
     },
     {
       id: 3,
@@ -45,7 +45,7 @@ export default function FifthSection() {
       descColor: "text-[#E33D35]",
       price: "Rp179.000",
       btnBg: "bg-[#E33D35]",
-      hoverClass: "hover:-rotate-[5deg]",
+      hoverClass: "hover:-rotate-[3deg]",
     },
     {
       id: 4,
@@ -59,7 +59,7 @@ export default function FifthSection() {
       descColor: "text-[#DD74A5]",
       price: "Rp189.000",
       btnBg: "bg-[#DD74A5]",
-      hoverClass: "hover:rotate-[5deg]",
+      hoverClass: "hover:rotate-[3deg]",
     },
   ];
 
@@ -172,7 +172,8 @@ export default function FifthSection() {
           >
             {/* Bagian Atas: Gambar & Badge */}
             <div
-              className={`relative w-full aspect-square flex justify-center items-center p-3 md:p-6 md:py-15 ${product.imgBg}`}
+              // Menggunakan aspect-[5/3] agar tinggi elemen menjadi sekitar 60% dari lebarnya (mengurangi 40% dari bentuk kotak)
+              className={`relative w-full aspect-[5/3] flex justify-center items-center p-3 md:p-3 md:py-4 ${product.imgBg}`}
             >
               <span
                 className={`absolute top-2 left-2 md:top-5 md:left-5 bg-white px-2 py-1 md:px-4 md:py-1.5 rounded-full text-[8px] md:text-[14px] font-bold ${product.textColor}`}
@@ -185,8 +186,8 @@ export default function FifthSection() {
                 alt={product.title}
                 width={500}
                 height={500}
-                // Tambahkan scale-110 atau scale-125 untuk membesarkan ukuran visualnya
-                className="object-contain drop-shadow-xl w-[95%] md:w-full scale-120 md:scale-145 transition-transform translate-y-13 z0"
+                // Sesuaikan nilai translate-y agar gambar tetap berada di posisi yang proporsional di dalam kontainer yang lebih pipih
+                className="object-contain drop-shadow-xl w-[90%] md:w-[90%] transition-transform translate-y-15 z-0"
               />
             </div>
 
