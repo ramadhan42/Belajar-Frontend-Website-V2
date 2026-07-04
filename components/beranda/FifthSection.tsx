@@ -85,6 +85,7 @@ export default function FifthSection() {
       transition: { duration: 0.6, ease: "easeInOut" },
     },
   };
+  
 
   return (
     <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-10 pb-25 md:pb-20 px-2 md:px-4 relative overflow-hidden">
@@ -149,7 +150,7 @@ export default function FifthSection() {
           <span className="text-[#FF8A84]">Evomi</span>
         </h2>
 
-        <p className="font-['Nohemi'] text-[14px] md:text-[16px] text-[#5D5D5D] max-w-2xl mb-10 md:mb-8 px-4 font-normal">
+        <p className="font-['Nohemi'] text-[14px] md:text-[16px] text-[#5D5D5D] max-w-2xl mb-10 md:mb-10 px-4 font-normal">
           Empat karakter aroma yang mewakili sisi berbeda dari dirimu.
         </p>
       </motion.div>
@@ -160,40 +161,52 @@ export default function FifthSection() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.15 }}
-        className="relative z-10 w-full max-w-5xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 mb-12 md:mb-7 px-5 py-5 md:px-4"
+        className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 mb-12 md:mb-10 px-5 py-5 md:px-4"
       >
-        {products.map((product) => (
+        {products.map((product, index) => (
           <motion.div
-            animate="active"
             key={product.id}
             variants={cardVariants}
-            // 👇 Ubah duration-100 menjadi duration-300 di bawah ini
             className={`font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
           >
             {/* Bagian Atas: Gambar & Badge */}
             <div
-              // Menggunakan aspect-[5/3] agar tinggi elemen menjadi sekitar 60% dari lebarnya (mengurangi 40% dari bentuk kotak)
-              className={`relative md:w-full aspect-[5/4] flex justify-center items-center p-3 md:p-3 md:py-2 ${product.imgBg}`}
+              className={`relative md:w-full aspect-[5/4] flex flex-col items-center justify-start pt-3 md:pt-3 ${product.imgBg}`}
             >
-              <span
-                className={`absolute top-2 left-2 md:top-3 md:left-5 bg-white px-2 py-1 md:px-2 md:py-1.2 rounded-full text-[8px] md:text-[12px] font-bold ${product.textColor}`}
-              >
-                {product.badge}
-              </span>
+              {/* Badge di pojok kiri atas dengan padding */}
+              <div className="absolute top-2 left-2 md:top-3 md:left-3">
+                <span
+                  className={`bg-white px-2 py-1 md:px-2 md:py-2 rounded-full text-[8px] md:text-[12px] font-bold ${product.textColor}`}
+                >
+                  {product.badge}
+                </span>
+              </div>
 
-              <Image
-                src={product.path}
-                alt={product.title}
-                width={500}
-                height={500}
-                // Sesuaikan nilai translate-y agar gambar tetap berada di posisi yang proporsional di dalam kontainer yang lebih pipih
-                className="object-contain drop-shadow-xl w-[85%] md:w-[85%] transition-transform translate-y-15 z-0"
-              />
+              {/* Animasi muncul dari bawah, gambar di tengah card */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{
+                  duration: 0.7,
+                  delay: index * 0.15,
+                  ease: "easeOut",
+                }}
+                className="w-full flex justify-center items-center flex-1 md:mt-[25px] translate-y-[20px]"
+              >
+                <Image
+                  src={product.path}
+                  alt={product.title}
+                  width={500}
+                  height={500}
+                  className="object-contain drop-shadow-xl w-[75%] md:w-[75%]"
+                />
+              </motion.div>
             </div>
 
             {/* Bagian Bawah: Teks & Info Produk */}
             <div
-              className={`p-3 md:p-6 flex flex-col flex-grow text-left ${product.cardBg} z-20`}
+              className={`p-3 md:p-4 flex flex-col flex-grow text-left ${product.cardBg} z-20`}
             >
               <h3
                 className={`text-[13px] md:text-[16px] font-bold mb-1 md:mb-2 ${product.textColor} tracking-tighter leading-tight`}
@@ -210,13 +223,13 @@ export default function FifthSection() {
               {/* Harga & Tombol Panah (Sejajar) */}
               <div className="flex justify-between items-center mt-auto">
                 <span
-                  className={`text-[10px] md:text-[14px] font-bold ${product.textColor}`}
+                  className={`text-[10px] md:text-[12px] font-bold ${product.textColor}`}
                 >
                   {product.price}
                 </span>
 
                 <button
-                  className={`w-6 h-6 md:w-10 md:h-10 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${product.btnBg}`}
+                  className={`w-6 h-6 md:w-7 md:h-7 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${product.btnBg}`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -224,7 +237,7 @@ export default function FifthSection() {
                     viewBox="0 0 24 24"
                     strokeWidth={2.5}
                     stroke="currentColor"
-                    className="w-3 h-3 md:w-5 md:h-5"
+                    className="w-3 h-3 md:w-3 md:h-3"
                   >
                     <path
                       strokeLinecap="round"

@@ -17,7 +17,7 @@ export default function SixthSection() {
 
   return (
     <section
-      className="bg-[#1172BA] flex flex-col items-center justify-center pt-4 md:pt-6 pb-20 md:pb-28 overflow-hidden select-none relative"
+      className="bg-[#1172BA] flex flex-col items-center justify-center pt-4 md:pt-1 pb-20 md:pb-28 overflow-hidden select-none relative"
       style={{ fontFamily: "'Nohemi', sans-serif" }}
     >
       {/* --- CSS ANIMASI MARQUEE --- */}
@@ -40,16 +40,16 @@ export default function SixthSection() {
         // PERBAIKAN: Ubah once menjadi true
         viewport={{ once: true, amount: 0.5 }}
         variants={fadeUpVariants}
-        className="relative z-30 flex items-center justify-center gap-3 text-center px-4 py-2 top-2 md:top-15 md:mb-10"
+        className="relative z-30 flex items-center justify-center gap-3 text-center px-4 py-2 top-2 md:top-12 md:mb-19"
       >
-        <h2 className="font-nohemi font-semibold text-[32px] sm:text-[40px] md:text-[72px] font-bold">
+        <h2 className="font-nohemi font-semibold text-[32px] sm:text-[60px] md:text-[42px] font-bold">
           <span className="text-white">Packaging</span>{" "}
           <span className="text-[#A5E194]">Reveal</span>
         </h2>
         <img
           src="src/images/section 6/star-medium.png"
           alt="Star Icon"
-          className="w-[17px] h-[17px] md:w-[30px] md:h-[30px] object-contain brightness-0 invert"
+          className="w-[17px] h-[17px] md:w-[24px] md:h-[24px] object-contain brightness-0 invert"
         />
       </motion.div>
 
@@ -78,22 +78,22 @@ export default function SixthSection() {
         />
 
         {/* --- TULISAN MELAYANG ATAS --- */}
-        <div className="absolute top-5 md:top-20 left-0 md:left-20 w-full px-4 md:px-60 z-30 flex justify-between items-center text-white text-sm md:text-lg font-medium">
+        <div className="absolute top-5 md:top-17 left-0 md:left-35 w-full px-4 md:px-60 z-30 flex justify-between items-center text-white text-sm md:text-lg font-medium">
           {/* Purpose Prestige (Kiri Atas) - Ditambahkan translate-x untuk menggeser ke kiri */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent left-0 md:left-25 p-2 rounded-full md:p-0 whitespace-pre-line text-left translate-y-[-15px] translate-x-[-15px] md:translate-x-[-80px] md:translate-y-[-60px]"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent left-0 md:left-25 p-2 rounded-full md:p-0 whitespace-pre-line text-left translate-y-[-15px] translate-x-[-15px] md:translate-x-[-70px] md:translate-y-[-60px]"
           >
-            <span className="text-[12px] md:text-[22px] font-medium">
+            <span className="text-[12px] md:text-[16px] font-medium">
               Purpose{"\n"}Prestige
             </span>
             <img
               src="/src/images/section 6/purpose.png"
               alt="Purpose"
-              className="w-[17px] md:w-[30px] h-[17px] md:h-[30px] object-contain"
+              className="w-[17px] md:w-[24px] h-[17px] md:h-[24px] object-contain"
             />
           </motion.div>
 
@@ -103,30 +103,30 @@ export default function SixthSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left mr-30 md:mr-80 translate-y-[-15px] translate-x-[-5px] md:translate-x-[-105px] md:translate-y-[-58px]"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left mr-30 md:mr-80 translate-y-[-15px] translate-x-[-5px] md:translate-x-[-245px] md:translate-y-[-58px]"
           >
-            <span className="text-[12px] md:text-[22px] font-medium">
+            <span className="text-[12px] md:text-[16px] font-medium">
               Rebel{"\n"}Brave
             </span>
             <img
               src="/src/images/section 6/rabel.png"
               alt="Rabel"
-              className="w-[17px] md:w-[30px] h-[17px] md:h-[30px] object-contain"
+              className="w-[17px] md:w-[24px] h-[17px] md:h-[24px] object-contain"
             />
           </motion.div>
         </div>
 
         {/* Gambar Utama: Packaging (Animasi Pop-up / Scale Up) */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.85, y: 30 }}
-          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.65, y: 30 }}
+          whileInView={{ opacity: 1, scale: 0.85, y: 0 }}
           viewport={{ once: false, amount: 0.3 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           // Perbaikan:
           // 1. Menggunakan w-full dengan mx-auto agar selalu di tengah.
           // 2. max-w diatur progresif membesar dari mobile ke desktop.
           // 3. Mengganti py-35 menjadi py-[20px] di mobile dan py-[35px] di desktop.
-          className="relative z-20 w-full h-fit py-[42px] md:py-[82px] max-w-[90%] sm:max-w-[400px] md:max-w-[800px] lg:max-w-[1206px] bg-transparent mx-auto"
+          className="relative z-20 w-full h-fit py-[42px] md:py-[25px] max-w-[90%] sm:max-w-[400px] md:max-w-[800px] lg:max-w-[1206px] bg-transparent mx-auto"
         >
           <img
             src="src/images/section 6/packaging.png"
@@ -146,13 +146,13 @@ export default function SixthSection() {
             transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
             className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left translate-y-[10px] translate-x-[-15px] md:translate-y-[38px]"
           >
-            <span className="text-[12px] md:text-[22px] font-medium">
+            <span className="text-[12px] md:text-[16px] font-medium">
               Peaceful{"\n"}Calm
             </span>
             <img
               src="/src/images/section 6/peaceful.png"
               alt="Peaceful"
-              className="w-[17px] md:w-[30px] h-[17px] md:h-[30px] object-contain"
+              className="w-[17px] md:w-[24px] h-[17px] md:h-[24px] object-contain"
             />
           </motion.div>
 
@@ -162,26 +162,26 @@ export default function SixthSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left ml-20 translate-x-[24px] translate-y-[10px] md:translate-x-[1px] md:translate-y-[48px]"
+            className="flex items-center gap-2 bg-[#1172BA]/40 md:bg-transparent p-2 rounded-full md:p-0 whitespace-pre-line text-left ml-20 translate-x-[24px] translate-y-[10px] md:translate-x-[-125px] md:translate-y-[48px]"
           >
-            <span className="text-[12px] md:text-[22px] font-medium">
+            <span className="text-[12px] md:text-[16px] font-medium">
               Sweet{"\n"}Shy
             </span>
             <img
               src="/src/images/section 6/sweetshy.png"
               alt="Sweet"
-              className="w-[17px] md:w-[30px] h-[17px] md:h-[30px] object-contain"
+              className="w-[17px] md:w-[24px] h-[17px] md:h-[24px] object-contain"
             />
           </motion.div>
         </div>
       </div>
 
       {/* Divider Marquee Looping */}
-      <div className="absolute bottom-7 md:bottom-10 left-0 w-full overflow-hidden py-2.5 md:py-4 border-y border-white/10 z-40 bg-[#0071BC]">
+      <div className="absolute bottom-8 md:mt-1 md:bottom-10 left-0 w-full overflow-hidden py-2.5 md:py-4 border-y border-white/10 z-40 bg-[#0071BC]">
         <div className="animate-marquee flex items-center gap-4 sm:gap-6 md:gap-8">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center gap-4 sm:gap-6 md:gap-8">
-              <span className="text-[12px] sm:text-[16px] md:text-[23px] font-medium whitespace-nowrap text-white">
+              <span className="text-[12px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
@@ -193,7 +193,7 @@ export default function SixthSection() {
                 />
               </div>
 
-              <span className="text-[12px] sm:text-[16px] md:text-[23px] font-medium whitespace-nowrap text-white">
+              <span className="text-[12px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
@@ -205,7 +205,7 @@ export default function SixthSection() {
                 />
               </div>
 
-              <span className="text-[12px] sm:text-[16px] md:text-[23px] font-medium whitespace-nowrap text-white">
+              <span className="text-[12px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
@@ -217,7 +217,7 @@ export default function SixthSection() {
                 />
               </div>
 
-              <span className="text-[12px] sm:text-[16px] md:text-[23px] font-medium whitespace-nowrap text-white">
+              <span className="text-[12px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
