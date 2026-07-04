@@ -12,11 +12,6 @@ export default function SecondSection() {
       colorClass: "text-[#0D71BA]",
     },
     {
-      name: "Sweet\nShy",
-      path: "/src/images/section 2/sweet-shy.png",
-      colorClass: "text-[#DD74A5]",
-    },
-    {
       name: "Peaceful\nCalm",
       path: "/src/images/section 2/peaceful-calm.png",
       colorClass: "text-[#5EA14A]",
@@ -25,6 +20,11 @@ export default function SecondSection() {
       name: "Rabel\nBrave",
       path: "/src/images/section 2/rabel-brave.png",
       colorClass: "text-[#E33D35]",
+    },
+    {
+      name: "Sweet\nShy",
+      path: "/src/images/section 2/sweet-shy.png",
+      colorClass: "text-[#DD74A5]",
     },
   ];
 
@@ -78,11 +78,10 @@ export default function SecondSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.8 }}
-        className="mt-14 md:mt-25 mb-8 md:mb-10 text-[32px] md:text-[48px] font-nohemi font-semibold leading-tight"
+        className="font-nohemi font-semibold mt-14 md:mt-25 mb-8 md:mb-10 text-[32px] sm:text-[60px] md:text-[42px] leading-tight"
       >
-        <span className="text-[#0071BC]">Kenalan sama</span>
-        <br />
-        <span className="text-[#F7B497]">karakter </span>
+        <span className="text-[#0071BC]">Kenalan sama </span>
+        <span className="text-[#FF8A84]">karakter </span>
         <span className="text-[#0071BC]">kita yuk!</span>
       </motion.h2>
 
@@ -92,7 +91,7 @@ export default function SecondSection() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.2 }}
-        className="mt-6 md:mt-10 mb-8 md:mb-10 w-full max-w-6xl grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 justify-items-center"
+        className="mt-6 md:mt-10 mb-8 md:mb-10 w-full max-w-3xl grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 justify-items-center"
       >
         {characters.map((char, index) => (
           <motion.div
@@ -100,17 +99,17 @@ export default function SecondSection() {
             variants={itemVariants}
             className="flex flex-col items-center group cursor-pointer hover:scale-105 transition-transform duration-300 ease-in-out"
           >
-            <div className="w-[120px] h-[120px] sm:w-[180px] sm:h-[180px] md:w-[220px] md:h-[220px] relative flex justify-center items-center">
+            <div className="w-[120px] h-[120px] sm:w-[180px] sm:h-[180px] md:w-[140px] md:h-[140px] relative flex justify-center items-center">
               <Image
                 src={char.path}
                 alt={`Karakter ${char.name}`}
-                width={220}
-                height={220}
+                width={140}
+                height={140}
                 className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-lg transition-all duration-300"
               />
             </div>
             <h3
-              className={`font-heavy text-l md:text-3xl tracking-tight whitespace-pre-line md:mt-3 ${char.colorClass}`}
+              className={`font-heavy text-l md:text-2xl tracking-tight whitespace-pre-line md:mt-3 ${char.colorClass}`}
             >
               {char.name}
             </h3>
@@ -120,8 +119,8 @@ export default function SecondSection() {
 
       {/* 3. Button - Animasi Pop Up (Scale) */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        whileInView={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, scale: 0.6 }}
+        whileInView={{ opacity: 1, scale: 0.8 }}
         viewport={{ once: false }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >

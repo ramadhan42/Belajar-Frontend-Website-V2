@@ -56,7 +56,7 @@ export default function HeroSection() {
     <section
       ref={sectionRef}
       // Disesuaikan: mengubah pb-23 menjadi pb-10 agar jarak bagian bawah section tidak terlalu kosong/renggang
-      className="hero-section bg-[#0071BC] md:mb-15 md:mt-2 text-white pt-6 pb-10 md:pb-10 px-4 flex flex-col items-center justify-center text-center select-none overflow-hidden relative"
+      className="hero-section bg-[#0071BC] md:mb-6 md:mt-2 text-white pt-6 pb-10 md:pb-10 px-4 flex flex-col items-center justify-center text-center select-none overflow-hidden relative"
     >
       <style>{`
         .gambar-utama-hover {

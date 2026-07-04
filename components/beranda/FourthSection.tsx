@@ -15,7 +15,7 @@ export default function FourthSection() {
   };
 
   return (
-    <section className="relative bg-white w-full min-h-[350px] sm:min-h-[500px] md:min-h-[800px] flex justify-center items-center pt-10 sm:pt-16 md:pt-20 pb-20 sm:pb-28 md:pb-40 overflow-hidden">
+    <section className="relative bg-white w-full min-h-[350px] sm:min-h-[500px] md:min-h-[700px] flex justify-center items-center pt-10 sm:pt-16 md:pt-20 pb-20 sm:pb-28 md:pb-15 overflow-hidden">
       {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
       <div className="absolute top-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none z-20">
         <div className="flex w-max gap-[15px] animate-slide-right-40s -translate-y-1/2">
@@ -40,7 +40,7 @@ export default function FourthSection() {
       </div>
 
       {/* Kontainer batas untuk menahan posisi elemen melayang (z-10) */}
-      <div className="relative z-10 w-full max-w-6xl min-h-[300px] sm:min-h-[400px] md:min-h-[650px] px-4 md:px-6">
+      <div className="relative z-10 w-full max-w-6xl min-h-[300px] sm:min-h-[400px] md:min-h-[600px] px-4 md:px-6">
         {/* --- GROUP ATAS KANAN --- */}
         <motion.div
           initial="hidden"
@@ -49,12 +49,12 @@ export default function FourthSection() {
           variants={fadeInVariants}
           className="absolute top-4 sm:top-6 md:top-0 right-17 md:right-4 flex flex-row items-center gap-2 sm:gap-3 md:gap-6"
         >
-          <p className="font-['Nohemi'] text-[14px] sm:text-[14px] mx-5 md:text-[25.2px] text-[#5D5D5D] font-semibold whitespace-pre-line text-right z-10 md:mr-10 leading-tight md:leading-normal">
+          <p className="font-['Nohemi'] text-[14px] sm:text-[14px] mx-5 md:text-[22.2px] text-[#5D5D5D] font-semibold whitespace-pre-line text-right z-10 md:mr-27 leading-tight md:leading-normal">
             Tidak ada yang kita buang{"\n"}benar-benar pergi,
           </p>
 
           <div className="flex flex-col items-center z-10">
-            <div className="relative w-[32px] h-[32px] sm:w-[40px] sm:h-[40px] md:w-[64px] md:h-[64px] cursor-pointer transition-transform duration-1500 ease-in-out hover:rotate-[180deg]">
+            <div className="relative w-[32px] h-[32px] sm:w-[40px] sm:h-[40px] md:w-[55px] md:h-[55px] cursor-pointer transition-transform duration-1500 ease-in-out hover:rotate-[180deg]">
               <Image
                 src="/src/images/section 4/recycle.png"
                 alt="Recycle Icon"
@@ -79,20 +79,20 @@ export default function FourthSection() {
           viewport={{ once: false, amount: 0.3 }}
           variants={fadeInVariants}
           transition={{ delay: 0.3 }}
-          className="absolute bottom-12 sm:bottom-16 md:bottom-12 left-10 md:left-12 flex flex-row items-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 z-10 w-full md:w-auto pr-4"
+          className="absolute bottom-12 sm:bottom-16 md:bottom-15 left-10 md:left-12 flex flex-row items-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 z-10 w-full md:w-auto pr-4"
         >
-          <p className="font-['Nohemi'] text-[14px] sm:text-[14px] md:text-[25.2px] mx-2 text-[#5D5D5D] font-semibold whitespace-pre-line leading-tight md:leading-normal">
+          <p className="font-['Nohemi'] text-[14px] sm:text-[14px] md:text-[22.2px] mx-2 text-[#5D5D5D] font-semibold whitespace-pre-line leading-tight md:leading-normal">
             Apa yang kita buang{"\n"}bisa melilit Bumi
           </p>
 
-          <p className="font-['Nohemi'] text-[14px] sm:text-[16px] md:text-[28px] mx-5 font-semibold text-[#1172BA] whitespace-pre-line text-center ml-1 sm:ml-4 md:ml-10 lg:ml-20 leading-tight md:leading-normal">
+          <p className="font-['Nohemi'] text-[14px] sm:text-[16px] md:text-[22.5px] mx-5 font-semibold text-[#1172BA] whitespace-pre-line text-center ml-1 sm:ml-4 md:ml-10 lg:ml-20 leading-tight md:leading-normal">
             <span className="text-[14px] sm:text-[20px] md:text-[35px]">
               25x
             </span>
             {"\n"} putaran
           </p>
 
-          <p className="font-['Nohemi'] text-[14px] sm:text-[14px] md:text-[25.2px] text-[#5D5D5D] font-semibold whitespace-pre-line ml-1 sm:ml-4 md:ml-10 lg:ml-20 leading-tight md:leading-normal">
+          <p className="font-['Nohemi'] text-[14px] sm:text-[14px] md:text-[22.2px] text-[#5D5D5D] font-semibold whitespace-pre-line ml-1 sm:ml-4 md:ml-10 lg:ml-20 leading-tight md:leading-normal">
             dia akan{"\n"}kembali dalam{"\n"} bentuk yang{"\n"} berbeda
           </p>
         </motion.div>

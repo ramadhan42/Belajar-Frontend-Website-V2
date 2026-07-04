@@ -87,7 +87,7 @@ export default function FifthSection() {
   };
 
   return (
-    <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-20 pb-25 md:pb-40 px-2 md:px-4 relative overflow-hidden">
+    <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-10 pb-25 md:pb-20 px-2 md:px-4 relative overflow-hidden">
       {/* --- BACKGROUND DECORATIVE IMAGES --- */}
 
       {/* Gambar 1: Atas kiri agak kebawah */}
@@ -144,12 +144,12 @@ export default function FifthSection() {
         transition={{ duration: 0.7, ease: "easeOut" }}
         className="relative z-10"
       >
-        <h2 className="font-['Nohemi'] text-[32px] md:text-[48px] font-bold mb-2 md:mb-3 leading-tight">
+        <h2 className="font-['Nohemi'] text-[32px] md:text-[38px] font-bold mb-2 md:mb-3 leading-tight">
           <span className="text-[#1172BA]">Khas </span>
           <span className="text-[#FF8A84]">Evomi</span>
         </h2>
 
-        <p className="font-['Nohemi'] text-[14px] md:text-[20px] text-[#5D5D5D] max-w-2xl mb-10 md:mb-16 px-4 font-normal">
+        <p className="font-['Nohemi'] text-[14px] md:text-[16px] text-[#5D5D5D] max-w-2xl mb-10 md:mb-8 px-4 font-normal">
           Empat karakter aroma yang mewakili sisi berbeda dari dirimu.
         </p>
       </motion.div>
@@ -160,7 +160,7 @@ export default function FifthSection() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.15 }}
-        className="relative z-10 w-full max-w-7xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 mb-12 md:mb-16 px-5 py-5 md:px-4"
+        className="relative z-10 w-full max-w-5xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 mb-12 md:mb-7 px-5 py-5 md:px-4"
       >
         {products.map((product) => (
           <motion.div
@@ -173,10 +173,10 @@ export default function FifthSection() {
             {/* Bagian Atas: Gambar & Badge */}
             <div
               // Menggunakan aspect-[5/3] agar tinggi elemen menjadi sekitar 60% dari lebarnya (mengurangi 40% dari bentuk kotak)
-              className={`relative w-full aspect-[5/3] flex justify-center items-center p-3 md:p-3 md:py-4 ${product.imgBg}`}
+              className={`relative md:w-full aspect-[5/4] flex justify-center items-center p-3 md:p-3 md:py-2 ${product.imgBg}`}
             >
               <span
-                className={`absolute top-2 left-2 md:top-5 md:left-5 bg-white px-2 py-1 md:px-4 md:py-1.5 rounded-full text-[8px] md:text-[14px] font-bold ${product.textColor}`}
+                className={`absolute top-2 left-2 md:top-3 md:left-5 bg-white px-2 py-1 md:px-2 md:py-1.2 rounded-full text-[8px] md:text-[12px] font-bold ${product.textColor}`}
               >
                 {product.badge}
               </span>
@@ -187,7 +187,7 @@ export default function FifthSection() {
                 width={500}
                 height={500}
                 // Sesuaikan nilai translate-y agar gambar tetap berada di posisi yang proporsional di dalam kontainer yang lebih pipih
-                className="object-contain drop-shadow-xl w-[90%] md:w-[90%] transition-transform translate-y-15 z-0"
+                className="object-contain drop-shadow-xl w-[85%] md:w-[85%] transition-transform translate-y-15 z-0"
               />
             </div>
 
@@ -196,13 +196,13 @@ export default function FifthSection() {
               className={`p-3 md:p-6 flex flex-col flex-grow text-left ${product.cardBg} z-20`}
             >
               <h3
-                className={`text-[13px] md:text-[20px] font-bold mb-1 md:mb-2 ${product.textColor} tracking-tighter leading-tight`}
+                className={`text-[13px] md:text-[16px] font-bold mb-1 md:mb-2 ${product.textColor} tracking-tighter leading-tight`}
               >
                 {product.title}
               </h3>
 
               <p
-                className={`text-[9px] md:text-[12px] font-medium mb-3 md:mb-6 leading-tight md:leading-relaxed flex-grow ${product.descColor}`}
+                className={`text-[9px] md:text-[10px] font-medium mb-3 md:mb-6 leading-tight md:leading-relaxed flex-grow ${product.descColor}`}
               >
                 {product.desc}
               </p>
@@ -249,9 +249,9 @@ export default function FifthSection() {
       >
         <button
           onClick={() => (window.location.href = "/koleksi")}
-          className="font-['Nohemi'] group flex items-center justify-center gap-2 md:gap-4 bg-[#1172BA] text-white text-[14px] md:text-[18px] font-bold px-6 py-3 md:px-10 md:py-4 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 shadow-md hover:shadow-inner"
+          className="font-['Nohemi'] group flex items-center justify-center gap-2 md:gap-3 bg-[#1172BA] text-white text-[14px] md:text-[14px] font-bold px-6 py-3 md:px-10 md:py-3 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 shadow-md hover:shadow-inner"
         >
-          <div className="relative w-[18px] h-[18px] md:w-[24px] md:h-[24px]">
+          <div className="relative w-[18px] h-[18px] md:w-[19px] md:h-[19px]">
             <Image
               src="/src/images/section 5/star-medium.png"
               alt="Star Icon"
