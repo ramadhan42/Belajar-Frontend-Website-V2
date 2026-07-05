@@ -61,7 +61,7 @@ export default function SidebarAdmin() {
   };
 
   return (
-    <aside className="w-64 h-screen bg-white/80 backdrop-blur-xl border-r border-gray-100 flex flex-col fixed left-0 top-0">
+    <aside className="w-64 h-screen bg-white/80 backdrop-blur-xl border-r border-gray-100 flex flex-col fixed left-0 top-0 overflow-hidden">
       {/* Brand Logo */}
       <div className="h-20 flex items-center px-8 border-b border-gray-100">
         <h1 className="text-2xl font-bold tracking-wider text-gray-900">
@@ -71,7 +71,7 @@ export default function SidebarAdmin() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+      <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1 scrollbar-hide">
         {menuItems.map((item) => {
           const isActive =
             item.path === "/dashboard"
@@ -115,3 +115,4 @@ export default function SidebarAdmin() {
     </aside>
   );
 }
+

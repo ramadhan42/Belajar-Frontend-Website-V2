@@ -107,7 +107,7 @@ export default function SecondSectionBelanja() {
   };
 
   return (
-    <section className="bg-white flex flex-col items-center text-center w-full pt-16 md:pt-20 pb-20 md:pb-25 px-2 md:px-4 relative overflow-hidden">
+    <section className="bg-white flex flex-col items-center text-center w-full pt-16 md:pt-10 pb-20 md:pb-10 px-2 md:px-4 relative overflow-hidden">
       {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
       <div className="absolute top-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none z-10">
         <style>{`
@@ -131,7 +131,7 @@ export default function SecondSectionBelanja() {
 
       {/* ================= GRID CARD PRODUK ================= */}
       {isLoading ? (
-        <div className="relative z-10 w-full max-w-7xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 px-5 py-5 md:px-4 mt-8">
+        <div className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 px-5 py-5 md:px-4 mt-1">
           {[1, 2, 3, 4].map((i) => (
             <ProductSkeleton key={i} />
           ))}
@@ -142,7 +142,7 @@ export default function SecondSectionBelanja() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: false, amount: 0.1 }}
-          className="relative z-10 w-full max-w-7xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 px-5 py-5 md:px-4 mt-8"
+          className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 px-5 py-5 md:px-4 mt-1"
         >
           {products.map((product, index) => {
             const visual =
@@ -160,23 +160,15 @@ export default function SecondSectionBelanja() {
               >
                 {/* Bagian Atas: Gambar & Badge */}
                 <div
-                  className={`relative w-full md:h-[340px] aspect-square overflow-hidden ${visual.imgBg}`}
+                  className={`relative w-full md:h-[240px] aspect-square overflow-hidden ${visual.imgBg}`}
                 >
                   <span
-                    className={`absolute top-2 left-2 md:top-5 md:left-5 bg-white px-2 py-1 md:px-4 md:py-1.5 rounded-full text-[8px] md:text-[14px] font-bold z-20 ${visual.textColor}`}
+                    className={`absolute top-2 left-2 md:top-5 md:left-5 bg-white px-2 py-1 md:px-2 md:py-1 rounded-full text-[8px] md:text-[10px] font-bold z-20 ${visual.textColor}`}
                   >
                     {visual.badge}
                   </span>
 
                   {imageUrl ? (
-                    // <Image
-                    //   src={imageUrl}
-                    //   alt={product.title}
-                    //   fill
-                    //   className="object-contain p-4 drop-shadow-xl"
-                    //   sizes="(max-width: 768px) 50vw, 25vw"
-                    //   priority // Tambahkan properti ini!
-                    // />
 
                     <Image
                       src={imageUrl}
@@ -194,29 +186,29 @@ export default function SecondSectionBelanja() {
 
                 {/* Bagian Bawah: Teks & Info */}
                 <div
-                  className={`p-3 md:p-6 flex flex-col flex-grow text-left ${visual.cardBg}`}
+                  className={`p-3 md:p-4 flex flex-col flex-grow text-left ${visual.cardBg}`}
                 >
                   <h3
-                    className={`text-[13px] md:text-[20px] font-bold mb-1 md:mb-2 ${visual.textColor}`}
+                    className={`text-[13px] md:text-[16px] font-bold mb-1 md:mb-1 ${visual.textColor}`}
                   >
                     {product.title}
                   </h3>
 
                   <p
-                    className={`text-[9px] md:text-[12px] font-medium mb-3 md:mb-6 leading-tight md:leading-relaxed flex-grow line-clamp-3 ${visual.descColor}`}
+                    className={`text-[9px] md:text-[8px] font-medium mb-3 md:mb-2 leading-tight md:leading-relaxed flex-grow line-clamp-3 ${visual.descColor}`}
                   >
                     {product.description ?? ""}
                   </p>
 
                   <div className="flex justify-between items-center mt-auto">
                     <span
-                      className={`text-[10px] md:text-[14px] font-bold ${visual.textColor}`}
+                      className={`text-[10px] md:text-[10px] font-bold ${visual.textColor}`}
                     >
                       {formatProductPrice(product.price)}
                     </span>
 
                     <button
-                      className={`w-10 h-10 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${visual.btnBg}`}
+                      className={`w-7 h-7 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${visual.btnBg}`}
                       aria-label={`Lihat detail ${product.title}`}
                     >
                       <svg
@@ -225,7 +217,7 @@ export default function SecondSectionBelanja() {
                         viewBox="0 0 24 24"
                         strokeWidth={2.5}
                         stroke="currentColor"
-                        className="w-5 h-5"
+                        className="w-3 h-3"
                       >
                         <path
                           strokeLinecap="round"
@@ -244,3 +236,4 @@ export default function SecondSectionBelanja() {
     </section>
   );
 }
+

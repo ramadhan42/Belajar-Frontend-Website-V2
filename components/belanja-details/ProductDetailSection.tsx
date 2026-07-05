@@ -199,7 +199,7 @@ export default function ProductDetailSection({
     : "50ml • Eau de Parfum";
 
   return (
-    <section className="bg-[#F6F6F6] w-full pt-12 pb-24 px-4 md:px-8 relative overflow-hidden flex flex-col items-center">
+    <section className="bg-[#F6F6F6] w-full pt-6 pb-10 px-4 md:px-8 relative overflow-hidden flex flex-col items-center">
       <style>{`
         @keyframes slideRightSeamless {
           0% { transform: translateX(-50%); }
@@ -210,7 +210,7 @@ export default function ProductDetailSection({
         }
       `}</style>
 
-      <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mt-6 mb-16 z-10">
+      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mt-4 mb-16 z-10">
         {/* ================= KIRI: IMAGE SLIDER ================= */}
         <div className="lg:col-span-5 flex flex-col items-center lg:items-end w-full select-none">
           {/* Gambar Utama */}
@@ -308,7 +308,7 @@ export default function ProductDetailSection({
         <div className="lg:col-span-7 flex flex-col text-left w-full lg:pl-4 relative">
           {/* Karakter SVG */}
           {showCharacter && (
-            <div className="absolute top-0 right-0 md:right-[-110px] hidden lg:block w-[100px] h-[100px]">
+            <div className="absolute top-0 right-0 md:right-[-10px] hidden lg:block w-[100px] h-[100px]">
               <Image
                 src={visual.characterPath}
                 alt="Character"
@@ -322,23 +322,23 @@ export default function ProductDetailSection({
 
           {/* Judul */}
           <h1
-            className="font-['Nohemi'] text-[40px] md:text-[56px] font-semibold leading-tight mb-2"
+            className="font-['Nohemi'] text-[40px] md:text-[40px] font-semibold leading-tight mb-2"
             style={{ color: visual.navbarColor }}
           >
             {isLoading ? (
-              <Skeleton className="w-56 h-12 block" />
+              <Skeleton className="w-40 h-12 block" />
             ) : (
               product?.title
             )}
           </h1>
 
           {/* Subtitle (bottle_size + perfume_type dari API) */}
-          <p className="font-['Nohemi'] text-[18px] md:text-[20px] font-medium text-[#5D5D5D] mb-4">
+          <p className="font-['Nohemi'] text-[18px] md:text-[14px] font-medium text-[#5D5D5D] mb-4">
             {isLoading ? <Skeleton className="w-40 h-5 block" /> : subtitle}
           </p>
 
           {/* Deskripsi */}
-          <p className="font-['Parkinsans'] text-[15px] md:text-[16px] font-normal text-[#5D5D5D] leading-relaxed max-w-2xl mb-8">
+          <p className="font-['Parkinsans'] text-[15px] md:text-[12px] font-normal text-[#5D5D5D] leading-relaxed max-w-2xl mb-8">
             {isLoading ? (
               <Skeleton className="w-full h-16 block" />
             ) : (
@@ -349,7 +349,7 @@ export default function ProductDetailSection({
           {/* Card Notes — dari top_note, middle_note, base_note API */}
           <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm max-w-2xl mb-8 flex flex-col gap-5">
             <h4
-              className="font-['Nohemi'] text-[18px] md:text-[20px] font-bold"
+              className="font-['Nohemi'] text-[18px] md:text-[16px] font-bold"
               style={{ color: visual.navbarColor }}
             >
               Notes {isLoading ? "" : product?.title}
@@ -365,13 +365,13 @@ export default function ProductDetailSection({
                 className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4"
               >
                 <span
-                  className="text-white text-[14px] font-medium px-4 py-1.5 rounded-full min-w-[110px] text-center"
+                  className="text-white text-[10px] font-medium px-1 py-1 rounded-full min-w-[80px] text-center"
                   style={{ backgroundColor: visual.navbarColor }}
                 >
                   {label}
                 </span>
                 <span
-                  className="text-[14px] font-medium"
+                  className="text-[12px] font-medium"
                   style={{ color: `${visual.navbarColor}CC` }}
                 >
                   {isLoading ? (
@@ -385,14 +385,14 @@ export default function ProductDetailSection({
           </div>
 
           {/* Harga */}
-          <div className="font-['Nohemi'] flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 md:gap-8 mb-8 md:mb-12 md:mt-5">
+          <div className="font-['Nohemi'] flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 md:gap-8 mb-4 md:mb-4 md:mt-1">
             <span
-              className="text-[22px] md:text-[24px] font-medium"
+              className="text-[22px] md:text-[14px] font-medium"
               style={{ color: visual.navbarColor }}
             >
               Harga
             </span>
-            <span className="text-[36px] md:text-[40px] font-semibold text-[#5D5D5D]">
+            <span className="text-[36px] md:text-[20px] font-semibold text-[#5D5D5D]">
               {isLoading ? (
                 <Skeleton className="w-36 h-10 block" />
               ) : (
@@ -428,19 +428,19 @@ export default function ProductDetailSection({
           )}
 
           {/* Tombol Aksi */}
-          <div className="flex flex-wrap items-center gap-4 max-w-2xl">
+          <div className="flex flex-wrap items-center gap-3 max-w-1xl">
             {/* Tambah ke Keranjang */}
             <button
               onClick={handleAddToCart}
               disabled={cartStatus === "loading"}
-              className="font-['Nohemi'] flex items-center justify-center gap-2 bg-white text-[16px] font-bold px-6 py-4 rounded-full border shadow-sm hover:bg-gray-50 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="font-['Nohemi'] flex items-center justify-center gap-2 bg-white text-[12px] font-bold px-3 py-3 rounded-full border shadow-sm hover:bg-gray-50 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{
                 color: visual.navbarColor,
                 borderColor: `${visual.navbarColor}33`,
               }}
             >
               <div
-                className="w-5 h-5"
+                className="w-4 h-4"
                 style={{
                   backgroundColor: visual.navbarColor,
                   WebkitMaskImage: `url(/src/images/belanja/detail/purpose/cart.svg)`,
@@ -461,7 +461,7 @@ export default function ProductDetailSection({
               onClick={() =>
                 router.push(`/checkout?type=buynow&productId=${id}`)
               }
-              className="font-['Nohemi'] flex items-center justify-center gap-2 text-white text-[16px] font-medium px-8 py-4 rounded-full shadow-md active:scale-95 transition-all duration-200"
+              className="font-['Nohemi'] flex items-center justify-center gap-2 text-white text-[12px] font-medium px-3 py-3 rounded-full shadow-md active:scale-95 transition-all duration-200"
               style={{ backgroundColor: visual.navbarColor }}
             >
               Beli langsung
@@ -470,7 +470,7 @@ export default function ProductDetailSection({
                 alt="Arrow Icon"
                 width={20}
                 height={20}
-                className="object-contain w-5 h-5 brightness-0 invert"
+                className="object-contain w-4 h-4 brightness-0 invert"
                 priority
               />
             </button>
@@ -481,12 +481,12 @@ export default function ProductDetailSection({
               disabled={
                 wishlistStatus === "loading" || wishlistStatus === "success"
               }
-              className="w-14 h-14 bg-white rounded-full flex justify-center items-center border border-gray-100 shadow-sm hover:bg-gray-50 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-10 h-10 bg-white rounded-full flex justify-center items-center border border-gray-100 shadow-sm hover:bg-gray-50 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
               aria-label="Add to Wishlist"
               style={{ borderColor: `${visual.navbarColor}33` }}
             >
               <div
-                className="w-5 h-5"
+                className="w-4 h-4"
                 style={{
                   backgroundColor:
                     wishlistStatus === "success"
@@ -522,3 +522,4 @@ export default function ProductDetailSection({
     </section>
   );
 }
+
