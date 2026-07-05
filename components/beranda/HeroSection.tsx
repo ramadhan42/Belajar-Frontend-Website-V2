@@ -12,8 +12,15 @@ import { useRef, useState, useEffect } from "react";
 export default function HeroSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
-
   const [isScrollVisible, setIsScrollVisible] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -56,7 +63,7 @@ export default function HeroSection() {
     <section
       ref={sectionRef}
       // Disesuaikan: mengubah pb-23 menjadi pb-10 agar jarak bagian bawah section tidak terlalu kosong/renggang
-      className="hero-section bg-[#0071BC] md:mb-6 md:mt-2 text-white pt-6 pb-10 md:pb-10 px-4 flex flex-col items-center justify-center text-center select-none overflow-hidden relative"
+      className="hero-section bg-[#0071BC] md:mb-6 md:mt-2 mt-[-15] text-white pt-0 pb-10 md:pb-10 px-4 flex flex-col items-center justify-center text-center select-none overflow-hidden relative"
     >
       <style>{`
         .gambar-utama-hover {
@@ -114,7 +121,7 @@ export default function HeroSection() {
         <motion.h1
           animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           // Disesuaikan: Menghapus margin (m-0) agar judul mepet ke gambar di bawahnya
-          className="font-nohemi font-semibold text-[32px] sm:text-[60px] md:text-[42px] leading-[1] m-0 p-0"
+          className="font-nohemi font-semibold text-[17px] sm:text-[60px] md:text-[42px] leading-[1] m-0 p-0"
         >
           <span className="text-white">Temukan </span>
           <span className="text-[#5CB2ED]">karakter</span>
@@ -131,7 +138,7 @@ export default function HeroSection() {
           <motion.div
             animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 1.0, delay: 0.8, ease: "easeOut" }}
-            className="absolute top-0 left-1/2 -translate-x-1/2 md:top-[-50] w-[100vw] h-full z-0 overflow-hidden"
+            className="absolute top-[-7] left-1/2 -translate-x-1/2 md:top-[-50] w-[100vw] h-full z-0 overflow-hidden"
           >
             <Image
               src="/src/images/section 1/wave.png" 
@@ -151,7 +158,7 @@ export default function HeroSection() {
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute left-[20%] md:left-[28%] top-[-28%] md:top-[4%] w-[8%] h-[8%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
+            className="absolute left-[30%] md:left-[28%] top-[2%] md:top-[4%] w-[9%] h-[9%] md:w-[8%] md:h-[8%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/purpose-prestige.png"
@@ -167,7 +174,7 @@ export default function HeroSection() {
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute left-[42%] top-[-15.8%] md:top-[12.8%] w-[6%] h-[6%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
+            className="absolute left-[42%] top-[10.8%] md:top-[12.8%] w-[7%] h-[7%] md:w-[6%] md:h-[6%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/rabel-brave.png"
@@ -183,7 +190,7 @@ export default function HeroSection() {
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute right-[38%] top-[-32%] md:top-[3.8%] w-[7%] h-[7%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
+            className="absolute right-[38%] top-[7%] md:top-[3.8%] w-[8%] h-[8%] md:w-[7%] md:h-[7%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/peaceful-calm.png"
@@ -199,7 +206,7 @@ export default function HeroSection() {
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute right-[20%] md:right-[28%] top-[-21.4%] md:top-[10.8%] w-[6%] h-[6%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
+            className="absolute right-[27%] md:right-[28%] top-[10.4%] md:top-[10.8%] w-[7%] h-[7%] md:w-[6%] md:h-[6%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/sweet-shy.png"
@@ -219,7 +226,7 @@ export default function HeroSection() {
                 : { opacity: 0, scale: 0.7 }
             }
             transition={{ duration: 0.5, delay: 0.8 }}
-            className="rotate-[15deg] origin-bottom-right badge-kiri-rotate cursor-pointer absolute left-[2%] md:left-[12.8%] bottom-[-10%] md:bottom-[12.4%] mt-2 md:mt-5 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
+            className="rotate-[15deg] origin-bottom-right badge-kiri-rotate cursor-pointer absolute left-[7%] md:left-[12.8%] bottom-[3%] md:bottom-[12.4%] mt-2 md:mt-5 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
           >
             <svg
               className="w-2 h-2 sm:w-3 sm:h-3 md:w-5 md:h-5"
@@ -243,7 +250,7 @@ export default function HeroSection() {
                 : { opacity: 0, scale: 0.7 }
             }
             transition={{ duration: 0.5, delay: 0.9 }}
-            className="rotate-[-12deg] origin-bottom-leftbadge-kanan-rotate cursor-pointer absolute right-[2%] md:right-[7.7%] bottom-[-23%] md:bottom-[12.4%] mt-2 md:mt-5 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
+            className="rotate-[-12deg] origin-bottom-leftbadge-kanan-rotate cursor-pointer absolute right-[7%] md:right-[7.7%] bottom-[4%] md:bottom-[12.4%] mt-2 md:mt-5 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
           >
             <div className="relative w-2 h-2 sm:w-3 sm:h-3 md:w-4 md:h-4">
               <Image
@@ -268,9 +275,9 @@ export default function HeroSection() {
               className="relative w-full h-full left-[19.7%] top-[22.5%]"
             >
               <motion.div
-                animate={shouldAnimate ? { y: [-10, 10, -10] } : {}}
+                animate={shouldAnimate ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] } : {}}
                 transition={{
-                  duration: 4,
+                  duration: isMobile ? 3 : 4,
                   repeat: Infinity,
                   ease: "easeInOut",
                   delay: 1.1,
@@ -298,9 +305,9 @@ export default function HeroSection() {
               className="relative w-full h-full left-[10.7%] top-[32%] z-30"
             >
               <motion.div
-                animate={shouldAnimate ? { y: [-10, 10, -10] } : {}}
+                animate={shouldAnimate ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] } : {}}
                 transition={{
-                  duration: 4,
+                  duration: isMobile ? 3 : 4,
                   repeat: Infinity,
                   ease: "easeInOut",
                   delay: 1.4,
@@ -328,9 +335,9 @@ export default function HeroSection() {
               className="relative w-full h-full top-[23%] right-[1%]"
             >
               <motion.div
-                animate={shouldAnimate ? { y: [-10, 10, -10] } : {}}
+                animate={shouldAnimate ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] } : {}}
                 transition={{
-                  duration: 4,
+                  duration: isMobile ? 3 : 4,
                   repeat: Infinity,
                   ease: "easeInOut",
                   delay: 1.7,
@@ -358,9 +365,9 @@ export default function HeroSection() {
               className="relative w-full h-full left-[-9.5%] top-[27%] z-30"
             >
               <motion.div
-                animate={shouldAnimate ? { y: [-10, 10, -10] } : {}}
+                animate={shouldAnimate ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] } : {}}
                 transition={{
-                  duration: 4,
+                  duration: isMobile ? 3 : 4,
                   repeat: Infinity,
                   ease: "easeInOut",
                   delay: 2.0,
@@ -383,11 +390,11 @@ export default function HeroSection() {
       </motion.div>
 
       {/* Divider Marquee Looping */}
-      <div className="absolute bottom-8 md:mt-5 md:bottom-0 left-0 w-full overflow-hidden py-2.5 md:py-4 border-y border-white/10 z-40 bg-[#0071BC]">
+      <div className="absolute bottom-2 md:mt-5 md:bottom-0 left-0 w-full overflow-hidden py-1.5 md:py-4 border-y border-white/10 z-40 bg-[#0071BC]">
         <div className="animate-marquee flex items-center gap-4 sm:gap-6 md:gap-8">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center gap-4 sm:gap-6 md:gap-8">
-              <span className="text-[12px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
+              <span className="text-[8px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
@@ -399,7 +406,7 @@ export default function HeroSection() {
                 />
               </div>
 
-              <span className="text-[12px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
+              <span className="text-[8px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
@@ -411,7 +418,7 @@ export default function HeroSection() {
                 />
               </div>
 
-              <span className="text-[12px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
+              <span className="text-[8px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
@@ -423,7 +430,7 @@ export default function HeroSection() {
                 />
               </div>
 
-              <span className="text-[12px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
+              <span className="text-[8px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
                 Every Version of Me
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
