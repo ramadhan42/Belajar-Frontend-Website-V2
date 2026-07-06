@@ -17,7 +17,7 @@ interface NavModalState {
 
 export default function FifthSection() {
   const router = useRouter();
-  
+
   // State untuk Custom Modal
   const [navModal, setNavModal] = useState<NavModalState>({
     isOpen: false,
@@ -110,8 +110,8 @@ export default function FifthSection() {
 
   // --- LOGIC CUSTOM MODAL NAVIGASI ---
   const handleBelanjaAction = (e: React.MouseEvent) => {
-    e.preventDefault(); 
-    
+    e.preventDefault();
+
     // Munculkan modal transisi
     setNavModal({
       isOpen: true,
@@ -126,7 +126,6 @@ export default function FifthSection() {
       router.push("/belanja");
     }, 800);
   };
-  
 
   return (
     <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-10 pb-25 md:pb-20 px-2 md:px-4 relative overflow-hidden">
@@ -195,16 +194,17 @@ export default function FifthSection() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.15 }}
-        className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 mb-12 md:mb-10 px-5 py-5 md:px-4"
+        className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-32 mb-12 md:mb-10 px-5 py-5 md:px-4"
       >
         {products.map((product, index) => (
           <motion.div
             key={product.id}
             variants={cardVariants}
-            className={`font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
+            // Menambahkan w-[280px] md:w-[320px] untuk memaksa lebar kartu (sesuaikan angkanya sesuai kebutuhan)
+            className={`font-['Nohemi'] relative w-[280px] md:w-[230px] md:h-fit rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
           >
             <div
-              className={`relative md:w-full aspect-[5/4] flex flex-col items-center justify-start pt-3 md:pt-3 ${product.imgBg}`}
+              className={`relative w-full aspect-[4/3] flex flex-col items-center justify-start pt-3 md:pt-3 ${product.imgBg}`}
             >
               <div className="absolute top-2 left-2 md:top-3 md:left-3">
                 <span
@@ -223,14 +223,14 @@ export default function FifthSection() {
                   delay: index * 0.15,
                   ease: "easeOut",
                 }}
-                className="w-full flex justify-center items-center flex-1 md:mt-[25px] translate-y-[20px]"
+                className="w-full flex justify-center items-center flex-1 md:mt-[25px] translate-y-[25px]"
               >
                 <Image
                   src={product.path}
                   alt={product.title}
                   width={500}
                   height={500}
-                  className="object-contain drop-shadow-xl w-[75%] md:w-[75%]"
+                  className="object-contain drop-shadow-xl w-[85%] md:w-[76%]"
                 />
               </motion.div>
             </div>
@@ -244,13 +244,15 @@ export default function FifthSection() {
                 {product.title}
               </h3>
 
+              {/* 1. Hapus 'flex-grow' dan kurangi margin bottom (mb-3 md:mb-6 menjadi mb-2 md:mb-3) */}
               <p
-                className={`text-[9px] md:text-[10px] font-medium mb-3 md:mb-6 leading-tight md:leading-relaxed flex-grow ${product.descColor}`}
+                className={`text-[9px] md:text-[10px] font-medium mb-2 md:mb-3 leading-tight md:leading-relaxed ${product.descColor}`}
               >
                 {product.desc}
               </p>
 
-              <div className="flex justify-between items-center mt-auto">
+              {/* 2. Ganti 'mt-auto' menjadi 'mt-1' atau hapus sama sekali agar mepet ke atas */}
+              <div className="flex justify-between items-center mt-0">
                 <span
                   className={`text-[10px] md:text-[12px] font-bold ${product.textColor}`}
                 >
@@ -320,14 +322,50 @@ export default function FifthSection() {
             />
           </defs>
           <g>
-            <use href="#gentle-wave" x="48" y="0" fill="#60BBFF" fillOpacity="0.3">
-              <animate attributeName="x" from="-90" to="85" dur="10s" repeatCount="indefinite" />
+            <use
+              href="#gentle-wave"
+              x="48"
+              y="0"
+              fill="#60BBFF"
+              fillOpacity="0.3"
+            >
+              <animate
+                attributeName="x"
+                from="-90"
+                to="85"
+                dur="10s"
+                repeatCount="indefinite"
+              />
             </use>
-            <use href="#gentle-wave" x="48" y="3" fill="#60BBFF" fillOpacity="0.6">
-              <animate attributeName="x" from="-90" to="85" dur="14s" repeatCount="indefinite" />
+            <use
+              href="#gentle-wave"
+              x="48"
+              y="3"
+              fill="#60BBFF"
+              fillOpacity="0.6"
+            >
+              <animate
+                attributeName="x"
+                from="-90"
+                to="85"
+                dur="14s"
+                repeatCount="indefinite"
+              />
             </use>
-            <use href="#gentle-wave" x="48" y="5" fill="#60BBFF" fillOpacity="1">
-              <animate attributeName="x" from="-90" to="85" dur="20s" repeatCount="indefinite" />
+            <use
+              href="#gentle-wave"
+              x="48"
+              y="5"
+              fill="#60BBFF"
+              fillOpacity="1"
+            >
+              <animate
+                attributeName="x"
+                from="-90"
+                to="85"
+                dur="20s"
+                repeatCount="indefinite"
+              />
             </use>
           </g>
         </svg>

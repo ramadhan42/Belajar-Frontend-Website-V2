@@ -142,7 +142,7 @@ export default function SecondSectionBelanja() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: false, amount: 0.1 }}
-          className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 px-5 py-5 md:px-4 mt-1"
+          className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-4 px-5 py-5 md:px-4 mt-1"
         >
           {products.map((product, index) => {
             const visual =
@@ -169,13 +169,12 @@ export default function SecondSectionBelanja() {
                   </span>
 
                   {imageUrl ? (
-
                     <Image
                       src={imageUrl}
                       alt={product.title}
                       width={340}
                       height={340}
-                      className="absolute bottom-[-20%] md:bottom-[-21%] left-[-10%] md:left-[-27%] w-[120%] md:w-[140%] max-w-none object-contain drop-shadow-xl rotate-[35deg] transition-transform duration-300"
+                      className="absolute bottom-[-20%] md:bottom-[-21%] left-[-10%] md:left-[4%] w-[120%] md:w-[80%] max-w-none object-contain drop-shadow-xl rotate-[35deg] transition-transform duration-300"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white/40 text-sm">
@@ -189,13 +188,13 @@ export default function SecondSectionBelanja() {
                   className={`p-3 md:p-4 flex flex-col flex-grow text-left ${visual.cardBg}`}
                 >
                   <h3
-                    className={`text-[13px] md:text-[16px] font-bold mb-1 md:mb-1 ${visual.textColor}`}
+                    className={`text-[13px] md:text-[16px] font-bold mb-1 md:mb-2 ${visual.textColor}`}
                   >
                     {product.title}
                   </h3>
 
                   <p
-                    className={`text-[9px] md:text-[8px] font-medium mb-3 md:mb-2 leading-tight md:leading-relaxed flex-grow line-clamp-3 ${visual.descColor}`}
+                    className={`text-[9px] md:text-[10px] font-medium mb-3 md:mb-2 leading-[1.1] md:leading-[1.25] flex-grow line-clamp-3 ${visual.descColor}`}
                   >
                     {product.description ?? ""}
                   </p>
@@ -236,4 +235,3 @@ export default function SecondSectionBelanja() {
     </section>
   );
 }
-
