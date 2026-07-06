@@ -1,40 +1,51 @@
 // @/context/NavbarColorContext.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
-
-// @/context/NavbarColorContext.tsx
+import { createContext, useContext, useState, useCallback, ReactNode } from "react";
 
 interface NavbarColorContextType {
   navbarColor: string;
   footerColor: string;
-  setNavbarColor: (color: string) => void; // Tambahkan ini
-  setFooterColor: (color: string) => void; // Tambahkan ini
+  setNavbarColor: (color: string) => void;
+  setFooterColor: (color: string) => void;
   setNavbarAndFooterColor: (color: string) => void;
   resetColors: () => void;
 }
+
+// Context harus dideklarasikan SEBELUM Provider yang memakainya
+const NavbarColorContext = createContext<NavbarColorContextType | undefined>(
+  undefined,
+);
 
 export function NavbarColorProvider({ children }: { children: ReactNode }) {
   const [navbarColor, setNavbarColor] = useState<string>("#1172BA");
   const [footerColor, setFooterColor] = useState<string>("#1172BA");
 
-  const setNavbarAndFooterColor = (color: string) => {
+  const setNavbarAndFooterColor = useCallback((color: string) => {
     setNavbarColor(color);
     setFooterColor(color);
-  };
+  }, []);
 
-  const resetColors = () => {
+  const resetColors = useCallback(() => {
     setNavbarColor("#1172BA");
     setFooterColor("#1172BA");
-  };
+  }, []);
+
+  const stableSetNavbarColor = useCallback((color: string) => {
+    setNavbarColor(color);
+  }, []);
+
+  const stableSetFooterColor = useCallback((color: string) => {
+    setFooterColor(color);
+  }, []);
 
   return (
     <NavbarColorContext.Provider
       value={{
         navbarColor,
         footerColor,
-        setNavbarColor, // Tambahkan ini
-        setFooterColor, // Tambahkan ini
+        setNavbarColor: stableSetNavbarColor,
+        setFooterColor: stableSetFooterColor,
         setNavbarAndFooterColor,
         resetColors,
       }}
@@ -43,10 +54,6 @@ export function NavbarColorProvider({ children }: { children: ReactNode }) {
     </NavbarColorContext.Provider>
   );
 }
-
-const NavbarColorContext = createContext<NavbarColorContextType | undefined>(
-  undefined,
-);
 
 export function useNavbarColor() {
   const context = useContext(NavbarColorContext);

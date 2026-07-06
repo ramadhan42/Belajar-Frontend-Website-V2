@@ -4,7 +4,17 @@ import { useRouter } from "next/navigation"; // Import router dari next/navigati
 import { useState, useEffect, Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { Banknote, CheckCircle2, Loader2, MapPin, Phone, QrCode, Truck, User, X } from "lucide-react";
+import {
+  Banknote,
+  CheckCircle2,
+  Loader2,
+  MapPin,
+  Phone,
+  QrCode,
+  Truck,
+  User,
+  X,
+} from "lucide-react";
 import {
   getCartItems,
   getProduct,
@@ -449,7 +459,6 @@ function CheckoutContent() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* KIRI: Form Pengiriman & Metode Pembayaran */}
           <div className="lg:col-span-8 space-y-6">
-            
             {/* Form Informasi Pengiriman */}
             <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-6 md:p-8 transition-all">
               <h2
@@ -472,7 +481,9 @@ function CheckoutContent() {
                       placeholder="Nama Penerima"
                       className="w-full pl-11 pr-4 py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
                       style={{
-                        ...(formData.name ? { borderColor: visual.navbarColor } : {}),
+                        ...(formData.name
+                          ? { borderColor: visual.navbarColor }
+                          : {}),
                       }}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
@@ -489,7 +500,9 @@ function CheckoutContent() {
                       placeholder="Nomor HP"
                       className="w-full pl-11 pr-4 py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
                       style={{
-                        ...(formData.phone ? { borderColor: visual.navbarColor } : {}),
+                        ...(formData.phone
+                          ? { borderColor: visual.navbarColor }
+                          : {}),
                       }}
                       onChange={(e) =>
                         setFormData({ ...formData, phone: e.target.value })
@@ -507,7 +520,9 @@ function CheckoutContent() {
                     rows={3}
                     className="w-full pl-11 pr-4 py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm resize-none"
                     style={{
-                      ...(formData.address ? { borderColor: visual.navbarColor } : {}),
+                      ...(formData.address
+                        ? { borderColor: visual.navbarColor }
+                        : {}),
                     }}
                     onChange={(e) =>
                       setFormData({ ...formData, address: e.target.value })
@@ -522,7 +537,9 @@ function CheckoutContent() {
                   <select
                     className="w-full pl-11 pr-4 py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm appearance-none cursor-pointer"
                     style={{
-                      ...(formData.courier ? { borderColor: visual.navbarColor } : {}),
+                      ...(formData.courier
+                        ? { borderColor: visual.navbarColor }
+                        : {}),
                     }}
                     onChange={(e) =>
                       setFormData({ ...formData, courier: e.target.value })
@@ -535,7 +552,19 @@ function CheckoutContent() {
                   </select>
                   {/* Custom Arrow for Select */}
                   <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <svg
+                      className="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
                   </div>
                 </div>
               </div>
@@ -552,44 +581,61 @@ function CheckoutContent() {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-['Parkinsans']">
                 {[
-                  { id: "qris", title: "QRIS", desc: "Scan via M-Banking / E-Wallet", icon: QrCode },
-                  { id: "cash", title: "Cash on Delivery", desc: "Bayar saat barang sampai", icon: Banknote }
+                  {
+                    id: "qris",
+                    title: "QRIS",
+                    desc: "Scan via M-Banking / E-Wallet",
+                    icon: QrCode,
+                  },
+                  {
+                    id: "cash",
+                    title: "Cash on Delivery",
+                    desc: "Bayar saat barang sampai",
+                    icon: Banknote,
+                  },
                 ].map((m) => {
                   const isSelected = paymentMethod === m.id;
                   const Icon = m.icon;
-                  
+
                   return (
                     <label
                       key={m.id}
                       className={`relative border-2 rounded-2xl p-5 cursor-pointer flex flex-col gap-2 transition-all duration-300 overflow-hidden ${
-                        isSelected 
-                          ? "shadow-sm transform scale-[1.02]" 
+                        isSelected
+                          ? "shadow-sm transform scale-[1.02]"
                           : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/50"
                       }`}
                       style={{
                         borderColor: isSelected ? visual.navbarColor : "",
-                        backgroundColor: isSelected ? `${visual.navbarColor}08` : "", // Efek transparan 8% (glass/tinted)
+                        backgroundColor: isSelected
+                          ? `${visual.navbarColor}08`
+                          : "", // Efek transparan 8% (glass/tinted)
                       }}
                     >
                       {/* Checkmark Indicator */}
                       {isSelected && (
                         <div className="absolute top-4 right-4">
-                          <CheckCircle2 className="w-5 h-5" style={{ color: visual.navbarColor }} />
+                          <CheckCircle2
+                            className="w-5 h-5"
+                            style={{ color: visual.navbarColor }}
+                          />
                         </div>
                       )}
-                      
+
                       <input
                         type="radio"
                         className="hidden"
                         checked={isSelected}
                         onChange={() => setPaymentMethod(m.id)}
                       />
-                      
-                      <div 
+
+                      <div
                         className="w-10 h-10 rounded-full flex items-center justify-center mb-1 transition-colors"
-                        style={{ 
-                          backgroundColor: isSelected ? visual.navbarColor : "#F3F4F6",
-                          color: isSelected ? "#FFF" : "#9CA3AF"
+                        style={{
+                          backgroundColor: isSelected
+                            ? visual.navbarColor
+                            : "#F3F4F6",
+                          color: isSelected ? "#FFF" : "#9CA3AF",
                         }}
                       >
                         <Icon className="w-5 h-5" />
@@ -613,7 +659,6 @@ function CheckoutContent() {
                 })}
               </div>
             </div>
-
           </div>
 
           {/* KANAN: Ringkasan Pesanan */}

@@ -144,7 +144,7 @@ export default function Navbar() {
   return (
     <div className="p-4 w-full relative z-50">
       <nav
-        className="text-white rounded-[25px] px-6 py-3 md:px-8 md:py-2 relative w-[100%] max-w-[4200px] mx-auto transition-colors duration-0"
+        className="text-white rounded-[25px] px-6 py-3 md:px-8 md:py-2 relative w-[100%] max-w-[4200px] mx-auto transition-colors duration-500"
         style={
           {
             backgroundColor: navbarColor,

@@ -1,9 +1,31 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import { motion, Variants } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { motion, Variants, AnimatePresence } from "framer-motion";
+
+// Tipe data untuk konfigurasi status modal
+interface NavModalState {
+  isOpen: boolean;
+  type: "confirm" | "loading" | "success";
+  title: string;
+  message: string;
+  onConfirm?: () => void;
+  confirmText?: string;
+}
 
 export default function FifthSection() {
+  const router = useRouter();
+  
+  // State untuk Custom Modal
+  const [navModal, setNavModal] = useState<NavModalState>({
+    isOpen: false,
+    type: "loading",
+    title: "",
+    message: "",
+  });
+
   const products = [
     {
       id: 1,
@@ -69,7 +91,7 @@ export default function FifthSection() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15, // Jeda waktu kemunculan antar kartu produk
+        staggerChildren: 0.15,
       },
     },
   };
@@ -85,13 +107,30 @@ export default function FifthSection() {
       transition: { duration: 0.6, ease: "easeInOut" },
     },
   };
+
+  // --- LOGIC CUSTOM MODAL NAVIGASI ---
+  const handleBelanjaAction = (e: React.MouseEvent) => {
+    e.preventDefault(); 
+    
+    // Munculkan modal transisi
+    setNavModal({
+      isOpen: true,
+      type: "loading",
+      title: "Katalog Produk",
+      message: "Mengarahkan ke halaman belanja Evomi...",
+    });
+
+    // Simulasi delay agar animasi modal terlihat (800ms) lalu pindah rute
+    setTimeout(() => {
+      setNavModal((prev) => ({ ...prev, isOpen: false }));
+      router.push("/belanja");
+    }, 800);
+  };
   
 
   return (
     <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-10 pb-25 md:pb-20 px-2 md:px-4 relative overflow-hidden">
       {/* --- BACKGROUND DECORATIVE IMAGES --- */}
-
-      {/* Gambar 1: Atas kiri agak kebawah */}
       <div className="absolute top-[15%] md:top-[15%] left-0 -translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
         <Image
           src="/src/images/section 5/purpose.png"
@@ -102,7 +141,6 @@ export default function FifthSection() {
         />
       </div>
 
-      {/* Gambar 2: Atas kanan agak kebawah */}
       <div className="absolute top-[15%] md:top-[15%] right-0 translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
         <Image
           src="/src/images/section 5/sweet.png"
@@ -113,7 +151,6 @@ export default function FifthSection() {
         />
       </div>
 
-      {/* Gambar 3: Bawah kiri agak keatas */}
       <div className="absolute bottom-[20%] md:bottom-[22%] left-0 -translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
         <Image
           src="/src/images/section 5/rebel.png"
@@ -124,7 +161,6 @@ export default function FifthSection() {
         />
       </div>
 
-      {/* Gambar 4: Bawah kanan agak kebawah */}
       <div className="absolute bottom-[20%] md:bottom-[22%] right-0 translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
         <Image
           src="/src/images/section 5/peaceful.png"
@@ -134,8 +170,6 @@ export default function FifthSection() {
           className="object-contain"
         />
       </div>
-
-      {/* ------------------------------------ */}
 
       {/* 1. Tulisan Tengah Atas (Judul & Subjudul) */}
       <motion.div
@@ -169,11 +203,9 @@ export default function FifthSection() {
             variants={cardVariants}
             className={`font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
           >
-            {/* Bagian Atas: Gambar & Badge */}
             <div
               className={`relative md:w-full aspect-[5/4] flex flex-col items-center justify-start pt-3 md:pt-3 ${product.imgBg}`}
             >
-              {/* Badge di pojok kiri atas dengan padding */}
               <div className="absolute top-2 left-2 md:top-3 md:left-3">
                 <span
                   className={`bg-white px-2 py-1 md:px-2 md:py-2 rounded-full text-[8px] md:text-[12px] font-bold ${product.textColor}`}
@@ -182,7 +214,6 @@ export default function FifthSection() {
                 </span>
               </div>
 
-              {/* Animasi muncul dari bawah, gambar di tengah card */}
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -204,7 +235,6 @@ export default function FifthSection() {
               </motion.div>
             </div>
 
-            {/* Bagian Bawah: Teks & Info Produk */}
             <div
               className={`p-3 md:p-4 flex flex-col flex-grow text-left ${product.cardBg} z-20`}
             >
@@ -220,7 +250,6 @@ export default function FifthSection() {
                 {product.desc}
               </p>
 
-              {/* Harga & Tombol Panah (Sejajar) */}
               <div className="flex justify-between items-center mt-auto">
                 <span
                   className={`text-[10px] md:text-[12px] font-bold ${product.textColor}`}
@@ -252,7 +281,7 @@ export default function FifthSection() {
         ))}
       </motion.div>
 
-      {/* 3. Tombol Lihat Koleksi */}
+      {/* 3. Tombol Lihat Koleksi (Diubah menjadi trigger Modal) */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
@@ -261,7 +290,7 @@ export default function FifthSection() {
         className="relative z-10"
       >
         <button
-          onClick={() => (window.location.href = "/koleksi")}
+          onClick={handleBelanjaAction}
           className="font-['Nohemi'] group flex items-center justify-center gap-2 md:gap-3 bg-[#1172BA] text-white text-[14px] md:text-[14px] font-bold px-6 py-3 md:px-10 md:py-3 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 shadow-md hover:shadow-inner"
         >
           <div className="relative w-[18px] h-[18px] md:w-[19px] md:h-[19px]">
@@ -291,54 +320,74 @@ export default function FifthSection() {
             />
           </defs>
           <g>
-            <use
-              href="#gentle-wave"
-              x="48"
-              y="0"
-              fill="#60BBFF"
-              fillOpacity="0.3"
-            >
-              <animate
-                attributeName="x"
-                from="-90"
-                to="85"
-                dur="10s"
-                repeatCount="indefinite"
-              />
+            <use href="#gentle-wave" x="48" y="0" fill="#60BBFF" fillOpacity="0.3">
+              <animate attributeName="x" from="-90" to="85" dur="10s" repeatCount="indefinite" />
             </use>
-            <use
-              href="#gentle-wave"
-              x="48"
-              y="3"
-              fill="#60BBFF"
-              fillOpacity="0.6"
-            >
-              <animate
-                attributeName="x"
-                from="-90"
-                to="85"
-                dur="14s"
-                repeatCount="indefinite"
-              />
+            <use href="#gentle-wave" x="48" y="3" fill="#60BBFF" fillOpacity="0.6">
+              <animate attributeName="x" from="-90" to="85" dur="14s" repeatCount="indefinite" />
             </use>
-            <use
-              href="#gentle-wave"
-              x="48"
-              y="5"
-              fill="#60BBFF"
-              fillOpacity="1"
-            >
-              <animate
-                attributeName="x"
-                from="-90"
-                to="85"
-                dur="20s"
-                repeatCount="indefinite"
-              />
+            <use href="#gentle-wave" x="48" y="5" fill="#60BBFF" fillOpacity="1">
+              <animate attributeName="x" from="-90" to="85" dur="20s" repeatCount="indefinite" />
             </use>
           </g>
         </svg>
       </div>
+
+      {/* ================= CUSTOM MODAL COMPONENT (DI-ADAPTASI DARI NAVBAR) ================= */}
+      <AnimatePresence>
+        {navModal.isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative bg-white rounded-[24px] p-8 max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
+            >
+              <div
+                className={`mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5 transition-colors duration-300 bg-blue-50 text-blue-500`}
+              >
+                {navModal.type === "loading" && (
+                  <svg
+                    className="h-10 w-10 animate-spin text-[#1172BA]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-[20px] font-bold text-gray-800 tracking-wide">
+                  {navModal.title}
+                </h3>
+                <p className="text-[14px] text-gray-500 leading-relaxed">
+                  {navModal.message}
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

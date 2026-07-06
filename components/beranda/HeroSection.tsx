@@ -8,12 +8,18 @@ import {
   useMotionValueEvent,
 } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
+import { useNavbarColor } from "@/context/NavbarColorContext";
 
 export default function HeroSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
   const [isScrollVisible, setIsScrollVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const { setNavbarColor } = useNavbarColor();
+  const setNavbarColorRef = useRef(setNavbarColor);
+  useEffect(() => {
+    setNavbarColorRef.current = setNavbarColor;
+  }, [setNavbarColor]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -36,6 +42,20 @@ export default function HeroSection() {
 
   const opacityScroll = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
   const yScroll = useTransform(scrollYProgress, [0, 0.6], [0, -50]);
+
+  const hasScrolled = useRef(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!hasScrolled.current && window.scrollY > 10) {
+        hasScrolled.current = true;
+        setNavbarColorRef.current("#2B91DE");
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []); // dependency kosong — hanya register sekali, tidak pernah re-run
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     if (latest > 0.6) {
@@ -63,7 +83,7 @@ export default function HeroSection() {
     <section
       ref={sectionRef}
       // Disesuaikan: mengubah pb-23 menjadi pb-10 agar jarak bagian bawah section tidak terlalu kosong/renggang
-      className="hero-section bg-[#0071BC] md:mb-6 md:mt-2 mt-[-15] text-white pt-0 pb-10 md:pb-10 px-4 flex flex-col items-center justify-center text-center select-none overflow-hidden relative"
+      className="hero-section bg-[#0071BC] md:mb-6 md:mt-10 mt-[-15] text-white pt-0 pb-10 md:pb-10 px-4 flex flex-col items-center justify-center text-center select-none overflow-hidden relative"
     >
       <style>{`
         .gambar-utama-hover {
@@ -133,7 +153,6 @@ export default function HeroSection() {
         {/* 2. Image Poster Area */}
         {/* Disesuaikan: Margin vertikal (mt dan mb) diminimalkan agar jarak antar elemen sangat sempit */}
         <div className="relative mt-2 mb-0 md:mt-3 md:mb-0 w-[100%] md:w-[90%] lg:w-full max-w-7xl mx-auto aspect-[1280/412]">
-          
           {/* GAMBAR BACKGROUND (WAVE) SEBAGAI PENGGANTI SAYAP */}
           <motion.div
             animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
@@ -141,7 +160,7 @@ export default function HeroSection() {
             className="absolute top-[-7] left-1/2 -translate-x-1/2 md:top-[-50] w-[100vw] h-full z-0 overflow-hidden"
           >
             <Image
-              src="/src/images/section 1/wave.png" 
+              src="/src/images/section 1/wave.svg"
               alt="Wave Background"
               fill
               className="object-contain object-center"
@@ -265,7 +284,6 @@ export default function HeroSection() {
 
           {/* GAMBAR UTAMA (4 Botol) */}
           <div className="relative top-20 md:top-65 left-1/2 -translate-x-2/5 -translate-y-1/2 z-10 w-[76.1%] h-[60%] flex items-center justify-between gap-1 md:gap-4 bg-transparent cursor-pointer">
-            
             {/* Botol 1 - Purpose Prestige */}
             <motion.div
               animate={
@@ -275,7 +293,11 @@ export default function HeroSection() {
               className="relative w-full h-full left-[19.7%] top-[22.5%]"
             >
               <motion.div
-                animate={shouldAnimate ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] } : {}}
+                animate={
+                  shouldAnimate
+                    ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] }
+                    : {}
+                }
                 transition={{
                   duration: isMobile ? 3 : 4,
                   repeat: Infinity,
@@ -305,7 +327,11 @@ export default function HeroSection() {
               className="relative w-full h-full left-[10.7%] top-[32%] z-30"
             >
               <motion.div
-                animate={shouldAnimate ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] } : {}}
+                animate={
+                  shouldAnimate
+                    ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] }
+                    : {}
+                }
                 transition={{
                   duration: isMobile ? 3 : 4,
                   repeat: Infinity,
@@ -335,7 +361,11 @@ export default function HeroSection() {
               className="relative w-full h-full top-[23%] right-[1%]"
             >
               <motion.div
-                animate={shouldAnimate ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] } : {}}
+                animate={
+                  shouldAnimate
+                    ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] }
+                    : {}
+                }
                 transition={{
                   duration: isMobile ? 3 : 4,
                   repeat: Infinity,
@@ -365,7 +395,11 @@ export default function HeroSection() {
               className="relative w-full h-full left-[-9.5%] top-[27%] z-30"
             >
               <motion.div
-                animate={shouldAnimate ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] } : {}}
+                animate={
+                  shouldAnimate
+                    ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] }
+                    : {}
+                }
                 transition={{
                   duration: isMobile ? 3 : 4,
                   repeat: Infinity,
