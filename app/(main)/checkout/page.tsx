@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { useState, useEffect, Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -79,7 +79,7 @@ const XENDIT_AUTH =
 function CheckoutContent() {
   const BASE_URL = SITE_STRINGS.base_url.url_backend;
 
-  const router = useRouter(); 
+  const router = useRouter();
   const [modal, setModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -105,7 +105,7 @@ function CheckoutContent() {
   const productId = searchParams.get("productId");
 
   const [items, setItems] = useState<CheckoutItemType[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState("qris"); 
+  const [paymentMethod, setPaymentMethod] = useState("qris");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -196,7 +196,7 @@ function CheckoutContent() {
 
     if (!token) {
       alert("Sesi Anda telah habis. Silakan login kembali untuk melanjutkan.");
-      router.push("/login"); 
+      router.push("/login");
       return;
     }
 
@@ -436,7 +436,6 @@ function CheckoutContent() {
           {/* KIRI: Form Pengiriman & Metode Pembayaran */}
           {/* Jarak antar form dan pembayaran dikurangi dari space-y-6 ke space-y-4 */}
           <div className="lg:col-span-8 space-y-4">
-            
             {/* Form Informasi Pengiriman */}
             {/* Padding form dikurangi p-6 md:p-8 ke p-4 md:p-5 */}
             <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-4 md:p-5 transition-all">
@@ -461,7 +460,9 @@ function CheckoutContent() {
                       placeholder="Nama Penerima"
                       className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
                       style={{
-                        ...(formData.name ? { borderColor: visual.navbarColor } : {}),
+                        ...(formData.name
+                          ? { borderColor: visual.navbarColor }
+                          : {}),
                       }}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
@@ -478,7 +479,9 @@ function CheckoutContent() {
                       placeholder="Nomor HP"
                       className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
                       style={{
-                        ...(formData.phone ? { borderColor: visual.navbarColor } : {}),
+                        ...(formData.phone
+                          ? { borderColor: visual.navbarColor }
+                          : {}),
                       }}
                       onChange={(e) =>
                         setFormData({ ...formData, phone: e.target.value })
@@ -497,7 +500,9 @@ function CheckoutContent() {
                     rows={2}
                     className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm resize-none"
                     style={{
-                      ...(formData.address ? { borderColor: visual.navbarColor } : {}),
+                      ...(formData.address
+                        ? { borderColor: visual.navbarColor }
+                        : {}),
                     }}
                     onChange={(e) =>
                       setFormData({ ...formData, address: e.target.value })
@@ -512,7 +517,9 @@ function CheckoutContent() {
                   <select
                     className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm appearance-none cursor-pointer"
                     style={{
-                      ...(formData.courier ? { borderColor: visual.navbarColor } : {}),
+                      ...(formData.courier
+                        ? { borderColor: visual.navbarColor }
+                        : {}),
                     }}
                     onChange={(e) =>
                       setFormData({ ...formData, courier: e.target.value })
@@ -530,7 +537,12 @@ function CheckoutContent() {
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
                     </svg>
                   </div>
                 </div>
@@ -576,7 +588,9 @@ function CheckoutContent() {
                       }`}
                       style={{
                         borderColor: isSelected ? visual.navbarColor : "",
-                        backgroundColor: isSelected ? `${visual.navbarColor}08` : "", 
+                        backgroundColor: isSelected
+                          ? `${visual.navbarColor}08`
+                          : "",
                       }}
                     >
                       {isSelected && (
@@ -599,7 +613,9 @@ function CheckoutContent() {
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center mb-0.5 transition-colors"
                         style={{
-                          backgroundColor: isSelected ? visual.navbarColor : "#F3F4F6",
+                          backgroundColor: isSelected
+                            ? visual.navbarColor
+                            : "#F3F4F6",
                           color: isSelected ? "#FFF" : "#9CA3AF",
                         }}
                       >

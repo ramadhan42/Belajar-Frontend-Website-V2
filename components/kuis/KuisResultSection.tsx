@@ -69,31 +69,36 @@ export default function KuisResultSection({
   return (
     <div className="w-full flex flex-col items-center">
       {/* ================= CARD HASIL UTAMA (ATAS) ================= */}
-      <div className="mb-0 w-full max-w-7xl flex justify-center px-4 md:px-[20px] md:mt-[40px]">
+      {/* max-width dikurangi sedikit agar proporsional di tengah */}
+      <div className="mb-0 w-full max-w-4xl flex justify-center px-4 md:px-[5px] md:mt-[15px]">
+        {/* Lebar disamakan dengan produk (max-w-4xl) & Tinggi diturunkan menjadi 320px */}
         <div
-          className="relative w-full h-[540px] rounded-[24px] overflow-hidden flex shadow-xl transition-colors duration-500"
+          className="relative w-full h-[320px] rounded-[20px] overflow-hidden flex shadow-lg transition-colors duration-500"
           style={{ backgroundColor: data.color }}
         >
           {/* SISI KIRI: TEKS & TOMBOL */}
-          <div className="relative z-20 w-full md:w-1/2 flex flex-col justify-center pl-10 md:pl-20 pr-4">
-            <h1 className="font-['Nohemi'] text-[48px] font-semibold text-white leading-tight whitespace-pre-line mb-6">
+          <div className="relative z-20 w-full md:w-1/2 flex flex-col justify-center pl-6 md:pl-10 pr-4">
+            {/* Ukuran Title diturunkan menjadi 24px/28px agar sejajar dengan judul produk */}
+            <h1 className="font-['Nohemi'] text-[24px] md:text-[28px] font-semibold text-white leading-tight whitespace-pre-line mb-2">
               {data.title}
             </h1>
-            <p className="font-sans text-[24px] font-normal text-white leading-relaxed mb-10 opacity-90 whitespace-pre-line">
+
+            {/* Ukuran Deskripsi diturunkan menjadi 13px/14px */}
+            <p className="font-sans text-[13px] md:text-[14px] font-normal text-white leading-relaxed mb-5 opacity-90 whitespace-pre-line max-w-sm">
               {data.desc}
             </p>
 
-            <div className="flex flex-wrap gap-4">
-              {/* Tombol Lihat Produk */}
+            <div className="flex flex-wrap gap-2.5">
+              {/* Tombol Lihat Produk - Padding dan ukuran teks dipadatkan */}
               <button
                 onClick={scrollToDetail}
-                className="font-['Nohemi'] flex items-center gap-3 bg-white text-[16px] font-normal py-[16px] px-[28px] rounded-full transition-transform active:scale-95 shadow-md"
+                className="font-['Nohemi'] flex items-center gap-1.5 bg-white text-[11px] md:text-[12px] font-medium py-[8px] px-[16px] rounded-full transition-transform active:scale-95 shadow-sm"
                 style={{ color: data.color }}
               >
                 Lihat Produk
                 <svg
-                  width="12"
-                  height="8"
+                  width="10"
+                  height="6"
                   viewBox="0 0 12 8"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -110,13 +115,13 @@ export default function KuisResultSection({
               {/* Tombol Ulangi Kuis */}
               <button
                 onClick={onRestart}
-                className="font-['Nohemi'] flex items-center gap-3 border border-white text-white text-[16px] font-normal py-[16px] px-[28px] rounded-full transition-all hover:bg-white/10 active:scale-95"
+                className="font-['Nohemi'] flex items-center gap-1.5 border border-white text-white text-[11px] md:text-[12px] font-medium py-[8px] px-[16px] rounded-full transition-all hover:bg-white/10 active:scale-95"
                 style={{ backgroundColor: data.color }}
               >
                 Ulangi Kuis
                 <svg
-                  width="18"
-                  height="18"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -131,30 +136,30 @@ export default function KuisResultSection({
           </div>
 
           {/* SISI KANAN: GAMBAR PRODUK */}
-          <div className="absolute top-0 right-0 h-full w-full md:w-[700px] pointer-events-none overflow-visible">
-            {/* Background Image z-0 */}
+          <div className="absolute top-0 right-0 h-full w-full md:w-[400px] pointer-events-none overflow-visible">
+            {/* Background Image z-0 - Resolusi/Dimensi disesuaikan */}
             <div className="absolute inset-0 z-0 flex items-end justify-end">
               <Image
                 src={data.bgImage}
                 alt="Background Decoration"
-                width={500}
-                height={500}
-                quality={100} // Memaksimalkan kualitas gambar ke 100%
-                priority // Membuka gambar langsung tanpa efek pemuatan malas (lazy load)
-                className="object-contain object-bottom-right opacity-100 brightness-100" // Memastikan opacity & kecerahan penuh
+                width={300}
+                height={300}
+                quality={100}
+                priority
+                className="object-contain object-bottom-right opacity-100 brightness-100"
               />
             </div>
 
-            {/* Product Image z-10 */}
+            {/* Product Image z-10 - Dimensi dan Skala disesuaikan */}
             <div className="absolute inset-0 z-10 flex items-end justify-end">
               <Image
                 src={data.productImage}
                 alt="Product Bottle"
-                width={800}
-                height={700}
-                quality={100} // Memaksimalkan kualitas gambar ke 100%
-                priority // Menginstruksikan Next.js untuk memuat dengan prioritas utama
-                className="object-contain object-bottom-right transform scale-140 origin-bottom-right transition-transform duration-500 opacity-100 brightness-100" // Menjaga kecerahan asli gambar
+                width={420}
+                height={380}
+                quality={100}
+                priority
+                className="object-contain object-bottom-right transform scale-[1.15] origin-bottom-right transition-transform duration-500 opacity-100 brightness-100"
               />
             </div>
           </div>

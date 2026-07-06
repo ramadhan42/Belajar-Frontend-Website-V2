@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 
-// Tipe data untuk konfigurasi status modal
 interface NavModalState {
   isOpen: boolean;
   type: "confirm" | "loading" | "success";
@@ -18,7 +17,6 @@ interface NavModalState {
 export default function FifthSection() {
   const router = useRouter();
 
-  // State untuk Custom Modal
   const [navModal, setNavModal] = useState<NavModalState>({
     isOpen: false,
     type: "loading",
@@ -85,18 +83,14 @@ export default function FifthSection() {
     },
   ];
 
-  // Varian Animasi untuk container grid produk (Efek Stagger)
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-      },
+      transition: { staggerChildren: 0.15 },
     },
   };
 
-  // Varian Animasi untuk masing-masing kartu produk (Slide Up + Fade In)
   const cardVariants: Variants = {
     active: { scale: 1.05 },
     inactive: { scale: 1 },
@@ -108,11 +102,8 @@ export default function FifthSection() {
     },
   };
 
-  // --- LOGIC CUSTOM MODAL NAVIGASI ---
   const handleBelanjaAction = (e: React.MouseEvent) => {
     e.preventDefault();
-
-    // Munculkan modal transisi
     setNavModal({
       isOpen: true,
       type: "loading",
@@ -120,7 +111,6 @@ export default function FifthSection() {
       message: "Mengarahkan ke halaman belanja Evomi...",
     });
 
-    // Simulasi delay agar animasi modal terlihat (800ms) lalu pindah rute
     setTimeout(() => {
       setNavModal((prev) => ({ ...prev, isOpen: false }));
       router.push("/belanja");
@@ -128,9 +118,9 @@ export default function FifthSection() {
   };
 
   return (
-    <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-10 pb-25 md:pb-20 px-2 md:px-4 relative overflow-hidden">
-      {/* --- BACKGROUND DECORATIVE IMAGES --- */}
-      <div className="absolute top-[15%] md:top-[15%] left-0 -translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
+    <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-10 pb-25 md:pb-20 px-3 md:px-4 relative overflow-hidden">
+      {/* --- BACKGROUND DECORATIVE IMAGES (Diperkecil di mobile agar tidak menumpuk teks) --- */}
+      <div className="absolute top-[15%] left-0 -translate-x-1/2 z-0 pointer-events-none w-[45px] md:w-[100px]">
         <Image
           src="/src/images/section 5/purpose.png"
           alt="Purpose Decoration"
@@ -139,8 +129,7 @@ export default function FifthSection() {
           className="object-contain"
         />
       </div>
-
-      <div className="absolute top-[15%] md:top-[15%] right-0 translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
+      <div className="absolute top-[15%] right-0 translate-x-1/2 z-0 pointer-events-none w-[45px] md:w-[100px]">
         <Image
           src="/src/images/section 5/sweet.png"
           alt="Sweet Decoration"
@@ -149,8 +138,7 @@ export default function FifthSection() {
           className="object-contain"
         />
       </div>
-
-      <div className="absolute bottom-[20%] md:bottom-[22%] left-0 -translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
+      <div className="absolute bottom-[20%] left-0 -translate-x-1/2 z-0 pointer-events-none w-[45px] md:w-[100px]">
         <Image
           src="/src/images/section 5/rebel.png"
           alt="Rebel Decoration"
@@ -159,8 +147,7 @@ export default function FifthSection() {
           className="object-contain"
         />
       </div>
-
-      <div className="absolute bottom-[20%] md:bottom-[22%] right-0 translate-x-1/2 z-0 pointer-events-none w-[70px] md:w-[100px]">
+      <div className="absolute bottom-[20%] right-0 translate-x-1/2 z-0 pointer-events-none w-[45px] md:w-[100px]">
         <Image
           src="/src/images/section 5/peaceful.png"
           alt="Peaceful Decoration"
@@ -170,7 +157,7 @@ export default function FifthSection() {
         />
       </div>
 
-      {/* 1. Tulisan Tengah Atas (Judul & Subjudul) */}
+      {/* 1. Judul & Subjudul */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -178,37 +165,38 @@ export default function FifthSection() {
         transition={{ duration: 0.7, ease: "easeOut" }}
         className="relative z-10"
       >
-        <h2 className="font-['Nohemi'] text-[32px] md:text-[38px] font-bold mb-2 md:mb-3 leading-tight">
+        <h2 className="font-['Nohemi'] text-[28px] md:text-[38px] font-bold mb-2 md:mb-3 leading-tight">
           <span className="text-[#1172BA]">Khas </span>
           <span className="text-[#FF8A84]">Evomi</span>
         </h2>
-
-        <p className="font-['Nohemi'] text-[14px] md:text-[16px] text-[#5D5D5D] max-w-2xl mb-10 md:mb-10 px-4 font-normal">
+        <p className="font-['Nohemi'] text-[13px] md:text-[16px] text-[#5D5D5D] max-w-2xl mb-8 md:mb-10 px-4 font-normal">
           Empat karakter aroma yang mewakili sisi berbeda dari dirimu.
         </p>
       </motion.div>
 
-      {/* 2. Grid Card Produk dengan Animasi Berurutan (Staggered) */}
+      {/* 2. Grid Card Produk (Sizing & Gap dioptimalkan untuk S20) */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.15 }}
-        className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-32 mb-12 md:mb-10 px-5 py-5 md:px-4"
+        // {/* PERUBAHAN: gap-3 & px-2 membuat 2 kolom card masuk dengan sempurna di lebar 360px */}
+        className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 lg:gap-32 mb-12 md:mb-10 px-2 py-2 md:px-4"
       >
         {products.map((product, index) => (
           <motion.div
             key={product.id}
             variants={cardVariants}
-            // Menambahkan w-[280px] md:w-[320px] untuk memaksa lebar kartu (sesuaikan angkanya sesuai kebutuhan)
-            className={`font-['Nohemi'] relative w-[280px] md:w-[230px] md:h-fit rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
+            // {/* PERUBAHAN: Mengubah w-[280px] menjadi w-full agar lebarnya otomatis mengikuti grid ruang S20 */}
+            className={`font-['Nohemi'] relative w-full md:w-[230px] md:h-fit rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
           >
+            {/* Image Section */}
             <div
               className={`relative w-full aspect-[4/3] flex flex-col items-center justify-start pt-3 md:pt-3 ${product.imgBg}`}
             >
               <div className="absolute top-2 left-2 md:top-3 md:left-3">
                 <span
-                  className={`bg-white px-2 py-1 md:px-2 md:py-2 rounded-full text-[8px] md:text-[12px] font-bold ${product.textColor}`}
+                  className={`bg-white px-2 py-0.5 md:py-2 rounded-full text-[8px] md:text-[12px] font-bold ${product.textColor}`}
                 >
                   {product.badge}
                 </span>
@@ -223,44 +211,43 @@ export default function FifthSection() {
                   delay: index * 0.15,
                   ease: "easeOut",
                 }}
-                className="w-full flex justify-center items-center flex-1 md:mt-[25px] translate-y-[25px]"
+                // {/* PERUBAHAN: Penyesuaian translate-y agar gambar botol tidak terpotong saat card mengecil */}
+                className="w-full flex justify-center items-center flex-1 mt-[15px] md:mt-[25px] translate-y-[18px] md:translate-y-[25px]"
               >
                 <Image
                   src={product.path}
                   alt={product.title}
                   width={500}
                   height={500}
-                  className="object-contain drop-shadow-xl w-[85%] md:w-[76%]"
+                  className="object-contain drop-shadow-xl w-[76%] md:w-[76%]"
                 />
               </motion.div>
             </div>
 
+            {/* Description Section */}
+            {/* PERUBAHAN: Padding p-2.5 agar hemat ruang di layar kecil */}
             <div
-              className={`p-3 md:p-4 flex flex-col flex-grow text-left ${product.cardBg} z-20`}
+              className={`p-2.5 md:p-4 flex flex-col flex-grow text-left ${product.cardBg} z-20`}
             >
               <h3
-                className={`text-[13px] md:text-[16px] font-bold mb-1 md:mb-2 ${product.textColor} tracking-tighter leading-tight`}
+                className={`text-[12px] md:text-[16px] font-bold mb-0.5 md:mb-2 ${product.textColor} tracking-tighter leading-tight`}
               >
                 {product.title}
               </h3>
-
-              {/* 1. Hapus 'flex-grow' dan kurangi margin bottom (mb-3 md:mb-6 menjadi mb-2 md:mb-3) */}
               <p
-                className={`text-[9px] md:text-[10px] font-medium mb-2 md:mb-3 leading-tight md:leading-relaxed ${product.descColor}`}
+                className={`text-[9px] md:text-[10px] font-medium mb-2 md:mb-3 h-[24px] md:h-auto line-clamp-2 leading-tight md:leading-relaxed ${product.descColor}`}
               >
                 {product.desc}
               </p>
 
-              {/* 2. Ganti 'mt-auto' menjadi 'mt-1' atau hapus sama sekali agar mepet ke atas */}
-              <div className="flex justify-between items-center mt-0">
+              <div className="flex justify-between items-center mt-auto">
                 <span
                   className={`text-[10px] md:text-[12px] font-bold ${product.textColor}`}
                 >
                   {product.price}
                 </span>
-
                 <button
-                  className={`w-6 h-6 md:w-7 md:h-7 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${product.btnBg}`}
+                  className={`w-5 h-5 md:w-7 md:h-7 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${product.btnBg}`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -268,7 +255,7 @@ export default function FifthSection() {
                     viewBox="0 0 24 24"
                     strokeWidth={2.5}
                     stroke="currentColor"
-                    className="w-3 h-3 md:w-3 md:h-3"
+                    className="w-2.5 h-2.5 md:w-3 md:h-3"
                   >
                     <path
                       strokeLinecap="round"
@@ -283,7 +270,7 @@ export default function FifthSection() {
         ))}
       </motion.div>
 
-      {/* 3. Tombol Lihat Koleksi (Diubah menjadi trigger Modal) */}
+      {/* 3. Tombol Lihat Koleksi */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
@@ -293,9 +280,9 @@ export default function FifthSection() {
       >
         <button
           onClick={handleBelanjaAction}
-          className="font-['Nohemi'] group flex items-center justify-center gap-2 md:gap-3 bg-[#1172BA] text-white text-[14px] md:text-[14px] font-bold px-6 py-3 md:px-10 md:py-3 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 shadow-md hover:shadow-inner"
+          className="font-['Nohemi'] group flex items-center justify-center gap-2 md:gap-3 bg-[#1172BA] text-white text-[13px] md:text-[14px] font-bold px-6 py-2.5 md:px-10 md:py-3 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 shadow-md"
         >
-          <div className="relative w-[18px] h-[18px] md:w-[19px] md:h-[19px]">
+          <div className="relative w-[16px] h-[16px] md:w-[19px] md:h-[19px]">
             <Image
               src="/src/images/section 5/star-medium.png"
               alt="Star Icon"
@@ -307,7 +294,7 @@ export default function FifthSection() {
         </button>
       </motion.div>
 
-      {/* 4. Animated Wave Background (Bottom) */}
+      {/* 4. Animated Wave Background */}
       <div className="absolute bottom-0 left-0 w-full z-0 leading-[0]">
         <svg
           className="block w-full h-[60px] md:h-[130px]"
@@ -371,14 +358,15 @@ export default function FifthSection() {
         </svg>
       </div>
 
-      {/* ================= CUSTOM MODAL COMPONENT (DI-ADAPTASI DARI NAVBAR) ================= */}
+      {/* ================= CUSTOM MODAL (Dibuat Pas Tengah & Ukuran S20 Sempurna) ================= */}
       <AnimatePresence>
         {navModal.isOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            // {/* PERUBAHAN: Menggunakan fixed inset-0 dan z-[9999] agar selalu presisi di tengah viewport layar */}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.8, y: 20 }}
@@ -386,14 +374,13 @@ export default function FifthSection() {
               exit={{ opacity: 0, scale: 0.8, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative bg-white rounded-[24px] p-8 max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
+              // {/* PERUBAHAN: max-w-[280px], p-5, dan rounded-[20px] disesuaikan untuk kenyamanan pandangan di S20 */}
+              className="relative bg-white rounded-[20px] md:rounded-[24px] p-5 md:p-8 max-w-[280px] md:max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
             >
-              <div
-                className={`mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5 transition-colors duration-300 bg-blue-50 text-blue-500`}
-              >
+              <div className="mx-auto flex items-center justify-center h-14 w-14 md:h-20 md:w-20 rounded-full mb-3 md:mb-5 transition-colors duration-300 bg-blue-50 text-blue-500">
                 {navModal.type === "loading" && (
                   <svg
-                    className="h-10 w-10 animate-spin text-[#1172BA]"
+                    className="h-7 w-7 md:h-10 md:w-10 animate-spin text-[#1172BA]"
                     fill="none"
                     viewBox="0 0 24 24"
                   >
@@ -414,11 +401,11 @@ export default function FifthSection() {
                 )}
               </div>
 
-              <div className="space-y-3">
-                <h3 className="text-[20px] font-bold text-gray-800 tracking-wide">
+              <div className="space-y-1.5 md:space-y-3">
+                <h3 className="text-[16px] md:text-[20px] font-bold text-gray-800 tracking-wide">
                   {navModal.title}
                 </h3>
-                <p className="text-[14px] text-gray-500 leading-relaxed">
+                <p className="text-[11px] md:text-[14px] text-gray-500 leading-relaxed">
                   {navModal.message}
                 </p>
               </div>

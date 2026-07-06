@@ -64,18 +64,26 @@ export default function SeventhSection() {
   };
 
   return (
-    <section className="relative bg-white flex flex-col md:flex-row items-center justify-between px-6 sm:px-12 md:pl-24 md:pr-0 py-12 md:py-24 overflow-hidden select-none">
+    <section className="relative bg-white flex flex-col md:flex-row items-center justify-between px-6 sm:px-12 md:pl-24 md:pr-0 py-3 pb-8 md:py-24 overflow-hidden select-none">
       {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
-      <div className="absolute top-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none">
+      {/* PERUBAHAN: Tinggi container diubah menjadi h-[15px] untuk mobile, dan h-[23px] untuk desktop */}
+      <div className="absolute top-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none">
         <style>{`
-          @keyframes slideRightSeamless { 0% { transform: translateX(-50%); } 100% { transform: translateX(0%); } }
-          .animate-slide-right-80s { animation: slideRightSeamless 80s linear infinite; }
+          @keyframes slideRightSeamless {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0%); }
+          }
+          .animate-slide-right-40s {
+            animation: slideRightSeamless 80s linear infinite;
+          }
         `}</style>
-        <div className="flex w-max gap-[15px] animate-slide-right-80s">
-          {Array.from({ length: 160 }).map((_, index) => (
+        {/* PERUBAHAN: Gap diubah menjadi 10px untuk mobile, dan 15px untuk desktop */}
+        <div className="flex w-max gap-[10px] md:gap-[15px] animate-slide-right-40s">
+          {Array.from({ length: 80 }).map((_, index) => (
             <div
-              key={index}
-              className="w-[46px] h-[46px] bg-[#1172BA] rounded-full flex-shrink-0 -mt-[23px]"
+              key={`top-${index}`}
+              // {/* PERUBAHAN: Ukuran lingkaran & margin negatif diperkecil di mobile, dikembalikan ke normal dengan md: */}
+              className="w-[30px] h-[30px] md:w-[46px] md:h-[46px] bg-[#1172BA] rounded-full flex-shrink-0 -mt-[15px] md:-mt-[23px]"
             />
           ))}
         </div>
@@ -93,9 +101,9 @@ export default function SeventhSection() {
         <motion.div
           variants={itemVariants}
           // PERBAIKAN: Naikkan z-10 menjadi z-50 agar tombol tidak tertimpa elemen/gambar transparan lain
-          className="relative z-50 top-10 flex flex-col justify-center items-center md:items-start w-full md:w-auto max-w-xl gap-8 mb-15 text-center md:text-left"
+          className="relative z-50 top-10 flex flex-col justify-center items-center md:items-start w-full md:w-auto max-w-xl gap-8 mb-10 text-center md:text-left"
         >
-          <h2 className="font-nohemi font-semibold text-[36px] md:text-[55px] leading-[1.1] whitespace-pre-line">
+          <h2 className="font-nohemi font-semibold text-[32px] md:text-[55px] leading-[1.1] whitespace-pre-line">
             <span className="text-[#1172BA]">Temukan</span>
             {"\n"}
             <span className="text-[#DD74A5]">aromamu</span>
@@ -109,7 +117,7 @@ export default function SeventhSection() {
           <button
             onClick={handleQuizRouting}
             // PERBAIKAN: Tambahkan relative, z-50, dan cursor-pointer untuk memastikan interaksi aman
-            className="relative z-50 cursor-pointer font-['Nohemi'] mt-5 text-[22px] text-white bg-[#1172BA] px-12 py-2 rounded-full shadow-md hover:scale-95 transition-all"
+            className="relative z-50 cursor-pointer font-['Nohemi'] mt-5 text-[16px] md:text-[24px] text-white bg-[#1172BA] px-12 py-2 rounded-full shadow-md hover:scale-95 transition-all"
           >
             Mulai Kuis
           </button>
@@ -133,19 +141,19 @@ export default function SeventhSection() {
         className="absolute z-30 flex flex-row flex-wrap justify-center gap-1.5 md:gap-4 bottom-[30%] md:bottom-auto md:top-[160px] right-[18%] sm:right-[25%] md:right-[280px]"
       >
         {/* Badge 1: Rebel */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#E33D35] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[5px] md:translate-x-[80px] md:translate-y-25">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#E33D35] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[-17px] md:translate-x-[70px] md:translate-y-29">
           Rebel
         </div>
         {/* Badge 2: Sweet */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#DD74A5] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[-30px] md:translate-x-[160px] md:translate-y-1">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#DD74A5] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[-50px] md:translate-x-[160px] md:translate-y-1">
           Sweet
         </div>
         {/* Badge 3: Prestige */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5CB2ED] transition-transform hover:scale-105 cursor-pointer translate-x-[-15px] translate-y-[44px] md:translate-x-[150px] md:translate-y-54">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5CB2ED] transition-transform hover:scale-105 cursor-pointer translate-x-[-15px] translate-y-[20px] md:translate-x-[150px] md:translate-y-58">
           Prestige
         </div>
         {/* Badge 4: Calm */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5EA14A] transition-transform hover:scale-105 cursor-pointer translate-x-[-30px] translate-y-[10px] md:translate-x-[210px] md:translate-y-25">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5EA14A] transition-transform hover:scale-105 cursor-pointer translate-x-[-30px] translate-y-[-17px] md:translate-x-[210px] md:translate-y-30">
           Calm
         </div>
       </motion.div>

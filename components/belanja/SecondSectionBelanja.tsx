@@ -107,23 +107,30 @@ export default function SecondSectionBelanja() {
   };
 
   return (
-    <section className="bg-white flex flex-col items-center text-center w-full pt-16 md:pt-10 pb-20 md:pb-10 px-2 md:px-4 relative overflow-hidden">
+    <section className="bg-white flex flex-col items-center text-center w-full pt-10 md:pt-10 pb-10 md:pb-10 px-2 md:px-4 relative overflow-hidden">
       {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
-      <div className="absolute top-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none z-10">
+      <div className="absolute top-0 left-0 w-full overflow-hidden h-[12px] md:h-[23px] pointer-events-none z-10">
         <style>{`
-          @keyframes slideRightSeamless {
-            0% { transform: translateX(-50%); }
-            100% { transform: translateX(0%); }
-          }
-          .animate-slide-right-40s {
-            animation: slideRightSeamless 80s linear infinite;
-          }
-        `}</style>
-        <div className="flex w-max gap-[10px] animate-slide-right-40s">
+    @keyframes slideRightSeamless {
+      0% { transform: translateX(-50%); }
+      100% { transform: translateX(0%); }
+    }
+    .animate-slide-right-40s {
+      animation: slideRightSeamless 80s linear infinite;
+    }
+  `}</style>
+
+        {/* Mengubah gap-[10px] menjadi gap-[6px] di mobile, dan md:gap-[10px] di desktop */}
+        <div className="flex w-max gap-[6px] md:gap-[10px] animate-slide-right-40s">
           {Array.from({ length: 80 }).map((_, i) => (
             <div
               key={i}
-              className="w-[46px] h-[46px] bg-[#1172BA] rounded-full flex-shrink-0 -mt-[23px]"
+              // {/*
+              //   Perubahan Ukuran:
+              //   - Mobile: lebar/tinggi 24px dengan margin-top minus 12px (setengah dari 24px)
+              //   - Desktop (md): kembali ke ukuran semula (46px dengan -mt 23px)
+              // */}
+              className="w-[24px] h-[24px] md:w-[46px] md:h-[46px] bg-[#1172BA] rounded-full flex-shrink-0 -mt-[12px] md:-mt-[23px]"
             />
           ))}
         </div>
@@ -174,7 +181,7 @@ export default function SecondSectionBelanja() {
                       alt={product.title}
                       width={340}
                       height={340}
-                      className="absolute bottom-[-20%] md:bottom-[-21%] left-[-10%] md:left-[4%] w-[120%] md:w-[80%] max-w-none object-contain drop-shadow-xl rotate-[35deg] transition-transform duration-300"
+                      className="absolute bottom-[-22%] md:bottom-[-21%] left-[10%] md:left-[4%] w-[70%] md:w-[80%] max-w-none object-contain drop-shadow-xl rotate-[35deg] transition-transform duration-300"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white/40 text-sm">

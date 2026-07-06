@@ -51,8 +51,10 @@ export default function SecondSection() {
 
   return (
     <section className="bg-[#ffffff] flex flex-col items-center text-center px-4 w-full overflow-hidden relative pb-[30px]">
+      
       {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
-      <div className="absolute top-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none">
+      {/* PERUBAHAN: Tinggi container diubah menjadi h-[15px] untuk mobile, dan h-[23px] untuk desktop */}
+      <div className="absolute top-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none">
         <style>{`
           @keyframes slideRightSeamless {
             0% { transform: translateX(-50%); }
@@ -62,11 +64,13 @@ export default function SecondSection() {
             animation: slideRightSeamless 80s linear infinite;
           }
         `}</style>
-        <div className="flex w-max gap-[15px] animate-slide-right-40s">
+        {/* PERUBAHAN: Gap diubah menjadi 10px untuk mobile, dan 15px untuk desktop */}
+        <div className="flex w-max gap-[10px] md:gap-[15px] animate-slide-right-40s">
           {Array.from({ length: 80 }).map((_, index) => (
             <div
               key={`top-${index}`}
-              className="w-[46px] h-[46px] bg-[#1172BA] rounded-full flex-shrink-0 -mt-[23px]"
+              // {/* PERUBAHAN: Ukuran lingkaran & margin negatif diperkecil di mobile, dikembalikan ke normal dengan md: */}
+              className="w-[30px] h-[30px] md:w-[46px] md:h-[46px] bg-[#1172BA] rounded-full flex-shrink-0 -mt-[15px] md:-mt-[23px]"
             />
           ))}
         </div>
@@ -78,7 +82,7 @@ export default function SecondSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.8 }}
-        className="font-nohemi font-semibold mt-14 md:mt-25 mb-8 md:mb-10 text-[32px] sm:text-[60px] md:text-[42px] leading-tight"
+        className="font-nohemi font-semibold mt-14 md:mt-25 mb-8 md:mb-10 text-[24px] sm:text-[60px] md:text-[42px] leading-tight"
       >
         <span className="text-[#0071BC]">Kenalan sama </span>
         <span className="text-[#FF8A84]">karakter </span>
@@ -99,7 +103,7 @@ export default function SecondSection() {
             variants={itemVariants}
             className="flex flex-col items-center group cursor-pointer hover:scale-105 transition-transform duration-300 ease-in-out"
           >
-            <div className="w-[120px] h-[120px] sm:w-[180px] sm:h-[180px] md:w-[140px] md:h-[140px] relative flex justify-center items-center">
+            <div className="w-[80px] h-[80px] sm:w-[180px] sm:h-[180px] md:w-[140px] md:h-[140px] relative flex justify-center items-center">
               <Image
                 src={char.path}
                 alt={`Karakter ${char.name}`}
@@ -154,12 +158,14 @@ export default function SecondSection() {
       </motion.div>
 
       {/* ================= STICKY LINGKARAN DIVIDER BAWAH ================= */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden h-[23px] pointer-events-none">
-        <div className="flex w-max gap-[15px] animate-slide-right-40s">
+      {/* PERUBAHAN: Tinggi container diubah menjadi h-[15px] untuk mobile, dan h-[23px] untuk desktop */}
+      <div className="absolute bottom-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none">
+        {/* PERUBAHAN: Gap diubah menjadi 10px untuk mobile, dan 15px untuk desktop */}
+        <div className="flex w-max gap-[10px] md:gap-[15px] animate-slide-right-40s">
           {Array.from({ length: 80 }).map((_, index) => (
             <div
               key={`bottom-${index}`}
-              className="w-[46px] h-[46px] bg-[#1172BA] rounded-full flex-shrink-0"
+              className="w-[30px] h-[30px] md:w-[46px] md:h-[46px] bg-[#1172BA] rounded-full flex-shrink-0"
             />
           ))}
         </div>

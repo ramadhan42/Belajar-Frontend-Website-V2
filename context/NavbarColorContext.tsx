@@ -1,7 +1,13 @@
 // @/context/NavbarColorContext.tsx
 "use client";
 
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
 
 interface NavbarColorContextType {
   navbarColor: string;

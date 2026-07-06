@@ -208,7 +208,6 @@ const FALLBACK_QUESTIONS = [
   },
 ];
 
-// Mapping urutan opsi ke personality key (untuk pertanyaan dari API yang tidak punya field product)
 const OPTION_INDEX_TO_KEY = [
   "peaceful_calm",
   "purpose_prestige",
@@ -235,7 +234,6 @@ export default function KuisPage() {
     rebel_brave: 0,
   });
 
-  // Ambil pertanyaan dari API — fallback ke lokal jika gagal
   useEffect(() => {
     getQuizQuestions()
       .then((data) => {
@@ -246,7 +244,6 @@ export default function KuisPage() {
       .finally(() => setIsLoadingQuestions(false));
   }, []);
 
-  // Gunakan pertanyaan API jika tersedia, fallback ke lokal
   const questions = apiQuestions ?? FALLBACK_QUESTIONS;
   const usingApiQuestions = apiQuestions !== null;
 
@@ -255,7 +252,6 @@ export default function KuisPage() {
     questionId: number,
     optionId: number,
   ) => {
-    // Tentukan product key berdasarkan index opsi (untuk scoring lokal)
     const productKey: ProductKey = OPTION_INDEX_TO_KEY[optionIndex % 4];
     const newScores = { ...scores, [productKey]: scores[productKey] + 1 };
     const newAnswers = [
@@ -271,7 +267,6 @@ export default function KuisPage() {
     if (!isLastQuestion) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Jika menggunakan API dan user sudah login, submit jawaban
       if (usingApiQuestions) {
         const token =
           typeof window !== "undefined"
@@ -281,7 +276,7 @@ export default function KuisPage() {
           try {
             await submitQuiz(newAnswers);
           } catch {
-            // Submit gagal — tetap tampilkan hasil lokal
+            // Submit gagal
           }
         }
       }
@@ -336,17 +331,17 @@ export default function KuisPage() {
     );
   }
 
-  // Loading skeleton saat fetch pertanyaan API
   if (isLoadingQuestions) {
     return (
-      <div className="w-full bg-[#F6F6F6] flex flex-col items-center justify-center min-h-screen px-4">
-        <div className="w-full max-w-[1000px] min-h-[500px] rounded-[25px] bg-white shadow-2xl overflow-hidden animate-pulse">
-          <div className="h-[200px] bg-[#1172BA]/30" />
-          <div className="p-10 space-y-4">
+      // Diatur agar posisinya otomatis di tengah
+      <div className="w-full bg-[#F6F6F6] flex flex-col items-center justify-center min-h-screen py-12 md:py-16 px-4">
+        <div className="w-full max-w-[900px] min-h-[420px] rounded-[24px] bg-white shadow-2xl overflow-hidden animate-pulse">
+          <div className="h-[160px] bg-[#1172BA]/30" />
+          <div className="p-8 space-y-4">
             <div className="h-6 bg-gray-200 rounded w-3/4" />
             <div className="grid grid-cols-2 gap-4 mt-6">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-16 bg-gray-100 rounded-2xl" />
+                <div key={i} className="h-14 bg-gray-100 rounded-[16px]" />
               ))}
             </div>
           </div>
@@ -356,32 +351,34 @@ export default function KuisPage() {
   }
 
   return (
-    <div className="w-full bg-[#F6F6F6] flex flex-col items-center justify-start min-h-screen md:mt-7 pt-10 md:pt-16 px-4 md:px-6 font-nohemi transition-colors duration-500">
-      <div className="w-full max-w-[1000px] min-h-[500px] rounded-[25px] flex flex-col shadow-2xl overflow-hidden bg-white">
+    // justify-start diganti menjadi justify-center
+    // Menghapus md:mt-4 pt-8 md:pt-12 menjadi py-12 md:py-16 agar jarak atas bawah sama
+    <div className="w-full bg-[#F6F6F6] flex flex-col items-center justify-center py-4 md:py-12 md:mb-7 px-4 md:px-6 font-nohemi transition-colors duration-500">
+      <div className="w-full max-w-[900px] min-h-[420px] rounded-[24px] flex flex-col shadow-2xl overflow-hidden bg-white">
         {/* ================= BAGIAN ATAS CARD ================= */}
         <div
-          className="px-10 py-8 shrink-0 flex flex-col justify-center h-[200px] transition-colors duration-500"
+          className="px-8 md:px-10 py-6 shrink-0 flex flex-col justify-center h-[160px] transition-colors duration-500"
           style={{ backgroundColor: currentColor }}
         >
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1.5">
             <img
               src="/src/images/kuis/scent-finder-Icon.png"
               alt="Quiz Icon"
-              className="w-5 h-5 object-contain"
+              className="w-4 h-4 md:w-5 md:h-5 object-contain"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
               }}
             />
-            <p className="text-[14px] text-white font-normal uppercase tracking-wide">
+            <p className="text-[12px] md:text-[13px] text-white font-normal uppercase tracking-wide">
               Scent Finder Quiz
             </p>
           </div>
 
-          <h1 className="text-[36px] font-semibold text-white tracking-tight">
+          <h1 className="text-[28px] md:text-[32px] font-semibold text-white tracking-tight">
             Temukan aromamu
           </h1>
 
-          <div className="mt-6 w-full h-2 bg-white/30 rounded-full overflow-hidden">
+          <div className="mt-4 w-full h-1.5 bg-white/30 rounded-full overflow-hidden">
             <div
               className="h-full bg-[#A5E194] transition-all duration-500 ease-out rounded-full"
               style={{ width: `${progressPercentage}%` }}
@@ -390,30 +387,30 @@ export default function KuisPage() {
         </div>
 
         {/* ================= BAGIAN BAWAH CARD ================= */}
-        <div className="flex-grow px-6 md:px-10 py-8 flex flex-col justify-center">
+        <div className="flex-grow px-6 md:px-10 py-6 md:py-8 flex flex-col justify-center">
           <div className="flex flex-col h-full justify-between">
             {/* Pertanyaan */}
             <h2
-              className="text-[20px] md:text-[24px] font-semibold leading-snug transition-colors duration-500"
+              className="text-[18px] md:text-[22px] font-semibold leading-snug transition-colors duration-500"
               style={{ color: currentColor }}
             >
               {questions[currentStep].text}
             </h2>
 
             {/* Pilihan Jawaban */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
               {questions[currentStep].options.map((option, idx) => (
                 <button
                   key={option.id}
                   onClick={() =>
                     handleAnswer(idx, option.question_id, option.id)
                   }
-                  className="bg-[#EFEFEF] hover:bg-gray-200 text-[14px] md:text-[16px] font-medium p-4 md:p-5 rounded-2xl flex justify-between items-center transition-all active:scale-[0.98] text-left"
+                  className="bg-[#EFEFEF] hover:bg-gray-200 text-[13px] md:text-[15px] font-medium p-3.5 md:p-4 rounded-[16px] flex justify-between items-center transition-all active:scale-[0.98] text-left"
                   style={{ color: currentColor }}
                 >
                   <span>{option.text}</span>
                   <svg
-                    className="w-5 h-5 ml-4 shrink-0"
+                    className="w-4 h-4 ml-4 shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

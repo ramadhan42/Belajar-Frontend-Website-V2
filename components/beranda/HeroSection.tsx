@@ -8,18 +8,12 @@ import {
   useMotionValueEvent,
 } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { useNavbarColor } from "@/context/NavbarColorContext";
 
 export default function HeroSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
   const [isScrollVisible, setIsScrollVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const { setNavbarColor } = useNavbarColor();
-  const setNavbarColorRef = useRef(setNavbarColor);
-  useEffect(() => {
-    setNavbarColorRef.current = setNavbarColor;
-  }, [setNavbarColor]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -42,20 +36,6 @@ export default function HeroSection() {
 
   const opacityScroll = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
   const yScroll = useTransform(scrollYProgress, [0, 0.6], [0, -50]);
-
-  const hasScrolled = useRef(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!hasScrolled.current && window.scrollY > 10) {
-        hasScrolled.current = true;
-        setNavbarColorRef.current("#2B91DE");
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []); // dependency kosong — hanya register sekali, tidak pernah re-run
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     if (latest > 0.6) {
@@ -83,7 +63,7 @@ export default function HeroSection() {
     <section
       ref={sectionRef}
       // Disesuaikan: mengubah pb-23 menjadi pb-10 agar jarak bagian bawah section tidak terlalu kosong/renggang
-      className="hero-section bg-[#0071BC] md:mb-6 md:mt-10 mt-[-15] text-white pt-0 pb-10 md:pb-10 px-4 flex flex-col items-center justify-center text-center select-none overflow-hidden relative"
+      className="hero-section bg-[#0071BC] md:mb-6 md:mt-10 text-white pt-4 pb-10 md:pt-0 md:pb-10 px-4 flex flex-col items-center justify-center text-center select-none overflow-hidden relative"
     >
       <style>{`
         .gambar-utama-hover {
@@ -141,7 +121,7 @@ export default function HeroSection() {
         <motion.h1
           animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           // Disesuaikan: Menghapus margin (m-0) agar judul mepet ke gambar di bawahnya
-          className="font-nohemi font-semibold text-[17px] sm:text-[60px] md:text-[42px] leading-[1] m-0 p-0"
+          className="font-nohemi font-semibold text-[28px] sm:text-[60px] md:text-[42px] leading-[1.1] m-0 p-0"
         >
           <span className="text-white">Temukan </span>
           <span className="text-[#5CB2ED]">karakter</span>
