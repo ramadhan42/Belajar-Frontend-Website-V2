@@ -17,6 +17,7 @@ interface NavModalState {
 export default function FifthSection() {
   const router = useRouter();
 
+  // Navbar modal components
   const [navModal, setNavModal] = useState<NavModalState>({
     isOpen: false,
     type: "loading",
@@ -24,6 +25,7 @@ export default function FifthSection() {
     message: "",
   });
 
+  // Products data local
   const products = [
     {
       id: 1,
@@ -297,7 +299,8 @@ export default function FifthSection() {
       {/* 4. Animated Wave Background */}
       <div className="absolute bottom-0 left-0 w-full z-0 leading-[0]">
         <svg
-          className="block w-full h-[60px] md:h-[130px]"
+          // {/* Ubah nilai di bawah ini jika ingin menyesuaikan tinggi lagi */}
+          className="block w-full h-[30px] md:h-[70px]"
           viewBox="0 24 150 28"
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"

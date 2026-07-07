@@ -20,7 +20,7 @@ export default function Beranda() {
         window.history.replaceState(
           null,
           "",
-          window.location.pathname + window.location.search + "#third-section"
+          window.location.pathname + window.location.search + "#third-section",
         );
       }
     };
@@ -37,9 +37,9 @@ export default function Beranda() {
           if (!entry.isIntersecting) {
             if (window.location.hash === "#third-section") {
               window.history.replaceState(
-                null, 
-                "", 
-                window.location.pathname + window.location.search
+                null,
+                "",
+                window.location.pathname + window.location.search,
               );
             }
           }
@@ -47,7 +47,7 @@ export default function Beranda() {
       },
       {
         threshold: 0,
-      }
+      },
     );
 
     if (thirdSectionRef.current) {

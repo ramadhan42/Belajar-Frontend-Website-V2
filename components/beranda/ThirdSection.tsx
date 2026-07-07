@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion, Variants } from "framer-motion";
 
 export default function ThirdSection() {
+  // Brand values
   const brandValues = [
     {
       title: "Self\nAwareness",
@@ -53,6 +54,7 @@ export default function ThirdSection() {
     },
   };
 
+  // Card Variants
   const cardVariants: Variants = {
     hidden: { opacity: 0, y: 50 },
     visible: {

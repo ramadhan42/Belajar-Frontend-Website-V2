@@ -34,9 +34,6 @@ export default function HeroSection() {
     offset: ["start start", "end start"],
   });
 
-  const opacityScroll = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
-  const yScroll = useTransform(scrollYProgress, [0, 0.6], [0, -50]);
-
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     if (latest > 0.6) {
       setIsScrollVisible(false);
@@ -45,19 +42,9 @@ export default function HeroSection() {
     }
   });
 
+  const opacityScroll = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+  const yScroll = useTransform(scrollYProgress, [0, 0.6], [0, -50]);
   const shouldAnimate = isReady && isScrollVisible;
-
-  const floatAnimation = {
-    animate: {
-      y: [0, 20, 0],
-    },
-    transition: {
-      duration: 3,
-      ease: "easeInOut",
-      repeat: Infinity,
-      repeatType: "loop",
-    },
-  };
 
   return (
     <section
@@ -158,7 +145,7 @@ export default function HeroSection() {
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute left-[30%] md:left-[28%] top-[2%] md:top-[4%] w-[9%] h-[9%] md:w-[8%] md:h-[8%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
+            className="absolute left-[30%] md:left-[31%] top-[2%] md:top-[4%] w-[9%] h-[9%] md:w-[8%] md:h-[8%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/purpose-prestige.png"
@@ -174,7 +161,7 @@ export default function HeroSection() {
               shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
             }
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute left-[42%] top-[10.8%] md:top-[12.8%] w-[7%] h-[7%] md:w-[6%] md:h-[6%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
+            className="absolute left-[43%] top-[10.8%] md:top-[12.8%] w-[7%] h-[7%] md:w-[6%] md:h-[6%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
           >
             <Image
               src="/src/images/section 1/rabel-brave.png"
@@ -217,7 +204,6 @@ export default function HeroSection() {
           </motion.div>
 
           {/* Badges */}
-
           {/* Eau de parfum */}
           <motion.div
             animate={

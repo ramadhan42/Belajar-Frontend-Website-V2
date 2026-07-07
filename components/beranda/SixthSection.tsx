@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, Variants } from "framer-motion";
 
 export default function SixthSection() {
+  
   // Variabel animasi standar untuk efek muncul dari bawah
   const fadeUpVariants: Variants = {
     hidden: { opacity: 0, y: 40 },
@@ -86,7 +87,7 @@ export default function SixthSection() {
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
             // {/* PERUBAHAN: Mengatur reset translate khusus mobile agar presisi di samping produk */}
-            className="flex items-center gap-1.5 bg-[#1172BA]/40 md:bg-transparent p-1.5 rounded-full md:p-0 whitespace-pre-line text-left translate-x-4 translate-y-2 md:translate-x-[-70px] md:translate-y-[-60px]"
+            className="flex items-center gap-1.5 bg-[#1172BA]/40 md:bg-transparent p-1.5 rounded-full md:p-0 whitespace-pre-line text-left translate-x-4 translate-y-2 md:translate-x-[-70px] md:translate-y-[-72px]"
           >
             <span className="text-[10px] md:text-[16px] font-medium leading-tight">
               Purpose{"\n"}Prestige

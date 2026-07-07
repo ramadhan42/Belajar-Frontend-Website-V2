@@ -587,3 +587,30 @@ export const getHistoryDetail = async (
 
   return response.json();
 };
+
+// Tambahkan fungsi ini di dalam lib/api.ts
+export const resetPasswordApi = async (data: {
+  email: string;
+  password: string;
+}): Promise<{ success: boolean; message: string }> => {
+  // Menggunakan FormData untuk menyesuaikan dengan --form pada curl
+  const formData = new FormData();
+  formData.append("email", data.email);
+  formData.append("password", data.password);
+
+  const res = await fetch(`${BASE_URL}/api/forgot-password`, {
+    method: "POST",
+    // Jangan set Content-Type header agar browser otomatis menambahkan 
+    // boundary multipart/form-data yang benar
+    body: formData,
+  });
+
+  const result = await res.json();
+
+  if (!res.ok) {
+    // Menangkap error dari Laravel (misal: email tidak ditemukan)
+    throw new Error(result.message || "Gagal memperbarui password.");
+  }
+
+  return result;
+};

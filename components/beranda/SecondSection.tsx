@@ -5,6 +5,8 @@ import Link from "next/link";
 import { motion, Variants } from "framer-motion";
 
 export default function SecondSection() {
+
+  // Characters
   const characters = [
     {
       name: "Purpose\nPrestige",

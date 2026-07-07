@@ -141,60 +141,113 @@ export default function SeventhSection() {
         className="absolute z-30 flex flex-row flex-wrap justify-center gap-1.5 md:gap-4 bottom-[30%] md:bottom-auto md:top-[160px] right-[18%] sm:right-[25%] md:right-[280px]"
       >
         {/* Badge 1: Rebel */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#E33D35] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[-17px] md:translate-x-[70px] md:translate-y-29">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#E33D35] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[-17px] md:translate-x-[110px] md:translate-y-23">
           Rebel
         </div>
+
         {/* Badge 2: Sweet */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#DD74A5] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[-50px] md:translate-x-[160px] md:translate-y-1">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#DD74A5] transition-transform hover:scale-105 cursor-pointer translate-x-[13px] translate-y-[-50px] md:translate-x-[152px] md:translate-y-1">
           Sweet
         </div>
+
         {/* Badge 3: Prestige */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5CB2ED] transition-transform hover:scale-105 cursor-pointer translate-x-[-15px] translate-y-[20px] md:translate-x-[150px] md:translate-y-58">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5CB2ED] transition-transform hover:scale-105 cursor-pointer translate-x-[-15px] translate-y-[18px] md:translate-x-[136px] md:translate-y-47">
           Prestige
         </div>
+
         {/* Badge 4: Calm */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5EA14A] transition-transform hover:scale-105 cursor-pointer translate-x-[-30px] translate-y-[-17px] md:translate-x-[210px] md:translate-y-30">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5EA14A] transition-transform hover:scale-105 cursor-pointer translate-x-[-30px] translate-y-[-17px] md:translate-x-[172px] md:translate-y-24">
           Calm
         </div>
       </motion.div>
 
-      <img
-        src="src/images/section 7/produk.png"
-        alt="Produk Evomi"
-        className="absolute z-20 bottom-0 md:top-[220px] bottom-[4.5%] right-[20%] md:-right-8 w-[60%] md:w-[52%] h-auto object-contain drop-shadow-2xl"
-      />
+      {/* --- BAGIAN PRODUK --- */}
+      {/* once: false membuat animasi akan selalu diulang (masuk dan keluar) setiap kali di-scroll */}
+      <motion.div
+        className="absolute z-20 bottom-0 md:top-[220px] bottom-[4.5%] right-[20%] md:-right-8 w-[60%] md:w-[52%] h-auto drop-shadow-2xl"
+        initial={{ opacity: 0, x: 50, y: 50 }}
+        whileInView={{ opacity: 1, x: 0, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        viewport={{ once: false, amount: 0.2 }}
+      >
+        {/* Animasi melayang tetap berjalan terus-menerus */}
+        <motion.img
+          src="src/images/section 7/produk.png"
+          alt="Produk Evomi"
+          className="w-full h-full object-contain"
+          animate={{ y: [0, -10, 0] }}
+          transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+        />
+      </motion.div>
 
-      {/* 4. Animated Wave Background (Bottom - Original Kiri) */}
-      <div className="absolute bottom-15 left-0 left-[-120px] w-full z-10 leading-[0]">
+      {/* --- BAGIAN WAVE --- */}
+      <motion.div
+        className="absolute bottom-15 left-0 left-[-120px] w-full z-10 leading-[0]"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        viewport={{ once: false, amount: 0.2 }}
+      >
         <div className="relative w-full h-[100px] md:h-[200px]">
-          <img
+          {/* Wave Layer 1 */}
+          <motion.img
             src="/src/images/section 7/vector-diseksi7-1.svg"
             alt="Wave Layer 1"
-            className="absolute bottom-0 left-0 w-full h-full object-fill pointer-events-none"
+            className="absolute bottom-0 left-0 w-full h-full object-fill pointer-events-none origin-bottom"
+            animate={{ scaleX: [1, 1.03, 1], x: ["0%", "-1%", "0%"] }}
+            transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
           />
-          <img
+
+          {/* Wave Layer 2 */}
+          <motion.img
             src="/src/images/section 7/vector-diseksi7-2.svg"
             alt="Wave Layer 2"
-            className="absolute bottom-0 left-0 w-full h-full object-fill pointer-events-none"
+            className="absolute bottom-0 left-0 w-full h-full object-fill pointer-events-none origin-bottom"
+            animate={{ scaleX: [1.03, 1, 1.03], x: ["-1%", "0%", "-1%"] }}
+            transition={{
+              repeat: Infinity,
+              duration: 5,
+              ease: "easeInOut",
+              delay: 1,
+            }}
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* 5. Animated Wave Background (Bottom Right - Khusus Mobile & Rotate 180) */}
-      <div className="absolute bottom-25 right-0 right-[-180px] w-full z-10 leading-[0] block md:hidden rotate-180 scale-x-[1]">
+      {/* --- BAGIAN WAVE (MOBILE / ROTATED) --- */}
+      <motion.div
+        className="absolute bottom-25 right-0 right-[-180px] w-full z-10 leading-[0] block md:hidden rotate-180 scale-x-[1]"
+        initial={{ opacity: 0, y: -30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeInOut" }}
+        viewport={{ once: false, amount: 0.2 }}
+      >
         <div className="relative w-full h-[100px]">
-          <img
+          {/* Wave Layer 1 Rotated */}
+          <motion.img
             src="/src/images/section 7/vector-diseksi7-1.svg"
             alt="Wave Layer 1 Rotated"
-            className="absolute bottom-0 left-0 w-full h-full object-fill pointer-events-none"
+            className="absolute bottom-0 left-0 w-full h-full object-fill pointer-events-none origin-bottom"
+            animate={{ scaleX: [1, 1.03, 1], x: ["0%", "-1%", "0%"] }}
+            transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
           />
-          <img
+
+          {/* Wave Layer 2 Rotated */}
+          <motion.img
             src="/src/images/section 7/vector-diseksi7-2.svg"
             alt="Wave Layer 2 Rotated"
-            className="absolute bottom-0 left-0 w-full h-full object-fill pointer-events-none"
+            className="absolute bottom-0 left-0 w-full h-full object-fill pointer-events-none origin-bottom"
+            animate={{ scaleX: [1.03, 1, 1.03], x: ["-1%", "0%", "-1%"] }}
+            transition={{
+              repeat: Infinity,
+              duration: 5,
+              ease: "easeInOut",
+              delay: 1,
+            }}
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* ================= CUSTOM MODAL ROUTING COMPONENT ================= */}
       <AnimatePresence>

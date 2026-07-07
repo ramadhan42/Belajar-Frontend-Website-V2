@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, FormEvent, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
+import { resetPasswordApi } from "@/lib/api";
 
 // Tipe data untuk konfigurasi status modal
 interface ModalState {
@@ -16,7 +17,7 @@ interface ModalState {
 function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Mengambil token dan email dari URL (misal: /reset-password?token=xyz&email=user@example.com)
   const token = searchParams.get("token") || "";
   const urlEmail = searchParams.get("email") || "";
@@ -47,58 +48,51 @@ function ResetPasswordForm() {
     }
   };
 
+  // 2. Update fungsi handleResetSubmit di dalam ResetPasswordForm
   const handleResetSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Validasi 1: Minimal karakter password
-    if (password.length < 6) {
+    // Validasi (sama seperti sebelumnya)
+    if (password.length < 8) {
       setIsLoading(false);
       setModal({
         isOpen: true,
         type: "warning",
         title: "Keamanan Lemah",
-        message: "Password baru harus memiliki minimal 6 karakter demi keamanan akun Evomi Anda.",
+        message: "Password harus minimal 8 karakter.",
       });
       return;
     }
 
-    // Validasi 2: Kesamaan password konfirmasi
     if (password !== confirmPassword) {
       setIsLoading(false);
       setModal({
         isOpen: true,
         type: "warning",
-        title: "Ketidakcocokan Data",
-        message: "Konfirmasi password tidak cocok. Pastikan Anda mengetik ulang password dengan benar.",
+        title: "Ketidakcocokan",
+        message: "Password tidak sama.",
       });
       return;
     }
 
     try {
-      // TODO: Hubungkan dengan fungsi API reset password Anda
-      // Gunakan state 'email' yang diinputkan user, bukan sekadar dari URL
-      // const res = await resetPasswordApi({ token, email, password });
-      
-      // Simulasi delay pengerjaan API
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // 3. Panggil fungsi API yang baru dibuat
+      const response = await resetPasswordApi({ email, password });
 
       setModal({
         isOpen: true,
         type: "success",
-        title: "Password Diperbarui!",
-        message: "Password akun Anda berhasil diubah. Silakan masuk menggunakan password baru Anda.",
+        title: "Berhasil!",
+        message: response.message,
       });
     } catch (err: unknown) {
-      const errorMsg =
-        err instanceof Error
-          ? err.message
-          : "Gagal mengatur ulang password. Tautan mungkin sudah kedaluwarsa.";
       setModal({
         isOpen: true,
         type: "error",
-        title: "Gagal Memperbarui",
-        message: errorMsg,
+        title: "Gagal",
+        message:
+          err instanceof Error ? err.message : "Terjadi kesalahan sistem.",
       });
     } finally {
       setIsLoading(false);
@@ -119,7 +113,25 @@ function ResetPasswordForm() {
 
       {/* FORM RESET PASSWORD */}
       <form className="space-y-5 animate-fade-in" onSubmit={handleResetSubmit}>
-        
+        {/* INPUT: EMAIL */}
+        <div className="space-y-2">
+          <label
+            htmlFor="email"
+            className="text-xs font-semibold text-white/80 uppercase tracking-widest ml-1"
+          >
+            Email Akun Anda
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="Masukkan email terdaftar"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 text-white placeholder:text-white/40 focus:bg-white/20 focus:border-white/40 outline-none transition-all duration-200"
+          />
+        </div>
+
         {/* INPUT: PASSWORD BARU */}
         <div className="space-y-2">
           <label
@@ -178,25 +190,6 @@ function ResetPasswordForm() {
           </div>
         </div>
 
-        {/* INPUT: KONFIRMASI EMAIL */}
-        <div className="space-y-2">
-          <label
-            htmlFor="email"
-            className="text-xs font-semibold text-white/80 uppercase tracking-widest ml-1"
-          >
-            Konfirmasi Email Anda
-          </label>
-          <input
-            id="email"
-            type="email"
-            placeholder="Masukkan email terdaftar"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 text-white placeholder:text-white/40 focus:bg-white/20 focus:border-white/40 outline-none transition-all duration-200"
-          />
-        </div>
-
         {/* TOMBOL AKSI */}
         <button
           type="submit"
@@ -224,22 +217,51 @@ function ResetPasswordForm() {
       {modal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
           <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
-            
             {/* Bagian Icon Dinamis */}
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm">
               {modal.type === "success" && (
-                <svg className="h-8 w-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                <svg
+                  className="h-8 w-8 text-green-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               )}
               {modal.type === "warning" && (
-                <svg className="h-8 w-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <svg
+                  className="h-8 w-8 text-amber-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
                 </svg>
               )}
               {modal.type === "error" && (
-                <svg className="h-8 w-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="h-8 w-8 text-red-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               )}
             </div>
@@ -277,11 +299,13 @@ function ResetPasswordForm() {
 // Wrapper Suspense wajib digunakan di Next.js App Router saat komponen memakai useSearchParams()
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <div className="text-center text-white italic animate-pulse py-8">
-        Memuat halaman pengaturan ulang...
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="text-center text-white italic animate-pulse py-8">
+          Memuat halaman pengaturan ulang...
+        </div>
+      }
+    >
       <ResetPasswordForm />
     </Suspense>
   );
