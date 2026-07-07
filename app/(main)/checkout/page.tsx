@@ -110,6 +110,18 @@ function CheckoutContent() {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const COURIER_LIST = [
+    "JNE",
+    "JNE Express",
+    "J&T",
+    "J&T Express",
+    "SiCepat",
+    "SiCepat Ekspres",
+    "TIKI",
+    "Anteraja",
+    "Ninja Express",
+  ];
+
   const [qrisData, setQrisData] = useState<{
     id: string;
     qr_string: string;
@@ -521,14 +533,17 @@ function CheckoutContent() {
                         ? { borderColor: visual.navbarColor }
                         : {}),
                     }}
+                    value={formData.courier}
                     onChange={(e) =>
                       setFormData({ ...formData, courier: e.target.value })
                     }
                   >
-                    <option value="JNE">JNE Express</option>
-                    <option value="J&T">J&T Express</option>
-                    <option value="SiCepat">SiCepat Ekspres</option>
-                    <option value="Grab">GrabExpress</option>
+                    {/* Looping data kurir dari COURIER_LIST */}
+                    {COURIER_LIST.map((courier, index) => (
+                      <option key={index} value={courier}>
+                        {courier}
+                      </option>
+                    ))}
                   </select>
                   <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                     <svg

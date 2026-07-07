@@ -130,7 +130,7 @@ export default function SecondSection() {
       >
         <Link
           href="/belanja"
-          className="bg-[#0071BC] text-white text-[12px] md:text-[18.3px] font-bold px-6 md:px-9 py-3 md:py-4 rounded-full shadow-lg inline-flex items-center gap-2 mb-10 md:mb-25 md:mt-15 relative z-10 transform transition-all duration-200 ease-out hover:scale-95 hover:translate-y-1 hover:shadow-sm"
+          className="bg-[#0071BC] text-white text-[12px] md:text-[18.3px] font-bold px-6 md:px-9 py-3 md:py-4 rounded-full shadow-lg inline-flex items-center gap-2 mb-10 md:mb-15 md:mt-10 relative z-10 transform transition-all duration-200 ease-out hover:scale-95 hover:translate-y-1 hover:shadow-sm"
         >
           Lihat Semua Karakter
           <svg

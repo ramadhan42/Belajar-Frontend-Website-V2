@@ -137,13 +137,14 @@ export default function HeroSection() {
           <motion.div
             animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 1.0, delay: 0.8, ease: "easeOut" }}
-            className="absolute top-[-7] left-1/2 -translate-x-1/2 md:top-[-50] w-[100vw] h-full z-0 overflow-hidden"
+            className="absolute top-[-7] left-1/2 -translate-x-1/2 md:top-[-48] w-[100vw] h-full z-0 overflow-hidden"
           >
             <Image
               src="/src/images/section 1/wave.svg"
               alt="Wave Background"
               fill
-              className="object-contain object-center"
+              // {/* PERUBAHAN: Menambahkan translate-x-4 (geser kanan sedikit). Anda bisa membedakan jarak mobile dan desktop dengan md:translate-x-8 */}
+              className="object-contain object-center translate-x-4 md:translate-x-2"
               priority
               quality={100}
             />

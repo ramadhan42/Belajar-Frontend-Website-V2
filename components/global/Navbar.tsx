@@ -99,6 +99,13 @@ export default function Navbar() {
     message: string,
   ) => {
     e.preventDefault();
+
+    // Cek apakah posisi user sudah berada persis di path yang dituju untuk mencegah duplikasi
+    if (window.location.pathname + window.location.hash === path) {
+      setIsOpen(false);
+      return;
+    }
+
     setIsOpen(false);
     setNavModal({ isOpen: true, type: "loading", title, message });
     setTimeout(() => {
@@ -208,7 +215,8 @@ export default function Navbar() {
                   alt="Logo Evomi"
                   width={110}
                   height={30}
-                  className="object-contain brightness-0 invert w-auto h-5 md:h-10"
+                  // {/* Tambahkan -translate-y-1 di baris bawah ini */}
+                  className="object-contain brightness-0 invert w-auto h-5 md:h-10 -translate-y-1"
                   priority
                 />
               </Link>

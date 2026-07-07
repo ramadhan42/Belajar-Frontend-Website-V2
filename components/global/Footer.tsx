@@ -176,12 +176,12 @@ export default function Footer() {
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isSubmitting}
                   placeholder="email@kamu.com"
-                  className="flex-grow bg-white rounded-full outline-none px-4 md:px-5 h-[44px] md:h-[40px] text-[14px] md:text-[12px] text-gray-600 placeholder-gray-400 shadow-sm min-w-0 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="flex-grow bg-white rounded-full outline-none px-4 md:px-5 h-[44px] md:h-[40px] text-[12px] md:text-[12px] text-gray-600 placeholder-gray-400 shadow-sm min-w-0 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-shrink-0 w-[85px] md:w-[100px] h-[44px] md:h-[40px] rounded-full text-[14px] md:text-[12px] font-bold transition-all shadow-sm bg-white text-[var(--btn-color)] border border-[var(--btn-color)] hover:bg-[var(--btn-color)] hover:text-white disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="flex-shrink-0 w-[85px] md:w-[100px] h-[44px] md:h-[40px] rounded-full text-[12px] md:text-[12px] font-bold transition-all shadow-sm bg-white text-[var(--btn-color)] border border-[var(--btn-color)] hover:bg-[var(--btn-color)] hover:text-white disabled:opacity-70 disabled:cursor-not-allowed"
                   style={
                     {
                       "--btn-color": footerColor || "#1172BA",
@@ -212,7 +212,7 @@ export default function Footer() {
                         "Mengarahkan ke halaman utama Evomi...",
                       )
                     }
-                    className="text-[14px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                    className="text-[12px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Beranda
                   </li>
@@ -224,7 +224,7 @@ export default function Footer() {
                         "Mengarahkan ke halaman belanja Evomi...",
                       )
                     }
-                    className="text-[14px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                    className="text-[12px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Belanja
                   </li>
@@ -236,7 +236,7 @@ export default function Footer() {
                         "Mengarahkan ke halaman Kuis Karakteristik...",
                       )
                     }
-                    className="text-[14px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                    className="text-[12px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Kuis
                   </li>
@@ -259,7 +259,7 @@ export default function Footer() {
                         "Membuka halaman FAQ...",
                       )
                     }
-                    className="text-[14px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                    className="text-[12px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     FAQ
                   </li>
@@ -271,7 +271,7 @@ export default function Footer() {
                         "Mengecek status pengiriman...",
                       )
                     }
-                    className="text-[14px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                    className="text-[12px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Pengiriman
                   </li>
@@ -283,7 +283,7 @@ export default function Footer() {
                         "Membuka formulir kontak...",
                       )
                     }
-                    className="text-[14px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                    className="text-[12px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Kontak
                   </li>
