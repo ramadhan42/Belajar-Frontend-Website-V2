@@ -600,7 +600,7 @@ export const resetPasswordApi = async (data: {
 
   const res = await fetch(`${BASE_URL}/api/forgot-password`, {
     method: "POST",
-    // Jangan set Content-Type header agar browser otomatis menambahkan 
+    // Jangan set Content-Type header agar browser otomatis menambahkan
     // boundary multipart/form-data yang benar
     body: formData,
   });

@@ -18,7 +18,7 @@ export default function FourthSection() {
     <section className="relative bg-white w-full min-h-[350px] sm:min-h-[500px] md:min-h-[700px] flex justify-center items-center pt-10 sm:pt-16 md:pt-20 pb-20 sm:pb-28 md:pb-15 overflow-hidden">
       {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
       {/* PERUBAHAN: Tinggi container diubah menjadi h-[15px] untuk mobile, dan h-[23px] untuk desktop */}
-      <div className="absolute top-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none">
+      <div className="absolute top-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none z-40">
         <style>{`
           @keyframes slideRightSeamless {
             0% { transform: translateX(-50%); }
@@ -28,6 +28,7 @@ export default function FourthSection() {
             animation: slideRightSeamless 80s linear infinite;
           }
         `}</style>
+
         {/* PERUBAHAN: Gap diubah menjadi 10px untuk mobile, dan 15px untuk desktop */}
         <div className="flex w-max gap-[10px] md:gap-[15px] animate-slide-right-40s">
           {Array.from({ length: 80 }).map((_, index) => (

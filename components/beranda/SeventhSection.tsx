@@ -64,7 +64,7 @@ export default function SeventhSection() {
   };
 
   return (
-    <section className="relative bg-white flex flex-col md:flex-row items-center justify-between px-6 sm:px-12 md:pl-24 md:pr-0 py-3 pb-8 md:py-24 overflow-hidden select-none">
+    <section className="relative bg-white flex flex-col md:flex-row items-center justify-between px-6 sm:px-12 md:pl-24 md:pr-0 py-3 pb-8 md:py-17 overflow-hidden select-none">
       {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
       {/* PERUBAHAN: Tinggi container diubah menjadi h-[15px] untuk mobile, dan h-[23px] untuk desktop */}
       <div className="absolute top-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none">
@@ -138,25 +138,25 @@ export default function SeventhSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        className="absolute z-30 flex flex-row flex-wrap justify-center gap-1.5 md:gap-4 bottom-[30%] md:bottom-auto md:top-[160px] right-[18%] sm:right-[25%] md:right-[280px]"
+        className="absolute z-30 flex flex-row flex-wrap justify-center gap-1.5 md:gap-4 bottom-[30%] md:bottom-auto md:top-[135px] right-[18%] sm:right-[25%] md:right-[210px]"
       >
         {/* Badge 1: Rebel */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#E33D35] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[-17px] md:translate-x-[110px] md:translate-y-23">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#E33D35] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[-17px] md:translate-x-[95px] md:translate-y-23">
           Rebel
         </div>
 
         {/* Badge 2: Sweet */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#DD74A5] transition-transform hover:scale-105 cursor-pointer translate-x-[13px] translate-y-[-50px] md:translate-x-[152px] md:translate-y-1">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#DD74A5] transition-transform hover:scale-105 cursor-pointer translate-x-[13px] translate-y-[-50px] md:translate-x-[145px] md:translate-y-1">
           Sweet
         </div>
 
         {/* Badge 3: Prestige */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5CB2ED] transition-transform hover:scale-105 cursor-pointer translate-x-[-15px] translate-y-[18px] md:translate-x-[136px] md:translate-y-47">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5CB2ED] transition-transform hover:scale-105 cursor-pointer translate-x-[-15px] translate-y-[18px] md:translate-x-[130px] md:translate-y-47">
           Prestige
         </div>
 
         {/* Badge 4: Calm */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5EA14A] transition-transform hover:scale-105 cursor-pointer translate-x-[-30px] translate-y-[-17px] md:translate-x-[172px] md:translate-y-24">
+        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5EA14A] transition-transform hover:scale-105 cursor-pointer translate-x-[-30px] translate-y-[-17px] md:translate-x-[170px] md:translate-y-24">
           Calm
         </div>
       </motion.div>
@@ -164,19 +164,17 @@ export default function SeventhSection() {
       {/* --- BAGIAN PRODUK --- */}
       {/* once: false membuat animasi akan selalu diulang (masuk dan keluar) setiap kali di-scroll */}
       <motion.div
-        className="absolute z-20 bottom-0 md:top-[220px] bottom-[4.5%] right-[20%] md:-right-8 w-[60%] md:w-[52%] h-auto drop-shadow-2xl"
+        className="absolute z-20 bottom-0 md:top-[150px] bottom-[4.5%] right-[20%] md:-right-24 w-[60%] md:w-[52%] drop-shadow-2xl"
         initial={{ opacity: 0, x: 50, y: 50 }}
         whileInView={{ opacity: 1, x: 0, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         viewport={{ once: false, amount: 0.2 }}
       >
         {/* Animasi melayang tetap berjalan terus-menerus */}
-        <motion.img
+        <img
           src="src/images/section 7/produk.png"
           alt="Produk Evomi"
-          className="w-full h-full object-contain"
-          animate={{ y: [0, -10, 0] }}
-          transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+          className="w-full h-full object-contain md:mt-10"
         />
       </motion.div>
 

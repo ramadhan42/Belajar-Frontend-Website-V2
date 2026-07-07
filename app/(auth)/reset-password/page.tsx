@@ -25,6 +25,7 @@ function ResetPasswordForm() {
   // State untuk form reset password
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  
   // Menjadikan parameter email dari URL sebagai nilai awal input email
   const [email, setEmail] = useState(urlEmail);
   const [showPassword, setShowPassword] = useState(false);
