@@ -119,9 +119,26 @@ export default function FifthSection() {
     }, 800);
   };
 
+  // TAMBAHAN: Fungsi untuk menangani klik pada card produk
+  const handleProductClick = (id: number, title: string) => {
+    setNavModal({
+      isOpen: true,
+      type: "loading",
+      title: title,
+      message: `Mengarahkan ke detail produk ${title}...`,
+    });
+
+    setTimeout(() => {
+      setNavModal((prev) => ({ ...prev, isOpen: false }));
+      // Mengarahkan ke rute detail produk dinamis (misal: /produk/1)
+      // Silakan ubah path "/produk/" di bawah ini jika struktur folder Anda berbeda (misal: "/belanja/")
+      router.push(`/belanja/${id}`);
+    }, 800);
+  };
+
   return (
     <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-10 pb-25 md:pb-20 px-3 md:px-4 relative overflow-hidden">
-      {/* --- BACKGROUND DECORATIVE IMAGES (Diperkecil di mobile agar tidak menumpuk teks) --- */}
+      {/* --- BACKGROUND DECORATIVE IMAGES --- */}
       <div className="absolute top-[15%] left-0 -translate-x-1/2 z-0 pointer-events-none w-[45px] md:w-[100px]">
         <Image
           src="/src/images/section 5/purpose.png"
@@ -176,20 +193,20 @@ export default function FifthSection() {
         </p>
       </motion.div>
 
-      {/* 2. Grid Card Produk (Sizing & Gap dioptimalkan untuk S20) */}
+      {/* 2. Grid Card Produk */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.15 }}
-        // {/* PERUBAHAN: gap-3 & px-2 membuat 2 kolom card masuk dengan sempurna di lebar 360px */}
         className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 lg:gap-32 mb-12 md:mb-10 px-2 py-2 md:px-4"
       >
         {products.map((product, index) => (
           <motion.div
             key={product.id}
             variants={cardVariants}
-            // {/* PERUBAHAN: Mengubah w-[280px] menjadi w-full agar lebarnya otomatis mengikuti grid ruang S20 */}
+            // PERUBAHAN: Menambahkan handler onClick untuk memicu modal dan navigasi detail produk
+            onClick={() => handleProductClick(product.id, product.title)}
             className={`font-['Nohemi'] relative w-full md:w-[230px] md:h-fit rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
           >
             {/* Image Section */}
@@ -213,7 +230,6 @@ export default function FifthSection() {
                   delay: index * 0.15,
                   ease: "easeOut",
                 }}
-                // {/* PERUBAHAN: Penyesuaian translate-y agar gambar botol tidak terpotong saat card mengecil */}
                 className="w-full flex justify-center items-center flex-1 mt-[15px] md:mt-[25px] translate-y-[18px] md:translate-y-[25px]"
               >
                 <Image
@@ -227,7 +243,6 @@ export default function FifthSection() {
             </div>
 
             {/* Description Section */}
-            {/* PERUBAHAN: Padding p-2.5 agar hemat ruang di layar kecil */}
             <div
               className={`p-2.5 md:p-4 flex flex-col flex-grow text-left ${product.cardBg} z-20`}
             >
@@ -299,7 +314,6 @@ export default function FifthSection() {
       {/* 4. Animated Wave Background */}
       <div className="absolute bottom-0 left-0 w-full z-0 leading-[0]">
         <svg
-          // {/* Ubah nilai di bawah ini jika ingin menyesuaikan tinggi lagi */}
           className="block w-full h-[30px] md:h-[70px]"
           viewBox="0 24 150 28"
           preserveAspectRatio="none"
@@ -361,14 +375,13 @@ export default function FifthSection() {
         </svg>
       </div>
 
-      {/* ================= CUSTOM MODAL (Dibuat Pas Tengah & Ukuran S20 Sempurna) ================= */}
+      {/* ================= CUSTOM MODAL ================= */}
       <AnimatePresence>
         {navModal.isOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            // {/* PERUBAHAN: Menggunakan fixed inset-0 dan z-[9999] agar selalu presisi di tengah viewport layar */}
             className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
           >
             <motion.div
@@ -377,7 +390,6 @@ export default function FifthSection() {
               exit={{ opacity: 0, scale: 0.8, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              // {/* PERUBAHAN: max-w-[280px], p-5, dan rounded-[20px] disesuaikan untuk kenyamanan pandangan di S20 */}
               className="relative bg-white rounded-[20px] md:rounded-[24px] p-5 md:p-8 max-w-[280px] md:max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
             >
               <div className="mx-auto flex items-center justify-center h-14 w-14 md:h-20 md:w-20 rounded-full mb-3 md:mb-5 transition-colors duration-300 bg-blue-50 text-blue-500">

@@ -30,8 +30,9 @@ export default function Navbar() {
   };
 
   // Class menu: aktif = bg-white teks warna navbar, tidak aktif = teks putih + hover bg-white
+  // PERUBAHAN: Mengganti w-[90px] menjadi md:w-auto dan menambahkan md:px-5 (padding horizontal)
   const navItemClass = (path: string) =>
-    `flex justify-center items-center w-full md:w-[100px] text-[12px] py-2.5 font-bold rounded-full text-center hover-bold-effect transition-colors duration-300 ${
+    `flex justify-center items-center w-full md:w-auto md:px-6 text-[12px] md:text-[18px] py-2.5 font-normal rounded-full text-center hover-bold-effect transition-colors duration-300 ${
       isActive(path)
         ? "bg-white text-[var(--nav-color)]"
         : "text-white hover:bg-white hover:text-[var(--nav-color)]"
@@ -159,15 +160,15 @@ export default function Navbar() {
     }
   };
 
+  // PERUBAHAN: Mengganti w-[90px] menjadi md:w-auto dan menambahkan md:px-5
   const navLinkClass =
-    "flex justify-center items-center w-full md:w-[100px] text-[12px] py-2.5 font-bold rounded-full text-center text-white hover:bg-white hover:text-[var(--nav-color)] hover-bold-effect transition-colors duration-300";
+    "flex justify-center items-center w-full md:w-auto md:px-6 text-[12px] md:text-[18px] py-2.5 font-normal rounded-full text-center text-white hover:bg-white hover:text-[var(--nav-color)] hover-bold-effect transition-colors duration-300";
 
   return (
     <>
-      {/* NAVBAR: Tetap sama seperti sebelumnya */}
       <motion.div
         ref={navRef}
-        className="px-2 py-2 md:p-4 w-full relative z-50"
+        className="px-2 py-2 md:p-4 md:pt-7 md:px-15 w-full relative z-50"
         variants={containerVariants}
         initial="hidden"
         animate={isInView ? "visible" : "hidden"}
@@ -215,7 +216,6 @@ export default function Navbar() {
                   alt="Logo Evomi"
                   width={110}
                   height={30}
-                  // {/* Tambahkan -translate-y-1 di baris bawah ini */}
                   className="object-contain brightness-0 invert w-auto h-5 md:h-10 -translate-y-1"
                   priority
                 />
@@ -223,7 +223,8 @@ export default function Navbar() {
             </motion.div>
 
             {/* DESKTOP: MENU TENGAH */}
-            <div className="hidden md:flex items-center space-x-2">
+            {/* Tetap menggunakan space-x-0.5 agar antar menu tetap rapat */}
+            <div className="hidden md:flex items-center space-x-0.5">
               <motion.div variants={itemVariants}>
                 <Link
                   href="/"
@@ -291,7 +292,8 @@ export default function Navbar() {
             </div>
 
             {/* DESKTOP: MENU KANAN */}
-            <div className="hidden md:flex items-center space-x-3 md:mr-2">
+            {/* Tetap menggunakan space-x-1 agar Login dan Daftar tetap rapat */}
+            <div className="hidden md:flex items-center space-x-1 md:mr-2">
               {userEmail ? (
                 <>
                   <motion.div variants={itemVariants}>

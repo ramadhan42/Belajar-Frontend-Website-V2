@@ -13,6 +13,8 @@ const config: Config = {
         // Harus ada var(--font-heavy) sesuai dengan yang di layout.js
         heavy: ['var(--font-heavy)', 'sans-serif'],
         nohemi: ['var(--font-nohemi)', 'sans-serif'],
+        parkinsans: ['var(--font-parkinsans)', 'sans-serif'],
+        syne: ['var(--font-syne)', 'sans-serif'],
       },
     },
   },
