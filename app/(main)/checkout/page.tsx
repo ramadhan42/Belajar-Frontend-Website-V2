@@ -242,8 +242,8 @@ function CheckoutContent() {
         const errorData = await res.json();
         throw new Error(
           errorData.error_detail ||
-            errorData.message ||
-            "Gagal memproses pembuatan pesanan",
+          errorData.message ||
+          "Gagal memproses pembuatan pesanan",
         );
       }
 
@@ -423,54 +423,48 @@ function CheckoutContent() {
         }
       `}</style>
 
-      <div className="max-w-5xl mx-auto px-4 relative z-10">
-        {/* Header diperkecil ukurannya */}
-        <div className="flex justify-between items-end mb-4 md:mb-5">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 relative z-10">
+        <div className="flex justify-between items-end mb-6 md:mb-8">
           <h1
-            className="text-2xl md:text-3xl font-bold font-['Nohemi']"
+            className="text-3xl md:text-4xl font-bold font-['Nohemi']"
             style={{ color: visual.navbarColor }}
           >
             Penyelesaian Pesanan
           </h1>
-          <div className="hidden md:block w-12 h-12 md:w-14 md:h-14">
+          <div className="hidden md:block w-14 h-14 md:w-20 md:h-20">
             <Image
               src={visual.characterPath}
               alt="Character"
-              width={56}
-              height={56}
+              width={80}
+              height={80}
               className="object-contain"
             />
           </div>
         </div>
 
-        {/* Gap dikurangi dari gap-8 menjadi gap-4 lg:gap-6 */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* KIRI: Form Pengiriman & Metode Pembayaran */}
-          {/* Jarak antar form dan pembayaran dikurangi dari space-y-6 ke space-y-4 */}
-          <div className="lg:col-span-8 space-y-4">
+          <div className="lg:col-span-8 space-y-6 md:space-y-8">
             {/* Form Informasi Pengiriman */}
-            {/* Padding form dikurangi p-6 md:p-8 ke p-4 md:p-5 */}
-            <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-4 md:p-5 transition-all">
+            <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-5 md:p-8 transition-all">
               <h2
-                className="text-lg font-bold font-['Nohemi'] mb-3 md:mb-4 flex items-center gap-2"
+                className="text-xl md:text-2xl font-bold font-['Nohemi'] mb-4 md:mb-6 flex items-center gap-2"
                 style={{ color: visual.navbarColor }}
               >
-                <MapPin className="w-4 h-4" />
+                <MapPin className="w-5 h-5 md:w-6 md:h-6" />
                 Informasi Pengiriman
               </h2>
 
-              {/* Jarak antar input diperkecil space-y-5 ke space-y-3 */}
-              <div className="space-y-3 font-['Parkinsans'] text-sm">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-4 md:space-y-5 font-['Parkinsans'] text-sm md:text-base">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                      <User className="h-4 w-4 text-gray-400 group-focus-within:text-black transition-colors" />
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <User className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
                     </div>
-                    {/* Padding input dikurangi py-3.5 ke py-2.5 */}
                     <input
                       type="text"
                       placeholder="Nama Penerima"
-                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
+                      className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
                       style={{
                         ...(formData.name
                           ? { borderColor: visual.navbarColor }
@@ -483,13 +477,13 @@ function CheckoutContent() {
                   </div>
 
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                      <Phone className="h-4 w-4 text-gray-400 group-focus-within:text-black transition-colors" />
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Phone className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
                     </div>
                     <input
                       type="tel"
                       placeholder="Nomor HP"
-                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
+                      className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
                       style={{
                         ...(formData.phone
                           ? { borderColor: visual.navbarColor }
@@ -503,14 +497,13 @@ function CheckoutContent() {
                 </div>
 
                 <div className="relative group">
-                  <div className="absolute top-3 left-0 pl-3.5 pointer-events-none">
-                    <MapPin className="h-4 w-4 text-gray-400 group-focus-within:text-black transition-colors" />
+                  <div className="absolute top-3 md:top-4 left-0 pl-4 pointer-events-none">
+                    <MapPin className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
                   </div>
-                  {/* Rows diturunkan ke 2 */}
                   <textarea
                     placeholder="Alamat Lengkap"
-                    rows={2}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm resize-none"
+                    rows={3}
+                    className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm resize-none"
                     style={{
                       ...(formData.address
                         ? { borderColor: visual.navbarColor }
@@ -523,11 +516,11 @@ function CheckoutContent() {
                 </div>
 
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <Truck className="h-4 w-4 text-gray-400 group-focus-within:text-black transition-colors" />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Truck className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
                   </div>
                   <select
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm appearance-none cursor-pointer"
+                    className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm appearance-none cursor-pointer"
                     style={{
                       ...(formData.courier
                         ? { borderColor: visual.navbarColor }
@@ -565,16 +558,15 @@ function CheckoutContent() {
             </div>
 
             {/* Section Pilihan Metode Pembayaran */}
-            <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-4 md:p-5 transition-all">
+            <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-5 md:p-8 transition-all">
               <h2
-                className="text-lg font-bold font-['Nohemi'] mb-3 md:mb-4 flex items-center gap-2"
+                className="text-xl md:text-2xl font-bold font-['Nohemi'] mb-4 md:mb-6 flex items-center gap-2"
                 style={{ color: visual.navbarColor }}
               >
-                <Banknote className="w-4 h-4" />
+                <Banknote className="w-5 h-5 md:w-6 md:h-6" />
                 Metode Pembayaran
               </h2>
-              {/* Gap antar radio button dikecilkan */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-['Parkinsans']">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 font-['Parkinsans']">
                 {[
                   {
                     id: "qris",
@@ -595,12 +587,10 @@ function CheckoutContent() {
                   return (
                     <label
                       key={m.id}
-                      // Padding dikecilkan menjadi p-3
-                      className={`relative border-2 rounded-[14px] p-3 cursor-pointer flex flex-col gap-1.5 transition-all duration-300 overflow-hidden ${
-                        isSelected
+                      className={`relative border-2 rounded-[16px] p-4 md:p-5 cursor-pointer flex flex-col gap-2 transition-all duration-300 overflow-hidden ${isSelected
                           ? "shadow-sm transform scale-[1.02]"
                           : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/50"
-                      }`}
+                        }`}
                       style={{
                         borderColor: isSelected ? visual.navbarColor : "",
                         backgroundColor: isSelected
@@ -624,9 +614,8 @@ function CheckoutContent() {
                         onChange={() => setPaymentMethod(m.id)}
                       />
 
-                      {/* Ikon dikecilkan */}
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center mb-0.5 transition-colors"
+                        className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-1 transition-colors"
                         style={{
                           backgroundColor: isSelected
                             ? visual.navbarColor
@@ -634,20 +623,19 @@ function CheckoutContent() {
                           color: isSelected ? "#FFF" : "#9CA3AF",
                         }}
                       >
-                        <Icon className="w-4 h-4" />
+                        <Icon className="w-5 h-5 md:w-6 md:h-6" />
                       </div>
 
                       <div>
-                        {/* Teks label dikecilkan */}
                         <span
-                          className="block font-bold text-sm mb-0.5 line-clamp-1"
+                          className="block font-bold text-base md:text-lg mb-1 line-clamp-1"
                           style={{
                             color: isSelected ? visual.navbarColor : "#374151",
                           }}
                         >
                           {m.title}
                         </span>
-                        <span className="text-[11px] text-gray-500 block leading-tight">
+                        <span className="text-xs md:text-sm text-gray-500 block leading-tight">
                           {m.desc}
                         </span>
                       </div>
@@ -660,34 +648,32 @@ function CheckoutContent() {
 
           {/* KANAN: Ringkasan Pesanan */}
           <div className="lg:col-span-4">
-            <div className="bg-white rounded-[20px] p-4 md:p-5 shadow-sm border border-gray-100 sticky top-24">
+            <div className="bg-white rounded-[20px] p-5 md:p-8 shadow-sm border border-gray-100 sticky top-24">
               <h2
-                className="text-lg font-bold font-['Nohemi'] mb-3 md:mb-4"
+                className="text-xl md:text-2xl font-bold font-['Nohemi'] mb-4 md:mb-6"
                 style={{ color: visual.navbarColor }}
               >
                 Ringkasan Pesanan
               </h2>
 
-              {/* Max Height & Space dikecilkan agar item tidak memakan banyak layar */}
-              <div className="space-y-3 mb-4 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-4 mb-6 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-3 items-center">
-                    {/* Gambar produk dikecilkan (w-12 h-12) */}
+                  <div key={item.id} className="flex gap-4 items-center">
                     <div
-                      className="w-12 h-12 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0"
+                      className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0"
                       style={{ backgroundColor: visual.navbarColor + "10" }}
                     >
                       <img
                         src={item.image}
                         alt={item.title}
-                        className="w-full h-full object-contain p-1"
+                        className="w-full h-full object-contain p-2"
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xs font-bold text-gray-900 line-clamp-1 font-['Nohemi']">
+                      <h3 className="text-sm md:text-base font-bold text-gray-900 line-clamp-2 font-['Nohemi'] mb-1">
                         {item.title}
                       </h3>
-                      <p className="text-[11px] text-gray-500 font-['Parkinsans'] mt-0.5">
+                      <p className="text-xs md:text-sm text-gray-500 font-['Parkinsans']">
                         {item.quantity} x {formatProductPrice(item.price)}
                       </p>
                     </div>
@@ -695,8 +681,7 @@ function CheckoutContent() {
                 ))}
               </div>
 
-              {/* Detail Harga - Padding Top dan Margin Bottom dikecilkan */}
-              <div className="space-y-2 text-xs md:text-sm font-['Parkinsans'] border-t border-gray-100 pt-3 mb-4">
+              <div className="space-y-3 text-sm md:text-base font-['Parkinsans'] border-t border-gray-100 pt-4 md:pt-6 mb-6">
                 <div className="flex justify-between text-gray-500">
                   <span>Subtotal</span>
                   <span>{formatProductPrice(subtotal)}</span>
@@ -706,7 +691,7 @@ function CheckoutContent() {
                   <span>{formatProductPrice(ongkosKirim)}</span>
                 </div>
                 <div
-                  className="flex justify-between text-base md:text-lg font-bold pt-1 font-['Nohemi']"
+                  className="flex justify-between text-xl md:text-2xl font-bold pt-2 md:pt-3 font-['Nohemi']"
                   style={{ color: visual.navbarColor }}
                 >
                   <span>Total</span>
@@ -714,14 +699,13 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              {/* Tombol Pay - Padding dikecilkan */}
               <button
                 onClick={handleCheckout}
                 disabled={isProcessing}
-                className="w-full text-white px-4 py-3 rounded-xl md:rounded-full font-bold text-sm md:text-base transition-all active:scale-95 shadow-md disabled:bg-gray-300 flex items-center justify-center gap-2"
+                className="w-full text-white px-6 py-4 rounded-xl md:rounded-full font-bold text-base md:text-lg transition-all active:scale-95 shadow-md disabled:bg-gray-300 flex items-center justify-center gap-2 mt-2"
                 style={{ backgroundColor: visual.navbarColor }}
               >
-                {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
+                {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
                 {isProcessing ? "Memproses..." : "Bayar Sekarang"}
               </button>
             </div>
@@ -729,13 +713,13 @@ function CheckoutContent() {
         </div>
       </div>
 
-      {/* DIVIDER DEKORASI LINGKARAN - Ukuran dikecilkan sedikit agar tak makan tempat */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden h-[15px] pointer-events-none z-0">
-        <div className="flex w-max gap-[10px] animate-slide-right-40s">
+      {/* DIVIDER DEKORASI LINGKARAN */}
+      <div className="absolute bottom-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none z-0">
+        <div className="flex w-max gap-[10px] md:gap-[15px] animate-slide-right-40s">
           {Array.from({ length: 100 }).map((_, i) => (
             <div
               key={i}
-              className="w-[30px] h-[30px] rounded-full flex-shrink-0"
+              className="w-[30px] h-[30px] md:w-[46px] md:h-[46px] rounded-full flex-shrink-0"
               style={{ backgroundColor: visual.navbarColor }}
             />
           ))}

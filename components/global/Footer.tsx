@@ -158,10 +158,10 @@ export default function Footer() {
               variants={itemVariants}
               className="flex flex-col gap-3 md:gap-4 w-full lg:w-[45%] max-w-[400px] mx-auto lg:mx-0 text-center lg:text-left items-center lg:items-start"
             >
-              <h3 className="text-[26px] md:text-[32px] text-white font-bold leading-tight">
+              <h3 className="text-[32px] md:text-[40px] text-white font-bold leading-tight">
                 Buletin Evomi
               </h3>
-              <p className="text-[14px] md:text-[14px] text-white opacity-90 leading-relaxed">
+              <p className="text-[16px] md:text-[18px] text-white opacity-90 leading-relaxed">
                 Daftar untuk menerima koleksi terbaru, penawaran eksklusif, dan
                 cerita tentang setiap karakter aroma.
               </p>
@@ -176,12 +176,12 @@ export default function Footer() {
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isSubmitting}
                   placeholder="email@kamu.com"
-                  className="flex-grow bg-white rounded-full outline-none px-4 md:px-5 h-[44px] md:h-[40px] text-[12px] md:text-[12px] text-gray-600 placeholder-gray-400 shadow-sm min-w-0 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="flex-grow bg-white rounded-full outline-none px-4 md:px-5 h-[50px] md:h-[48px] text-[14px] md:text-[16px] text-gray-600 placeholder-gray-400 shadow-sm min-w-0 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-shrink-0 w-[85px] md:w-[100px] h-[44px] md:h-[40px] rounded-full text-[12px] md:text-[12px] font-bold transition-all shadow-sm bg-white text-[var(--btn-color)] border border-[var(--btn-color)] hover:bg-[var(--btn-color)] hover:text-white disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="flex-shrink-0 w-[100px] md:w-[120px] h-[50px] md:h-[48px] rounded-full text-[14px] md:text-[16px] font-bold transition-all shadow-sm bg-white text-[var(--btn-color)] border border-[var(--btn-color)] hover:bg-[var(--btn-color)] hover:text-white disabled:opacity-70 disabled:cursor-not-allowed"
                   style={
                     {
                       "--btn-color": footerColor || "#1172BA",
@@ -200,7 +200,7 @@ export default function Footer() {
                 variants={itemVariants}
                 className="flex flex-col gap-3"
               >
-                <span className="text-[12px] md:text-[12px] text-white/70 font-medium tracking-wide">
+                <span className="text-[14px] md:text-[16px] text-white/70 font-medium tracking-wide">
                   Menu
                 </span>
                 <ul className="flex flex-col gap-2 md:gap-3 text-white">
@@ -212,7 +212,7 @@ export default function Footer() {
                         "Mengarahkan ke halaman utama Evomi...",
                       )
                     }
-                    className="text-[12px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                    className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Beranda
                   </li>
@@ -224,7 +224,7 @@ export default function Footer() {
                         "Mengarahkan ke halaman belanja Evomi...",
                       )
                     }
-                    className="text-[12px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                    className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Belanja
                   </li>
@@ -236,7 +236,7 @@ export default function Footer() {
                         "Mengarahkan ke halaman Kuis Karakteristik...",
                       )
                     }
-                    className="text-[12px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                    className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Kuis
                   </li>
@@ -247,7 +247,7 @@ export default function Footer() {
                 variants={itemVariants}
                 className="flex flex-col gap-3"
               >
-                <span className="text-[12px] md:text-[12px] text-white/70 font-medium tracking-wide">
+                <span className="text-[14px] md:text-[16px] text-white/70 font-medium tracking-wide">
                   Bantuan
                 </span>
                 <ul className="flex flex-col gap-2 md:gap-3 text-white">
@@ -259,7 +259,7 @@ export default function Footer() {
                         "Membuka halaman FAQ...",
                       )
                     }
-                    className="text-[12px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                    className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     FAQ
                   </li>
@@ -271,7 +271,7 @@ export default function Footer() {
                         "Mengecek status pengiriman...",
                       )
                     }
-                    className="text-[12px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                    className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Pengiriman
                   </li>
@@ -283,7 +283,7 @@ export default function Footer() {
                         "Membuka formulir kontak...",
                       )
                     }
-                    className="text-[12px] md:text-[14px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
+                    className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
                     Kontak
                   </li>
@@ -294,15 +294,15 @@ export default function Footer() {
                 variants={itemVariants}
                 className="flex flex-col gap-3 col-span-2 sm:col-span-1"
               >
-                <span className="text-[12px] md:text-[12px] text-white/70 font-medium tracking-wide">
+                <span className="text-[14px] md:text-[16px] text-white/70 font-medium tracking-wide">
                   Social
                 </span>
                 <div className="flex gap-4 text-white">
-                  <FaInstagram className="w-[18px] h-[18px] md:w-[20px] md:h-[20px] cursor-pointer hover:scale-110 transition-transform" />
-                  <FaTwitter className="w-[18px] h-[18px] md:w-[20px] md:h-[20px] cursor-pointer hover:scale-110 transition-transform" />
-                  <FaFacebookF className="w-[18px] h-[18px] md:w-[20px] md:h-[20px] cursor-pointer hover:scale-110 transition-transform" />
+                  <FaInstagram className="w-[24px] h-[24px] md:w-[28px] md:h-[28px] cursor-pointer hover:scale-110 transition-transform" />
+                  <FaTwitter className="w-[24px] h-[24px] md:w-[28px] md:h-[28px] cursor-pointer hover:scale-110 transition-transform" />
+                  <FaFacebookF className="w-[24px] h-[24px] md:w-[28px] md:h-[28px] cursor-pointer hover:scale-110 transition-transform" />
                 </div>
-                <span className="text-[14px] md:text-[14px] text-white mt-1">
+                <span className="text-[16px] md:text-[18px] text-white mt-1">
                   evomi.id
                 </span>
               </motion.div>
@@ -311,7 +311,7 @@ export default function Footer() {
 
           <motion.div variants={itemVariants}>
             <div className="w-full h-[1px] bg-white rounded-full mb-6 md:mb-8 opacity-30"></div>
-            <div className="flex flex-col md:flex-row justify-between items-center text-white text-[12px] md:text-[12px] opacity-90 gap-y-2 text-center md:text-left">
+            <div className="flex flex-col md:flex-row justify-between items-center text-white text-[14px] md:text-[14px] opacity-90 gap-y-2 text-center md:text-left">
               <p>© 2026 evomi.id — Every Version of Me</p>
               <p>Discover the scent of every personality</p>
             </div>
@@ -437,9 +437,8 @@ export default function Footer() {
                   initial={{ width: "100%" }}
                   animate={{ width: "0%" }}
                   transition={{ duration: 3, ease: "linear" }}
-                  className={`absolute bottom-0 left-0 h-[4px] ${
-                    navModal.type === "success" ? "bg-green-500" : "bg-red-500"
-                  }`}
+                  className={`absolute bottom-0 left-0 h-[4px] ${navModal.type === "success" ? "bg-green-500" : "bg-red-500"
+                    }`}
                 />
               )}
             </motion.div>

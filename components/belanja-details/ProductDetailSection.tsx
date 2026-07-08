@@ -24,6 +24,7 @@ import {
   Truck,
   Shield,
   CheckCircle,
+  X,
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -108,6 +109,13 @@ export default function ProductDetailSection({
   const [cartMessage, setCartMessage] = useState("");
   const [wishlistMessage, setWishlistMessage] = useState("");
 
+  // Chat state
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [currentMessage, setCurrentMessage] = useState("");
+  const [chatMessages, setChatMessages] = useState<{ sender: "user" | "admin"; text: string }[]>([
+    { sender: "admin", text: "Halo! Ada yang bisa kami bantu terkait produk ini?" }
+  ]);
+
   useEffect(() => {
     setIsLoading(true);
     setCurrentIndex(0);
@@ -188,13 +196,29 @@ export default function ProductDetailSection({
     }
   };
 
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentMessage.trim()) return;
+
+    const newMessages = [...chatMessages, { sender: "user" as const, text: currentMessage }];
+    setChatMessages(newMessages);
+    setCurrentMessage("");
+
+    setTimeout(() => {
+      setChatMessages((prev) => [
+        ...prev,
+        { sender: "admin" as const, text: "Terima kasih atas pesannya! Saat ini admin sedang offline, namun kami akan segera membalas pertanyaan Anda." }
+      ]);
+    }, 1000);
+  };
+
   const subtitle = product
     ? `${product.bottle_size ?? 50}ml • ${product.perfume_type ?? "Eau de Parfum"}`
     : "50ml • Eau de Parfum";
 
   return (
     <section className="bg-[#F8F9FA] w-full pt-8 pb-16 px-4 md:px-8 relative overflow-hidden flex flex-col items-center">
-      <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-start mt-4 mb-16 z-10">
+      <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-start mt-4 mb-10 z-10">
         {/* ================= KIRI: IMAGE GALLERY (Col 4) ================= */}
         <div className="lg:col-span-4 flex flex-col items-center w-full select-none">
           <div
@@ -319,7 +343,10 @@ export default function ProductDetailSection({
 
           {/* CARD NOTES (Sesuai notes.PNG) */}
           <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm mb-8 flex flex-col gap-5">
-            <h4 className="font-nohemi text-[20.36px] font-semibold tracking-tight text-[#1172BA]">
+            <h4
+              className="font-nohemi text-[20.36px] font-semibold tracking-tight"
+              style={{ color: visual.navbarColor }}
+            >
               Notes {isLoading ? "" : product?.title}
             </h4>
 
@@ -349,7 +376,10 @@ export default function ProductDetailSection({
                   >
                     {label}
                   </span>
-                  <span className="text-[14.15px] font-parkinsans font-normal text-[#1172BACC]">
+                  <span
+                    className="text-[14.15px] font-parkinsans font-normal opacity-80"
+                    style={{ color: visual.navbarColor }}
+                  >
                     {isLoading ? (
                       <Skeleton className="w-40 h-4 inline-block" />
                     ) : (
@@ -420,7 +450,10 @@ export default function ProductDetailSection({
 
           {/* DISCLAIMER */}
           <div className="mb-8">
-            <h4 className="font-nohemi text-[20px] font-semibold mb-3 text-[#1172BA]">
+            <h4
+              className="font-nohemi text-[20px] font-semibold mb-3"
+              style={{ color: visual.navbarColor }}
+            >
               Disclaimer untuk Ketentuan COMPLAIN
             </h4>
             <div className="text-[14px] font-parkinsans font-normal text-[#4A5565] leading-relaxed flex flex-col gap-1.5">
@@ -469,7 +502,10 @@ export default function ProductDetailSection({
               </div>
             </div>
 
-            <button className="text-left font-parkinsans text-[15px] font-semibold mt-1 text-[#1172BA]">
+            <button
+              className="text-left font-parkinsans text-[15px] font-semibold mt-1"
+              style={{ color: visual.navbarColor }}
+            >
               Lihat Kurir Lainnya
             </button>
           </div>
@@ -558,20 +594,29 @@ export default function ProductDetailSection({
                   <button
                     onClick={handleAddToCart}
                     disabled={cartStatus === "loading"}
-                    className="w-full bg-white font-nohemi text-[16px] font-semibold py-3 rounded-full border shadow-sm hover:bg-gray-50 active:scale-95 transition-all text-[#1172BA] border-[#1172BA]"
+                    className="w-full bg-white font-nohemi text-[16px] font-semibold py-3 rounded-full border shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
+                    style={{
+                      color: visual.navbarColor,
+                      borderColor: visual.navbarColor,
+                    }}
                   >
                     {cartStatus === "loading" ? "Memproses..." : "+ Keranjang"}
                   </button>
                 </div>
 
                 {/* Small Actions (Chat, Wishlist, Share) */}
-                <div className="flex justify-center gap-12 mt-2 font-parkinsans font-medium text-[14px] text-[#6A7282]">
-                  <button className="flex flex-col items-center gap-1.5 hover:text-[#1172BA] transition">
+                <div
+                  className="flex justify-center gap-12 mt-2 font-parkinsans font-medium text-[14px] text-[#6A7282]"
+                  style={
+                    { "--hover-color": visual.navbarColor } as React.CSSProperties
+                  }
+                >
+                  <button onClick={() => setIsChatOpen(true)} className="flex flex-col items-center gap-1.5 hover:text-[var(--hover-color)] transition">
                     <MessageCircle size={20} strokeWidth={1.5} /> Chat
                   </button>
                   <button
                     onClick={handleAddToWishlist}
-                    className={`flex flex-col items-center gap-1.5 transition ${wishlistStatus === "success" ? "text-red-500" : "hover:text-[#1172BA]"}`}
+                    className={`flex flex-col items-center gap-1.5 transition ${wishlistStatus === "success" ? "text-red-500" : "hover:text-[var(--hover-color)]"}`}
                   >
                     <Heart
                       size={20}
@@ -582,7 +627,7 @@ export default function ProductDetailSection({
                     />{" "}
                     Wishlist
                   </button>
-                  <button className="flex flex-col items-center gap-1.5 hover:text-[#1172BA] transition">
+                  <button className="flex flex-col items-center gap-1.5 hover:text-[var(--hover-color)] transition">
                     <Share2 size={20} strokeWidth={1.5} /> Share
                   </button>
                 </div>
@@ -641,6 +686,82 @@ export default function ProductDetailSection({
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* ================= CHAT POPUP MODAL ================= */}
+      {isChatOpen && (
+        <div className="fixed bottom-0 right-0 md:bottom-6 md:right-6 w-full md:w-[350px] h-[500px] md:h-[550px] bg-white md:rounded-2xl shadow-2xl flex flex-col z-[100] border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5">
+          {/* Header */}
+          <div 
+            className="p-4 flex items-center justify-between text-white shadow-sm"
+            style={{ backgroundColor: visual.navbarColor }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <MessageCircle size={20} className="text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-[15px] font-['Nohemi']">Admin Evomi</h3>
+                <p className="text-[12px] opacity-90 font-['Parkinsans']">Biasanya membalas dalam 5 menit</p>
+              </div>
+            </div>
+            <button onClick={() => setIsChatOpen(false)} className="p-2 hover:bg-white/20 rounded-full transition">
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 p-4 bg-gray-50 overflow-y-auto flex flex-col gap-3 font-['Parkinsans'] custom-scrollbar">
+            {chatMessages.map((msg, idx) => (
+              <div key={idx} className={`max-w-[85%] p-3 rounded-2xl text-[14px] ${msg.sender === 'user' ? 'self-end text-white rounded-tr-sm' : 'self-start bg-white border border-gray-100 text-gray-800 rounded-tl-sm shadow-sm'}`} style={msg.sender === 'user' ? { backgroundColor: visual.navbarColor } : {}}>
+                {msg.text}
+              </div>
+            ))}
+          </div>
+
+          {/* Input Area */}
+          <div className="p-4 bg-white border-t border-gray-100">
+            <form onSubmit={handleSendMessage} className="flex gap-2">
+              <input 
+                type="text" 
+                value={currentMessage}
+                onChange={(e) => setCurrentMessage(e.target.value)}
+                placeholder="Tulis pesan..." 
+                className="flex-1 bg-gray-100 text-[14px] rounded-full px-4 py-2.5 outline-none focus:ring-2 transition-all font-['Parkinsans']"
+                style={{ '--tw-ring-color': visual.navbarColor + '80' } as React.CSSProperties}
+              />
+              <button 
+                type="submit"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 hover:opacity-90 transition-opacity shadow-sm"
+                style={{ backgroundColor: visual.navbarColor }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= STICKY LINGKARAN DIVIDER BAWAH ================= */}
+      <div className="absolute bottom-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none">
+        <style>{`
+          @keyframes slideLeftSeamless {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+          }
+          .animate-slide-left-40s {
+            animation: slideLeftSeamless 80s linear infinite;
+          }
+        `}</style>
+        <div className="flex w-max gap-[10px] md:gap-[15px] animate-slide-left-40s">
+          {Array.from({ length: 80 }).map((_, index) => (
+            <div
+              key={`bottom-${index}`}
+              className="w-[30px] h-[30px] md:w-[46px] md:h-[46px] rounded-full flex-shrink-0"
+              style={{ backgroundColor: visual.navbarColor }}
+            />
+          ))}
         </div>
       </div>
     </section>
