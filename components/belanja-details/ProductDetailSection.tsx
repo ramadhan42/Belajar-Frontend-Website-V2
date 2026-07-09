@@ -315,7 +315,15 @@ export default function ProductDetailSection({
         </div>
 
         {/* ================= TENGAH: DETAIL INFO (Col 5) ================= */}
-        <div className="lg:col-span-5 flex flex-col text-left w-full relative">
+        <div
+          id="detail-info-scroll"
+          className="lg:col-span-5 flex flex-col text-left w-full relative overflow-y-auto"
+          style={{
+            maxHeight: "calc(100vh - 8rem)",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          } as React.CSSProperties}
+        >
           {/* TITLE & DESC (Sesuai title desc.PNG) */}
           <h1
             className="font-nohemi text-[42px] font-semibold leading-tight mb-2 tracking-tight"
@@ -460,7 +468,7 @@ export default function ProductDetailSection({
               <p>
                 1. Setiap complain kerusakan barang WAJIB menyertakan video
                 unboxing (tanpa cut dan tanpa edit). Complain TANPA MENGIRIMKAN
-                VIDEO UNBOXING tidak dapat kami terima dan proses .
+                VIDEO UNBOXING tidak dapat kami terima dan proses.
               </p>
               <p>
                 2. Untuk kartu ucapan bisa ditambahkan di catatan saat co
@@ -515,7 +523,7 @@ export default function ProductDetailSection({
         <div className="lg:col-span-3 w-full relative">
           <div className="sticky top-24 flex flex-col gap-4">
             {/* MAIN CART BOX (Sesuai card kanan.PNG) */}
-            <div className="bg-white border border-gray-200 rounded-[16px] shadow-sm overflow-hidden w-[320px] h-[567.3px]">
+            <div className="bg-white border border-gray-200 rounded-[16px] shadow-sm overflow-hidden w-[295px] h-[567.3px]">
               {/* Header Box */}
               <div
                 className="px-4 py-2 text-[#FFFFFF] flex items-center gap-2 font-parkinsans font-medium text-[14px]"
@@ -752,6 +760,9 @@ export default function ProductDetailSection({
           }
           .animate-slide-left-40s {
             animation: slideLeftSeamless 80s linear infinite;
+          }
+          #detail-info-scroll::-webkit-scrollbar {
+            display: none;
           }
         `}</style>
         <div className="flex w-max gap-[10px] md:gap-[15px] animate-slide-left-40s">

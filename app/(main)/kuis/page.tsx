@@ -331,18 +331,46 @@ export default function KuisPage() {
     );
   }
 
+  // placeholder kuis saat loading
   if (isLoadingQuestions) {
     return (
-      // Diatur agar posisinya otomatis di tengah
-      <div className="w-full bg-[#F6F6F6] flex flex-col items-center justify-center min-h-screen py-12 md:py-16 px-4">
-        <div className="w-full max-w-[900px] min-h-[420px] rounded-[24px] bg-white shadow-2xl overflow-hidden animate-pulse">
-          <div className="h-[160px] bg-[#1172BA]/30" />
-          <div className="p-8 space-y-4">
-            <div className="h-6 bg-gray-200 rounded w-3/4" />
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-14 bg-gray-100 rounded-[16px]" />
-              ))}
+      <div className="w-full bg-[#F6F6F6] flex flex-col items-center justify-center pb-4 md:pb-12 md:pt-10 px-4 md:px-6">
+        <div className="w-full max-w-[900px] min-h-[420px] rounded-[24px] flex flex-col shadow-2xl overflow-hidden bg-white animate-pulse">
+          {/* Header placeholder — cocok dengan h-[160px] + padding card asli */}
+          <div className="px-8 md:px-10 py-6 shrink-0 flex flex-col justify-center h-[160px] bg-[#1172BA]/30">
+            {/* Ikon + label "Scent Finder Quiz" */}
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-white/40" />
+              <div className="h-3 w-28 rounded bg-white/40" />
+            </div>
+            {/* Judul besar */}
+            <div className="h-8 w-48 rounded bg-white/40 mt-1" />
+            {/* Progress bar */}
+            <div className="mt-4 w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <div className="h-full w-1/5 bg-white/40 rounded-full" />
+            </div>
+          </div>
+
+          {/* Body placeholder — cocok dengan px-6 md:px-10 py-6 md:py-8 card asli */}
+          <div className="flex-grow px-6 md:px-10 py-6 md:py-8 flex flex-col justify-center">
+            <div className="flex flex-col h-full justify-between">
+              {/* Teks pertanyaan */}
+              <div className="space-y-2">
+                <div className="h-5 bg-gray-200 rounded w-11/12" />
+                <div className="h-5 bg-gray-200 rounded w-2/3" />
+              </div>
+              {/* Grid 4 pilihan jawaban (2 kolom) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="h-[52px] bg-[#EFEFEF] rounded-[16px] flex items-center justify-between px-4"
+                  >
+                    <div className="h-3 bg-gray-300 rounded w-2/3" />
+                    <div className="w-4 h-4 rounded-full bg-gray-300 shrink-0" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
