@@ -3,7 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { SITE_STRINGS } from "@/components/constans/strings";
-import { Loader2, User, Mail, Lock, MapPin, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  Loader2,
+  User,
+  Mail,
+  Lock,
+  MapPin,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_URL || SITE_STRINGS.base_url.url_backend_deploy;
@@ -136,8 +144,12 @@ export default function ProfilePage() {
         <div className="relative flex items-center justify-center h-16 w-16 rounded-2xl bg-gray-50 mb-4 animate-pulse">
           <Loader2 className="w-8 h-8 text-black animate-spin" />
         </div>
-        <p className="text-gray-800 font-semibold text-base">Sinkronisasi Data</p>
-        <p className="text-gray-400 text-sm font-light mt-1">Mengambil profil akun Anda...</p>
+        <p className="text-gray-800 font-semibold text-base">
+          Sinkronisasi Data
+        </p>
+        <p className="text-gray-400 text-sm font-light mt-1">
+          Mengambil profil akun Anda...
+        </p>
       </div>
     );
   }
@@ -149,7 +161,8 @@ export default function ProfilePage() {
           Informasi Pribadi
         </h1>
         <p className="text-sm text-gray-500 font-light mt-1">
-          Perbarui informasi akun, email, dan alamat pengiriman utama Anda di sini.
+          Perbarui informasi akun, email, dan alamat pengiriman utama Anda di
+          sini.
         </p>
       </div>
 
@@ -157,16 +170,22 @@ export default function ProfilePage() {
       {status.message && (
         <div
           className={`mb-6 p-4 rounded-2xl text-sm font-medium transition-all duration-300 flex items-center gap-3 border ${
-            status.type === "success" 
-              ? "bg-emerald-50 border-emerald-100 text-emerald-800" 
-              : status.type === "error" 
-                ? "bg-rose-50 border-rose-100 text-rose-800" 
+            status.type === "success"
+              ? "bg-emerald-50 border-emerald-100 text-emerald-800"
+              : status.type === "error"
+                ? "bg-rose-50 border-rose-100 text-rose-800"
                 : "bg-gray-50 border-gray-100 text-gray-700 animate-pulse"
           }`}
         >
-          {status.type === "success" && <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />}
-          {status.type === "error" && <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />}
-          {status.type === "processing" && <Loader2 className="w-5 h-5 text-gray-600 animate-spin shrink-0" />}
+          {status.type === "success" && (
+            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
+          )}
+          {status.type === "error" && (
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+          )}
+          {status.type === "processing" && (
+            <Loader2 className="w-5 h-5 text-gray-600 animate-spin shrink-0" />
+          )}
           <span>{status.message}</span>
         </div>
       )}
@@ -174,7 +193,6 @@ export default function ProfilePage() {
       {/* Form dengan UI Modern */}
       <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          
           {/* Nama Lengkap */}
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">
@@ -219,7 +237,10 @@ export default function ProfilePage() {
         {/* Password Baru */}
         <div className="space-y-2">
           <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">
-            Kata Sandi Baru <span className="text-gray-400 font-normal lowercase italic">(kosongkan jika tidak diubah)</span>
+            Kata Sandi Baru{" "}
+            <span className="text-gray-400 font-normal lowercase italic">
+              (kosongkan jika tidak diubah)
+            </span>
           </label>
           <div className="relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">

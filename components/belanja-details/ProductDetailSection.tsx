@@ -228,6 +228,104 @@ export default function ProductDetailSection({
     twitter: `https://twitter.com/intent/tweet?url=${urlToShare}&text=${textToShare}`,
   };
 
+  // State untuk Modal Chat
+  const [showChatModal, setShowChatModal] = useState(false);
+
+  // Template Pesan Cepat
+  const chatTemplates = [
+    "Hai, barang ini ready?",
+    "Bisa dikirim hari ini?",
+    "Terima kasih",
+  ];
+
+  // Fungsi Kirim Chat via API Contact
+  const handleSendChat = async (text: string) => {
+    if (!text || text.trim() === "") return;
+
+    // 1. CEK LOGIN
+    const userDataStr =
+      typeof window !== "undefined" ? localStorage.getItem("auth_user") : null;
+
+    if (!userDataStr) {
+      setAlertInfo({
+        show: true,
+        type: "error", // Menggunakan tipe error
+        message:
+          "Anda harus login terlebih dahulu untuk mengirim pesan ke admin.",
+      });
+      return;
+    }
+
+    const user = JSON.parse(userDataStr);
+    const productName = product?.title || "Produk";
+
+    // 2. Siapkan Data Form
+    const formData = new FormData();
+    formData.append("name", user.name || "User Evomi");
+    formData.append("email", user.email || "user@evomi.com");
+    formData.append("subject", `Chat Produk, ${productName}`);
+    formData.append("message", `${text}\n\nLink Produk: ${productUrl}`);
+
+    // 3. Kirim Data ke API Laravel
+    setIsSendingChat(true);
+    try {
+      const BASE_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
+      const response = await fetch(`${BASE_URL}/contact`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok || data.success) {
+        // MODAL SUKSES
+        setAlertInfo({
+          show: true,
+          type: "success",
+          message: "Pesan berhasil dikirim ke Admin!",
+        });
+        setShowChatModal(false);
+        setCustomMessage("");
+      } else {
+        // MODAL ERROR (RESPON API)
+        setAlertInfo({
+          show: true,
+          type: "error",
+          message: data.message || "Gagal mengirim pesan.",
+        });
+      }
+    } catch (error) {
+      console.error("Error sending chat:", error);
+      // MODAL ERROR (SISTEM)
+      setAlertInfo({
+        show: true,
+        type: "error",
+        message: "Terjadi kesalahan sistem saat mengirim pesan.",
+      });
+    } finally {
+      setIsSendingChat(false);
+    }
+  };
+
+  const [customMessage, setCustomMessage] = useState("");
+  const [isSendingChat, setIsSendingChat] = useState(false);
+
+  // State untuk Custom Alert
+  const [alertInfo, setAlertInfo] = useState<{
+    show: boolean;
+    message: string;
+    type: "error" | "success";
+  }>({
+    show: false,
+    message: "",
+    type: "error",
+  });
+
   useEffect(() => {
     const BASE_URL = "http://127.0.0.1:8000"; // Sesuaikan dengan base URL proyekmu
 
@@ -975,40 +1073,47 @@ export default function ProductDetailSection({
           </div>
 
           {/* Input Area */}
-          <div className="p-4 bg-white border-t border-gray-100">
-            <form onSubmit={handleSendMessage} className="flex gap-2">
-              <input
-                type="text"
-                value={currentMessage}
-                onChange={(e) => setCurrentMessage(e.target.value)}
-                placeholder="Tulis pesan..."
-                className="flex-1 bg-gray-100 text-[14px] rounded-full px-4 py-2.5 outline-none focus:ring-2 transition-all font-['Parkinsans']"
-                style={
-                  {
-                    "--tw-ring-color": visual.navbarColor + "80",
-                  } as React.CSSProperties
-                }
+          {/* Body Modal - Chat */}
+          <div className="p-5 flex flex-col gap-4 bg-[#F8F9FA]">
+            {/* Text Area Custom Pesan */}
+            <div className="flex flex-col gap-2">
+              <textarea
+                value={customMessage}
+                onChange={(e) => setCustomMessage(e.target.value)}
+                placeholder="Ketik pesan Anda ke admin di sini..."
+                className="w-full p-3 rounded-[16px] border border-[#E5E7EB] text-[14px] font-parkinsans outline-none focus:border-[#101828] resize-none"
+                rows={3}
               />
               <button
-                type="submit"
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 hover:opacity-90 transition-opacity shadow-sm"
+                onClick={() => handleSendChat(customMessage)}
+                disabled={!customMessage.trim() || isSendingChat}
+                className="w-full py-3 rounded-[12px] font-parkinsans font-bold text-white transition-opacity disabled:opacity-50"
                 style={{ backgroundColor: visual.navbarColor }}
               >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
+                {isSendingChat ? "Mengirim..." : "Kirim Pesan"}
               </button>
-            </form>
+            </div>
+
+            {/* Template Cepat */}
+            <div className="flex flex-col gap-2 mt-2">
+              <p className="text-[12px] text-gray-500 font-parkinsans text-center mb-1">
+                - Atau pilih pesan cepat -
+              </p>
+              {chatTemplates.map((template, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSendChat(template)}
+                  disabled={isSendingChat}
+                  className="w-full text-left p-3.5 bg-white rounded-[16px] border border-[#E5E7EB] hover:border-gray-300 hover:shadow-sm transition-all font-parkinsans text-[14px] text-[#364153] flex justify-between items-center group disabled:opacity-50"
+                >
+                  <span className="line-clamp-1">"{template}"</span>
+                  <MessageCircle
+                    size={16}
+                    className="text-gray-300 group-hover:text-gray-700 transition-colors shrink-0"
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -1181,6 +1286,73 @@ export default function ProductDetailSection({
                   {isCopied ? "Disalin" : "Salin"}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL CUSTOM ALERT ================= */}
+      {/* ================= MODAL CUSTOM ALERT (Dinamis: Error & Success) ================= */}
+      {alertInfo.show && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-[360px] rounded-[24px] shadow-2xl p-6 text-center relative overflow-hidden">
+            {/* Ikon Dinamis */}
+            <div
+              className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${
+                alertInfo.type === "success"
+                  ? "bg-green-50 text-green-500"
+                  : "bg-amber-50 text-amber-500"
+              }`}
+            >
+              {alertInfo.type === "success" ? (
+                <CheckCircle size={28} />
+              ) : (
+                <Shield size={28} />
+              )}
+            </div>
+
+            {/* Judul & Pesan */}
+            <h3 className="font-nohemi text-[18px] font-bold text-[#1E2939] mb-2">
+              {alertInfo.type === "success" ? "Berhasil!" : "Perlu Login"}
+            </h3>
+            <p className="font-parkinsans text-[14px] text-[#6A7282] mb-6">
+              {alertInfo.message}
+            </p>
+
+            {/* Tombol Aksi */}
+            <div className="flex gap-3">
+              {alertInfo.type === "error" ? (
+                <>
+                  <button
+                    onClick={() =>
+                      setAlertInfo({ show: false, message: "", type: "error" })
+                    }
+                    className="flex-1 py-3 rounded-[12px] font-parkinsans font-semibold text-[14px] bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    Tutup
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAlertInfo({ show: false, message: "", type: "error" });
+                      router.push("/login"); // Mengarahkan ke halaman login
+                    }}
+                    className="flex-1 py-3 rounded-[12px] font-parkinsans font-semibold text-[14px] text-white transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: visual.navbarColor }}
+                  >
+                    Login Sekarang
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() =>
+                    setAlertInfo({ show: false, message: "", type: "error" })
+                  }
+                  className="w-full py-3 rounded-[12px] font-parkinsans font-semibold text-[14px] text-white transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: visual.navbarColor }}
+                >
+                  Tutup
+                </button>
+              )}
             </div>
           </div>
         </div>

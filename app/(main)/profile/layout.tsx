@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, ShoppingCart, History, Heart } from 'lucide-react';
+import { User, ShoppingCart, History, Heart, MessageCircle } from 'lucide-react';
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -10,6 +10,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
   // Daftar menu untuk mempermudah deteksi active state
   const menuItems = [
     { href: '/profile', label: 'Pengaturan Profil', icon: User },
+    { href: '/profile/chat', label: 'Pesan Anda', icon: MessageCircle },
     { href: '/profile/cart', label: 'Keranjang Belanja', icon: ShoppingCart },
     { href: '/profile/history', label: 'Riwayat Belanja', icon: History },
     { href: '/profile/wishlist', label: 'Wishlist', icon: Heart },
