@@ -53,6 +53,14 @@ export interface Product {
   gender?: string;
   quantity?: number;
   stock_status?: string;
+  
+  alamat_awal_pengiriman?: string;
+  kondisi?: string;
+  kategori?: string;
+  berat_satuan?: number;
+  brand?: string;
+  etalase?: string;
+
   created_at?: string;
   updated_at?: string;
 }
