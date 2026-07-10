@@ -73,10 +73,11 @@ export default function Navbar() {
     return pathname.startsWith(path);
   };
 
-  // Class menu: aktif = bg-white teks warna navbar, tidak aktif = teks putih + hover bg-white
-  // PERUBAHAN: Mengganti w-[90px] menjadi md:w-auto dan menambahkan md:px-5 (padding horizontal)
+  // PERUBAHAN UTAMA 1:
+  // Menggunakan width (md:w-[110px]) dan height (md:h-[44px]) tetap
+  // Menghapus padding md:px-6 agar kotak hover besarnya seragam di semua menu
   const navItemClass = (path: string) =>
-    `flex justify-center items-center w-full md:w-auto md:px-6 text-[12px] md:text-[18px] py-2.5 font-normal rounded-full text-center hover-bold-effect transition-colors duration-300 ${
+    `flex justify-center items-center w-full py-2.5 md:py-0 md:w-[110px] md:h-[44px] text-[12px] md:text-[17px] font-normal rounded-full text-center hover-bold-effect transition-colors duration-300 ${
       isActive(path)
         ? "bg-white text-[var(--nav-color)]"
         : "text-white hover:bg-white hover:text-[var(--nav-color)]"
@@ -204,9 +205,11 @@ export default function Navbar() {
     }
   };
 
-  // PERUBAHAN: Mengganti w-[90px] menjadi md:w-auto dan menambahkan md:px-5
+  // PERUBAHAN UTAMA 2:
+  // Class untuk menu Login dan Register dibuat identik dengan navItemClass 
+  // menggunakan md:w-[110px] dan md:h-[44px]
   const navLinkClass =
-    "flex justify-center items-center w-full md:w-auto md:px-6 text-[12px] md:text-[18px] py-2.5 font-normal rounded-full text-center text-white hover:bg-white hover:text-[var(--nav-color)] hover-bold-effect transition-colors duration-300";
+    "flex justify-center items-center w-full py-2.5 md:py-0 md:w-[110px] md:h-[44px] text-[12px] md:text-[17px] font-normal rounded-full text-center text-white hover:bg-white hover:text-[var(--nav-color)] hover-bold-effect transition-colors duration-300";
 
   return (
     <>
@@ -267,8 +270,8 @@ export default function Navbar() {
             </motion.div>
 
             {/* DESKTOP: MENU TENGAH */}
-            {/* Tetap menggunakan space-x-0.5 agar antar menu tetap rapat */}
-            <div className="hidden md:flex items-center space-x-0.5">
+            {/* Menggunakan space-x-1 agar rapih berdampingan */}
+            <div className="hidden md:flex items-center space-x-1">
               <motion.div variants={itemVariants}>
                 <Link
                   href="/"
@@ -336,7 +339,6 @@ export default function Navbar() {
             </div>
 
             {/* DESKTOP: MENU KANAN */}
-            {/* Tetap menggunakan space-x-1 agar Login dan Daftar tetap rapat */}
             <div className="hidden md:flex items-center space-x-1 md:mr-2">
               {userEmail ? (
                 <>
@@ -351,14 +353,11 @@ export default function Navbar() {
                           "Membuka halaman profil Anda...",
                         )
                       }
-                      // TAMBAHKAN class "relative" di baris bawah ini agar posisi badge terkunci di sudut lingkaran
                       className="relative flex items-center justify-center w-[44px] h-[44px] rounded-full bg-white text-[var(--nav-color)] font-bold text-[18px] border border-white hover:bg-transparent hover:text-white transition-colors duration-300"
                       title={userEmail}
                     >
-                      {/* Huruf Inisial User */}
                       {userEmail.charAt(0).toUpperCase()}
 
-                      {/* BADGE SINYAL MERAH (Hanya muncul jika unreadCount > 0) */}
                       {unreadCount > 0 && (
                         <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-black shadow-sm animate-pulse">
                           {unreadCount > 99 ? "99+" : unreadCount}
@@ -371,18 +370,12 @@ export default function Navbar() {
                       onClick={confirmLogout}
                       disabled={isLogoutLoading}
                       onMouseEnter={(e) => {
-                        (
-                          e.currentTarget as HTMLButtonElement
-                        ).style.backgroundColor = "white";
-                        (e.currentTarget as HTMLButtonElement).style.color =
-                          `${finalBg}99`;
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = "white";
+                        (e.currentTarget as HTMLButtonElement).style.color = `${finalBg}99`;
                       }}
                       onMouseLeave={(e) => {
-                        (
-                          e.currentTarget as HTMLButtonElement
-                        ).style.backgroundColor = "rgba(255,255,255,0.15)";
-                        (e.currentTarget as HTMLButtonElement).style.color =
-                          "white";
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(255,255,255,0.15)";
+                        (e.currentTarget as HTMLButtonElement).style.color = "white";
                       }}
                       className={`${navLinkClass} bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed`}
                       style={{ color: "white" }}
@@ -597,14 +590,13 @@ export default function Navbar() {
         </nav>
       </motion.div>
 
-      {/* CUSTOM MODAL: DIKELUARKAN DARI CONTAINER NAVBAR UNTUK MEMASTIKAN Z-INDEX DAN POSISI TENGAH */}
+      {/* CUSTOM MODAL */}
       <AnimatePresence>
         {navModal.isOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            // z-[9999] agar dipastikan paling atas
             className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
             onClick={() => {
               if (navModal.type === "confirm")
@@ -617,10 +609,8 @@ export default function Navbar() {
               exit={{ opacity: 0, scale: 0.8, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              // SIZING UNTUK GALAXY S20: max-w-[280px] & p-5 di mobile agar proporsional
               className="relative bg-white rounded-[20px] md:rounded-[24px] p-5 md:p-8 max-w-[280px] md:max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
             >
-              {/* IKON: h-14 w-14 di mobile */}
               <div
                 className={`mx-auto flex items-center justify-center h-14 w-14 md:h-20 md:w-20 rounded-full mb-3 md:mb-5 transition-colors duration-300
                 ${navModal.type === "success" ? "bg-green-50 text-green-500" : ""}
@@ -687,7 +677,6 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* TEKS: Ukuran font lebih proporsional untuk S20 */}
               <div className="space-y-1.5 md:space-y-3">
                 <h3 className="text-[16px] md:text-[20px] font-bold text-gray-800 tracking-wide">
                   {navModal.title}
@@ -697,7 +686,6 @@ export default function Navbar() {
                 </p>
               </div>
 
-              {/* TOMBOL: Padding vertical dikurangi */}
               {navModal.type === "confirm" && (
                 <div className="flex space-x-2 md:space-x-3 mt-4 md:mt-6">
                   <button
