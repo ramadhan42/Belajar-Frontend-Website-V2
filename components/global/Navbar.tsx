@@ -8,6 +8,8 @@ import { useNavbarColor } from "@/context/NavbarColorContext";
 import { logout } from "@/lib/api";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 
+import { SITE_STRINGS } from "@/components/constans/strings";
+
 interface NavModalState {
   isOpen: boolean;
   type: "confirm" | "loading" | "success";
@@ -22,6 +24,48 @@ export default function Navbar() {
   const { navbarColor } = useNavbarColor();
   const router = useRouter();
   const pathname = usePathname();
+
+  // STATE UNTUK BADGE MERAH
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const storedUser = localStorage.getItem("auth_user");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        if (user.email) {
+          const res = await fetch(
+            `${SITE_STRINGS.base_url.url_backend}/api/contact/unread-count?email=${user.email}`,
+          );
+          const data = await res.json();
+          if (data.success) {
+            setUnreadCount(data.count);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Gagal load unread badge di Navbar:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Jalankan saat Navbar pertama dimuat
+    fetchUnreadCount();
+
+    // Polling setiap 5 detik agar Navbar selalu up-to-date
+    const intervalId = setInterval(() => {
+      fetchUnreadCount();
+    }, 5000);
+
+    // Menangkap sinyal "messages_read" yang dikirim oleh ChatPage
+    // agar angka merah langsung hilang saat chat dibuka
+    window.addEventListener("messages_read", fetchUnreadCount);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener("messages_read", fetchUnreadCount);
+    };
+  }, [pathname]); // Akan mengecek ulang setiap kali user pindah halaman
 
   // Helper: cek apakah menu aktif berdasarkan path
   const isActive = (path: string) => {
@@ -307,10 +351,19 @@ export default function Navbar() {
                           "Membuka halaman profil Anda...",
                         )
                       }
-                      className="flex items-center justify-center w-[44px] h-[44px] rounded-full bg-white text-[var(--nav-color)] font-bold text-[18px] border border-white hover:bg-transparent hover:text-white transition-colors duration-300"
+                      // TAMBAHKAN class "relative" di baris bawah ini agar posisi badge terkunci di sudut lingkaran
+                      className="relative flex items-center justify-center w-[44px] h-[44px] rounded-full bg-white text-[var(--nav-color)] font-bold text-[18px] border border-white hover:bg-transparent hover:text-white transition-colors duration-300"
                       title={userEmail}
                     >
+                      {/* Huruf Inisial User */}
                       {userEmail.charAt(0).toUpperCase()}
+
+                      {/* BADGE SINYAL MERAH (Hanya muncul jika unreadCount > 0) */}
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-black shadow-sm animate-pulse">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
+                      )}
                     </Link>
                   </motion.div>
                   <motion.div variants={itemVariants}>

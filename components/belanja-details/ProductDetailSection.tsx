@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useNavbarColor } from "@/context/NavbarColorContext";
 import {
@@ -29,6 +29,36 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { SITE_STRINGS } from "../constans/strings";
+
+// Tambahkan di area interface
+interface ContactReply {
+  id: number;
+  reply_message: string;
+  replied_by: number;
+  created_at: string;
+  is_read_by_user?: number | boolean;
+}
+
+interface ContactMessage {
+  id: number;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  created_at: string;
+  is_read_by_admin?: number | boolean;
+  replies?: ContactReply[];
+}
+
+interface ChatBubble {
+  id: string;
+  type: "user" | "admin";
+  text: string;
+  createdAt: string;
+  subject?: string;
+  isReadByAdmin: boolean;
+  isReadByUser: boolean;
+}
 
 // ---------------------------------------------------------------------------
 // Data visual statis
@@ -325,6 +355,101 @@ export default function ProductDetailSection({
     message: "",
     type: "error",
   });
+
+  // STATE UNTUK RIWAYAT CHAT DI PRODUCT PAGE
+  const [chatHistory, setChatHistory] = useState<ChatBubble[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [userData, setUserData] = useState({ name: "", email: "" });
+  
+  // (Opsional) Jika Anda menggunakan useRef untuk auto-scroll chat
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+
+  // AMBIL DATA USER LOGIN
+  useEffect(() => {
+    const storedUser = localStorage.getItem("auth_user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUserData({
+        name: parsedUser.name || "Pelanggan",
+        email: parsedUser.email || ""
+      });
+    }
+  }, []);
+
+  // FUNGSI LOAD CHAT HISTORY
+  const fetchProductChat = async () => {
+    if (!userData.email) return;
+
+    const parseBoolean = (val: any) => val === true || val === 1 || val === "1" || val === "true" || val === "t";
+
+    try {
+      // 1. Ambil jumlah unread (untuk badge di tombol chat floating)
+      const countRes = await fetch(`${SITE_STRINGS.base_url.url_backend}/api/contact/unread-count?email=${userData.email}`);
+      const countData = await countRes.json();
+      if (countData.success) setUnreadCount(countData.count);
+
+      // 2. Ambil riwayat chat lengkap
+      const res = await fetch(`${SITE_STRINGS.base_url.url_backend}/api/contact?email=${userData.email}`);
+      const data = await res.json();
+
+      if (data.success) {
+        const rawMessages: ContactMessage[] = data.data;
+        const flattenedChats: ChatBubble[] = [];
+
+        rawMessages.forEach((msg) => {
+          const readByAdmin = parseBoolean(msg.is_read_by_admin) || (msg.replies && msg.replies.length > 0);
+          flattenedChats.push({
+            id: `msg-${msg.id}`,
+            type: "user",
+            text: msg.message,
+            createdAt: msg.created_at,
+            subject: msg.subject,
+            isReadByAdmin: Boolean(readByAdmin),
+            isReadByUser: true, 
+          });
+
+          if (msg.replies && msg.replies.length > 0) {
+            msg.replies.forEach((reply) => {
+              flattenedChats.push({
+                id: `reply-${reply.id}`,
+                type: "admin",
+                text: reply.reply_message,
+                createdAt: reply.created_at,
+                isReadByAdmin: true,
+                isReadByUser: parseBoolean(reply.is_read_by_user), 
+              });
+            });
+          }
+        });
+
+        flattenedChats.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        setChatHistory(flattenedChats);
+      }
+    } catch (error) {
+      console.error("Gagal memuat chat product page:", error);
+    }
+  };
+
+  // POLLING SETIAP 5 DETIK
+  useEffect(() => {
+    if (userData.email) {
+      fetchProductChat();
+      const interval = setInterval(fetchProductChat, 5000);
+      
+      // Jika modal chat product sedang terbuka, tandai semua dibaca
+      // (Asumsi state Anda bernama isChatOpen, ganti dengan state yang sesuai)
+      // if (isChatOpen) markAsRead(); 
+
+      return () => clearInterval(interval);
+    }
+  }, [userData.email]);
+
+  // AUTO SCROLL CHAT BUBBLE
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatHistory]);
 
   useEffect(() => {
     const BASE_URL = "http://127.0.0.1:8000"; // Sesuaikan dengan base URL proyekmu
