@@ -273,6 +273,8 @@ function CheckoutContent() {
         message: "Pesanan Anda berhasil dibuat dan sedang diproses.",
         type: "success",
       });
+      window.dispatchEvent(new Event("cart_updated"));
+      window.dispatchEvent(new Event("history_updated"));
     } catch (err: any) {
       setModal({
         isOpen: true,
@@ -389,7 +391,7 @@ function CheckoutContent() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <Loader2 className="w-10 h-10 animate-spin text-gray-400 mb-4" />
-        <p className="text-gray-500 font-['Parkinsans']">
+        <p className="text-gray-500 font-parkinsans">
           Mempersiapkan pesanan...
         </p>
       </div>
@@ -399,7 +401,7 @@ function CheckoutContent() {
   if (error) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
-        <p className="text-red-500 mb-4 font-['Nohemi']">{error}</p>
+        <p className="text-red-500 mb-4 font-nohemi">{error}</p>
         <button
           onClick={() => router.back()}
           className="px-5 py-2 bg-black text-white rounded-xl text-sm"
@@ -426,7 +428,7 @@ function CheckoutContent() {
       <div className="max-w-6xl mx-auto px-4 md:px-8 relative z-10">
         <div className="flex justify-between items-end mb-6 md:mb-8">
           <h1
-            className="text-3xl md:text-4xl font-bold font-['Nohemi']"
+            className="text-3xl md:text-4xl font-bold font-nohemi"
             style={{ color: visual.navbarColor }}
           >
             Penyelesaian Pesanan
@@ -448,14 +450,14 @@ function CheckoutContent() {
             {/* Form Informasi Pengiriman */}
             <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-5 md:p-8 transition-all">
               <h2
-                className="text-xl md:text-2xl font-bold font-['Nohemi'] mb-4 md:mb-6 flex items-center gap-2"
+                className="text-xl md:text-2xl font-bold font-nohemi mb-4 md:mb-6 flex items-center gap-2"
                 style={{ color: visual.navbarColor }}
               >
                 <MapPin className="w-5 h-5 md:w-6 md:h-6" />
                 Informasi Pengiriman
               </h2>
 
-              <div className="space-y-4 md:space-y-5 font-['Parkinsans'] text-sm md:text-base">
+              <div className="space-y-4 md:space-y-5 font-parkinsans text-sm md:text-base">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -560,13 +562,13 @@ function CheckoutContent() {
             {/* Section Pilihan Metode Pembayaran */}
             <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-5 md:p-8 transition-all">
               <h2
-                className="text-xl md:text-2xl font-bold font-['Nohemi'] mb-4 md:mb-6 flex items-center gap-2"
+                className="text-xl md:text-2xl font-bold font-nohemi mb-4 md:mb-6 flex items-center gap-2"
                 style={{ color: visual.navbarColor }}
               >
                 <Banknote className="w-5 h-5 md:w-6 md:h-6" />
                 Metode Pembayaran
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 font-['Parkinsans']">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 font-parkinsans">
                 {[
                   {
                     id: "qris",
@@ -650,7 +652,7 @@ function CheckoutContent() {
           <div className="lg:col-span-4">
             <div className="bg-white rounded-[20px] p-5 md:p-8 shadow-sm border border-gray-100 sticky top-24">
               <h2
-                className="text-xl md:text-2xl font-bold font-['Nohemi'] mb-4 md:mb-6"
+                className="text-xl md:text-2xl font-bold font-nohemi mb-4 md:mb-6"
                 style={{ color: visual.navbarColor }}
               >
                 Ringkasan Pesanan
@@ -670,10 +672,10 @@ function CheckoutContent() {
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-sm md:text-base font-bold text-gray-900 line-clamp-2 font-['Nohemi'] mb-1">
+                      <h3 className="text-sm md:text-base font-bold text-gray-900 line-clamp-2 font-nohemi mb-1">
                         {item.title}
                       </h3>
-                      <p className="text-xs md:text-sm text-gray-500 font-['Parkinsans']">
+                      <p className="text-xs md:text-sm text-gray-500 font-parkinsans">
                         {item.quantity} x {formatProductPrice(item.price)}
                       </p>
                     </div>
@@ -681,7 +683,7 @@ function CheckoutContent() {
                 ))}
               </div>
 
-              <div className="space-y-3 text-sm md:text-base font-['Parkinsans'] border-t border-gray-100 pt-4 md:pt-6 mb-6">
+              <div className="space-y-3 text-sm md:text-base font-parkinsans border-t border-gray-100 pt-4 md:pt-6 mb-6">
                 <div className="flex justify-between text-gray-500">
                   <span>Subtotal</span>
                   <span>{formatProductPrice(subtotal)}</span>
@@ -691,7 +693,7 @@ function CheckoutContent() {
                   <span>{formatProductPrice(ongkosKirim)}</span>
                 </div>
                 <div
-                  className="flex justify-between text-xl md:text-2xl font-bold pt-2 md:pt-3 font-['Nohemi']"
+                  className="flex justify-between text-xl md:text-2xl font-bold pt-2 md:pt-3 font-nohemi"
                   style={{ color: visual.navbarColor }}
                 >
                   <span>Total</span>
@@ -738,12 +740,12 @@ function CheckoutContent() {
             </button>
 
             <h3
-              className="text-lg font-bold font-['Nohemi'] mb-1"
+              className="text-lg font-bold font-nohemi mb-1"
               style={{ color: visual.navbarColor }}
             >
               Selesaikan Pembayaran
             </h3>
-            <p className="text-xs text-gray-500 font-['Parkinsans'] mb-4">
+            <p className="text-xs text-gray-500 font-parkinsans mb-4">
               Scan QR Code ini menggunakan aplikasi e-wallet atau m-banking
             </p>
 
@@ -757,7 +759,7 @@ function CheckoutContent() {
               />
             </div>
 
-            <div className="mt-4 p-3 rounded-xl bg-blue-50 text-blue-800 text-xs font-['Parkinsans'] flex items-center justify-center gap-2">
+            <div className="mt-4 p-3 rounded-xl bg-blue-50 text-blue-800 text-xs font-parkinsans flex items-center justify-center gap-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
               Menunggu pembayaran...
             </div>

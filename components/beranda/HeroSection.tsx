@@ -8,8 +8,61 @@ import {
   useMotionValueEvent,
 } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+const HERO_PRODUCTS = [
+  {
+    id: 1,
+    title: "Purpose Prestige",
+    image: "/src/images/section 1/botol-purpose-prestige.png",
+    labelImage: "/src/images/section 1/purpose-prestige.png",
+    labelClass:
+      "left-[30%] md:left-[31%] top-[2%] md:top-[4%] w-[9.3%] h-[9.3%] md:w-[8.2%] md:h-[8.2%] hover:-rotate-[5deg]",
+    wrapClass: "left-[19.7%] top-[22.5%]",
+    rotateClass: "rotate-3",
+    floatDelay: 1.1,
+    zClass: "",
+  },
+  {
+    id: 3,
+    title: "Rebel Brave",
+    image: "/src/images/section 1/botol-rabel-brave.png",
+    labelImage: "/src/images/section 1/rabel-brave.png",
+    labelClass:
+      "left-[43%] top-[10.8%] md:top-[12.8%] w-[7.2%] h-[7.2%] md:w-[6.2%] md:h-[6.2%] hover:-rotate-[5deg]",
+    wrapClass: "left-[10.7%] top-[32%]",
+    rotateClass: "-rotate-3",
+    floatDelay: 1.4,
+    zClass: "z-30",
+  },
+  {
+    id: 2,
+    title: "Peaceful Calm",
+    image: "/src/images/section 1/botol-peaceful-calm.png",
+    labelImage: "/src/images/section 1/peaceful-calm.png",
+    labelClass:
+      "right-[38%] top-[7%] md:top-[3.8%] w-[8.2%] h-[8.2%] md:w-[7.2%] md:h-[7.2%] hover:rotate-[5deg]",
+    wrapClass: "top-[23%] right-[1%]",
+    rotateClass: "rotate-4",
+    floatDelay: 1.7,
+    zClass: "",
+  },
+  {
+    id: 4,
+    title: "Sweet Shy",
+    image: "/src/images/section 1/botol-sweet-shy.png",
+    labelImage: "/src/images/section 1/sweet-shy.png",
+    labelClass:
+      "right-[27%] md:right-[28%] top-[10.4%] md:top-[10.8%] w-[7.2%] h-[7.2%] md:w-[6.2%] md:h-[6.2%] hover:rotate-[5deg]",
+    wrapClass: "left-[-9.5%] top-[27%]",
+    rotateClass: "-rotate-4",
+    floatDelay: 2.0,
+    zClass: "z-30",
+  },
+];
 
 export default function HeroSection() {
+  const router = useRouter();
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
   const [isScrollVisible, setIsScrollVisible] = useState(true);
@@ -46,6 +99,10 @@ export default function HeroSection() {
   const yScroll = useTransform(scrollYProgress, [0, 0.6], [0, -50]);
   const shouldAnimate = isReady && isScrollVisible;
 
+  const handleProductClick = (id: number) => {
+    router.push(`/belanja/${id}`);
+  };
+
   return (
     <section
       ref={sectionRef}
@@ -58,8 +115,16 @@ export default function HeroSection() {
           transform: translate(-50%, -50%) scale(1) rotate(0deg); 
         }
         
-        .gambar-utama-hover:hover {
+        .hero-product-hit:hover .gambar-utama-hover {
           transform: translate(-50%, -50%) scale(1.04) rotate(2.5deg);
+        }
+
+        .hero-product-hit {
+          cursor: pointer;
+        }
+
+        .hero-label-hit {
+          cursor: pointer;
         }
 
         @keyframes flashFadeOnce {
@@ -96,6 +161,61 @@ export default function HeroSection() {
           display: flex;
           width: max-content;
         }
+
+        .hero-wave-layer {
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
+          overflow: visible;
+        }
+
+        .hero-wave-svg {
+          position: absolute;
+          overflow: visible;
+        }
+
+        .hero-wave-svg path {
+          filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.12));
+        }
+
+        .hero-wave-left {
+          left: -11%;
+          top: -35%;
+          width: 46%;
+          height: auto;
+          aspect-ratio: 394 / 269;
+          transform: scale(1.14) rotate(-9deg);
+          transform-origin: 88% 78%;
+        }
+
+        .hero-wave-right {
+          right: -11%;
+          top: -50%;
+          width: 40%;
+          height: auto;
+          aspect-ratio: 418 / 449;
+          transform: scale(1.14) rotate(9deg);
+          transform-origin: 12% 78%;
+        }
+
+        @media (max-width: 767px) {
+          .hero-wave-left {
+            left: -17%;
+            top: -31%;
+            width: 56%;
+            transform: scale(1.12) rotate(-8deg);
+            transform-origin: 88% 78%;
+          }
+
+          .hero-wave-right {
+            right: -17%;
+            top: -46%;
+            width: 48%;
+            transform: scale(1.12) rotate(8deg);
+            transform-origin: 12% 78%;
+          }
+        }
       `}</style>
 
       {/* Wrapper Utama */}
@@ -107,8 +227,7 @@ export default function HeroSection() {
         {/* 1. Judul Utama */}
         <motion.h1
           animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          // Disesuaikan: Menghapus margin (m-0) agar judul mepet ke gambar di bawahnya
-          className="font-nohemi font-semibold text-[28px] sm:text-[60px] md:text-[42px] leading-[1.1] m-0 p-0"
+          className="font-nohemi font-semibold text-[28px] md:text-[42px] leading-[1.1] m-0 p-0"
         >
           <span className="text-white">Temukan </span>
           <span className="text-[#5CB2ED]">karakter</span>
@@ -120,99 +239,110 @@ export default function HeroSection() {
         {/* 2. Image Poster Area */}
         {/* Disesuaikan: Margin vertikal (mt dan mb) diminimalkan agar jarak antar elemen sangat sempit */}
         <div className="relative mt-2 mb-0 md:mt-3 md:mb-0 w-[100%] md:w-[90%] lg:w-full max-w-7xl mx-auto aspect-[1280/412]">
-          {/* GAMBAR BACKGROUND (WAVE) SEBAGAI PENGGANTI SAYAP */}
+          {/* Wave dekorasi — dari produk ke atas kiri & kanan */}
           <motion.div
             animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 1.0, delay: 0.8, ease: "easeOut" }}
-            className="absolute top-[-7] left-1/2 -translate-x-1/2 md:top-[-48] w-[100vw] h-full z-0 overflow-hidden"
+            className="hero-wave-layer sayap-hover-effect"
+            aria-hidden
           >
-            <Image
-              src="/src/images/section 1/wave.svg"
-              alt="Wave Background"
-              fill
-              // {/* PERUBAHAN: Menambahkan translate-x-4 (geser kanan sedikit). Anda bisa membedakan jarak mobile dan desktop dengan md:translate-x-8 */}
-              className="object-contain object-center translate-x-4 md:translate-x-2"
-              priority
-              quality={100}
-            />
+            <svg
+              className="hero-wave-svg hero-wave-left"
+              viewBox="0 0 394 269"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <linearGradient
+                  id="heroWaveLeftGrad"
+                  x1="-16.1182"
+                  y1="57.6073"
+                  x2="385.318"
+                  y2="143.822"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop offset="0.339313" stopColor="#60BBFF" />
+                  <stop offset="1" stopColor="#FF8A84" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M249.353 208.572C227.104 254.765 336.005 229.301 393.236 210.795L391.597 225.206C240.842 287.445 208.166 270.156 206.182 247.054C204.198 223.951 268.222 182.812 179.508 180.809C90.7932 178.807 64.5628 160.794 64.6262 140.17C64.6895 119.546 109.343 90.8905 73.5016 87.1579C44.8283 84.1719 19.1086 93.2575 9.8329 98.1736L-34.5957 0C39.6156 62.1945 77.1964 34.9117 133.299 67.9779C189.402 101.044 75.6897 118.705 125.496 141.25C175.302 163.794 277.164 150.83 249.353 208.572Z"
+                fill="url(#heroWaveLeftGrad)"
+              />
+            </svg>
+            <svg
+              className="hero-wave-svg hero-wave-right"
+              viewBox="0 0 418 449"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <linearGradient
+                  id="heroWaveRightGradOuter"
+                  x1="446.42"
+                  y1="74.4447"
+                  x2="-7.16213"
+                  y2="352.017"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop offset="0.333877" stopColor="#A5E194" />
+                  <stop offset="1" stopColor="#F899C6" />
+                </linearGradient>
+                <linearGradient
+                  id="heroWaveRightGradInner"
+                  x1="470.42"
+                  y1="79.4447"
+                  x2="16.8379"
+                  y2="357.017"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop offset="0.333877" stopColor="#A5E194" />
+                  <stop offset="1" stopColor="#F899C6" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M167.875 341.839C203.726 388.975 72.4872 382.731 2.3867 373.718L7.45438 389.505C195.083 428.343 228.966 402.325 226.161 376.073C223.356 349.821 140.429 316.873 242.326 296.511C344.223 276.148 370.51 250.637 365.89 227.577C361.27 204.516 303.441 181.578 343.964 170.08C376.382 160.882 408.055 165.793 419.839 169.399L449.445 50.4874C377.55 135.229 328.182 112.382 270.754 160.837C213.326 209.291 348.395 205.822 295.91 241.219C243.426 276.615 123.062 282.919 167.875 341.839Z"
+                fill="url(#heroWaveRightGradOuter)"
+              />
+              <path
+                d="M191.875 346.839C227.726 393.975 96.4872 387.731 26.3867 378.718L31.4544 394.505C219.083 433.343 252.966 407.325 250.161 381.073C247.356 354.821 164.429 321.873 266.326 301.511C368.223 281.148 394.51 255.637 389.89 232.577C385.27 209.516 327.441 186.578 367.964 175.08C400.382 165.882 432.055 170.793 443.839 174.399L473.445 55.4874C401.55 140.229 352.182 117.382 294.754 165.837C237.326 214.291 372.395 210.822 319.91 246.219C267.426 281.615 147.062 287.919 191.875 346.839Z"
+                fill="url(#heroWaveRightGradInner)"
+              />
+            </svg>
           </motion.div>
 
-          {/* Floating Texts */}
-
-          {/* purpose */}
-          <motion.div
-            animate={
-              shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
-            }
-            transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute left-[30%] md:left-[31%] top-[2%] md:top-[4%] w-[9%] h-[9%] md:w-[8%] md:h-[8%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
-          >
-            <Image
-              src="/src/images/section 1/purpose-prestige.png"
-              alt="Purpose Prestige"
-              fill
-              className="object-contain"
-            />
-          </motion.div>
-
-          {/* rebel */}
-          <motion.div
-            animate={
-              shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
-            }
-            transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute left-[43%] top-[10.8%] md:top-[12.8%] w-[7%] h-[7%] md:w-[6%] md:h-[6%] z-20 transition-transform duration-300 ease-out hover:-rotate-[5deg] cursor-pointer"
-          >
-            <Image
-              src="/src/images/section 1/rabel-brave.png"
-              alt="Rabel Brave"
-              fill
-              className="object-contain"
-            />
-          </motion.div>
-
-          {/* peaceful */}
-          <motion.div
-            animate={
-              shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
-            }
-            transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute right-[38%] top-[7%] md:top-[3.8%] w-[8%] h-[8%] md:w-[7%] md:h-[7%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
-          >
-            <Image
-              src="/src/images/section 1/peaceful-calm.png"
-              alt="Peaceful Calm"
-              fill
-              className="object-contain"
-            />
-          </motion.div>
-
-          {/* sweet shy */}
-          <motion.div
-            animate={
-              shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
-            }
-            transition={{ duration: 0.6, delay: 1.0 }}
-            className="absolute right-[27%] md:right-[28%] top-[10.4%] md:top-[10.8%] w-[7%] h-[7%] md:w-[6%] md:h-[6%] z-20 transition-transform duration-300 ease-out hover:rotate-[5deg] cursor-pointer"
-          >
-            <Image
-              src="/src/images/section 1/sweet-shy.png"
-              alt="Sweet Shy"
-              fill
-              className="object-contain"
-            />
-          </motion.div>
+          {/* Floating Labels */}
+          {HERO_PRODUCTS.map((product) => (
+            <motion.button
+              key={`label-${product.id}`}
+              type="button"
+              animate={
+                shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }
+              }
+              transition={{ duration: 0.6, delay: 1.0 }}
+              onClick={() => handleProductClick(product.id)}
+              aria-label={`Lihat detail ${product.title}`}
+              className={`hero-label-hit absolute z-40 transition-transform duration-300 ease-out bg-transparent border-0 p-0 ${product.labelClass}`}
+            >
+              <Image
+                src={product.labelImage}
+                alt={product.title}
+                fill
+                className="object-contain pointer-events-none"
+              />
+            </motion.button>
+          ))}
 
           {/* Badges */}
-          {/* Eau de parfum */}
+          {/* Eau de parfum — samping kiri 4 botol */}
           <motion.div
             animate={
               shouldAnimate
-                ? { opacity: 1, scale: 0.8 }
-                : { opacity: 0, scale: 0.7 }
+                ? { opacity: 1, scale: 0.8, rotate: 15 }
+                : { opacity: 0, scale: 0.7, rotate: 15 }
             }
             transition={{ duration: 0.5, delay: 0.8 }}
-            className="rotate-[15deg] origin-bottom-right badge-kiri-rotate cursor-pointer absolute left-[7%] md:left-[12.8%] bottom-[3%] md:bottom-[12.4%] mt-2 md:mt-5 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
+            className="origin-bottom-right cursor-pointer absolute left-[4%] md:left-[9%] top-[8%] md:top-[5%] inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
           >
             <svg
               className="w-2 h-2 sm:w-3 sm:h-3 md:w-5 md:h-5"
@@ -232,11 +362,11 @@ export default function HeroSection() {
           <motion.div
             animate={
               shouldAnimate
-                ? { opacity: 1, scale: 0.8 }
-                : { opacity: 0, scale: 0.7 }
+                ? { opacity: 1, scale: 0.8, rotate: -12 }
+                : { opacity: 0, scale: 0.7, rotate: -12 }
             }
             transition={{ duration: 0.5, delay: 0.9 }}
-            className="rotate-[-12deg] origin-bottom-leftbadge-kanan-rotate cursor-pointer absolute right-[7%] md:right-[7.7%] bottom-[4%] md:bottom-[12.4%] mt-2 md:mt-5 inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
+            className="origin-bottom-left cursor-pointer absolute right-[4%] md:right-[4.7%] bottom-[72%] md:bottom-[80.4%] inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
           >
             <div className="relative w-2 h-2 sm:w-3 sm:h-3 md:w-4 md:h-4">
               <Image
@@ -250,142 +380,47 @@ export default function HeroSection() {
           </motion.div>
 
           {/* GAMBAR UTAMA (4 Botol) */}
-          <div className="relative top-20 md:top-65 left-1/2 -translate-x-2/5 -translate-y-1/2 z-10 w-[76.1%] h-[60%] flex items-center justify-between gap-1 md:gap-4 bg-transparent cursor-pointer">
-            {/* Botol 1 - Purpose Prestige */}
-            <motion.div
-              animate={
-                shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
-              }
-              transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full left-[19.7%] top-[22.5%]"
-            >
+          <div className="relative top-20 md:top-65 left-1/2 -translate-x-2/5 -translate-y-[46%] z-10 w-[80%] h-[63%] flex items-center justify-between gap-1 md:gap-4 bg-transparent overflow-visible">
+            {HERO_PRODUCTS.map((product) => (
               <motion.div
+                key={product.id}
                 animate={
-                  shouldAnimate
-                    ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] }
-                    : {}
+                  shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
                 }
-                transition={{
-                  duration: isMobile ? 3 : 4,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1.1,
-                }}
-                className="relative w-full h-full"
+                transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+                className={`relative w-full h-full ${product.wrapClass} ${product.zClass}`}
               >
-                <div className="w-full h-full scale-100 rotate-3">
-                  <Image
-                    src="/src/images/section 1/botol-purpose-prestige.png"
-                    alt="Botol Purpose Prestige"
-                    fill
-                    className="object-contain gambar-utama-hover"
-                    priority
-                  />
-                </div>
+                <motion.div
+                  animate={
+                    shouldAnimate
+                      ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] }
+                      : {}
+                  }
+                  transition={{
+                    duration: isMobile ? 3 : 4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: product.floatDelay,
+                  }}
+                  className="relative w-full h-full"
+                >
+                  <button
+                    type="button"
+                    className={`hero-product-hit relative w-full h-full scale-100 ${product.rotateClass} bg-transparent border-0 p-0`}
+                    aria-label={`Lihat detail ${product.title}`}
+                    onClick={() => handleProductClick(product.id)}
+                  >
+                    <Image
+                      src={product.image}
+                      alt={`Botol ${product.title}`}
+                      fill
+                      className="object-contain gambar-utama-hover pointer-events-none"
+                      priority
+                    />
+                  </button>
+                </motion.div>
               </motion.div>
-            </motion.div>
-
-            {/* Botol 2 - Rabel Brave */}
-            <motion.div
-              animate={
-                shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
-              }
-              transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full left-[10.7%] top-[32%] z-30"
-            >
-              <motion.div
-                animate={
-                  shouldAnimate
-                    ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] }
-                    : {}
-                }
-                transition={{
-                  duration: isMobile ? 3 : 4,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1.4,
-                }}
-                className="relative w-full h-full"
-              >
-                <div className="w-full h-full scale-100 -rotate-3">
-                  <Image
-                    src="/src/images/section 1/botol-rabel-brave.png"
-                    alt="Botol Rabel Brave"
-                    fill
-                    className="object-contain gambar-utama-hover"
-                    priority
-                  />
-                </div>
-              </motion.div>
-            </motion.div>
-
-            {/* Botol 3 - Peaceful Calm */}
-            <motion.div
-              animate={
-                shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
-              }
-              transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full top-[23%] right-[1%]"
-            >
-              <motion.div
-                animate={
-                  shouldAnimate
-                    ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] }
-                    : {}
-                }
-                transition={{
-                  duration: isMobile ? 3 : 4,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1.7,
-                }}
-                className="relative w-full h-full"
-              >
-                <div className="w-full h-full scale-100 rotate-4">
-                  <Image
-                    src="/src/images/section 1/botol-peaceful-calm.png"
-                    alt="Botol Peaceful Calm"
-                    fill
-                    className="object-contain gambar-utama-hover"
-                    priority
-                  />
-                </div>
-              </motion.div>
-            </motion.div>
-
-            {/* Botol 4 - Sweet Shy */}
-            <motion.div
-              animate={
-                shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
-              }
-              transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full left-[-9.5%] top-[27%] z-30"
-            >
-              <motion.div
-                animate={
-                  shouldAnimate
-                    ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] }
-                    : {}
-                }
-                transition={{
-                  duration: isMobile ? 3 : 4,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 2.0,
-                }}
-                className="relative w-full h-full"
-              >
-                <div className="w-full h-full scale-100 -rotate-4">
-                  <Image
-                    src="/src/images/section 1/botol-sweet-shy.png"
-                    alt="Botol Sweet Shy"
-                    fill
-                    className="object-contain gambar-utama-hover"
-                    priority
-                  />
-                </div>
-              </motion.div>
-            </motion.div>
+            ))}
           </div>
         </div>
       </motion.div>

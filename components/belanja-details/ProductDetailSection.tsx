@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useNavbarColor } from "@/context/NavbarColorContext";
 import {
@@ -355,101 +355,7 @@ export default function ProductDetailSection({
     message: "",
     type: "error",
   });
-
-  // STATE UNTUK RIWAYAT CHAT DI PRODUCT PAGE
-  const [chatHistory, setChatHistory] = useState<ChatBubble[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [userData, setUserData] = useState({ name: "", email: "" });
   
-  // (Opsional) Jika Anda menggunakan useRef untuk auto-scroll chat
-  const chatScrollRef = useRef<HTMLDivElement>(null);
-
-  // AMBIL DATA USER LOGIN
-  useEffect(() => {
-    const storedUser = localStorage.getItem("auth_user");
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUserData({
-        name: parsedUser.name || "Pelanggan",
-        email: parsedUser.email || ""
-      });
-    }
-  }, []);
-
-  // FUNGSI LOAD CHAT HISTORY
-  const fetchProductChat = async () => {
-    if (!userData.email) return;
-
-    const parseBoolean = (val: any) => val === true || val === 1 || val === "1" || val === "true" || val === "t";
-
-    try {
-      // 1. Ambil jumlah unread (untuk badge di tombol chat floating)
-      const countRes = await fetch(`${SITE_STRINGS.base_url.url_backend}/api/contact/unread-count?email=${userData.email}`);
-      const countData = await countRes.json();
-      if (countData.success) setUnreadCount(countData.count);
-
-      // 2. Ambil riwayat chat lengkap
-      const res = await fetch(`${SITE_STRINGS.base_url.url_backend}/api/contact?email=${userData.email}`);
-      const data = await res.json();
-
-      if (data.success) {
-        const rawMessages: ContactMessage[] = data.data;
-        const flattenedChats: ChatBubble[] = [];
-
-        rawMessages.forEach((msg) => {
-          const readByAdmin = parseBoolean(msg.is_read_by_admin) || (msg.replies && msg.replies.length > 0);
-          flattenedChats.push({
-            id: `msg-${msg.id}`,
-            type: "user",
-            text: msg.message,
-            createdAt: msg.created_at,
-            subject: msg.subject,
-            isReadByAdmin: Boolean(readByAdmin),
-            isReadByUser: true, 
-          });
-
-          if (msg.replies && msg.replies.length > 0) {
-            msg.replies.forEach((reply) => {
-              flattenedChats.push({
-                id: `reply-${reply.id}`,
-                type: "admin",
-                text: reply.reply_message,
-                createdAt: reply.created_at,
-                isReadByAdmin: true,
-                isReadByUser: parseBoolean(reply.is_read_by_user), 
-              });
-            });
-          }
-        });
-
-        flattenedChats.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-        setChatHistory(flattenedChats);
-      }
-    } catch (error) {
-      console.error("Gagal memuat chat product page:", error);
-    }
-  };
-
-  // POLLING SETIAP 5 DETIK
-  useEffect(() => {
-    if (userData.email) {
-      fetchProductChat();
-      const interval = setInterval(fetchProductChat, 5000);
-      
-      // Jika modal chat product sedang terbuka, tandai semua dibaca
-      // (Asumsi state Anda bernama isChatOpen, ganti dengan state yang sesuai)
-      // if (isChatOpen) markAsRead(); 
-
-      return () => clearInterval(interval);
-    }
-  }, [userData.email]);
-
-  // AUTO SCROLL CHAT BUBBLE
-  useEffect(() => {
-    if (chatScrollRef.current) {
-      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
-    }
-  }, [chatHistory]);
 
   useEffect(() => {
     const BASE_URL = "http://127.0.0.1:8000"; // Sesuaikan dengan base URL proyekmu
@@ -572,6 +478,7 @@ export default function ProductDetailSection({
       await addToCart(Number(id), quantity);
       setCartStatus("success");
       setCartMessage("Produk berhasil ditambahkan!");
+      window.dispatchEvent(new Event("cart_updated"));
     } catch (err: unknown) {
       setCartStatus("error");
       setCartMessage(err instanceof Error ? err.message : "Gagal menambahkan.");
@@ -592,6 +499,7 @@ export default function ProductDetailSection({
       await addToWishlist(Number(id));
       setWishlistStatus("success");
       setWishlistMessage("Ditambahkan ke wishlist!");
+      window.dispatchEvent(new Event("wishlist_updated"));
     } catch (err: unknown) {
       setWishlistStatus("error");
       setWishlistMessage(
@@ -627,8 +535,8 @@ export default function ProductDetailSection({
     : "50ml • Eau de Parfum";
 
   return (
-    <section className="bg-[#F8F9FA] w-full pt-8 pb-16 px-4 md:px-8 relative overflow-hidden flex flex-col items-center">
-      <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-start mt-4 mb-10 z-10">
+    <section className="bg-[#F8F9FA] w-full pt-6 sm:pt-8 pb-12 md:pb-16 px-4 md:px-8 relative overflow-hidden flex flex-col items-center">
+      <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10 items-start mt-2 md:mt-4 mb-10 z-10">
         {/* ================= KIRI: IMAGE GALLERY (Col 4) ================= */}
         <div className="lg:col-span-4 flex flex-col items-center w-full select-none">
           <div
@@ -730,18 +638,11 @@ export default function ProductDetailSection({
         {/* ================= TENGAH: DETAIL INFO (Col 5) ================= */}
         <div
           id="detail-info-scroll"
-          className="lg:col-span-5 flex flex-col text-left w-full relative overflow-y-auto"
-          style={
-            {
-              maxHeight: "calc(100vh - 8rem)",
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-            } as React.CSSProperties
-          }
+          className="lg:col-span-5 flex flex-col text-left w-full relative lg:overflow-y-auto lg:max-h-[calc(100vh-8rem)] [scrollbar-width:none] [-ms-overflow-style:none]"
         >
           {/* TITLE & DESC (Sesuai title desc.PNG) */}
           <h1
-            className="font-nohemi text-[42px] font-semibold leading-tight mb-2 tracking-tight"
+            className="font-nohemi text-[28px] sm:text-[34px] md:text-[42px] font-semibold leading-tight mb-2 tracking-tight"
             style={{ color: visual.navbarColor }}
           >
             {isLoading ? (
@@ -751,11 +652,11 @@ export default function ProductDetailSection({
             )}
           </h1>
 
-          <p className="font-nohemi text-[23px] font-semibold text-[#5D5D5D] mb-6">
+          <p className="font-nohemi text-[16px] sm:text-[18px] md:text-[23px] font-semibold text-[#5D5D5D] mb-4 md:mb-6">
             {isLoading ? <Skeleton className="w-40 h-6 block" /> : subtitle}
           </p>
 
-          <p className="font-parkinsans text-[17px] font-normal text-[#5D5D5D] leading-[1.6] mb-8">
+          <p className="font-parkinsans text-[14px] md:text-[17px] font-normal text-[#5D5D5D] leading-[1.6] mb-6 md:mb-8">
             {isLoading ? (
               <Skeleton className="w-full h-20 block" />
             ) : (
@@ -765,9 +666,9 @@ export default function ProductDetailSection({
           </p>
 
           {/* CARD NOTES (Sesuai notes.PNG) */}
-          <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm mb-8 flex flex-col gap-5">
+          <div className="bg-white border border-gray-100 rounded-[20px] p-4 sm:p-6 shadow-sm mb-6 md:mb-8 flex flex-col gap-4 md:gap-5">
             <h4
-              className="font-nohemi text-[20.36px] font-semibold tracking-tight"
+              className="font-nohemi text-[18px] md:text-[20.36px] font-semibold tracking-tight"
               style={{ color: visual.navbarColor }}
             >
               Notes {isLoading ? "" : product?.title}
@@ -792,15 +693,15 @@ export default function ProductDetailSection({
                     "Cedarwood • Cashmere Wood • Vetiver • Marine",
                 },
               ].map(({ label, value }) => (
-                <div key={label} className="flex flex-row items-center gap-4">
+                <div key={label} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                   <span
-                    className="text-white font-nohemi text-[11.42px] regular px-4 py-1.5 rounded-full min-w-[100px] text-center"
+                    className="text-white font-nohemi text-[11px] md:text-[11.42px] regular px-3 md:px-4 py-1.5 rounded-full w-fit sm:min-w-[100px] text-center"
                     style={{ backgroundColor: visual.navbarColor }}
                   >
                     {label}
                   </span>
                   <span
-                    className="text-[14.15px] font-parkinsans font-normal opacity-80"
+                    className="text-[13px] md:text-[14.15px] font-parkinsans font-normal opacity-80"
                     style={{ color: visual.navbarColor }}
                   >
                     {isLoading ? (
@@ -817,12 +718,12 @@ export default function ProductDetailSection({
           {/* HARGA */}
           <div className="mb-6">
             <h4
-              className="font-['Nohemi'] text-[20px] font-bold mb-1"
+              className="font-nohemi text-[18px] md:text-[20px] font-bold mb-1"
               style={{ color: visual.navbarColor }}
             >
               Harga
             </h4>
-            <span className="font-['Nohemi'] text-[32px] font-semibold text-[#1A1A1A]">
+            <span className="font-nohemi text-[26px] md:text-[32px] font-semibold text-[#1A1A1A]">
               {isLoading ? (
                 <Skeleton className="w-36 h-10 block" />
               ) : (
@@ -1164,10 +1065,10 @@ export default function ProductDetailSection({
                 <MessageCircle size={20} className="text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-[15px] font-['Nohemi']">
+                <h3 className="font-bold text-[15px] font-nohemi">
                   Admin Evomi
                 </h3>
-                <p className="text-[12px] opacity-90 font-['Parkinsans']">
+                <p className="text-[12px] opacity-90 font-parkinsans">
                   Biasanya membalas dalam 5 menit
                 </p>
               </div>
@@ -1181,7 +1082,7 @@ export default function ProductDetailSection({
           </div>
 
           {/* Messages */}
-          <div className="flex-1 p-4 bg-gray-50 overflow-y-auto flex flex-col gap-3 font-['Parkinsans'] custom-scrollbar">
+          <div className="flex-1 p-4 bg-gray-50 overflow-y-auto flex flex-col gap-3 font-parkinsans custom-scrollbar">
             {chatMessages.map((msg, idx) => (
               <div
                 key={idx}

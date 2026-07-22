@@ -55,6 +55,7 @@ export default function CartPage() {
       setIsLoading(true);
       const data = await getCartItems();
       setCartItems(data);
+      window.dispatchEvent(new Event("cart_updated"));
     } catch (err: any) {
       setError(err.message || "Gagal memuat keranjang belanja.");
     } finally {
@@ -82,6 +83,7 @@ export default function CartPage() {
         try {
           await cartApi.removeFromCart(cartItemId);
           setCartItems((prev) => prev.filter((item) => item.id !== cartItemId));
+          window.dispatchEvent(new Event("cart_updated"));
           triggerModal("success", "Item berhasil dihapus.");
         } catch (err) {
           triggerModal("error", "Gagal menghapus item.");

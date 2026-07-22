@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 
-// Tipe data untuk status modal
 interface NavModalState {
   isOpen: boolean;
   type: "loading";
@@ -12,10 +11,67 @@ interface NavModalState {
   message: string;
 }
 
+const PRODUCT_BADGES = [
+  {
+    id: 4,
+    label: "Sweet",
+    title: "Sweet Shy",
+    labelColor: "text-[#DD74A5]",
+    position: "left-[47.5%] top-[-3%]",
+  },
+  {
+    id: 3,
+    label: "Rebel",
+    title: "Rebel Brave",
+    labelColor: "text-[#E33D35]",
+    position: "left-[26%] top-[15%]",
+  },
+  {
+    id: 2,
+    label: "Calm",
+    title: "Peaceful Calm",
+    labelColor: "text-[#5EA14A]",
+    position: "left-[82%] top-[15%]",
+  },
+  {
+    id: 1,
+    label: "Prestige",
+    title: "Purpose Prestige",
+    labelColor: "text-[#5CB2ED]",
+    position: "left-[61%] top-[33%]",
+  },
+];
+
+function ProductBadge({
+  product,
+  size = "desktop",
+  onClick,
+}: {
+  product: (typeof PRODUCT_BADGES)[number];
+  size?: "mobile" | "desktop";
+  onClick: () => void;
+}) {
+  const isMobile = size === "mobile";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`Lihat detail ${product.title}`}
+      className={`s7-badge-hit absolute ${product.position} -translate-x-1/2 ${
+        isMobile
+          ? "-translate-y-[calc(100%+6px)] px-2.5 py-0.5 text-[9px]"
+          : "-translate-y-[calc(100%+10px)] px-3.5 lg:px-4 py-1 text-[13px] lg:text-[16px]"
+      } bg-white rounded-full shadow-md font-bold ${product.labelColor} whitespace-nowrap z-30 border-0 cursor-pointer`}
+    >
+      {product.label}
+    </button>
+  );
+}
+
 export default function SeventhSection() {
   const router = useRouter();
 
-  // State untuk Custom Modal di SeventhSection
   const [navModal, setNavModal] = useState<NavModalState>({
     isOpen: false,
     type: "loading",
@@ -23,7 +79,6 @@ export default function SeventhSection() {
     message: "",
   });
 
-  // Fungsi routing dengan delay animasi
   const handleQuizRouting = (e: React.MouseEvent) => {
     e.preventDefault();
     setNavModal({
@@ -33,26 +88,37 @@ export default function SeventhSection() {
       message: "Mengarahkan ke halaman Kuis Karakteristik...",
     });
 
-    // Simulasi delay 800ms agar animasi terlihat sebelum pindah halaman
     setTimeout(() => {
       setNavModal((prev) => ({ ...prev, isOpen: false }));
       router.push("/kuis");
     }, 800);
   };
 
-  // Varian untuk kontainer (mengatur urutan munculnya anak elemen)
+  const handleProductClick = (id: number, title: string) => {
+    setNavModal({
+      isOpen: true,
+      type: "loading",
+      title,
+      message: `Mengarahkan ke detail produk ${title}...`,
+    });
+
+    setTimeout(() => {
+      setNavModal((prev) => ({ ...prev, isOpen: false }));
+      router.push(`/belanja/${id}`);
+    }, 800);
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.3, // Jeda 0.3 detik antar elemen
+        staggerChildren: 0.3,
         delayChildren: 0.2,
       },
     },
   };
 
-  // Varian untuk setiap bagian konten (muncul dari bawah + zoom)
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 40, scale: 0.9 },
     visible: {
@@ -64,10 +130,9 @@ export default function SeventhSection() {
   };
 
   return (
-    <section className="relative bg-white flex flex-col md:flex-row items-center justify-between px-6 sm:px-12 md:pl-24 md:pr-0 py-3 pb-8 md:py-17 overflow-hidden select-none">
-      {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
-      {/* PERUBAHAN: Tinggi container diubah menjadi h-[15px] untuk mobile, dan h-[23px] untuk desktop */}
-      <div className="absolute top-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none">
+    <section className="relative bg-white flex flex-col md:block items-center justify-between px-5 sm:px-8 md:px-0 md:pl-16 lg:pl-24 md:pr-0 pt-12 pb-10 md:pt-20 md:pb-0 md:min-h-[677px] lg:min-h-[742px] overflow-hidden select-none">
+      {/* ================= LINGKARAN DIVIDER ATAS ================= */}
+      <div className="absolute top-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none z-40">
         <style>{`
           @keyframes slideRightSeamless {
             0% { transform: translateX(-50%); }
@@ -76,131 +141,142 @@ export default function SeventhSection() {
           .animate-slide-right-40s {
             animation: slideRightSeamless 80s linear infinite;
           }
+          .s7-badge-hit {
+            transition: transform 0.3s ease-out;
+          }
+          .s7-badge-hit:hover {
+            scale: 1.05;
+          }
         `}</style>
-        {/* PERUBAHAN: Gap diubah menjadi 10px untuk mobile, dan 15px untuk desktop */}
         <div className="flex w-max gap-[10px] md:gap-[15px] animate-slide-right-40s">
           {Array.from({ length: 80 }).map((_, index) => (
             <div
               key={`top-${index}`}
-              // {/* PERUBAHAN: Ukuran lingkaran & margin negatif diperkecil di mobile, dikembalikan ke normal dengan md: */}
               className="w-[30px] h-[30px] md:w-[46px] md:h-[46px] bg-[#1172BA] rounded-full flex-shrink-0 -mt-[15px] md:-mt-[23px]"
             />
           ))}
         </div>
       </div>
 
-      {/* Kontainer Utama untuk Animasi Berurutan */}
+      {/* ================= SISI KIRI: TEKS & CTA ================= */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.3 }}
-        className="flex flex-col md:flex-row w-full items-center justify-between"
+        className="relative z-50 w-full md:w-auto md:absolute md:left-16 lg:left-24 md:top-1/2 md:-translate-y-1/2 md:max-w-[420px] lg:max-w-xl"
       >
-        {/* 1. SISI KIRI (Teks & Tombol) */}
         <motion.div
           variants={itemVariants}
-          // PERBAIKAN: Naikkan z-10 menjadi z-50 agar tombol tidak tertimpa elemen/gambar transparan lain
-          className="relative z-50 top-10 flex flex-col justify-center items-center md:items-start w-full md:w-auto max-w-xl gap-8 mb-10 text-center md:text-left"
+          className="flex flex-col justify-center items-center md:items-start gap-6 md:gap-8 text-center md:text-left"
         >
-          <h2 className="font-nohemi font-semibold text-[32px] md:text-[55px] leading-[1.1] whitespace-pre-line">
+          <h2 className="font-nohemi font-semibold text-[30px] sm:text-[36px] md:text-[48px] lg:text-[55px] leading-[1.12]">
             <span className="text-[#1172BA]">Temukan</span>
-            {"\n"}
+            <br />
             <span className="text-[#DD74A5]">aromamu</span>
-            {"\n"}
+            <br />
             <span className="text-[#1172BA]">dengan</span>
-            {"\n"}
+            <br />
             <span className="text-[#1172BA]">bermain </span>
             <span className="text-[#5EA14A]">kuis</span>
           </h2>
 
           <button
             onClick={handleQuizRouting}
-            // PERBAIKAN: Tambahkan relative, z-50, dan cursor-pointer untuk memastikan interaksi aman
-            className="relative z-50 cursor-pointer font-['Nohemi'] mt-5 text-[16px] md:text-[24px] text-white bg-[#1172BA] px-12 py-2 rounded-full shadow-md hover:scale-95 transition-all"
+            className="relative z-50 cursor-pointer font-nohemi text-[15px] md:text-[22px] lg:text-[24px] text-white bg-[#1172BA] px-10 md:px-12 py-2.5 md:py-2.5 rounded-full shadow-md hover:scale-95 transition-all inline-flex items-center gap-2"
           >
             Mulai Kuis
+            <span aria-hidden="true">→</span>
           </button>
         </motion.div>
       </motion.div>
 
-      {/* 2. SISI KANAN (Gambar Produk) */}
+      {/* ================= MOBILE: panel + produk + badge ================= */}
       <motion.div
-        variants={itemVariants}
-        className="relative z-10 flex justify-end w-full md:w-[750px] h-[250px] md:h-[550px] top-[78px] mt-[15px]"
-      >
-        <div className="z-5 absolute bottom-15 right-0 w-full md:w-[780px] h-[250px] md:h-[550px] bg-[#1172BA] rounded-[24px] md:rounded-l-[40px] shadow-lg"></div>
-      </motion.div>
-
-      {/* 3. Card Badges (Di atas Gambar Produk) */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.3 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-        className="absolute z-30 flex flex-row flex-wrap justify-center gap-1.5 md:gap-4 bottom-[30%] md:bottom-auto md:top-[135px] right-[18%] sm:right-[25%] md:right-[210px]"
+        viewport={{ once: false, amount: 0.2 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="relative z-20 w-full max-w-[380px] mx-auto mt-8 md:hidden"
       >
-        {/* Badge 1: Rebel */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#E33D35] transition-transform hover:scale-105 cursor-pointer translate-x-[15px] translate-y-[-17px] md:translate-x-[95px] md:translate-y-23">
-          Rebel
-        </div>
-
-        {/* Badge 2: Sweet */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#DD74A5] transition-transform hover:scale-105 cursor-pointer translate-x-[13px] translate-y-[-50px] md:translate-x-[145px] md:translate-y-1">
-          Sweet
-        </div>
-
-        {/* Badge 3: Prestige */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5CB2ED] transition-transform hover:scale-105 cursor-pointer translate-x-[-15px] translate-y-[18px] md:translate-x-[130px] md:translate-y-47">
-          Prestige
-        </div>
-
-        {/* Badge 4: Calm */}
-        <div className="bg-white px-[1.2em] py-[0.4em] rounded-full shadow-md text-[10px] md:text-[16px] font-bold text-[#5EA14A] transition-transform hover:scale-105 cursor-pointer translate-x-[-30px] translate-y-[-17px] md:translate-x-[170px] md:translate-y-24">
-          Calm
+        <div className="relative w-full h-[294px] bg-[#1172BA] rounded-[24px] shadow-lg overflow-visible">
+          <div className="absolute bottom-0 right-0 w-[88%] overflow-visible">
+            <div className="relative w-full drop-shadow-2xl overflow-visible">
+              <img
+                src="/src/images/section 7/produk.png"
+                alt="Produk Evomi"
+                className="w-full h-auto object-contain"
+              />
+              {PRODUCT_BADGES.map((product) => (
+                <ProductBadge
+                  key={`mobile-${product.id}`}
+                  product={product}
+                  size="mobile"
+                  onClick={() =>
+                    handleProductClick(product.id, product.title)
+                  }
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </motion.div>
 
-      {/* --- BAGIAN PRODUK --- */}
-      {/* once: false membuat animasi akan selalu diulang (masuk dan keluar) setiap kali di-scroll */}
+      {/* ================= DESKTOP: panel biru + produk ================= */}
       <motion.div
-        className="absolute z-20 bottom-0 md:top-[150px] bottom-[4.5%] right-[20%] md:-right-24 w-[60%] md:w-[52%] drop-shadow-2xl"
+        initial={{ opacity: 0, x: 40 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: false, amount: 0.2 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="hidden md:block absolute right-0 bottom-[10%] z-10 w-[55%] max-w-[780px] h-[504px] lg:h-[578px] overflow-visible pointer-events-none"
+      >
+        <div className="absolute inset-0 bg-[#1172BA] rounded-l-[40px] shadow-lg" />
+      </motion.div>
+
+      <motion.div
         initial={{ opacity: 0, x: 50, y: 50 }}
         whileInView={{ opacity: 1, x: 0, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
         viewport={{ once: false, amount: 0.2 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="hidden md:block absolute z-20 right-0 bottom-0 w-[50%] lg:w-[52%] max-w-[720px] overflow-visible"
       >
-        {/* Animasi melayang tetap berjalan terus-menerus */}
-        <img
-          src="src/images/section 7/produk.png"
-          alt="Produk Evomi"
-          className="w-full h-full object-contain md:mt-10"
-        />
+        <div className="relative w-full drop-shadow-2xl overflow-visible">
+          <img
+            src="/src/images/section 7/produk.png"
+            alt="Produk Evomi"
+            className="w-full h-auto object-contain"
+          />
+          {PRODUCT_BADGES.map((product) => (
+            <ProductBadge
+              key={`desktop-${product.id}`}
+              product={product}
+              size="desktop"
+              onClick={() => handleProductClick(product.id, product.title)}
+            />
+          ))}
+        </div>
       </motion.div>
 
-      {/* --- BAGIAN WAVE --- */}
+      {/* ================= WAVE BAWAH ================= */}
       <motion.div
-        className="absolute bottom-15 left-0 left-[-120px] w-full z-10 leading-[0]"
+        className="absolute bottom-0 md:bottom-8 left-0 w-full z-[5] leading-[0] pointer-events-none overflow-hidden"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         viewport={{ once: false, amount: 0.2 }}
       >
-        <div className="relative w-full h-[100px] md:h-[200px]">
-          {/* Wave Layer 1 */}
+        <div className="relative w-[140%] md:w-[120%] -ml-[15%] md:-ml-[8%] h-[70px] sm:h-[100px] md:h-[180px] lg:h-[200px]">
           <motion.img
             src="/src/images/section 7/vector-diseksi7-1.svg"
-            alt="Wave Layer 1"
-            className="absolute bottom-0 left-0 w-full h-full object-fill pointer-events-none origin-bottom"
+            alt=""
+            className="absolute bottom-0 left-0 w-full h-full object-fill origin-bottom"
             animate={{ scaleX: [1, 1.03, 1], x: ["0%", "-1%", "0%"] }}
             transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
           />
-
-          {/* Wave Layer 2 */}
           <motion.img
             src="/src/images/section 7/vector-diseksi7-2.svg"
-            alt="Wave Layer 2"
-            className="absolute bottom-0 left-0 w-full h-full object-fill pointer-events-none origin-bottom"
+            alt=""
+            className="absolute bottom-0 left-0 w-full h-full object-fill origin-bottom"
             animate={{ scaleX: [1.03, 1, 1.03], x: ["-1%", "0%", "-1%"] }}
             transition={{
               repeat: Infinity,
@@ -212,42 +288,9 @@ export default function SeventhSection() {
         </div>
       </motion.div>
 
-      {/* 5. Animated Wave Background (Bottom Right - Khusus Mobile & Rotate 180) */}
-      {/* --- BAGIAN WAVE (MOBILE / ROTATED) --- */}
-      <motion.div
-        className="absolute bottom-25 right-0 right-[-180px] w-full z-10 leading-[0] block md:hidden rotate-180 scale-x-[1]"
-        initial={{ opacity: 0, y: -30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeInOut" }}
-        viewport={{ once: false, amount: 0.2 }}
-      >
-        <div className="relative w-full h-[100px]">
-          {/* Wave Layer 1 Rotated */}
-          <motion.img
-            src="/src/images/section 7/vector-diseksi7-1.svg"
-            alt="Wave Layer 1 Rotated"
-            className="absolute bottom-0 left-0 w-full h-full object-fill pointer-events-none origin-bottom"
-            animate={{ scaleX: [1, 1.03, 1], x: ["0%", "-1%", "0%"] }}
-            transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-          />
+      <div className="hidden md:block h-[568px] lg:h-[633px]" aria-hidden />
 
-          {/* Wave Layer 2 Rotated */}
-          <motion.img
-            src="/src/images/section 7/vector-diseksi7-2.svg"
-            alt="Wave Layer 2 Rotated"
-            className="absolute bottom-0 left-0 w-full h-full object-fill pointer-events-none origin-bottom"
-            animate={{ scaleX: [1.03, 1, 1.03], x: ["-1%", "0%", "-1%"] }}
-            transition={{
-              repeat: Infinity,
-              duration: 5,
-              ease: "easeInOut",
-              delay: 1,
-            }}
-          />
-        </div>
-      </motion.div>
-
-      {/* ================= CUSTOM MODAL ROUTING COMPONENT ================= */}
+      {/* ================= MODAL ================= */}
       <AnimatePresence>
         {navModal.isOpen && (
           <motion.div
@@ -261,12 +304,11 @@ export default function SeventhSection() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.8, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative bg-white rounded-[24px] p-8 max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
+              className="relative bg-white rounded-[20px] md:rounded-[24px] p-5 md:p-8 max-w-[280px] md:max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
             >
-              {/* Ikon Loading Dinamis */}
-              <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5 transition-colors duration-300 bg-blue-50 text-blue-500">
+              <div className="mx-auto flex items-center justify-center h-14 w-14 md:h-20 md:w-20 rounded-full mb-3 md:mb-5 bg-blue-50 text-blue-500">
                 <svg
-                  className="h-10 w-10 animate-spin text-[#1172BA]"
+                  className="h-7 w-7 md:h-10 md:w-10 animate-spin text-[#1172BA]"
                   fill="none"
                   viewBox="0 0 24 24"
                 >
@@ -285,13 +327,11 @@ export default function SeventhSection() {
                   ></path>
                 </svg>
               </div>
-
-              {/* Teks Modal */}
-              <div className="space-y-3">
-                <h3 className="text-[20px] font-bold text-gray-800 tracking-wide">
+              <div className="space-y-1.5 md:space-y-3">
+                <h3 className="text-[16px] md:text-[20px] font-bold text-gray-800 tracking-wide">
                   {navModal.title}
                 </h3>
-                <p className="text-[14px] text-gray-500 leading-relaxed">
+                <p className="text-[11px] md:text-[14px] text-gray-500 leading-relaxed">
                   {navModal.message}
                 </p>
               </div>

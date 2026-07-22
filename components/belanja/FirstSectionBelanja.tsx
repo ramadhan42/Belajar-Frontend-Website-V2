@@ -18,7 +18,7 @@ export default function FirstSectionBelanja() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
           // {/* PERUBAHAN: margin-bottom dikurangi dari mb-4 md:mb-2 menjadi mb-1 md:mb-0 */}
-          className="font-['Nohemi'] text-[26px] sm:text-[48px] md:text-[38px] font-semibold leading-tight mb-1 md:mb-0 tracking-tight"
+          className="font-nohemi text-[26px] md:text-[38px] font-semibold leading-tight mb-1 md:mb-0 tracking-tight"
         >
           <span className="text-white">Koleksi </span>
           <span className="text-[#A5E194]">Aroma </span>
@@ -30,7 +30,7 @@ export default function FirstSectionBelanja() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.15 }}
-          className="font-['Nohemi'] text-[12px] sm:text-[20px] md:text-[14px] font-normal text-white max-w-3xl opacity-95 leading-relaxed"
+          className="font-nohemi text-[12px] md:text-[14px] font-normal text-white max-w-3xl opacity-95 leading-relaxed"
         >
           Pilih karakter aromamu, atau coba semuanya!
         </motion.p>

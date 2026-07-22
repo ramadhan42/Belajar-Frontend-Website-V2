@@ -139,9 +139,8 @@ export default function Footer() {
   return (
     <>
       <footer
-        className="w-full py-10 md:py-4 px-5 md:px-8 md:pt-12 md:pb-8 lg:px-24 transition-colors duration-0 relative"
+        className="w-full py-10 md:py-4 px-5 md:px-8 md:pt-12 md:pb-8 lg:px-24 transition-colors duration-0 relative font-nohemi"
         style={{
-          fontFamily: "'Nohemi', sans-serif",
           backgroundColor: footerColor || "#1172BA",
         }}
       >

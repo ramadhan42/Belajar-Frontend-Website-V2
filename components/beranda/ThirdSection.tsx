@@ -74,7 +74,7 @@ export default function ThirdSection() {
         transition={{ duration: 0.6 }}
         className="group flex items-center justify-center gap-3 md:gap-4 mt-10 md:mt-15 mb-6 md:mb-[30px] cursor-pointer"
       >
-        <h2 className="text-[28px] sm:text-[60px] md:text-[42px] font-bold leading-tight transition-transform duration-300 ease-in-out group-hover:rotate-[4deg]">
+        <h2 className="text-[28px] md:text-[42px] font-bold leading-tight transition-transform duration-300 ease-in-out group-hover:rotate-[4deg]">
           <span className="text-white">Brand </span>
           <span className="text-[#90EE90]">Value</span>
         </h2>
@@ -100,18 +100,18 @@ export default function ThirdSection() {
         className="flex justify-center w-full max-w-6xl mt-2 md:mt-4 mb-8 relative z-10"
       >
         {/* Ubah bagian gap-12 md:gap-8 menjadi gap-16 md:gap-14 (atau md:gap-16) 👇 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-14 w-full px-20 md:px-10 pt-6 md:pt-5 pb-6 md:pb-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-14 w-full px-4 sm:px-6 md:px-10 pt-6 md:pt-5 pb-6 md:pb-5">
           {brandValues.map((card, index) => (
             <motion.div
               key={index}
               variants={cardVariants}
               className="flex flex-col"
             >
-              <h3 className="text-white text-[16px] md:text-[22px] font-bold mb-4 md:mb-6 text-left px-2 whitespace-pre-line">
+              <h3 className="text-white text-[18px] md:text-[22px] font-bold mb-4 md:mb-6 text-left px-1 whitespace-pre-line">
                 {card.title}
               </h3>
               <div
-                className={`relative bg-white rounded-[24px] md:rounded-3xl p-6 md:p-8 shadow-xl flex flex-col cursor-pointer transition-transform duration-300 ease-out hover:z-10 flex-grow ${card.hoverClass}`}
+                className={`relative bg-white rounded-[24px] md:rounded-3xl p-5 sm:p-6 md:p-8 shadow-xl flex flex-col cursor-pointer transition-transform duration-300 ease-out hover:z-10 flex-grow ${card.hoverClass}`}
               >
                 <div className="absolute -top-4 -right-2 md:-top-5 md:-right-5 w-[35px] md:w-[45px] h-[35px] md:h-[45px] z-20 flex justify-center items-center">
                   <Image

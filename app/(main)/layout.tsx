@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
 
   return (
-   <main>
+   <div className="min-h-screen w-full overflow-x-hidden">
      <BodyColorHandler />
 
         <NavbarColorProvider>
@@ -38,11 +38,11 @@ export default function RootLayout({
 
           {<Navbar />}
 
-          <main>{children}</main>
+          <main className="w-full overflow-x-hidden">{children}</main>
 
           {<Footer />}
           
         </NavbarColorProvider>
-   </main>
+   </div>
   );
 }

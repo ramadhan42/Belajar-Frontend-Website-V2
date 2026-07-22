@@ -1,81 +1,39 @@
 @import "tailwindcss";
 
-/* =========================================================================
- * KONFIGURASI FONT LOKAL - NOHEMI
- * ========================================================================= */
-@font-face {
-  font-family: "Nohemi";
-  src: url("/fonts/Nohemi-Regular.otf") format("truetype");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
+@theme inline {
+  --font-nohemi: var(--font-nohemi);
+  --font-parkinsans: var(--font-parkinsans);
+  --font-syne: var(--font-syne);
+  --font-heavy: var(--font-heavy);
+  --font-sans: var(--font-nohemi);
 }
 
-/* AMBIL LANGSUNG DARI FOLDER PUBLIC */
-@font-face {
-  font-family: "EightHeavy";
-  src: url("/fonts/8-Heavy.ttf") format("truetype");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Removed invalid @theme rule. Define theme-like variables in :root instead. */
 :root {
   --background: #ffffff;
   --foreground: #1172ba;
-  /* --font-nohemi: "Nohemi", system-ui, sans-serif; asd
-  --font-8-heavy: "8-Heavy", system-ui, sans-serif; */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-nohemi);
-  --font-mono: monospace;
 }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-nohemi), sans-serif;
+  overflow-x: hidden;
 }
 
-/* =========================================================================
- * KONFIGURASI NOHEMI FONT DENGAN LETTER SPACING
- * Hanya untuk HeroSection dan heading penting 
- * ========================================================================= */
 .hero-section {
-  font-family: var(--font-nohemi);
+  font-family: var(--font-nohemi), sans-serif;
 }
 
 .hero-section h1 {
-  font-family: var(--font-nohemi);
+  font-family: var(--font-nohemi), sans-serif;
   letter-spacing: 0.03em;
 }
 
 .hero-section p {
-  font-family: var(--font-nohemi);
+  font-family: var(--font-nohemi), sans-serif;
   letter-spacing: 0.02em;
 }
 
-@layer utilities {
-  /* Class ini yang kita panggil di SecondSection.tsx */
-  .font-heavy {
-    font-family: "EightHeavy", sans-serif !important;
-  }
-  /* Tambahkan ini agar class font-nohemi bisa digunakan */
-  .font-nohemi {
-    font-family: var(--font-nohemi), sans-serif !important;
-  }
-}
-
-/* Pastikan heading menggunakan font standar */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-/* ANIMASI MARQUEE (DIVIDER BERJALAN LOOPING) */
 @keyframes marqueeScroll {
   0% {
     transform: translateX(0);
@@ -84,30 +42,28 @@ h6 {
     transform: translateX(-50%);
   }
 }
+
 .animate-marquee {
   display: flex;
   width: max-content;
-  animation: marqueeScroll 70s linear infinite; /* Kecepatan bisa diubah di sini (15s) */
+  animation: marqueeScroll 70s linear infinite;
 }
 
-/* Future Cursor Arrow - https://www.cursors-4u.com/cursor/future-cursor-arrow */
 * {
   cursor:
     url("https://cdn.cursors-4u.net/previews/normal-9e607e2c-48.webp") 33 30,
     auto !important;
 }
-/* End www.Cursors-4U.com Code */
 
 html {
   scroll-behavior: smooth;
 }
 
-/* Hide scrollbar for sidebar while keeping scroll functionality */
 .scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }

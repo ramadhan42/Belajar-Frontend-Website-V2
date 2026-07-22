@@ -17,7 +17,6 @@ interface NavModalState {
 export default function FifthSection() {
   const router = useRouter();
 
-  // Navbar modal components
   const [navModal, setNavModal] = useState<NavModalState>({
     isOpen: false,
     type: "loading",
@@ -25,7 +24,6 @@ export default function FifthSection() {
     message: "",
   });
 
-  // Products data local
   const products = [
     {
       id: 1,
@@ -62,7 +60,7 @@ export default function FifthSection() {
       cardBg: "bg-[#FFBBB5]",
       textColor: "text-[#E33D35]",
       badge: "Berani",
-      title: "Rabel Brave",
+      title: "Rebel Brave",
       desc: "Keberanian dan semangat untuk mengekspresikan diri.",
       descColor: "text-[#E33D35]",
       price: "Rp179.000",
@@ -94,8 +92,6 @@ export default function FifthSection() {
   };
 
   const cardVariants: Variants = {
-    active: { scale: 1.05 },
-    inactive: { scale: 1 },
     hidden: { opacity: 0, y: 40 },
     visible: {
       opacity: 1,
@@ -119,7 +115,6 @@ export default function FifthSection() {
     }, 800);
   };
 
-  // TAMBAHAN: Fungsi untuk menangani klik pada card produk
   const handleProductClick = (id: number, title: string) => {
     setNavModal({
       isOpen: true,
@@ -130,141 +125,140 @@ export default function FifthSection() {
 
     setTimeout(() => {
       setNavModal((prev) => ({ ...prev, isOpen: false }));
-      // Mengarahkan ke rute detail produk dinamis (misal: /produk/1)
-      // Silakan ubah path "/produk/" di bawah ini jika struktur folder Anda berbeda (misal: "/belanja/")
       router.push(`/belanja/${id}`);
     }, 800);
   };
 
   return (
-    <section className="bg-white flex flex-col items-center text-center w-full pt-12 md:pt-10 pb-25 md:pb-20 px-3 md:px-4 relative overflow-hidden">
-      {/* --- BACKGROUND DECORATIVE IMAGES --- */}
-      <div className="absolute top-[15%] left-0 -translate-x-1/2 z-0 pointer-events-none w-[45px] md:w-[100px]">
+    <section className="bg-[#FAFAFA] md:bg-white flex flex-col items-center text-center w-full pt-10 sm:pt-12 md:pt-14 pb-20 md:pb-24 px-4 sm:px-6 md:px-8 relative overflow-hidden">
+      {/* Dekorasi sudut — seperti screenshot */}
+      <div className="absolute top-[12%] left-0 z-0 pointer-events-none w-[40px] sm:w-[70px] md:w-[100px] -translate-x-[20%] md:-translate-x-[15%]">
         <Image
           src="/src/images/section 5/purpose.png"
-          alt="Purpose Decoration"
+          alt=""
           width={100}
           height={100}
-          className="object-contain"
+          className="object-contain opacity-90"
         />
       </div>
-      <div className="absolute top-[15%] right-0 translate-x-1/2 z-0 pointer-events-none w-[45px] md:w-[100px]">
+      <div className="absolute top-[12%] right-0 z-0 pointer-events-none w-[40px] sm:w-[70px] md:w-[100px] translate-x-[20%] md:translate-x-[15%]">
         <Image
           src="/src/images/section 5/sweet.png"
-          alt="Sweet Decoration"
+          alt=""
           width={100}
           height={100}
-          className="object-contain"
+          className="object-contain opacity-90"
         />
       </div>
-      <div className="absolute bottom-[20%] left-0 -translate-x-1/2 z-0 pointer-events-none w-[45px] md:w-[100px]">
+      <div className="absolute bottom-[22%] left-0 z-0 pointer-events-none w-[40px] sm:w-[70px] md:w-[100px] -translate-x-[20%] md:-translate-x-[15%]">
         <Image
           src="/src/images/section 5/rebel.png"
-          alt="Rebel Decoration"
+          alt=""
           width={100}
           height={100}
-          className="object-contain"
+          className="object-contain opacity-90"
         />
       </div>
-      <div className="absolute bottom-[20%] right-0 translate-x-1/2 z-0 pointer-events-none w-[45px] md:w-[100px]">
+      <div className="absolute bottom-[22%] right-0 z-0 pointer-events-none w-[40px] sm:w-[70px] md:w-[100px] translate-x-[20%] md:translate-x-[15%]">
         <Image
           src="/src/images/section 5/peaceful.png"
-          alt="Peaceful Decoration"
+          alt=""
           width={100}
           height={100}
-          className="object-contain"
+          className="object-contain opacity-90"
         />
       </div>
 
-      {/* 1. Judul & Subjudul */}
+      {/* Judul */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.5 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="relative z-10"
+        className="relative z-10 mb-6 md:mb-10"
       >
-        <h2 className="font-['Nohemi'] text-[28px] md:text-[38px] font-bold mb-2 md:mb-3 leading-tight">
+        <h2 className="font-nohemi text-[26px] sm:text-[32px] md:text-[38px] font-bold mb-2 md:mb-3 leading-tight">
           <span className="text-[#1172BA]">Khas </span>
           <span className="text-[#FF8A84]">Evomi</span>
         </h2>
-        <p className="font-['Nohemi'] text-[13px] md:text-[16px] text-[#5D5D5D] max-w-2xl mb-8 md:mb-10 px-4 font-normal">
+        <p className="font-nohemi text-[12px] sm:text-[14px] md:text-[16px] text-[#5D5D5D] max-w-xl mx-auto px-2 font-normal leading-relaxed">
           Empat karakter aroma yang mewakili sisi berbeda dari dirimu.
         </p>
       </motion.div>
 
-      {/* 2. Grid Card Produk */}
+      {/* Grid produk — 2 kolom mobile, 4 kolom desktop (seperti screenshot) */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: false, amount: 0.15 }}
-        className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 lg:gap-32 mb-12 md:mb-10 px-2 py-2 md:px-4"
+        viewport={{ once: false, amount: 0.12 }}
+        className="relative z-10 w-full max-w-[1100px] grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 md:gap-6 lg:gap-8 mb-8 md:mb-12 px-0 sm:px-2"
       >
         {products.map((product, index) => (
           <motion.div
             key={product.id}
             variants={cardVariants}
-            // PERUBAHAN: Menambahkan handler onClick untuk memicu modal dan navigasi detail produk
             onClick={() => handleProductClick(product.id, product.title)}
-            className={`font-['Nohemi'] relative w-full md:w-[230px] md:h-fit rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 hover:z-20 cursor-pointer ${product.hoverClass}`}
+            className={`font-nohemi relative w-full max-w-[260px] mx-auto rounded-[18px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-black/5 hover:z-20 cursor-pointer ${product.hoverClass}`}
           >
-            {/* Image Section */}
+            {/* Area gambar */}
             <div
-              className={`relative w-full aspect-[4/3] flex flex-col items-center justify-start pt-3 md:pt-3 ${product.imgBg}`}
+              className={`relative w-full aspect-[5/4] md:aspect-[4/3.4] flex flex-col items-center justify-end overflow-visible ${product.imgBg}`}
             >
-              <div className="absolute top-2 left-2 md:top-3 md:left-3">
+              <div className="absolute top-2.5 left-2.5 md:top-3.5 md:left-3.5 z-20">
                 <span
-                  className={`bg-white px-2 py-0.5 md:py-2 rounded-full text-[8px] md:text-[12px] font-bold ${product.textColor}`}
+                  className={`bg-white px-2.5 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-[12px] font-bold shadow-sm ${product.textColor}`}
                 >
                   {product.badge}
                 </span>
               </div>
 
               <motion.div
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: false, amount: 0.3 }}
                 transition={{
                   duration: 0.7,
-                  delay: index * 0.15,
+                  delay: index * 0.12,
                   ease: "easeOut",
                 }}
-                className="w-full flex justify-center items-center flex-1 mt-[15px] md:mt-[25px] translate-y-[18px] md:translate-y-[25px]"
+                className="relative w-full flex justify-center items-end translate-y-[14%] md:translate-y-[16%] z-10 pb-0"
               >
                 <Image
                   src={product.path}
                   alt={product.title}
                   width={500}
                   height={500}
-                  className="object-contain drop-shadow-xl w-[76%] md:w-[76%]"
+                  className="object-contain drop-shadow-xl w-[78%] sm:w-[80%] md:w-[82%]"
                 />
               </motion.div>
             </div>
 
-            {/* Description Section */}
+            {/* Area info */}
             <div
-              className={`p-2.5 md:p-4 flex flex-col flex-grow text-left ${product.cardBg} z-20`}
+              className={`relative p-3 sm:p-3.5 md:p-4 flex flex-col flex-grow text-left ${product.cardBg} z-20 pt-5 md:pt-6`}
             >
               <h3
-                className={`text-[12px] md:text-[16px] font-bold mb-0.5 md:mb-2 ${product.textColor} tracking-tighter leading-tight`}
+                className={`text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] font-bold mb-1 md:mb-1.5 ${product.textColor} leading-tight`}
               >
                 {product.title}
               </h3>
               <p
-                className={`text-[9px] md:text-[10px] font-medium mb-2 md:mb-3 h-[24px] md:h-auto line-clamp-2 leading-tight md:leading-relaxed ${product.descColor}`}
+                className={`text-[10px] md:text-[11px] font-medium mb-3 md:mb-4 line-clamp-2 leading-snug ${product.descColor}`}
               >
                 {product.desc}
               </p>
 
-              <div className="flex justify-between items-center mt-auto">
+              <div className="flex justify-between items-center mt-auto gap-2">
                 <span
-                  className={`text-[10px] md:text-[12px] font-bold ${product.textColor}`}
+                  className={`text-[11px] md:text-[12px] font-bold ${product.textColor}`}
                 >
                   {product.price}
                 </span>
                 <button
-                  className={`w-5 h-5 md:w-7 md:h-7 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${product.btnBg}`}
+                  type="button"
+                  aria-label={`Lihat ${product.title}`}
+                  className={`w-6 h-6 md:w-7 md:h-7 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 shrink-0 ${product.btnBg}`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -272,7 +266,7 @@ export default function FifthSection() {
                     viewBox="0 0 24 24"
                     strokeWidth={2.5}
                     stroke="currentColor"
-                    className="w-2.5 h-2.5 md:w-3 md:h-3"
+                    className="w-3 h-3"
                   >
                     <path
                       strokeLinecap="round"
@@ -287,22 +281,22 @@ export default function FifthSection() {
         ))}
       </motion.div>
 
-      {/* 3. Tombol Lihat Koleksi */}
+      {/* CTA */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: false }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
         className="relative z-10"
       >
         <button
           onClick={handleBelanjaAction}
-          className="font-['Nohemi'] group flex items-center justify-center gap-2 md:gap-3 bg-[#1172BA] text-white text-[13px] md:text-[14px] font-bold px-6 py-2.5 md:px-10 md:py-3 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 shadow-md"
+          className="font-nohemi group flex items-center justify-center gap-2 md:gap-3 bg-[#1172BA] text-white text-[13px] md:text-[14px] font-bold px-7 py-2.5 md:px-10 md:py-3 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 shadow-md"
         >
           <div className="relative w-[16px] h-[16px] md:w-[19px] md:h-[19px]">
             <Image
               src="/src/images/section 5/star-medium.png"
-              alt="Star Icon"
+              alt=""
               fill
               className="object-contain brightness-0 invert"
             />
@@ -311,71 +305,34 @@ export default function FifthSection() {
         </button>
       </motion.div>
 
-      {/* 4. Animated Wave Background */}
+      {/* Wave bawah */}
       <div className="absolute bottom-0 left-0 w-full z-0 leading-[0]">
         <svg
-          className="block w-full h-[30px] md:h-[70px]"
+          className="block w-full h-[28px] md:h-[60px]"
           viewBox="0 24 150 28"
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
             <path
-              id="gentle-wave"
+              id="gentle-wave-s5"
               d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
             />
           </defs>
           <g>
-            <use
-              href="#gentle-wave"
-              x="48"
-              y="0"
-              fill="#60BBFF"
-              fillOpacity="0.3"
-            >
-              <animate
-                attributeName="x"
-                from="-90"
-                to="85"
-                dur="10s"
-                repeatCount="indefinite"
-              />
+            <use href="#gentle-wave-s5" x="48" y="0" fill="#60BBFF" fillOpacity="0.3">
+              <animate attributeName="x" from="-90" to="85" dur="10s" repeatCount="indefinite" />
             </use>
-            <use
-              href="#gentle-wave"
-              x="48"
-              y="3"
-              fill="#60BBFF"
-              fillOpacity="0.6"
-            >
-              <animate
-                attributeName="x"
-                from="-90"
-                to="85"
-                dur="14s"
-                repeatCount="indefinite"
-              />
+            <use href="#gentle-wave-s5" x="48" y="3" fill="#60BBFF" fillOpacity="0.6">
+              <animate attributeName="x" from="-90" to="85" dur="14s" repeatCount="indefinite" />
             </use>
-            <use
-              href="#gentle-wave"
-              x="48"
-              y="5"
-              fill="#60BBFF"
-              fillOpacity="1"
-            >
-              <animate
-                attributeName="x"
-                from="-90"
-                to="85"
-                dur="20s"
-                repeatCount="indefinite"
-              />
+            <use href="#gentle-wave-s5" x="48" y="5" fill="#60BBFF" fillOpacity="1">
+              <animate attributeName="x" from="-90" to="85" dur="20s" repeatCount="indefinite" />
             </use>
           </g>
         </svg>
       </div>
 
-      {/* ================= CUSTOM MODAL ================= */}
       <AnimatePresence>
         {navModal.isOpen && (
           <motion.div
@@ -392,7 +349,7 @@ export default function FifthSection() {
               onClick={(e) => e.stopPropagation()}
               className="relative bg-white rounded-[20px] md:rounded-[24px] p-5 md:p-8 max-w-[280px] md:max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
             >
-              <div className="mx-auto flex items-center justify-center h-14 w-14 md:h-20 md:w-20 rounded-full mb-3 md:mb-5 transition-colors duration-300 bg-blue-50 text-blue-500">
+              <div className="mx-auto flex items-center justify-center h-14 w-14 md:h-20 md:w-20 rounded-full mb-3 md:mb-5 bg-blue-50 text-blue-500">
                 {navModal.type === "loading" && (
                   <svg
                     className="h-7 w-7 md:h-10 md:w-10 animate-spin text-[#1172BA]"
@@ -415,7 +372,6 @@ export default function FifthSection() {
                   </svg>
                 )}
               </div>
-
               <div className="space-y-1.5 md:space-y-3">
                 <h3 className="text-[16px] md:text-[20px] font-bold text-gray-800 tracking-wide">
                   {navModal.title}

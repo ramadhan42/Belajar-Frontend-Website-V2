@@ -104,6 +104,7 @@ export default function HistoryPage() {
       );
 
       setHistory(groupedArray);
+      window.dispatchEvent(new Event("history_updated"));
     } catch (err: any) {
       setError(
         err.message ||
@@ -241,6 +242,7 @@ export default function HistoryPage() {
         try {
           await Promise.all(group.items.map((i) => removeHistoryItem(i.id)));
           setHistory((prev) => prev.filter((g) => g.groupId !== group.groupId));
+          window.dispatchEvent(new Event("history_updated"));
 
           setModal({
             isOpen: true,

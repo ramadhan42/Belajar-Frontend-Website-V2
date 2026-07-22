@@ -71,28 +71,24 @@ export default function KuisResultSection({
       {/* ================= CARD HASIL UTAMA (ATAS) ================= */}
       {/* max-width dikurangi sedikit agar proporsional di tengah */}
       <div className="mb-0 w-full max-w-7xl flex justify-center px-4 md:px-[5px] md:mt-[15px]">
-        {/* Lebar disamakan dengan produk (max-w-4xl) & Tinggi diturunkan menjadi 320px */}
         <div
-          className="relative w-full h-[320px] rounded-[20px] overflow-hidden flex shadow-lg transition-colors duration-500"
+          className="relative w-full min-h-[280px] h-auto md:h-[320px] rounded-[20px] overflow-hidden flex flex-col md:flex-row shadow-lg transition-colors duration-500 py-6 md:py-0"
           style={{ backgroundColor: data.color }}
         >
           {/* SISI KIRI: TEKS & TOMBOL */}
-          <div className="relative z-20 w-full md:w-1/2 flex flex-col justify-center pl-6 md:pl-10 pr-4 pt-[10px]">
-            {/* Title diperbesar */}
-            <h1 className="font-['Nohemi'] text-[28px] md:text-[34px] font-semibold text-white leading-tight whitespace-pre-line mb-3">
+          <div className="relative z-20 w-full md:w-1/2 flex flex-col justify-center pl-5 sm:pl-6 md:pl-10 pr-4 pt-2 md:pt-[10px] pb-4 md:pb-0">
+            <h1 className="font-nohemi text-[22px] sm:text-[26px] md:text-[34px] font-semibold text-white leading-tight mb-3 max-w-[70%] md:max-w-none">
               {data.title}
             </h1>
 
-            {/* Deskripsi diperbesar */}
-            <p className="font-sans text-[15px] md:text-[16px] font-normal text-white leading-relaxed mb-6 opacity-90 whitespace-pre-line max-w-sm">
+            <p className="font-sans text-[13px] md:text-[16px] font-normal text-white leading-relaxed mb-5 md:mb-6 opacity-90 max-w-[65%] md:max-w-sm">
               {data.desc}
             </p>
 
-            <div className="flex flex-wrap gap-2.5">
-              {/* Tombol Lihat Produk - diperbesar */}
+            <div className="flex flex-wrap gap-2.5 relative z-30">
               <button
                 onClick={scrollToDetail}
-                className="font-['Nohemi'] flex items-center gap-2 bg-white text-[13px] md:text-[14px] font-semibold py-[10px] px-[20px] rounded-full transition-transform active:scale-95 shadow-sm"
+                className="font-nohemi flex items-center gap-2 bg-white text-[12px] md:text-[14px] font-semibold py-2.5 px-4 md:py-[10px] md:px-[20px] rounded-full transition-transform active:scale-95 shadow-sm"
                 style={{ color: data.color }}
               >
                 Lihat Produk
@@ -112,10 +108,9 @@ export default function KuisResultSection({
                 </svg>
               </button>
 
-              {/* Tombol Ulangi Kuis */}
               <button
                 onClick={onRestart}
-                className="font-['Nohemi'] flex items-center gap-2 border border-white text-white text-[13px] md:text-[14px] font-semibold py-[10px] px-[20px] rounded-full transition-all hover:bg-white/10 active:scale-95"
+                className="font-nohemi flex items-center gap-2 border border-white text-white text-[12px] md:text-[14px] font-semibold py-2.5 px-4 md:py-[10px] md:px-[20px] rounded-full transition-all hover:bg-white/10 active:scale-95"
                 style={{ backgroundColor: data.color }}
               >
                 Ulangi Kuis
@@ -136,8 +131,7 @@ export default function KuisResultSection({
           </div>
 
           {/* SISI KANAN: GAMBAR PRODUK */}
-          <div className="absolute top-0 right-0 h-full w-full md:w-[400px] pointer-events-none overflow-visible">
-            {/* Background Image z-0 - Resolusi/Dimensi disesuaikan */}
+          <div className="absolute top-0 right-0 h-full w-[45%] md:w-[400px] pointer-events-none overflow-hidden md:overflow-visible">
             <div className="absolute inset-0 z-0 flex items-end justify-end">
               <Image
                 src={data.bgImage}
@@ -146,11 +140,10 @@ export default function KuisResultSection({
                 height={380}
                 quality={100}
                 priority
-                className="object-contain object-bottom-right opacity-100 brightness-100"
+                className="object-contain object-bottom-right opacity-100 brightness-100 scale-90 md:scale-100"
               />
             </div>
 
-            {/* Product Image z-10 - Dimensi dan Skala disesuaikan */}
             <div className="absolute inset-0 z-10 flex items-end justify-end">
               <Image
                 src={data.productImage}
@@ -159,7 +152,7 @@ export default function KuisResultSection({
                 height={580}
                 quality={100}
                 priority
-                className="object-contain object-bottom-right transform scale-[1.55] origin-bottom-right transition-transform duration-500 opacity-100 brightness-100"
+                className="object-contain object-bottom-right transform scale-[1.2] md:scale-[1.55] origin-bottom-right transition-transform duration-500 opacity-100 brightness-100"
               />
             </div>
           </div>

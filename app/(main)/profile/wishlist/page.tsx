@@ -42,6 +42,7 @@ export default function WishlistPage() {
     wishlistApi.getWishlist().then((data) => {
       setWishlists(data);
       setLoading(false);
+      window.dispatchEvent(new Event("wishlist_updated"));
     });
   }, []);
 
@@ -73,6 +74,7 @@ export default function WishlistPage() {
       try {
         await wishlistApi.removeFromWishlist(itemToDelete);
         setWishlists(wishlists.filter((item) => item.id !== itemToDelete));
+        window.dispatchEvent(new Event("wishlist_updated"));
         // Mengubah isi modal menjadi penanda sukses setelah berhasil delete
         triggerModal(
           "success",
@@ -109,6 +111,8 @@ export default function WishlistPage() {
       );
       await wishlistApi.removeFromWishlist(wishlistItemId);
       setWishlists(wishlists.filter((item) => item.id !== wishlistItemId));
+      window.dispatchEvent(new Event("cart_updated"));
+      window.dispatchEvent(new Event("wishlist_updated"));
     } catch (err: any) {
       triggerModal("error", err?.message || "Gagal menambahkan ke keranjang");
     }

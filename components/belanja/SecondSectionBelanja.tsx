@@ -138,7 +138,7 @@ export default function SecondSectionBelanja() {
 
       {/* ================= GRID CARD PRODUK ================= */}
       {isLoading ? (
-        <div className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8 px-5 py-5 md:px-4 mt-1">
+        <div className="relative z-10 w-full max-w-5xl grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 md:gap-6 px-3 sm:px-4 py-5 mt-1">
           {[1, 2, 3, 4].map((i) => (
             <ProductSkeleton key={i} />
           ))}
@@ -149,7 +149,7 @@ export default function SecondSectionBelanja() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: false, amount: 0.1 }}
-          className="relative z-10 w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-7 md:gap-4 px-5 py-5 md:px-4 mt-1"
+          className="relative z-10 w-full max-w-5xl grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 md:gap-6 px-3 sm:px-4 py-5 mt-1"
         >
           {products.map((product, index) => {
             const visual =
@@ -163,14 +163,14 @@ export default function SecondSectionBelanja() {
                 variants={cardVariants}
                 whileHover={{ rotate: index % 2 === 0 ? 5 : -5, scale: 1.02 }}
                 onClick={() => router.push(`/belanja/${product.id}`)}
-                className="font-['Nohemi'] relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 cursor-pointer"
+                className="font-nohemi relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 cursor-pointer"
               >
                 {/* Bagian Atas: Gambar & Badge */}
                 <div
                   className={`relative w-full md:h-[240px] aspect-square overflow-hidden ${visual.imgBg}`}
                 >
                   <span
-                    className={`absolute top-2 left-2 md:top-5 md:left-5 bg-white px-2 py-1 md:px-2 md:py-1 rounded-full text-[8px] md:text-[10px] font-bold z-20 ${visual.textColor}`}
+                    className={`absolute top-2 left-2 md:top-5 md:left-5 bg-white px-2 py-1 md:px-2 md:py-1 rounded-full text-[10px] md:text-[10px] font-bold z-20 ${visual.textColor}`}
                   >
                     {visual.badge}
                   </span>
@@ -181,7 +181,7 @@ export default function SecondSectionBelanja() {
                       alt={product.title}
                       width={340}
                       height={340}
-                      className="absolute bottom-[-22%] md:bottom-[-21%] left-[10%] md:left-[4%] w-[70%] md:w-[80%] max-w-none object-contain drop-shadow-xl rotate-[35deg] transition-transform duration-300"
+                      className="absolute bottom-[-18%] md:bottom-[-21%] left-[8%] md:left-[4%] w-[75%] md:w-[80%] max-w-none object-contain drop-shadow-xl rotate-[35deg] transition-transform duration-300"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white/40 text-sm">
@@ -192,23 +192,23 @@ export default function SecondSectionBelanja() {
 
                 {/* Bagian Bawah: Teks & Info */}
                 <div
-                  className={`p-3 md:p-4 flex flex-col flex-grow text-left ${visual.cardBg}`}
+                  className={`p-2.5 sm:p-3 md:p-4 flex flex-col flex-grow text-left ${visual.cardBg}`}
                 >
                   <h3
-                    className={`text-[13px] md:text-[16px] font-bold mb-1 md:mb-2 ${visual.textColor}`}
+                    className={`text-[12px] sm:text-[13px] md:text-[16px] font-bold mb-1 md:mb-2 ${visual.textColor}`}
                   >
                     {product.title}
                   </h3>
 
                   <p
-                    className={`text-[9px] md:text-[10px] font-medium mb-3 md:mb-2 leading-[1.1] md:leading-[1.25] flex-grow line-clamp-3 ${visual.descColor}`}
+                    className={`text-[10px] md:text-[10px] font-medium mb-3 md:mb-2 leading-[1.2] md:leading-[1.25] flex-grow line-clamp-3 ${visual.descColor}`}
                   >
                     {product.description ?? ""}
                   </p>
 
-                  <div className="flex justify-between items-center mt-auto">
+                  <div className="flex justify-between items-center mt-auto gap-1">
                     <span
-                      className={`text-[10px] md:text-[10px] font-bold ${visual.textColor}`}
+                      className={`text-[11px] md:text-[10px] font-bold ${visual.textColor}`}
                     >
                       {formatProductPrice(product.price)}
                     </span>

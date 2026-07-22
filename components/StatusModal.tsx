@@ -49,16 +49,16 @@ export default function StatusModal({
           </div>
 
           <h3
-            className="text-xl font-bold font-['Nohemi'] mb-2"
+            className="text-xl font-bold font-nohemi mb-2"
             style={{ color: themeColor }}
           >
             {title}
           </h3>
-          <p className="text-gray-600 font-['Parkinsans'] mb-6">{message}</p>
+          <p className="text-gray-600 font-parkinsans mb-6">{message}</p>
 
           <button
             onClick={onClose}
-            className="w-full py-3 rounded-xl text-white font-bold font-['Nohemi'] transition-all active:scale-95"
+            className="w-full py-3 rounded-xl text-white font-bold font-nohemi transition-all active:scale-95"
             style={{ backgroundColor: themeColor }}
           >
             Mengerti
