@@ -13,6 +13,7 @@ import {
   Reply,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import { getAdminHeaders } from "@/lib/api";
 
 // Definisikan tipe data untuk riwayat balasan
 interface ContactReply {
@@ -57,7 +58,9 @@ export default function MessagesPage() {
   const fetchMessages = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${baseUrl}/api/contact`);
+      const res = await fetch(`${baseUrl}/api/contact`, {
+        headers: getAdminHeaders(),
+      });
       const data = await res.json();
       
       // Mengamankan data array hasil fetch
@@ -88,11 +91,7 @@ export default function MessagesPage() {
     try {
       const res = await fetch(`${baseUrl}/api/admin/contact/${selectedMessage.id}/reply`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Jika Anda menggunakan token sanctum, aktifkan baris di bawah ini:
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        headers: getAdminHeaders(),
         body: JSON.stringify({ reply_message: replyText }),
       });
 

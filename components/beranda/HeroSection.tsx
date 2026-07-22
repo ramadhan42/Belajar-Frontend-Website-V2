@@ -240,76 +240,140 @@ export default function HeroSection() {
         {/* Disesuaikan: Margin vertikal (mt dan mb) diminimalkan agar jarak antar elemen sangat sempit */}
         <div className="relative mt-2 mb-0 md:mt-3 md:mb-0 w-[100%] md:w-[90%] lg:w-full max-w-7xl mx-auto aspect-[1280/412]">
           {/* Wave dekorasi — dari produk ke atas kiri & kanan */}
-          <motion.div
-            animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 1.0, delay: 0.8, ease: "easeOut" }}
-            className="hero-wave-layer sayap-hover-effect"
-            aria-hidden
-          >
-            <svg
+          <div className="hero-wave-layer sayap-hover-effect" aria-hidden>
+            {/* Sayap kiri */}
+            <motion.div
               className="hero-wave-svg hero-wave-left"
-              viewBox="0 0 394 269"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+              initial={{ opacity: 0 }}
+              animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
+              transition={{
+                duration: 1.15,
+                delay: 0.65,
+                ease: [0.22, 1, 0.36, 1],
+              }}
             >
-              <defs>
-                <linearGradient
-                  id="heroWaveLeftGrad"
-                  x1="-16.1182"
-                  y1="57.6073"
-                  x2="385.318"
-                  y2="143.822"
-                  gradientUnits="userSpaceOnUse"
+              <motion.div
+                className="w-full h-auto will-change-transform"
+                style={{ transformOrigin: "88% 78%" }}
+                animate={
+                  shouldAnimate
+                    ? {
+                        rotate: isMobile
+                          ? [-1.6, 1.8, -1.6]
+                          : [-2.4, 2.8, -2.4],
+                        y: isMobile ? [0, -5, 0] : [0, -10, 0],
+                        scale: [1, 1.03, 1],
+                      }
+                    : { rotate: 0, y: 0, scale: 1 }
+                }
+                transition={{
+                  duration: isMobile ? 5.2 : 6.4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1.1,
+                }}
+              >
+                <svg
+                  className="w-full h-auto block overflow-visible"
+                  viewBox="0 0 394 269"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <stop offset="0.339313" stopColor="#60BBFF" />
-                  <stop offset="1" stopColor="#FF8A84" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M249.353 208.572C227.104 254.765 336.005 229.301 393.236 210.795L391.597 225.206C240.842 287.445 208.166 270.156 206.182 247.054C204.198 223.951 268.222 182.812 179.508 180.809C90.7932 178.807 64.5628 160.794 64.6262 140.17C64.6895 119.546 109.343 90.8905 73.5016 87.1579C44.8283 84.1719 19.1086 93.2575 9.8329 98.1736L-34.5957 0C39.6156 62.1945 77.1964 34.9117 133.299 67.9779C189.402 101.044 75.6897 118.705 125.496 141.25C175.302 163.794 277.164 150.83 249.353 208.572Z"
-                fill="url(#heroWaveLeftGrad)"
-              />
-            </svg>
-            <svg
+                  <defs>
+                    <linearGradient
+                      id="heroWaveLeftGrad"
+                      x1="-16.1182"
+                      y1="57.6073"
+                      x2="385.318"
+                      y2="143.822"
+                      gradientUnits="userSpaceOnUse"
+                    >
+                      <stop offset="0.339313" stopColor="#60BBFF" />
+                      <stop offset="1" stopColor="#FF8A84" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M249.353 208.572C227.104 254.765 336.005 229.301 393.236 210.795L391.597 225.206C240.842 287.445 208.166 270.156 206.182 247.054C204.198 223.951 268.222 182.812 179.508 180.809C90.7932 178.807 64.5628 160.794 64.6262 140.17C64.6895 119.546 109.343 90.8905 73.5016 87.1579C44.8283 84.1719 19.1086 93.2575 9.8329 98.1736L-34.5957 0C39.6156 62.1945 77.1964 34.9117 133.299 67.9779C189.402 101.044 75.6897 118.705 125.496 141.25C175.302 163.794 277.164 150.83 249.353 208.572Z"
+                    fill="url(#heroWaveLeftGrad)"
+                  />
+                </svg>
+              </motion.div>
+            </motion.div>
+
+            {/* Sayap kanan */}
+            <motion.div
               className="hero-wave-svg hero-wave-right"
-              viewBox="0 0 418 449"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+              initial={{ opacity: 0 }}
+              animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
+              transition={{
+                duration: 1.15,
+                delay: 0.85,
+                ease: [0.22, 1, 0.36, 1],
+              }}
             >
-              <defs>
-                <linearGradient
-                  id="heroWaveRightGradOuter"
-                  x1="446.42"
-                  y1="74.4447"
-                  x2="-7.16213"
-                  y2="352.017"
-                  gradientUnits="userSpaceOnUse"
+              <motion.div
+                className="w-full h-auto will-change-transform"
+                style={{ transformOrigin: "12% 78%" }}
+                animate={
+                  shouldAnimate
+                    ? {
+                        rotate: isMobile
+                          ? [1.6, -1.8, 1.6]
+                          : [2.4, -2.8, 2.4],
+                        y: isMobile ? [0, -5, 0] : [0, -10, 0],
+                        scale: [1.025, 1, 1.025],
+                      }
+                    : { rotate: 0, y: 0, scale: 1 }
+                }
+                transition={{
+                  duration: isMobile ? 5.6 : 7,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1.45,
+                }}
+              >
+                <svg
+                  className="w-full h-auto block overflow-visible"
+                  viewBox="0 0 418 449"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <stop offset="0.333877" stopColor="#A5E194" />
-                  <stop offset="1" stopColor="#F899C6" />
-                </linearGradient>
-                <linearGradient
-                  id="heroWaveRightGradInner"
-                  x1="470.42"
-                  y1="79.4447"
-                  x2="16.8379"
-                  y2="357.017"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop offset="0.333877" stopColor="#A5E194" />
-                  <stop offset="1" stopColor="#F899C6" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M167.875 341.839C203.726 388.975 72.4872 382.731 2.3867 373.718L7.45438 389.505C195.083 428.343 228.966 402.325 226.161 376.073C223.356 349.821 140.429 316.873 242.326 296.511C344.223 276.148 370.51 250.637 365.89 227.577C361.27 204.516 303.441 181.578 343.964 170.08C376.382 160.882 408.055 165.793 419.839 169.399L449.445 50.4874C377.55 135.229 328.182 112.382 270.754 160.837C213.326 209.291 348.395 205.822 295.91 241.219C243.426 276.615 123.062 282.919 167.875 341.839Z"
-                fill="url(#heroWaveRightGradOuter)"
-              />
-              <path
-                d="M191.875 346.839C227.726 393.975 96.4872 387.731 26.3867 378.718L31.4544 394.505C219.083 433.343 252.966 407.325 250.161 381.073C247.356 354.821 164.429 321.873 266.326 301.511C368.223 281.148 394.51 255.637 389.89 232.577C385.27 209.516 327.441 186.578 367.964 175.08C400.382 165.882 432.055 170.793 443.839 174.399L473.445 55.4874C401.55 140.229 352.182 117.382 294.754 165.837C237.326 214.291 372.395 210.822 319.91 246.219C267.426 281.615 147.062 287.919 191.875 346.839Z"
-                fill="url(#heroWaveRightGradInner)"
-              />
-            </svg>
-          </motion.div>
+                  <defs>
+                    <linearGradient
+                      id="heroWaveRightGradOuter"
+                      x1="446.42"
+                      y1="74.4447"
+                      x2="-7.16213"
+                      y2="352.017"
+                      gradientUnits="userSpaceOnUse"
+                    >
+                      <stop offset="0.333877" stopColor="#A5E194" />
+                      <stop offset="1" stopColor="#F899C6" />
+                    </linearGradient>
+                    <linearGradient
+                      id="heroWaveRightGradInner"
+                      x1="470.42"
+                      y1="79.4447"
+                      x2="16.8379"
+                      y2="357.017"
+                      gradientUnits="userSpaceOnUse"
+                    >
+                      <stop offset="0.333877" stopColor="#A5E194" />
+                      <stop offset="1" stopColor="#F899C6" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M167.875 341.839C203.726 388.975 72.4872 382.731 2.3867 373.718L7.45438 389.505C195.083 428.343 228.966 402.325 226.161 376.073C223.356 349.821 140.429 316.873 242.326 296.511C344.223 276.148 370.51 250.637 365.89 227.577C361.27 204.516 303.441 181.578 343.964 170.08C376.382 160.882 408.055 165.793 419.839 169.399L449.445 50.4874C377.55 135.229 328.182 112.382 270.754 160.837C213.326 209.291 348.395 205.822 295.91 241.219C243.426 276.615 123.062 282.919 167.875 341.839Z"
+                    fill="url(#heroWaveRightGradOuter)"
+                  />
+                  <path
+                    d="M191.875 346.839C227.726 393.975 96.4872 387.731 26.3867 378.718L31.4544 394.505C219.083 433.343 252.966 407.325 250.161 381.073C247.356 354.821 164.429 321.873 266.326 301.511C368.223 281.148 394.51 255.637 389.89 232.577C385.27 209.516 327.441 186.578 367.964 175.08C400.382 165.882 432.055 170.793 443.839 174.399L473.445 55.4874C401.55 140.229 352.182 117.382 294.754 165.837C237.326 214.291 372.395 210.822 319.91 246.219C267.426 281.615 147.062 287.919 191.875 346.839Z"
+                    fill="url(#heroWaveRightGradInner)"
+                  />
+                </svg>
+              </motion.div>
+            </motion.div>
+          </div>
 
           {/* Floating Labels */}
           {HERO_PRODUCTS.map((product) => (

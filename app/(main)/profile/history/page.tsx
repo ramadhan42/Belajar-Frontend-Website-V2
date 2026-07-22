@@ -20,7 +20,7 @@ import {
 import { useNavbarColor } from "@/context/NavbarColorContext";
 import { SITE_STRINGS } from "@/components/constans/strings";
 
-const BASE_URL = SITE_STRINGS.base_url.url_backend_local;
+const BASE_URL = SITE_STRINGS.base_url.url_backend;
 
 interface GroupedHistory {
   groupId: string; // PERBAIKAN: Diubah dari number menjadi string untuk mendukung UUID/MongoDB ObjectId

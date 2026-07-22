@@ -219,7 +219,13 @@ export default function OrdersPage() {
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${baseUrl}/api/admin/orders`);
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`${baseUrl}/api/admin/orders`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
       const data = await res.json();
       setOrders(data?.data || []);
     } catch (error) {

@@ -24,6 +24,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  is_admin?: boolean;
   created_at?: string;
 }
 
@@ -82,6 +83,10 @@ export interface QuizOption {
   id: number;
   question_id: number;
   text: string;
+  prestige_score?: number;
+  peaceful_calm_score?: number;
+  rebel_brave_score?: number;
+  sweet_shy_score?: number;
 }
 
 export interface QuizQuestion {
@@ -104,7 +109,7 @@ export interface QuizResult {
 }
 
 export interface ShoppingHistoryItem {
-  id: number;
+  id: string | number;
   product?: Product;
   quantity?: number;
   status?: string;
@@ -201,12 +206,13 @@ export async function logout(): Promise<void> {
 // 2. User Profile & History
 // ---------------------------------------------------------------------------
 
-/** GET /api/profile */
+/** GET /api/user/profile */
 export async function getProfile(): Promise<User> {
-  return request<User>("/api/profile", {
+  const res = await request<{ data: User } | User>("/api/user/profile", {
     method: "GET",
     headers: buildHeaders(true),
   });
+  return (res as { data: User }).data ?? (res as User);
 }
 
 /** GET /api/shopping-history */
@@ -218,9 +224,8 @@ export async function getShoppingHistory(): Promise<ShoppingHistoryItem[]> {
 }
 
 // Tambahkan di file api.ts
-export async function removeHistoryItem(orderId: number): Promise<void> {
+export async function removeHistoryItem(orderId: string | number): Promise<void> {
   await request<void>(`/api/orders/${orderId}`, {
-    // Sesuaikan URL dengan route di Laravel
     method: "DELETE",
     headers: buildHeaders(true),
   });
@@ -230,17 +235,18 @@ export async function removeHistoryItem(orderId: number): Promise<void> {
 // Helpers khusus Product
 // ---------------------------------------------------------------------------
 
-/** Base URL storage Laravel (gambar produk disimpan di storage/app/public) */
-const STORAGE_URL = (process.env.NEXT_PUBLIC_URL || BASE_URL) + "/storage/";
+/** Base URL storage Laravel (gambar produk di storage/app/public) */
+const STORAGE_URL = SITE_STRINGS.base_url.url_backend + "/storage/";
 
 /** Konversi path gambar relatif dari Laravel menjadi URL absolut */
-export function getProductImageUrl(path?: string): string | null {
+export function getProductImageUrl(path?: string | null): string | null {
   if (!path) return null;
-  // 1. Jika sudah berupa URL absolut (http:// atau https://), langsung kembalikan
   if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
   }
-  return STORAGE_URL + path;
+  // Hapus leading slash / "storage/" jika sudah ikut di path
+  const clean = path.replace(/^\/+/, "").replace(/^storage\//, "");
+  return `${STORAGE_URL}${clean}`;
 }
 
 /** Format harga string "10000.00" → "Rp10.000" */
@@ -399,14 +405,25 @@ const getAuthHeaders = (): Record<string, string> => {
   return {};
 };
 
+/** Header auth + Accept untuk halaman admin */
+export function getAdminHeaders(json = true): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...getAuthHeaders(),
+  };
+  if (json) headers["Content-Type"] = "application/json";
+  return headers;
+}
+
 // 1. API UNTUK USER PROFILE
 // SUDAH DIPERBAIKI: Menggunakan 'export', bukan 'public'
 export const userProfileApi = {
   getProfile: async () => {
-    const res = await fetch(`${BASE_URL}/user/profile`, {
+    const res = await fetch(`${BASE_URL}/api/user/profile`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
         ...getAuthHeaders(),
       },
     });
@@ -420,10 +437,11 @@ export const userProfileApi = {
     alamat_lengkap?: string;
     email: string;
   }) => {
-    const res = await fetch(`${BASE_URL}/user/profile`, {
-      method: "PUT",
+    const res = await fetch(`${BASE_URL}/api/user/profile`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
         ...getAuthHeaders(),
       },
       body: JSON.stringify(data),
@@ -552,16 +570,15 @@ export const wishlistApi = {
 
   // 👇 TAMBAHKAN KODE INI DI BAWAHNYA 👇
   getWishlistDetail: async (id: number) => {
-    // Sesuaikan cara pemanggilan (fetch/axios) dengan fungsi Anda yang lain
     const token =
       typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
 
-    // Ganti URL_BACKEND_ANDA dengan base URL yang biasa Anda gunakan di file ini
-    const response = await fetch(`${BASE_URL}/api/wishlist/${id}`, {
+    const response = await fetch(`${BASE_URL}/api/wishlists/${id}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
     });
 
@@ -579,13 +596,13 @@ export const getHistoryDetail = async (
 ): Promise<ShoppingHistoryItem> => {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || BASE_URL;
 
-  const response = await fetch(`${baseUrl}/history/${id}`, {
+  const response = await fetch(`${BASE_URL}/api/orders/${id}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
+      Accept: "application/json",
     },
   });
 
@@ -593,7 +610,8 @@ export const getHistoryDetail = async (
     throw new Error("Gagal mengambil detail riwayat belanja");
   }
 
-  return response.json();
+  const result = await response.json();
+  return result.data ?? result;
 };
 
 // Tambahkan fungsi ini di dalam lib/api.ts

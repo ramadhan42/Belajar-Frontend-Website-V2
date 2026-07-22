@@ -299,10 +299,7 @@ export default function ProductDetailSection({
     // 3. Kirim Data ke API Laravel
     setIsSendingChat(true);
     try {
-      const BASE_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-
-      const response = await fetch(`${BASE_URL}/contact`, {
+      const response = await fetch(`${BASE_URL}/api/contact`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -358,9 +355,6 @@ export default function ProductDetailSection({
   
 
   useEffect(() => {
-    const BASE_URL = "http://127.0.0.1:8000"; // Sesuaikan dengan base URL proyekmu
-
-    // Fetch Kurir
     fetch(`${BASE_URL}/api/kurirs`)
       .then((res) => {
         if (!res.ok) throw new Error("Gagal mengambil data kurir");
@@ -369,25 +363,20 @@ export default function ProductDetailSection({
       .then((data) => {
         if (data.success && data.data && data.data.length > 0) {
           setKurirs(data.data);
-          setSelectedKurir(data.data[0]); // Jadikan urutan pertama sebagai kurir default
+          setSelectedKurir(data.data[0]);
         }
       })
       .catch(console.error);
   }, []);
 
   useEffect(() => {
-    // Ganti BASE_URL dengan base url proyekmu (misal: process.env.NEXT_PUBLIC_API_URL atau http://localhost:8000)
-    const BASE_URL = "http://127.0.0.1:8000";
-
     fetch(`${BASE_URL}/api/promos`)
       .then((res) => {
         if (!res.ok) throw new Error("Gagal mengambil data promo");
         return res.json();
       })
       .then((data) => {
-        // Menyesuaikan dengan struktur response dari PromoController Laravel kamu
         if (data.success && data.data && data.data.length > 0) {
-          // Ambil harga_promo dari promo pertama (index 0) dan ubah ke tipe angka (Number)
           setHargaPromo(Number(data.data[0].harga_promo));
         }
       })
@@ -422,6 +411,7 @@ export default function ProductDetailSection({
     setNavbarAndFooterColor(visual.navbarColor);
   }, [visual.navbarColor, setNavbarAndFooterColor]);
 
+  // Slider belanja details: hanya image_1 … image_3
   const imageSlots = ["image_1", "image_2", "image_3"] as const;
   const currentImages: string[] = product
     ? imageSlots
@@ -562,6 +552,7 @@ export default function ProductDetailSection({
                       fill
                       className="object-contain"
                       priority={index === 0}
+                      unoptimized
                       sizes="(max-width: 1024px) 100vw, 400px"
                     />
                   </div>
@@ -591,7 +582,11 @@ export default function ProductDetailSection({
 
           {/* Thumbnails */}
           {currentImages.length > 0 && (
-            <div className="grid grid-cols-3 gap-3 w-full mt-2">
+            <div
+              className={`grid gap-3 w-full mt-2 ${
+                currentImages.length >= 3 ? "grid-cols-3" : "grid-cols-2"
+              }`}
+            >
               {currentImages.map((image, index) => (
                 <button
                   key={index}
@@ -626,6 +621,7 @@ export default function ProductDetailSection({
                       alt={`${product?.title ?? ""} thumbnail ${index + 1}`}
                       fill
                       className="object-contain z-10"
+                      unoptimized
                       sizes="100px"
                     />
                   </div>

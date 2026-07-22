@@ -10,7 +10,6 @@ import {
   QuizAnswer,
 } from "@/lib/api";
 
-// --- DATA WARNA PRODUK ---
 const PRODUCT_COLORS = {
   peaceful_calm: "#5EA14A",
   purpose_prestige: "#1172BA",
@@ -18,7 +17,6 @@ const PRODUCT_COLORS = {
   rebel_brave: "#E33D35",
 };
 
-// --- DATA PRODUK EVOMI (statis, untuk hasil kuis) ---
 const EVOMI_PRODUCTS = {
   peaceful_calm: {
     id: "peaceful_calm",
@@ -54,174 +52,14 @@ const EVOMI_PRODUCTS = {
   },
 };
 
-// --- DATA PERTANYAAN KUIS (fallback lokal) ---
-const FALLBACK_QUESTIONS = [
-  {
-    id: 1,
-    text: "Apa aktivitas akhir pekan favoritmu?",
-    options: [
-      {
-        id: 1,
-        question_id: 1,
-        text: "Bersantai menikmati ketenangan alam",
-        product: "peaceful_calm",
-      },
-      {
-        id: 2,
-        question_id: 1,
-        text: "Makan malam mewah dan eksklusif",
-        product: "purpose_prestige",
-      },
-      {
-        id: 3,
-        question_id: 1,
-        text: "Piknik santai membaca buku",
-        product: "sweet_shy",
-      },
-      {
-        id: 4,
-        question_id: 1,
-        text: "Olahraga atau aktivitas menantang",
-        product: "rebel_brave",
-      },
-    ],
-  },
-  {
-    id: 2,
-    text: "Bagaimana gaya berpakaian andalanmu sehari-hari?",
-    options: [
-      {
-        id: 5,
-        question_id: 2,
-        text: "Casual, simpel, dan nyaman",
-        product: "peaceful_calm",
-      },
-      {
-        id: 6,
-        question_id: 2,
-        text: "Elegan, rapi, dan terstruktur",
-        product: "purpose_prestige",
-      },
-      {
-        id: 7,
-        question_id: 2,
-        text: "Warna pastel dan lembut",
-        product: "sweet_shy",
-      },
-      {
-        id: 8,
-        question_id: 2,
-        text: "Sporty, edgy, dan berani",
-        product: "rebel_brave",
-      },
-    ],
-  },
-  {
-    id: 3,
-    text: "Aroma seperti apa yang paling menarik perhatianmu?",
-    options: [
-      {
-        id: 9,
-        question_id: 3,
-        text: "Aroma laut dan udara yang sejuk",
-        product: "peaceful_calm",
-      },
-      {
-        id: 10,
-        question_id: 3,
-        text: "Aroma kayu-kayuan dan rempah mewah",
-        product: "purpose_prestige",
-      },
-      {
-        id: 11,
-        question_id: 3,
-        text: "Aroma bunga-bunga yang manis",
-        product: "sweet_shy",
-      },
-      {
-        id: 12,
-        question_id: 3,
-        text: "Aroma citrus yang tajam dan segar",
-        product: "rebel_brave",
-      },
-    ],
-  },
-  {
-    id: 4,
-    text: "Kesan apa yang ingin kamu tinggalkan saat bertemu orang baru?",
-    options: [
-      {
-        id: 13,
-        question_id: 4,
-        text: "Tenang, suportif, dan mudah didekati",
-        product: "peaceful_calm",
-      },
-      {
-        id: 14,
-        question_id: 4,
-        text: "Misterius, karismatik, dan berwibawa",
-        product: "purpose_prestige",
-      },
-      {
-        id: 15,
-        question_id: 4,
-        text: "Hangat, pemalu, namun menggemaskan",
-        product: "sweet_shy",
-      },
-      {
-        id: 16,
-        question_id: 4,
-        text: "Penuh semangat, percaya diri, dan tegas",
-        product: "rebel_brave",
-      },
-    ],
-  },
-  {
-    id: 5,
-    text: "Pilih suasana cuaca yang paling membuat mood kamu naik:",
-    options: [
-      {
-        id: 17,
-        question_id: 5,
-        text: "Pagi hari yang sejuk dan tenang",
-        product: "peaceful_calm",
-      },
-      {
-        id: 18,
-        question_id: 5,
-        text: "Malam hari yang dingin dan syahdu",
-        product: "purpose_prestige",
-      },
-      {
-        id: 19,
-        question_id: 5,
-        text: "Sore hari musim semi yang hangat",
-        product: "sweet_shy",
-      },
-      {
-        id: 20,
-        question_id: 5,
-        text: "Siang hari yang terik untuk beraktivitas",
-        product: "rebel_brave",
-      },
-    ],
-  },
-];
-
-const OPTION_INDEX_TO_KEY = [
-  "peaceful_calm",
-  "purpose_prestige",
-  "sweet_shy",
-  "rebel_brave",
-] as const;
-
 type ProductKey = keyof typeof EVOMI_PRODUCTS;
 
 export default function KuisPage() {
   const { setNavbarAndFooterColor } = useNavbarColor();
 
-  const [apiQuestions, setApiQuestions] = useState<QuizQuestion[] | null>(null);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
@@ -235,25 +73,50 @@ export default function KuisPage() {
   });
 
   useEffect(() => {
+    // Sumber data: backend GET /api/quiz/questions (bukan hardcoded)
     getQuizQuestions()
       .then((data) => {
-        if (data && data.length > 0) setApiQuestions(data);
-        else setApiQuestions(null);
+        if (data && data.length > 0) {
+          setQuestions(data);
+          setLoadError(null);
+        } else {
+          setQuestions([]);
+          setLoadError(
+            "Belum ada soal kuis di server. Tambahkan soal lewat Dashboard Admin → Quiz.",
+          );
+        }
       })
-      .catch(() => setApiQuestions(null))
+      .catch(() => {
+        setQuestions([]);
+        setLoadError(
+          "Gagal memuat soal dari backend. Pastikan API berjalan dan sudah di-seed.",
+        );
+      })
       .finally(() => setIsLoadingQuestions(false));
   }, []);
-
-  const questions = apiQuestions ?? FALLBACK_QUESTIONS;
-  const usingApiQuestions = apiQuestions !== null;
 
   const handleAnswer = async (
     optionIndex: number,
     questionId: number,
     optionId: number,
   ) => {
-    const productKey: ProductKey = OPTION_INDEX_TO_KEY[optionIndex % 4];
-    const newScores = { ...scores, [productKey]: scores[productKey] + 1 };
+    const currentQuestion = questions[currentStep];
+    const selectedOption =
+      currentQuestion?.options?.find((o) => o.id === optionId) ??
+      currentQuestion?.options?.[optionIndex];
+
+    if (!selectedOption) return;
+
+    const newScores = {
+      peaceful_calm:
+        scores.peaceful_calm + (Number(selectedOption.peaceful_calm_score) || 0),
+      purpose_prestige:
+        scores.purpose_prestige + (Number(selectedOption.prestige_score) || 0),
+      sweet_shy: scores.sweet_shy + (Number(selectedOption.sweet_shy_score) || 0),
+      rebel_brave:
+        scores.rebel_brave + (Number(selectedOption.rebel_brave_score) || 0),
+    };
+
     const newAnswers = [
       ...collectedAnswers,
       { question_id: questionId, option_id: optionId },
@@ -266,22 +129,21 @@ export default function KuisPage() {
 
     if (!isLastQuestion) {
       setCurrentStep(currentStep + 1);
-    } else {
-      if (usingApiQuestions) {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("auth_token")
-            : null;
-        if (token) {
-          try {
-            await submitQuiz(newAnswers);
-          } catch {
-            // Submit gagal
-          }
-        }
-      }
-      setIsFinished(true);
+      return;
     }
+
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("auth_token")
+        : null;
+    if (token) {
+      try {
+        await submitQuiz(newAnswers);
+      } catch {
+        // Hasil lokal tetap ditampilkan
+      }
+    }
+    setIsFinished(true);
   };
 
   const getResult = () => {
@@ -293,7 +155,8 @@ export default function KuisPage() {
         resultProductKey = key as ProductKey;
       }
     });
-    const matchPercentage = Math.round((highestScore / questions.length) * 100);
+    const totalPoints = Object.values(scores).reduce((a, b) => a + b, 0) || 1;
+    const matchPercentage = Math.round((highestScore / totalPoints) * 100);
     const product = EVOMI_PRODUCTS[resultProductKey];
     return { product, matchPercentage };
   };
@@ -318,7 +181,10 @@ export default function KuisPage() {
     setNavbarAndFooterColor(currentColor);
   }, [currentColor, setNavbarAndFooterColor]);
 
-  const progressPercentage = ((currentStep + 1) / questions.length) * 100;
+  const progressPercentage =
+    questions.length > 0
+      ? ((currentStep + 1) / questions.length) * 100
+      : 0;
 
   if (isFinished) {
     return (
@@ -331,46 +197,35 @@ export default function KuisPage() {
     );
   }
 
-  // placeholder kuis saat loading
   if (isLoadingQuestions) {
     return (
       <div className="w-full bg-[#F6F6F6] flex flex-col items-center justify-center pb-4 md:pb-12 md:pt-10 px-4 md:px-6">
         <div className="w-full max-w-[900px] min-h-[420px] rounded-[24px] flex flex-col shadow-2xl overflow-hidden bg-white animate-pulse">
-          {/* Header placeholder — cocok dengan h-[160px] + padding card asli */}
           <div className="px-8 md:px-10 py-6 shrink-0 flex flex-col justify-center h-[160px] bg-[#1172BA]/30">
-            {/* Ikon + label "Scent Finder Quiz" */}
             <div className="flex items-center gap-2 mb-1.5">
               <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-white/40" />
               <div className="h-3 w-28 rounded bg-white/40" />
             </div>
-            {/* Judul besar */}
             <div className="h-8 w-48 rounded bg-white/40 mt-1" />
-            {/* Progress bar */}
             <div className="mt-4 w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
               <div className="h-full w-1/5 bg-white/40 rounded-full" />
             </div>
           </div>
-
-          {/* Body placeholder — cocok dengan px-6 md:px-10 py-6 md:py-8 card asli */}
           <div className="flex-grow px-6 md:px-10 py-6 md:py-8 flex flex-col justify-center">
-            <div className="flex flex-col h-full justify-between">
-              {/* Teks pertanyaan */}
-              <div className="space-y-2">
-                <div className="h-5 bg-gray-200 rounded w-11/12" />
-                <div className="h-5 bg-gray-200 rounded w-2/3" />
-              </div>
-              {/* Grid 4 pilihan jawaban (2 kolom) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="h-[52px] bg-[#EFEFEF] rounded-[16px] flex items-center justify-between px-4"
-                  >
-                    <div className="h-3 bg-gray-300 rounded w-2/3" />
-                    <div className="w-4 h-4 rounded-full bg-gray-300 shrink-0" />
-                  </div>
-                ))}
-              </div>
+            <div className="space-y-2">
+              <div className="h-5 bg-gray-200 rounded w-11/12" />
+              <div className="h-5 bg-gray-200 rounded w-2/3" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="h-[52px] bg-[#EFEFEF] rounded-[16px] flex items-center justify-between px-4"
+                >
+                  <div className="h-3 bg-gray-300 rounded w-2/3" />
+                  <div className="w-4 h-4 rounded-full bg-gray-300 shrink-0" />
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -378,12 +233,31 @@ export default function KuisPage() {
     );
   }
 
+  if (loadError || questions.length === 0) {
+    return (
+      <div className="w-full bg-[#F6F6F6] flex flex-col items-center justify-center py-16 px-4">
+        <div className="w-full max-w-[560px] rounded-[24px] bg-white shadow-xl p-8 text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Soal kuis belum tersedia
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            {loadError ||
+              "Data soal/jawaban hanya diambil dari backend. Silakan seed database atau tambah soal di admin."}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-5 py-2.5 rounded-xl bg-[#1172BA] text-white text-sm font-medium"
+          >
+            Coba lagi
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    // justify-start diganti menjadi justify-center
-    // Menghapus md:mt-4 pt-8 md:pt-12 menjadi py-12 md:py-16 agar jarak atas bawah sama
     <div className="w-full bg-[#F6F6F6] flex flex-col items-center justify-center py-4 md:py-12 md:mb-7 px-4 md:px-6 font-nohemi transition-colors duration-500">
       <div className="w-full max-w-[900px] min-h-[420px] rounded-[24px] flex flex-col shadow-2xl overflow-hidden bg-white">
-        {/* ================= BAGIAN ATAS CARD ================= */}
         <div
           className="px-8 md:px-10 py-6 shrink-0 flex flex-col justify-center h-[160px] transition-colors duration-500"
           style={{ backgroundColor: currentColor }}
@@ -414,10 +288,8 @@ export default function KuisPage() {
           </div>
         </div>
 
-        {/* ================= BAGIAN BAWAH CARD ================= */}
         <div className="flex-grow px-6 md:px-10 py-6 md:py-8 flex flex-col justify-center">
           <div className="flex flex-col h-full justify-between">
-            {/* Pertanyaan */}
             <h2
               className="text-[18px] md:text-[22px] font-semibold leading-snug transition-colors duration-500"
               style={{ color: currentColor }}
@@ -425,7 +297,6 @@ export default function KuisPage() {
               {questions[currentStep].text}
             </h2>
 
-            {/* Pilihan Jawaban */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
               {questions[currentStep].options.map((option, idx) => (
                 <button

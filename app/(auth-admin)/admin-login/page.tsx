@@ -56,8 +56,7 @@ export default function AdminLoginPage() {
       const data = await res.json();
 
       if (res.ok && data.token) {
-        // Gunakan Number() untuk berjaga-jaga jika API mereturn ID dalam bentuk string "1"
-        if (data.user && Number(data.user.id) === 1) {
+        if (data.user && data.user.is_admin === true) {
           localStorage.setItem("auth_token", data.token);
           localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -68,7 +67,7 @@ export default function AdminLoginPage() {
           });
 
           setTimeout(() => {
-            router.push("/dashboard"); // 3. UBAH BAGIAN INI (Gunakan router.push)
+            router.push("/dashboard");
           }, 1500);
         } else {
           setModal({

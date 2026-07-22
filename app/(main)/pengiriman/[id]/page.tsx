@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
+import { SITE_STRINGS } from "@/components/constans/strings";
+
 // Helper untuk memilih ikon berdasarkan status riwayat
 const getIconByStatus = (status: string) => {
   const s = status.toLowerCase();
@@ -39,8 +41,12 @@ export default function LacakPaketPage() {
       try {
         setLoading(true);
         // Sesuaikan endpoint sesuai route api.php Anda
+        const apiBase =
+          process.env.NEXT_PUBLIC_API_URL ||
+          SITE_STRINGS.base_url.url_backend;
+        const trackingBase = apiBase.replace(/\/api\/?$/, "");
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/trackings/${orderId}`
+          `${trackingBase}/api/trackings/${orderId}`,
         );
         const result = await response.json();
 

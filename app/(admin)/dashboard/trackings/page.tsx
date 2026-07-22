@@ -19,6 +19,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import { getAdminHeaders } from "@/lib/api";
 
 interface TimelineItem {
   status: string;
@@ -85,7 +86,9 @@ export default function TrackingsPage() {
   const fetchTrackings = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${baseUrl}/api/trackings`);
+      const res = await fetch(`${baseUrl}/api/trackings`, {
+        headers: getAdminHeaders(),
+      });
       const data = await res.json();
       setTrackings(data?.data || []);
     } catch (error) {

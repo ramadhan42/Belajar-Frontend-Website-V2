@@ -21,6 +21,7 @@ interface UserData {
   email: string;
   nama_lengkap: string | null;
   alamat_lengkap: string | null;
+  is_admin?: boolean;
   created_at: string;
 }
 
@@ -100,8 +101,7 @@ export default function UsersPage() {
   };
 
   const openDeleteModal = (user: UserData) => {
-    // Proteksi tambahan di UI agar ID 1 tidak masuk ke modal delete
-    if (user.id === 1) return;
+    if (user.is_admin) return;
     setUserToDelete(user);
     setIsDeleteModalOpen(true);
   };
@@ -110,8 +110,7 @@ export default function UsersPage() {
   const confirmDelete = async () => {
     if (!userToDelete) return;
 
-    // Proteksi di eksekusi fungsi
-    if (userToDelete.id === 1) {
+    if (userToDelete.is_admin) {
       alert("Admin utama tidak dapat dihapus.");
       setIsDeleteModalOpen(false);
       return;
@@ -209,7 +208,7 @@ export default function UsersPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm">
-                            {user.id === 1 ? (
+                            {user.is_admin ? (
                               <ShieldCheck className="w-5 h-5 text-blue-600" />
                             ) : (
                               <User className="w-5 h-5" />
@@ -220,7 +219,7 @@ export default function UsersPage() {
                               <div className="font-semibold text-gray-900">
                                 {user.email}
                               </div>
-                              {user.id === 1 && (
+                              {user.is_admin && (
                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-blue-50 text-blue-600 border border-blue-100">
                                   ADMIN USER
                                 </span>
@@ -253,16 +252,16 @@ export default function UsersPage() {
                           {/* Logic Render Button Hapus */}
                           <button
                             onClick={() =>
-                              user.id !== 1 && openDeleteModal(user)
+                              !user.is_admin && openDeleteModal(user)
                             }
-                            disabled={user.id === 1}
+                            disabled={!!user.is_admin}
                             className={`inline-flex items-center justify-center p-2 rounded-lg transition-colors ${
-                              user.id === 1
+                              user.is_admin
                                 ? "text-gray-300 cursor-not-allowed"
                                 : "text-gray-400 hover:text-red-600 hover:bg-red-50"
                             }`}
                             title={
-                              user.id === 1
+                              user.is_admin
                                 ? "Admin tidak dapat dihapus"
                                 : "Hapus Pengguna"
                             }
@@ -404,7 +403,7 @@ export default function UsersPage() {
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
-                  {selectedUser.id === 1 ? (
+                  {selectedUser.is_admin ? (
                     <ShieldCheck className="w-8 h-8" />
                   ) : (
                     <User className="w-8 h-8" />
@@ -413,7 +412,7 @@ export default function UsersPage() {
                 <div>
                   <h4 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                     {selectedUser.name}
-                    {selectedUser.id === 1 && (
+                    {selectedUser.is_admin && (
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-blue-50 text-blue-600 border border-blue-100">
                         ADMIN
                       </span>

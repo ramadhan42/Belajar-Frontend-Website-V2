@@ -31,7 +31,7 @@ export default function DashboardLayout({
     try {
       const user = JSON.parse(userString);
       
-      if (user.id !== 1) {
+      if (user.is_admin !== true) {
         localStorage.removeItem("auth_token");
         localStorage.removeItem("user");
         

@@ -43,6 +43,17 @@ export default function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<{
+    image_produk_belanja: string | null;
+    image_1: string | null;
+    image_2: string | null;
+    image_3: string | null;
+  }>({
+    image_produk_belanja: null,
+    image_1: null,
+    image_2: null,
+    image_3: null,
+  });
 
   const baseUrl = SITE_STRINGS.base_url.url_backend;
 
@@ -101,16 +112,43 @@ export default function ProductsPage() {
     fetchProducts();
   }, [baseUrl]);
 
+  const getImageUrl = (path?: string) => {
+    if (!path) return null;
+    if (path.startsWith("http")) return path;
+    return `${baseUrl}/storage/${path}`;
+  };
+
   const handleOpenAdd = () => {
     setModalMode("add");
     setSelectedProduct(null);
+    setImagePreviews({
+      image_produk_belanja: null,
+      image_1: null,
+      image_2: null,
+      image_3: null,
+    });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (product: Product) => {
     setModalMode("edit");
     setSelectedProduct(product);
+    setImagePreviews({
+      image_produk_belanja: getImageUrl(product.image_produk_belanja),
+      image_1: getImageUrl(product.image_1),
+      image_2: getImageUrl(product.image_2),
+      image_3: getImageUrl(product.image_3),
+    });
     setIsModalOpen(true);
+  };
+
+  const handleImageFileChange = (
+    field: "image_produk_belanja" | "image_1" | "image_2" | "image_3",
+    file: File | null,
+  ) => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setImagePreviews((prev) => ({ ...prev, [field]: url }));
   };
 
   const handleDelete = async (id: number | string) => {
@@ -150,13 +188,26 @@ export default function ProductsPage() {
         },
       );
 
-      if (!res.ok) throw new Error("Gagal memperbarui data");
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        const firstError = err?.errors
+          ? Object.values(err.errors).flat()[0]
+          : null;
+        throw new Error(
+          (firstError as string) || err?.message || "Gagal memperbarui data",
+        );
+      }
 
       showNotification("Produk berhasil diperbarui!", "success");
       setIsModalOpen(false);
       fetchProducts();
     } catch (error) {
-      showNotification("Terjadi kesalahan saat mengupdate produk.", "error");
+      showNotification(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat mengupdate produk.",
+        "error",
+      );
     }
   };
 
@@ -264,12 +315,6 @@ export default function ProductsPage() {
       currency: "IDR",
       minimumFractionDigits: 0,
     }).format(numberValue);
-  };
-
-  const getImageUrl = (path?: string) => {
-    if (!path) return null;
-    if (path.startsWith("http")) return path;
-    return `${baseUrl}/storage/${path}`;
   };
 
   if (isLoading) {
@@ -409,14 +454,9 @@ export default function ProductsPage() {
                     <td className="px-6 py-4 pl-15">
                       <div className="flex items-center gap-4 justify-center max-w-xs mx-auto text-left">
                         <div className="h-12 w-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                          {product.image_produk_belanja || product.image_1 ? (
+                          {product.image_1 ? (
                             <img
-                              src={
-                                getImageUrl(
-                                  product.image_1 ||
-                                    product.image_produk_belanja,
-                                )!
-                              }
+                              src={getImageUrl(product.image_1)!}
                               alt={product.title}
                               className="h-full w-full object-cover"
                             />
@@ -500,13 +540,14 @@ export default function ProductsPage() {
 
       {/* MODAL CRUD (Add / Edit) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl my-8 animate-in fade-in zoom-in-95 duration-200 overflow-hidden border border-gray-100">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl h-[80vh] max-h-[80vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 overflow-hidden border border-gray-100">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
               <h3 className="text-lg font-bold text-gray-900">
                 {modalMode === "add" ? "Tambah Parfum Baru" : "Edit Parfum"}
               </h3>
               <button
+                type="button"
                 onClick={() => setIsModalOpen(false)}
                 className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
               >
@@ -517,212 +558,285 @@ export default function ProductsPage() {
             <form
               onSubmit={handleSubmit}
               encType="multipart/form-data"
-              className="p-6"
+              className="flex flex-col flex-1 min-h-0"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Kiri */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                      Nama / Title
-                    </label>
-                    <input
-                      type="text"
-                      name="title"
-                      defaultValue={selectedProduct?.title}
-                      required
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                      placeholder="Contoh: Purpose Prestige"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
+              <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Kiri */}
+                  <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                        Harga (Rp)
+                        Nama / Title
+                      </label>
+                      <input
+                        type="text"
+                        name="title"
+                        defaultValue={selectedProduct?.title}
+                        required
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                        placeholder="Contoh: Purpose Prestige"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                          Harga (Rp)
+                        </label>
+                        <input
+                          type="number"
+                          name="price"
+                          defaultValue={selectedProduct?.price}
+                          required
+                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                          Kuantitas (Stok)
+                        </label>
+                        <input
+                          type="number"
+                          name="quantity"
+                          defaultValue={selectedProduct?.quantity}
+                          required
+                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                          Personality Type
+                        </label>
+                        <select
+                          name="personality_type"
+                          defaultValue={selectedProduct?.personality_type || ""}
+                          required
+                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                        >
+                          <option value="" disabled>
+                            Pilih Tipe
+                          </option>
+                          <option value="prestige">Prestige</option>
+                          <option value="peaceful_calm">Peaceful Calm</option>
+                          <option value="rebel_brave">Rebel Brave</option>
+                          <option value="sweet_shy">Sweet Shy</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                          Status Stok
+                        </label>
+                        <select
+                          name="stock_status"
+                          defaultValue={
+                            selectedProduct?.stock_status || "tersedia"
+                          }
+                          required
+                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                        >
+                          <option value="tersedia">Tersedia</option>
+                          <option value="habis">Habis</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Deskripsi
+                      </label>
+                      <textarea
+                        name="description"
+                        defaultValue={selectedProduct?.description}
+                        required
+                        rows={4}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all resize-none"
+                        placeholder="Parfum elegan dengan notes vanilla..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        Gambar Produk
+                      </label>
+                      <div className="space-y-3">
+                        {(
+                          [
+                            [
+                              "image_produk_belanja",
+                              "Gambar Produk Utama",
+                              true,
+                            ],
+                            [
+                              "image_1",
+                              "Image 1 — slider detail",
+                              true,
+                            ],
+                            ["image_2", "Image 2 — slider detail", false],
+                            ["image_3", "Image 3 — slider detail", false],
+                          ] as const
+                        ).map(([field, label, requiredOnCreate]) => (
+                          <div
+                            key={field}
+                            className="rounded-xl border border-gray-200 bg-gray-50/60 p-3"
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                                {label}
+                                {modalMode === "add" && requiredOnCreate
+                                  ? " (wajib)"
+                                  : ""}
+                              </p>
+                              {modalMode === "edit" &&
+                                selectedProduct?.[field] &&
+                                !imagePreviews[field]?.startsWith("blob:") && (
+                                  <span className="text-[10px] text-emerald-600 font-medium">
+                                    Ada di database
+                                  </span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="h-16 w-16 rounded-lg bg-white border border-gray-200 overflow-hidden flex items-center justify-center shrink-0 p-1">
+                                {imagePreviews[field] ? (
+                                  <img
+                                    src={imagePreviews[field]!}
+                                    alt={field}
+                                    className={
+                                      field === "image_produk_belanja"
+                                        ? "max-h-full max-w-full h-auto w-auto object-contain"
+                                        : "h-full w-full object-cover"
+                                    }
+                                  />
+                                ) : (
+                                  <ImageIcon className="h-5 w-5 text-gray-300" />
+                                )}
+                              </div>
+                              <input
+                                type="file"
+                                name={field}
+                                accept="image/jpeg,image/png,image/jpg,image/webp"
+                                required={
+                                  modalMode === "add" && requiredOnCreate
+                                }
+                                onChange={(e) =>
+                                  handleImageFileChange(
+                                    field,
+                                    e.target.files?.[0] ?? null,
+                                  )
+                                }
+                                className="flex-1 text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {modalMode === "edit" && (
+                        <p className="text-[11px] text-gray-400 mt-2">
+                          Kosongkan file jika tidak ingin mengubah gambar yang
+                          sudah ada.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Kanan */}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                          Tipe Parfum
+                        </label>
+                        <input
+                          type="text"
+                          name="perfume_type"
+                          defaultValue={
+                            selectedProduct?.perfume_type || "Eau de Parfum"
+                          }
+                          required
+                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                          Gender
+                        </label>
+                        <select
+                          name="gender"
+                          defaultValue={selectedProduct?.gender || "unisex"}
+                          required
+                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                        >
+                          <option value="unisex">Unisex</option>
+                          <option value="male">Pria</option>
+                          <option value="female">Wanita</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Ukuran Botol (ml)
                       </label>
                       <input
                         type="number"
-                        name="price"
-                        defaultValue={selectedProduct?.price}
+                        name="bottle_size"
+                        defaultValue={selectedProduct?.bottle_size || 50}
                         required
                         className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                        Kuantitas (Stok)
-                      </label>
-                      <input
-                        type="number"
-                        name="quantity"
-                        defaultValue={selectedProduct?.quantity}
-                        required
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                        Personality Type
-                      </label>
-                      <select
-                        name="personality_type"
-                        defaultValue={selectedProduct?.personality_type || ""}
-                        required
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                      >
-                        <option value="" disabled>
-                          Pilih Tipe
-                        </option>
-                        <option value="prestige">Prestige</option>
-                        <option value="peaceful_calm">Peaceful Calm</option>
-                        <option value="rebel_brave">Rebel Brave</option>
-                        <option value="sweet_shy">Sweet Shy</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                        Status Stok
-                      </label>
-                      <select
-                        name="stock_status"
-                        defaultValue={
-                          selectedProduct?.stock_status || "tersedia"
-                        }
-                        required
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                      >
-                        <option value="tersedia">Tersedia</option>
-                        <option value="habis">Habis</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                      Deskripsi
-                    </label>
-                    <textarea
-                      name="description"
-                      defaultValue={selectedProduct?.description}
-                      required
-                      rows={4}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all resize-none"
-                      placeholder="Parfum elegan dengan notes vanilla..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
-                      Gambar Utama
-                    </label>
-                    <input
-                      type="file"
-                      name="image_1" // <--- INI HARUS SAMA PERSIS DENGAN YANG DITOLAK SERVER
-                      accept="image/*"
-                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800"
-                    />
-                  </div>
-                </div>
-
-                {/* Kanan */}
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                        Tipe Parfum
-                      </label>
-                      <input
-                        type="text"
-                        name="perfume_type"
-                        defaultValue={
-                          selectedProduct?.perfume_type || "Eau de Parfum"
-                        }
-                        required
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                        Gender
-                      </label>
-                      <select
-                        name="gender"
-                        defaultValue={selectedProduct?.gender || "unisex"}
-                        required
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                      >
-                        <option value="unisex">Unisex</option>
-                        <option value="pria">Pria</option>
-                        <option value="wanita">Wanita</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                      Ukuran Botol (ml)
-                    </label>
-                    <input
-                      type="number"
-                      name="bottle_size"
-                      defaultValue={selectedProduct?.bottle_size || 50}
-                      required
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                    />
-                  </div>
-
-                  <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl space-y-3">
-                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                      Fragrance Notes
-                    </h4>
-                    <div>
-                      <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">
-                        Top Note
-                      </label>
-                      <input
-                        type="text"
-                        name="top_note"
-                        defaultValue={selectedProduct?.top_note}
-                        required
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                        placeholder="Bergamot, Cardamom"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">
-                        Middle Note
-                      </label>
-                      <input
-                        type="text"
-                        name="middle_note"
-                        defaultValue={selectedProduct?.middle_note}
-                        required
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                        placeholder="Cedarwood, Lavender"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">
-                        Base Note
-                      </label>
-                      <input
-                        type="text"
-                        name="base_note"
-                        defaultValue={selectedProduct?.base_note}
-                        required
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                        placeholder="Amber, Vanilla"
-                      />
+                    <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl space-y-3">
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        Fragrance Notes
+                      </h4>
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">
+                          Top Note
+                        </label>
+                        <input
+                          type="text"
+                          name="top_note"
+                          defaultValue={selectedProduct?.top_note}
+                          required
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                          placeholder="Bergamot, Cardamom"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">
+                          Middle Note
+                        </label>
+                        <input
+                          type="text"
+                          name="middle_note"
+                          defaultValue={selectedProduct?.middle_note}
+                          required
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                          placeholder="Cedarwood, Lavender"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">
+                          Base Note
+                        </label>
+                        <input
+                          type="text"
+                          name="base_note"
+                          defaultValue={selectedProduct?.base_note}
+                          required
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                          placeholder="Amber, Vanilla"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-100 mt-8">
+              <div className="shrink-0 px-6 py-4 flex items-center justify-end gap-3 border-t border-gray-100 bg-white">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}

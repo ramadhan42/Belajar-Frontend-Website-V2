@@ -181,6 +181,7 @@ export default function SecondSectionBelanja() {
                       alt={product.title}
                       width={340}
                       height={340}
+                      unoptimized
                       className="absolute bottom-[-18%] md:bottom-[-21%] left-[8%] md:left-[4%] w-[75%] md:w-[80%] max-w-none object-contain drop-shadow-xl rotate-[35deg] transition-transform duration-300"
                     />
                   ) : (

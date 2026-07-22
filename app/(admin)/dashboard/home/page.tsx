@@ -19,6 +19,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import { getAdminHeaders } from "@/lib/api";
 
 // Pembaruan Tipe Data sesuai JSON Response Anda
 interface Order {
@@ -99,12 +100,13 @@ export default function HomeDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
+        const headers = getAdminHeaders();
         const [productsRes, ordersRes, usersRes, revenueRes] =
           await Promise.all([
             fetch(`${baseUrl}/api/products`),
-            fetch(`${baseUrl}/api/admin/orders`),
-            fetch(`${baseUrl}/api/admin/users`),
-            fetch(`${baseUrl}/api/admin/revenue`),
+            fetch(`${baseUrl}/api/admin/orders`, { headers }),
+            fetch(`${baseUrl}/api/admin/users`, { headers }),
+            fetch(`${baseUrl}/api/admin/revenue`, { headers }),
           ]);
 
         const products = await productsRes.json();

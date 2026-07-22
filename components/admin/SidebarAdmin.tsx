@@ -13,14 +13,16 @@ import {
   Truck,
   LogOut,
   ShoppingBasket,
-  Users, // 1. Tambahkan ikon Users
+  Users,
   Mail,
+  ClipboardList,
 } from "lucide-react";
 import { SITE_STRINGS } from "../constans/strings";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { name: "Products", icon: Package, path: "/dashboard/products" },
+  { name: "Quiz", icon: ClipboardList, path: "/dashboard/quiz" },
   { name: "Orders / Pesanan", icon: ShoppingBag, path: "/dashboard/orders" },
   { name: "Trackings Order", icon: Truck, path: "/dashboard/trackings" },
   {
@@ -31,7 +33,6 @@ const menuItems = [
   { name: "Cart", icon: ShoppingBasket, path: "/dashboard/cart" },
   { name: "Wishlist", icon: Heart, path: "/dashboard/wishlist" },
   { name: "All Users", icon: Users, path: "/dashboard/users" },
-  // 2. Tambahkan menu Subscribers di sini
   { name: "Subscribers", icon: Mail, path: "/dashboard/subscribers" },
   { name: "User Profile", icon: UserCircle, path: "/dashboard/profile" },
 ];
