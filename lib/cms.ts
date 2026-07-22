@@ -1,20 +1,29 @@
 /**
- * CMS API helpers — site content + FAQ
+ * CMS API helpers — site content + FAQ (locale-aware)
  */
 
 import { SITE_STRINGS } from "@/components/constans/strings";
 
 const BASE_URL = SITE_STRINGS.base_url.url_backend;
 
-export type CmsPageKey = "beranda" | "kontak" | "navbar" | "footer";
+export type Locale = "id" | "en";
+
+export type CmsPageKey =
+  | "beranda"
+  | "kontak"
+  | "navbar"
+  | "footer"
+  | "ui"
+  | "admin";
 
 export type CmsGrouped = Record<string, Record<string, string | null>>;
 
 export interface CmsField {
-  id?: number;
+  id?: number | null;
   page: string;
   section: string;
   key: string;
+  locale?: string;
   type: "string" | "text" | "image";
   value: string | null;
 }
@@ -22,8 +31,11 @@ export interface CmsField {
 export interface FaqItem {
   id: number;
   category: string;
+  category_en?: string | null;
   question: string;
+  question_en?: string | null;
   answer: string;
+  answer_en?: string | null;
   sort_order: number;
   is_active: boolean;
 }
@@ -38,7 +50,6 @@ function authHeaders(json = true): Record<string, string> {
   return headers;
 }
 
-/** Resolve CMS image path to a usable URL */
 export function resolveCmsImage(path?: string | null): string | null {
   if (!path) return null;
   if (
@@ -48,11 +59,20 @@ export function resolveCmsImage(path?: string | null): string | null {
   ) {
     return path;
   }
-  if (path.startsWith("/src/") || path.startsWith("/images/")) {
+  // Frontend public assets (favicon, /src/images, etc.)
+  if (
+    path.startsWith("/src/") ||
+    path.startsWith("/images/") ||
+    path.startsWith("/favicon")
+  ) {
     return path;
   }
   if (path.startsWith("/storage/")) {
     return `${BASE_URL}${path}`;
+  }
+  // Other absolute public paths on this Next app
+  if (path.startsWith("/")) {
+    return path;
   }
   return `${BASE_URL}/storage/${path}`;
 }
@@ -66,12 +86,18 @@ export function cmsValue(
   return data?.[section]?.[key] ?? fallback;
 }
 
-export async function getCmsPage(page: CmsPageKey): Promise<CmsGrouped> {
+export async function getCmsPage(
+  page: CmsPageKey,
+  locale: Locale = "id",
+): Promise<CmsGrouped> {
   try {
-    const res = await fetch(`${BASE_URL}/api/cms/${page}`, {
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `${BASE_URL}/api/cms/${page}?locale=${locale}`,
+      {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      },
+    );
     if (!res.ok) return {};
     const json = await res.json();
     return json.data || {};
@@ -80,9 +106,9 @@ export async function getCmsPage(page: CmsPageKey): Promise<CmsGrouped> {
   }
 }
 
-export async function getPublicFaqs(): Promise<FaqItem[]> {
+export async function getPublicFaqs(locale: Locale = "id"): Promise<FaqItem[]> {
   try {
-    const res = await fetch(`${BASE_URL}/api/cms/faqs`, {
+    const res = await fetch(`${BASE_URL}/api/cms/faqs?locale=${locale}`, {
       headers: { Accept: "application/json" },
       cache: "no-store",
     });
@@ -94,10 +120,16 @@ export async function getPublicFaqs(): Promise<FaqItem[]> {
   }
 }
 
-export async function adminGetCmsPage(page: CmsPageKey): Promise<CmsField[]> {
-  const res = await fetch(`${BASE_URL}/api/admin/cms/${page}`, {
-    headers: authHeaders(),
-  });
+export async function adminGetCmsPage(
+  page: CmsPageKey,
+  locale: Locale = "id",
+): Promise<CmsField[]> {
+  const res = await fetch(
+    `${BASE_URL}/api/admin/cms/${page}?locale=${locale}`,
+    {
+      headers: authHeaders(),
+    },
+  );
   if (!res.ok) throw new Error("Gagal memuat konten CMS");
   const json = await res.json();
   return json.data || [];
@@ -111,11 +143,12 @@ export async function adminSaveCmsPage(
     type?: string;
     value?: string | null;
   }>,
+  locale: Locale = "id",
 ) {
   const res = await fetch(`${BASE_URL}/api/admin/cms/${page}`, {
     method: "PUT",
     headers: authHeaders(),
-    body: JSON.stringify({ fields }),
+    body: JSON.stringify({ locale, fields }),
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
