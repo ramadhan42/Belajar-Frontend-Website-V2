@@ -7,6 +7,7 @@ import { motion, Variants, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useNavbarColor } from "@/context/NavbarColorContext";
 import { SITE_STRINGS } from "../constans/strings";
+import { useCms } from "@/context/CmsContext";
 
 interface NavModalState {
   isOpen: boolean;
@@ -18,6 +19,7 @@ interface NavModalState {
 export default function Footer() {
   const baseUrl = SITE_STRINGS.base_url.url_backend;
   const { footerColor } = useNavbarColor();
+  const { tFooter } = useCms();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -158,11 +160,14 @@ export default function Footer() {
               className="flex flex-col gap-3 md:gap-4 w-full lg:w-[45%] max-w-[400px] mx-auto lg:mx-0 text-center lg:text-left items-center lg:items-start"
             >
               <h3 className="text-[32px] md:text-[40px] text-white font-bold leading-tight">
-                Buletin Evomi
+                {tFooter("bulletin", "title", "Buletin Evomi")}
               </h3>
               <p className="text-[16px] md:text-[18px] text-white opacity-90 leading-relaxed">
-                Daftar untuk menerima koleksi terbaru, penawaran eksklusif, dan
-                cerita tentang setiap karakter aroma.
+                {tFooter(
+                  "bulletin",
+                  "desc",
+                  "Daftar untuk menerima koleksi terbaru, penawaran eksklusif, dan cerita tentang setiap karakter aroma.",
+                )}
               </p>
 
               <form
@@ -187,7 +192,7 @@ export default function Footer() {
                     } as React.CSSProperties
                   }
                 >
-                  {isSubmitting ? "..." : "Daftar"}
+                  {isSubmitting ? "..." : tFooter("bulletin", "cta", "Daftar")}
                 </button>
               </form>
             </motion.div>
@@ -200,7 +205,7 @@ export default function Footer() {
                 className="flex flex-col gap-3"
               >
                 <span className="text-[14px] md:text-[16px] text-white/70 font-medium tracking-wide">
-                  Menu
+                  {tFooter("menu", "heading", "Menu")}
                 </span>
                 <ul className="flex flex-col gap-2 md:gap-3 text-white">
                   <li
@@ -213,7 +218,7 @@ export default function Footer() {
                     }
                     className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
-                    Beranda
+                    {tFooter("menu", "beranda", "Beranda")}
                   </li>
                   <li
                     onClick={() =>
@@ -225,7 +230,7 @@ export default function Footer() {
                     }
                     className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
-                    Belanja
+                    {tFooter("menu", "belanja", "Belanja")}
                   </li>
                   <li
                     onClick={() =>
@@ -237,7 +242,7 @@ export default function Footer() {
                     }
                     className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
-                    Kuis
+                    {tFooter("menu", "kuis", "Kuis")}
                   </li>
                 </ul>
               </motion.div>
@@ -247,7 +252,7 @@ export default function Footer() {
                 className="flex flex-col gap-3"
               >
                 <span className="text-[14px] md:text-[16px] text-white/70 font-medium tracking-wide">
-                  Bantuan
+                  {tFooter("help", "heading", "Bantuan")}
                 </span>
                 <ul className="flex flex-col gap-2 md:gap-3 text-white">
                   <li
@@ -260,7 +265,7 @@ export default function Footer() {
                     }
                     className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
-                    FAQ
+                    {tFooter("help", "faq", "FAQ")}
                   </li>
                   <li
                     onClick={() =>
@@ -272,7 +277,7 @@ export default function Footer() {
                     }
                     className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
-                    Pengiriman
+                    {tFooter("help", "pengiriman", "Pengiriman")}
                   </li>
                   <li
                     onClick={() =>
@@ -284,7 +289,7 @@ export default function Footer() {
                     }
                     className="text-[14px] md:text-[16px] cursor-pointer hover:scale-110 hover:font-bold transition-all w-fit"
                   >
-                    Kontak
+                    {tFooter("help", "kontak", "Kontak")}
                   </li>
                 </ul>
               </motion.div>
@@ -294,12 +299,48 @@ export default function Footer() {
                 className="flex flex-col gap-3 col-span-2 sm:col-span-1"
               >
                 <span className="text-[14px] md:text-[16px] text-white/70 font-medium tracking-wide">
-                  Social
+                  {tFooter("social", "heading", "Social")}
                 </span>
                 <div className="flex gap-4 text-white">
-                  <FaInstagram className="w-[24px] h-[24px] md:w-[28px] md:h-[28px] cursor-pointer hover:scale-110 transition-transform" />
-                  <FaTwitter className="w-[24px] h-[24px] md:w-[28px] md:h-[28px] cursor-pointer hover:scale-110 transition-transform" />
-                  <FaFacebookF className="w-[24px] h-[24px] md:w-[28px] md:h-[28px] cursor-pointer hover:scale-110 transition-transform" />
+                  <a
+                    href={tFooter(
+                      "social",
+                      "instagram_url",
+                      "https://instagram.com/evomi.id",
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Instagram Evomi"
+                    className="hover:scale-110 transition-transform"
+                  >
+                    <FaInstagram className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" />
+                  </a>
+                  <a
+                    href={tFooter(
+                      "social",
+                      "twitter_url",
+                      "https://twitter.com/evomi",
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Twitter Evomi"
+                    className="hover:scale-110 transition-transform"
+                  >
+                    <FaTwitter className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" />
+                  </a>
+                  <a
+                    href={tFooter(
+                      "social",
+                      "facebook_url",
+                      "https://facebook.com/evomi",
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Facebook Evomi"
+                    className="hover:scale-110 transition-transform"
+                  >
+                    <FaFacebookF className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" />
+                  </a>
                 </div>
                 <span className="text-[16px] md:text-[18px] text-white mt-1">
                   evomi.id
@@ -311,7 +352,13 @@ export default function Footer() {
           <motion.div variants={itemVariants}>
             <div className="w-full h-[1px] bg-white rounded-full mb-6 md:mb-8 opacity-30"></div>
             <div className="flex flex-col md:flex-row justify-between items-center text-white text-[14px] md:text-[14px] opacity-90 gap-y-2 text-center md:text-left">
-              <p>© 2026 evomi.id — Every Version of Me</p>
+              <p>
+                {tFooter(
+                  "legal",
+                  "copyright",
+                  "© 2026 evomi.id — Every Version of Me",
+                )}
+              </p>
               <p>Discover the scent of every personality</p>
             </div>
           </motion.div>

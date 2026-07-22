@@ -2,10 +2,16 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useCms } from "@/context/CmsContext";
+import { resolveCmsImage } from "@/lib/cms";
 
-const THANKS_CARD_SRC = "/src/images/section 4/thanks-card.png";
+const THANKS_CARD_FALLBACK = "/src/images/section 4/thanks-card.png";
 
 export default function FourthSection() {
+  const { tBeranda } = useCms();
+  const thanksSrc =
+    resolveCmsImage(tBeranda("fourth", "image", "")) || THANKS_CARD_FALLBACK;
+
   return (
     <section className="relative bg-white w-full overflow-hidden p-[5%]">
       {/* Mobile */}
@@ -17,7 +23,7 @@ export default function FourthSection() {
         className="relative w-full md:hidden"
       >
         <img
-          src={THANKS_CARD_SRC}
+          src={thanksSrc}
           alt="Evomi Thanks Card"
           className="block w-full h-auto"
         />
@@ -32,7 +38,7 @@ export default function FourthSection() {
         className="hidden md:block relative w-full"
       >
         <Image
-          src={THANKS_CARD_SRC}
+          src={thanksSrc}
           alt="Evomi Thanks Card"
           width={1920}
           height={1080}
@@ -40,6 +46,7 @@ export default function FourthSection() {
           quality={90}
           sizes="100vw"
           priority={false}
+          unoptimized={thanksSrc.startsWith("http")}
         />
       </motion.div>
     </section>

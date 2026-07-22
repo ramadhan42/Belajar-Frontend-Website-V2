@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Send, Loader2 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import { cmsValue, getCmsPage, CmsGrouped } from "@/lib/cms";
 
-// Memastikan halaman selalu fresh saat diakses
 export const dynamic = "force-dynamic";
 
 export default function KontakPage() {
   const BASE_URL = SITE_STRINGS.base_url.url_backend;
+  const [cms, setCms] = useState<CmsGrouped>({});
 
   const [formData, setFormData] = useState({
     name: "",
@@ -27,6 +28,10 @@ export default function KontakPage() {
     message: "",
   });
 
+  useEffect(() => {
+    getCmsPage("kontak").then(setCms);
+  }, []);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
@@ -39,8 +44,6 @@ export default function KontakPage() {
     setStatus({ type: null, message: "" });
 
     try {
-      // Ganti URL dengan endpoint API Laravel Anda.
-      // Disarankan menggunakan environment variable: process.env.NEXT_PUBLIC_API_URL + '/api/contact'
       const response = await fetch(BASE_URL + "/api/contact", {
         method: "POST",
         headers: {
@@ -54,14 +57,14 @@ export default function KontakPage() {
 
       if (response.ok) {
         setStatus({ type: "success", message: data.message });
-        setFormData({ name: "", email: "", subject: "", message: "" }); // Reset form
+        setFormData({ name: "", email: "", subject: "", message: "" });
       } else {
         setStatus({
           type: "error",
           message: data.message || "Gagal mengirim pesan.",
         });
       }
-    } catch (error) {
+    } catch {
       setStatus({
         type: "error",
         message: "Terjadi kesalahan koneksi. Pastikan server berjalan.",
@@ -71,25 +74,28 @@ export default function KontakPage() {
     }
   };
 
+  const title = cmsValue(cms, "header", "title", "Hubungi Kami");
+  const subtitle = cmsValue(
+    cms,
+    "header",
+    "subtitle",
+    "Punya pertanyaan atau ingin berkolaborasi? Tim Evomi siap mendengarkan Anda.",
+  );
+
   return (
     <div className="min-h-screen bg-white pt-24 sm:pt-28 md:pt-32 pb-16 md:pb-24 px-4 sm:px-6 md:px-12 lg:px-24 font-nohemi">
-      {/* Header Section */}
       <div className="max-w-3xl mx-auto text-center mb-16">
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-[32px] md:text-[48px] font-bold text-gray-900 mb-6"
         >
-          Hubungi Kami
+          {title}
         </motion.h1>
-        <p className="text-gray-500 text-[16px] md:text-[18px]">
-          Punya pertanyaan atau ingin berkolaborasi? Tim Evomi siap mendengarkan
-          Anda.
-        </p>
+        <p className="text-gray-500 text-[16px] md:text-[18px]">{subtitle}</p>
       </div>
 
       <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Form Section */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -160,7 +166,6 @@ export default function KontakPage() {
           </form>
         </motion.div>
 
-        {/* Info Section */}
         <div className="flex flex-col gap-8">
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -171,8 +176,12 @@ export default function KontakPage() {
               <Mail />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900">Email</h4>
-              <p className="text-gray-600">hello@evomi.id</p>
+              <h4 className="font-bold text-gray-900">
+                {cmsValue(cms, "info", "email_label", "Email")}
+              </h4>
+              <p className="text-gray-600">
+                {cmsValue(cms, "info", "email_value", "hello@evomi.id")}
+              </p>
             </div>
           </motion.div>
 
@@ -186,8 +195,12 @@ export default function KontakPage() {
               <Phone />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900">WhatsApp</h4>
-              <p className="text-gray-600">+62 812-3456-7890</p>
+              <h4 className="font-bold text-gray-900">
+                {cmsValue(cms, "info", "phone_label", "WhatsApp")}
+              </h4>
+              <p className="text-gray-600">
+                {cmsValue(cms, "info", "phone_value", "+62 812-3456-7890")}
+              </p>
             </div>
           </motion.div>
 
@@ -201,8 +214,12 @@ export default function KontakPage() {
               <MapPin />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900">Kantor Pusat</h4>
-              <p className="text-gray-600">Jakarta, Indonesia</p>
+              <h4 className="font-bold text-gray-900">
+                {cmsValue(cms, "info", "address_label", "Kantor Pusat")}
+              </h4>
+              <p className="text-gray-600">
+                {cmsValue(cms, "info", "address_value", "Jakarta, Indonesia")}
+              </p>
             </div>
           </motion.div>
         </div>

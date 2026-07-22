@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useCms } from "@/context/CmsContext";
+import { resolveCmsImage } from "@/lib/cms";
 
 interface NavModalState {
   isOpen: boolean;
@@ -71,6 +73,10 @@ function ProductBadge({
 
 export default function SeventhSection() {
   const router = useRouter();
+  const { tBeranda } = useCms();
+  const productImg =
+    resolveCmsImage(tBeranda("seventh", "product_image", "")) ||
+    "/src/images/section 7/produk.png";
 
   const [navModal, setNavModal] = useState<NavModalState>({
     isOpen: false,
@@ -171,22 +177,31 @@ export default function SeventhSection() {
           className="flex flex-col justify-center items-center md:items-start gap-6 md:gap-8 text-center md:text-left"
         >
           <h2 className="font-nohemi font-semibold text-[30px] sm:text-[36px] md:text-[48px] lg:text-[55px] leading-[1.12]">
-            <span className="text-[#1172BA]">Temukan</span>
+            <span className="text-[#1172BA]">
+              {tBeranda("seventh", "headline_1", "Temukan")}
+            </span>
             <br />
-            <span className="text-[#DD74A5]">aromamu</span>
+            <span className="text-[#DD74A5]">
+              {tBeranda("seventh", "headline_2", "aromamu")}
+            </span>
             <br />
-            <span className="text-[#1172BA]">dengan</span>
+            <span className="text-[#1172BA]">
+              {tBeranda("seventh", "headline_3", "dengan")}
+            </span>
             <br />
-            <span className="text-[#1172BA]">bermain </span>
-            <span className="text-[#5EA14A]">kuis</span>
+            <span className="text-[#1172BA]">
+              {tBeranda("seventh", "headline_4", "bermain")}{" "}
+            </span>
+            <span className="text-[#5EA14A]">
+              {tBeranda("seventh", "headline_5", "kuis")}
+            </span>
           </h2>
 
           <button
             onClick={handleQuizRouting}
             className="relative z-50 cursor-pointer font-nohemi text-[15px] md:text-[22px] lg:text-[24px] text-white bg-[#1172BA] px-10 md:px-12 py-2.5 md:py-2.5 rounded-full shadow-md hover:scale-95 transition-all inline-flex items-center gap-2"
           >
-            Mulai Kuis
-            <span aria-hidden="true">→</span>
+            {tBeranda("seventh", "cta_label", "Mulai Kuis")}
           </button>
         </motion.div>
       </motion.div>
@@ -203,7 +218,7 @@ export default function SeventhSection() {
           <div className="absolute bottom-0 right-0 w-[88%] overflow-visible">
             <div className="relative w-full drop-shadow-2xl overflow-visible">
               <img
-                src="/src/images/section 7/produk.png"
+                src={productImg}
                 alt="Produk Evomi"
                 className="w-full h-auto object-contain"
               />
@@ -242,7 +257,7 @@ export default function SeventhSection() {
       >
         <div className="relative w-full drop-shadow-2xl overflow-visible">
           <img
-            src="/src/images/section 7/produk.png"
+            src={productImg}
             alt="Produk Evomi"
             className="w-full h-auto object-contain"
           />

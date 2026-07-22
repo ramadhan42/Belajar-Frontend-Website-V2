@@ -9,6 +9,7 @@ import {
 } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useCms } from "@/context/CmsContext";
 
 const HERO_PRODUCTS = [
   {
@@ -63,6 +64,7 @@ const HERO_PRODUCTS = [
 
 export default function HeroSection() {
   const router = useRouter();
+  const { tBeranda } = useCms();
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
   const [isScrollVisible, setIsScrollVisible] = useState(true);
@@ -229,11 +231,19 @@ export default function HeroSection() {
           animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           className="font-nohemi font-semibold text-[28px] md:text-[42px] leading-[1.1] m-0 p-0"
         >
-          <span className="text-white">Temukan </span>
-          <span className="text-[#5CB2ED]">karakter</span>
+          <span className="text-white">
+            {tBeranda("hero", "headline_1", "Temukan")}{" "}
+          </span>
+          <span className="text-[#5CB2ED]">
+            {tBeranda("hero", "headline_2", "karakter")}
+          </span>
           <br />
-          <span className="text-[#FFA3CB]">aromamu </span>
-          <span className="text-white">di Evomi</span>
+          <span className="text-[#FFA3CB]">
+            {tBeranda("hero", "headline_3", "aromamu")}{" "}
+          </span>
+          <span className="text-white">
+            {tBeranda("hero", "headline_4", "di Evomi")}
+          </span>
         </motion.h1>
 
         {/* 2. Image Poster Area */}
@@ -419,7 +429,9 @@ export default function HeroSection() {
                 fill="#F899C6"
               />
             </svg>
-            <p className="whitespace-nowrap">Eau de Parfum</p>
+            <p className="whitespace-nowrap">
+              {tBeranda("hero", "badge_left", "Eau de Parfum")}
+            </p>
           </motion.div>
 
           {/* Recycle Bottle */}
@@ -440,7 +452,9 @@ export default function HeroSection() {
                 className="object-contain"
               />
             </div>
-            <p className="whitespace-nowrap">Recycle Bottle Cap</p>
+            <p className="whitespace-nowrap">
+              {tBeranda("hero", "badge_right", "Recycle Bottle Cap")}
+            </p>
           </motion.div>
 
           {/* GAMBAR UTAMA (4 Botol) */}
@@ -495,7 +509,7 @@ export default function HeroSection() {
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center gap-4 sm:gap-6 md:gap-8">
               <span className="text-[8px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
-                Every Version of Me
+                {tBeranda("hero", "marquee_text", "Every Version of Me")}
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
                 <Image
@@ -507,7 +521,7 @@ export default function HeroSection() {
               </div>
 
               <span className="text-[8px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
-                Every Version of Me
+                {tBeranda("hero", "marquee_text", "Every Version of Me")}
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
                 <Image
@@ -519,7 +533,7 @@ export default function HeroSection() {
               </div>
 
               <span className="text-[8px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
-                Every Version of Me
+                {tBeranda("hero", "marquee_text", "Every Version of Me")}
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
                 <Image
@@ -531,7 +545,7 @@ export default function HeroSection() {
               </div>
 
               <span className="text-[8px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
-                Every Version of Me
+                {tBeranda("hero", "marquee_text", "Every Version of Me")}
               </span>
               <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
                 <Image

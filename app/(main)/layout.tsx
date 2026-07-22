@@ -1,19 +1,13 @@
-
 import type { Metadata } from "next";
 import "./../globals.css";
 
 import Navbar from "@/components/global/Navbar";
 import LoadingScreen from "@/components/beranda/LoadingScreen";
-
-// 1. Import komponen handler baru
 import NavbarRouteHandler from "@/components/global/NavbarRouteHandler";
-
 import { NavbarColorProvider } from "@/context/NavbarColorContext";
-
-// 1. Import komponen BodyColorHandler
+import { CmsProvider } from "@/context/CmsContext";
 import BodyColorHandler from "@/components/global/BodyColorHandler";
 import Footer from "@/components/global/Footer";
-
 
 export const metadata: Metadata = {
   title: "Evomi Website",
@@ -25,24 +19,19 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
-   <div className="min-h-screen w-full overflow-x-hidden">
-     <BodyColorHandler />
+    <div className="min-h-screen w-full overflow-x-hidden">
+      <BodyColorHandler />
 
-        <NavbarColorProvider>
-          {/* 2. Pasang NavbarRouteHandler DI DALAM Provider */}
+      <NavbarColorProvider>
+        <CmsProvider>
           <NavbarRouteHandler />
-
           <LoadingScreen />
-
-          {<Navbar />}
-
+          <Navbar />
           <main className="w-full overflow-x-hidden">{children}</main>
-
-          {<Footer />}
-          
-        </NavbarColorProvider>
-   </div>
+          <Footer />
+        </CmsProvider>
+      </NavbarColorProvider>
+    </div>
   );
 }

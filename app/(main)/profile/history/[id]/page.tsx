@@ -381,15 +381,13 @@ export default function HistoryDetailPage() {
                   className={`flex flex-col sm:flex-row gap-6 ${index !== 0 ? "pt-6 border-t border-gray-100" : ""}`}
                 >
                   <div className="w-full sm:w-36 h-36 bg-gray-50 rounded-xl p-3 flex-shrink-0 border border-gray-100 flex items-center justify-center overflow-hidden">
-                    {item.product?.image_produk_belanja ? (
+                    {item.product?.image_1 ? (
                       <img
                         src={
-                          getProductImageUrl(
-                            item.product.image_produk_belanja,
-                          ) ?? ""
+                          getProductImageUrl(item.product.image_1) ?? ""
                         }
                         alt={item.product.title}
-                        className="w-full h-full object-contain mix-blend-multiply drop-shadow-sm"
+                        className="max-h-full max-w-full w-auto h-auto object-contain drop-shadow-sm"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">

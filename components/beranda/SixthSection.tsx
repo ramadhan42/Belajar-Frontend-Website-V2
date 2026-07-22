@@ -3,8 +3,15 @@
 import React from "react";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
+import { useCms } from "@/context/CmsContext";
+import { resolveCmsImage } from "@/lib/cms";
 
 export default function SixthSection() {
+  const { tBeranda } = useCms();
+  const packagingSrc =
+    resolveCmsImage(tBeranda("sixth", "image", "")) ||
+    "/src/images/section 6/packaging.png";
+
   const fadeUpVariants: Variants = {
     hidden: { opacity: 0, y: 40 },
     visible: {
@@ -42,8 +49,12 @@ export default function SixthSection() {
         className="relative z-30 flex items-center justify-center gap-2 md:gap-3 text-center px-3 sm:px-4 py-2 mb-3 md:top-12 md:mb-19"
       >
         <h2 className="font-nohemi font-semibold text-[24px] sm:text-[28px] md:text-[42px] font-bold leading-tight">
-          <span className="text-white">Packaging</span>{" "}
-          <span className="text-[#A5E194]">Reveal</span>
+          <span className="text-white">
+            {tBeranda("sixth", "title_1", "Packaging")}
+          </span>{" "}
+          <span className="text-[#A5E194]">
+            {tBeranda("sixth", "title_2", "Reveal")}
+          </span>
         </h2>
         <img
           src="/src/images/section 6/star-medium.png"
@@ -121,7 +132,7 @@ export default function SixthSection() {
         >
           <div className="relative w-full">
             <img
-              src="/src/images/section 6/packaging.png"
+              src={packagingSrc}
               alt="Packaging Main"
               className="w-full h-auto block object-contain drop-shadow-xl transition-all duration-500 ease-out md:hover:rotate-2 md:hover:scale-[1.02] cursor-pointer bg-transparent"
             />

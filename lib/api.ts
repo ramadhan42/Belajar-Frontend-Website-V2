@@ -25,7 +25,12 @@ export interface User {
   name: string;
   email: string;
   is_admin?: boolean;
+  nama_lengkap?: string | null;
+  alamat_lengkap?: string | null;
+  phone?: string | null;
+  avatar_profile?: string | null;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface AuthResponse {
@@ -431,24 +436,37 @@ export const userProfileApi = {
     return res.json();
   },
 
-  updateProfile: async (data: {
-    name: string;
-    nama_lengkap?: string;
-    alamat_lengkap?: string;
-    email: string;
-  }) => {
+  updateProfile: async (
+    data:
+      | FormData
+      | {
+          name: string;
+          nama_lengkap?: string;
+          alamat_lengkap?: string;
+          phone?: string;
+          email: string;
+        },
+  ) => {
+    const isFormData = typeof FormData !== "undefined" && data instanceof FormData;
     const res = await fetch(`${BASE_URL}/api/user/profile`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Accept: "application/json",
         ...getAuthHeaders(),
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
       },
-      body: JSON.stringify(data),
+      body: isFormData ? data : JSON.stringify(data),
     });
     if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.message || "Gagal memperbarui profil");
+      const errorData = await res.json().catch(() => ({}));
+      const firstError = errorData?.errors
+        ? Object.values(errorData.errors).flat()[0]
+        : null;
+      throw new Error(
+        (firstError as string) ||
+          errorData.message ||
+          "Gagal memperbarui profil",
+      );
     }
     return res.json();
   },

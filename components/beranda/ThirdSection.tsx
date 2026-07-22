@@ -2,45 +2,48 @@
 
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
+import { useCms } from "@/context/CmsContext";
+import { resolveCmsImage } from "@/lib/cms";
 
 export default function ThirdSection() {
+  const { tBeranda } = useCms();
+
   // Brand values
   const brandValues = [
     {
-      title: "Self\nAwareness",
-      description: (
-        <>
-          Setiap aroma dirancang untuk <b>merepresentasikan versi diri</b>,
-          emosi, dan karakter manusia yang berbeda, sehingga parfum menjadi
-          medium ekspresi personal, <b>bukan sekadar wewangian</b>.
-        </>
+      title: tBeranda("third", "card1_title", "Self\nAwareness"),
+      description: tBeranda(
+        "third",
+        "card1_desc",
+        "Setiap aroma dirancang untuk merepresentasikan versi diri, emosi, dan karakter manusia yang berbeda, sehingga parfum menjadi medium ekspresi personal, bukan sekadar wewangian.",
       ),
-      icon: "/src/images/section 3/star-medium.png",
+      icon:
+        resolveCmsImage(tBeranda("third", "card1_icon", "")) ||
+        "/src/images/section 3/star-medium.png",
       hoverClass: "hover:rotate-[5deg] md:hover:rotate-[5deg]",
     },
     {
-      title: "Environment\nFriendly",
-      description: (
-        <>
-          Mengusung <b>kepedulian terhadap lingkungan</b> melalui pemanfaatan
-          daur ulang tutup botol plastik menjadi bagian dari identitas produk,
-          sebagai bentuk kontribusi kecil dalam mengurangi limbah plastik
-          sekaligus menghadirkan nilai <b>sustainability</b>.
-        </>
+      title: tBeranda("third", "card2_title", "Environment\nFriendly"),
+      description: tBeranda(
+        "third",
+        "card2_desc",
+        "Mengusung kepedulian terhadap lingkungan melalui pemanfaatan daur ulang tutup botol plastik menjadi bagian dari identitas produk, sebagai bentuk kontribusi kecil dalam mengurangi limbah plastik sekaligus menghadirkan nilai sustainability.",
       ),
-      icon: "/src/images/section 3/peaceful-calm.png",
+      icon:
+        resolveCmsImage(tBeranda("third", "card2_icon", "")) ||
+        "/src/images/section 3/peaceful-calm.png",
       hoverClass: "hover:-rotate-[5deg] md:hover:-rotate-[5deg]",
     },
     {
-      title: "Playful Design\nConcept",
-      description: (
-        <>
-          Dikemas dengan pendekatan <b>visual yang playful, ekspresif,</b> dan
-          dekat dengan generasi muda agar pengalaman menggunakan parfum terasa
-          lebih personal dan menyenangkan.
-        </>
+      title: tBeranda("third", "card3_title", "Playful Design\nConcept"),
+      description: tBeranda(
+        "third",
+        "card3_desc",
+        "Dikemas dengan pendekatan visual yang playful, ekspresif, dan dekat dengan generasi muda agar pengalaman menggunakan parfum terasa lebih personal dan menyenangkan.",
       ),
-      icon: "/src/images/section 3/triangle.png",
+      icon:
+        resolveCmsImage(tBeranda("third", "card3_icon", "")) ||
+        "/src/images/section 3/triangle.png",
       hoverClass: "hover:rotate-[5deg] md:hover:rotate-[5deg]",
     },
   ];

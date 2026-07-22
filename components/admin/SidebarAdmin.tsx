@@ -16,11 +16,13 @@ import {
   Users,
   Mail,
   ClipboardList,
+  FilePenLine,
 } from "lucide-react";
 import { SITE_STRINGS } from "../constans/strings";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+  { name: "CMS", icon: FilePenLine, path: "/dashboard/cms" },
   { name: "Products", icon: Package, path: "/dashboard/products" },
   { name: "Quiz", icon: ClipboardList, path: "/dashboard/quiz" },
   { name: "Orders / Pesanan", icon: ShoppingBag, path: "/dashboard/orders" },

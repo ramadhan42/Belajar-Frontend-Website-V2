@@ -314,10 +314,7 @@ export default function HistoryPage() {
             const statusConfig = getStatusConfig(currentStatus);
 
             const imageUrl = firstItem.product
-              ? getProductImageUrl(
-                  firstItem.product.image_1 ||
-                    firstItem.product.image_produk_belanja,
-                )
+              ? getProductImageUrl(firstItem.product.image_1)
               : null;
 
             const extraItemsCount = group.items.length - 1;
@@ -329,12 +326,12 @@ export default function HistoryPage() {
                 className="flex flex-col sm:flex-row sm:items-center justify-between p-4 md:p-5 border border-gray-100 rounded-xl hover:shadow-md hover:border-gray-200 transition-all gap-4 cursor-pointer group bg-white"
               >
                 <div className="flex items-start gap-4 w-full sm:w-auto overflow-hidden">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-lg flex-shrink-0 flex items-center justify-center border border-gray-100 overflow-hidden group-hover:bg-gray-100 transition-colors relative">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-lg flex-shrink-0 flex items-center justify-center border border-gray-100 overflow-hidden group-hover:bg-gray-100 transition-colors relative p-1.5">
                     {imageUrl ? (
                       <img
                         src={imageUrl}
                         alt={firstItem.product?.title || "Produk"}
-                        className="w-full h-full object-cover rounded-xl p-2 hover:scale-105 transition-transform duration-300"
+                        className="max-h-full max-w-full w-auto h-auto object-contain hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
                       <Package className="w-6 h-6 text-gray-400" />

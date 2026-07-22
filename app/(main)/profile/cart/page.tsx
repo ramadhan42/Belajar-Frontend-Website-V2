@@ -183,14 +183,17 @@ export default function CartPage() {
                   className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border border-gray-100 rounded-xl"
                 >
                   <div className="flex items-center gap-4 w-full">
-                    <img
-                      src={
-                        getProductImageUrl(product.image_1) ||
-                        "/placeholder.jpg"
-                      }
-                      className="w-16 h-16 object-cover rounded-lg bg-gray-50"
-                      alt={product.title}
-                    />
+                    <div className="w-16 h-16 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center shrink-0 p-1.5">
+                      {getProductImageUrl(product.image_1) ? (
+                        <img
+                          src={getProductImageUrl(product.image_1)!}
+                          className="max-h-full max-w-full w-auto h-auto object-contain"
+                          alt={product.title}
+                        />
+                      ) : (
+                        <span className="text-[10px] text-gray-400">No Image</span>
+                      )}
+                    </div>
                     <div>
                       <h3 className="font-medium text-gray-900 line-clamp-1">
                         {product.title}

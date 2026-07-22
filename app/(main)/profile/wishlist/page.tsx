@@ -19,6 +19,24 @@ import {
   getProductImageUrl,
 } from "@/lib/api";
 
+/** Warna bg gambar produk — sama seperti halaman Belanja */
+const PRODUCT_IMG_BG: Record<string, string> = {
+  purpose_prestige: "#1172BA",
+  prestige: "#1172BA",
+  peaceful_calm: "#5EA14A",
+  rebel_brave: "#E33D35",
+  sweet_shy: "#DD74A5",
+};
+
+function getProductImageBg(product?: {
+  color?: string | null;
+  personality_type?: string | null;
+} | null) {
+  if (product?.color) return product.color;
+  const key = product?.personality_type ?? "";
+  return PRODUCT_IMG_BG[key] || "#1172BA";
+}
+
 interface ModalConfig {
   isOpen: boolean;
   type: "success" | "warning" | "error";
@@ -135,15 +153,14 @@ export default function WishlistPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {wishlists.map((item) => {
-          const imageToDisplay =
-            item.product?.image_3 || item.product?.image_produk_belanja;
+          const imageToDisplay = item.product?.image_2;
 
           return (
             <div
               key={item.id}
               // 5. Menambahkan event klik untuk pergi ke page folder detail [id]
               // onClick={() => router.push(`/profile/wishlist/${item.id}`)}
-              className="border border-gray-100 rounded-xl p-4 relative bg-white hover:shadow-lg transition-all duration-300 cursor-pointer group"
+              className="border border-gray-100 rounded-xl p-4 relative bg-white hover:shadow-lg transition-all duration-300 cursor-pointer group flex flex-col"
             >
               {/* Tombol Trash / Hapus */}
               <button
@@ -153,15 +170,20 @@ export default function WishlistPage() {
                 <Trash2 className="w-4 h-4" />
               </button>
 
-              <div className="w-full h-52 rounded-xl mb-4 flex items-center justify-center overflow-hidden bg-gray-50">
+              <div
+                className="w-[78%] mx-auto aspect-square rounded-xl mb-4 flex items-center justify-center overflow-hidden p-2.5"
+                style={{
+                  backgroundColor: getProductImageBg(item.product),
+                }}
+              >
                 {imageToDisplay ? (
                   <img
                     src={getProductImageUrl(imageToDisplay) ?? ""}
                     alt={item.product?.title || "Gambar Produk"}
-                    className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                    className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-105"
                   />
                 ) : (
-                  <span className="text-gray-400">No Image</span>
+                  <span className="text-white/80">No Image</span>
                 )}
               </div>
 

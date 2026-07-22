@@ -4,6 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, Variants, AnimatePresence } from "framer-motion";
+import { useCms } from "@/context/CmsContext";
+import { resolveCmsImage } from "@/lib/cms";
 
 interface NavModalState {
   isOpen: boolean;
@@ -16,6 +18,7 @@ interface NavModalState {
 
 export default function FifthSection() {
   const router = useRouter();
+  const { tBeranda } = useCms();
 
   const [navModal, setNavModal] = useState<NavModalState>({
     isOpen: false,
@@ -27,57 +30,81 @@ export default function FifthSection() {
   const products = [
     {
       id: 1,
-      path: "/src/images/section 5/purpose-prestige.png",
+      path:
+        resolveCmsImage(tBeranda("fifth", "card1_image", "")) ||
+        "/src/images/section 5/purpose-prestige.png",
       imgBg: "bg-[#1172BA]",
       cardBg: "bg-[#9CD6FF]",
       textColor: "text-[#1172BA]",
-      badge: "Optimis",
-      title: "Purpose Prestige",
-      desc: "Aroma yang merefleksikan ketenangan dan kejelasan tujuan.",
+      badge: tBeranda("fifth", "card1_badge", "Optimis"),
+      title: tBeranda("fifth", "card1_title", "Purpose Prestige"),
+      desc: tBeranda(
+        "fifth",
+        "card1_desc",
+        "Aroma yang merefleksikan ketenangan dan kejelasan tujuan.",
+      ),
       descColor: "text-[#1172BAB2]",
-      price: "Rp189.000",
+      price: tBeranda("fifth", "card1_price", "Rp189.000"),
       btnBg: "bg-[#1172BA]",
       hoverClass: "hover:-rotate-[3deg]",
     },
     {
       id: 2,
-      path: "/src/images/section 5/peaceful-calm.png",
+      path:
+        resolveCmsImage(tBeranda("fifth", "card2_image", "")) ||
+        "/src/images/section 5/peaceful-calm.png",
       imgBg: "bg-[#5EA14A]",
       cardBg: "bg-[#C6F5B8]",
       textColor: "text-[#5EA14A]",
-      badge: "Damai",
-      title: "Peaceful Calm",
-      desc: "Aroma menenangkan yang menyatu dengan diri.",
+      badge: tBeranda("fifth", "card2_badge", "Damai"),
+      title: tBeranda("fifth", "card2_title", "Peaceful Calm"),
+      desc: tBeranda(
+        "fifth",
+        "card2_desc",
+        "Aroma menenangkan yang menyatu dengan diri.",
+      ),
       descColor: "text-[#5EA14A]",
-      price: "Rp199.000",
+      price: tBeranda("fifth", "card2_price", "Rp199.000"),
       btnBg: "bg-[#5EA14A]",
       hoverClass: "hover:rotate-[3deg]",
     },
     {
       id: 3,
-      path: "/src/images/section 5/rabel-brave.png",
+      path:
+        resolveCmsImage(tBeranda("fifth", "card3_image", "")) ||
+        "/src/images/section 5/rabel-brave.png",
       imgBg: "bg-[#E33D35]",
       cardBg: "bg-[#FFBBB5]",
       textColor: "text-[#E33D35]",
-      badge: "Berani",
-      title: "Rebel Brave",
-      desc: "Keberanian dan semangat untuk mengekspresikan diri.",
+      badge: tBeranda("fifth", "card3_badge", "Berani"),
+      title: tBeranda("fifth", "card3_title", "Rebel Brave"),
+      desc: tBeranda(
+        "fifth",
+        "card3_desc",
+        "Keberanian dan semangat untuk mengekspresikan diri.",
+      ),
       descColor: "text-[#E33D35]",
-      price: "Rp179.000",
+      price: tBeranda("fifth", "card3_price", "Rp179.000"),
       btnBg: "bg-[#E33D35]",
       hoverClass: "hover:-rotate-[3deg]",
     },
     {
       id: 4,
-      path: "/src/images/section 5/sweet-shy.png",
+      path:
+        resolveCmsImage(tBeranda("fifth", "card4_image", "")) ||
+        "/src/images/section 5/sweet-shy.png",
       imgBg: "bg-[#DD74A5]",
       cardBg: "bg-[#F5D7E7]",
       textColor: "text-[#DD74A5]",
-      badge: "Manis",
-      title: "Sweet Shy",
-      desc: "Aroma menenangkan yang menyatu dengan diri.",
+      badge: tBeranda("fifth", "card4_badge", "Manis"),
+      title: tBeranda("fifth", "card4_title", "Sweet Shy"),
+      desc: tBeranda(
+        "fifth",
+        "card4_desc",
+        "Aroma menenangkan yang menyatu dengan diri.",
+      ),
       descColor: "text-[#DD74A5]",
-      price: "Rp189.000",
+      price: tBeranda("fifth", "card4_price", "Rp189.000"),
       btnBg: "bg-[#DD74A5]",
       hoverClass: "hover:rotate-[3deg]",
     },

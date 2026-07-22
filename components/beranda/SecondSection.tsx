@@ -4,6 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, Variants, AnimatePresence } from "framer-motion";
+import { useCms } from "@/context/CmsContext";
+import { resolveCmsImage } from "@/lib/cms";
 
 // Interface untuk state modal
 interface NavModalState {
@@ -17,6 +19,7 @@ interface NavModalState {
 
 export default function SecondSection() {
   const router = useRouter();
+  const { tBeranda } = useCms();
 
   // State untuk mengontrol modal
   const [navModal, setNavModal] = useState<NavModalState>({
@@ -29,30 +32,38 @@ export default function SecondSection() {
   const characters = [
     {
       id: 1,
-      name: "Purpose\nPrestige",
-      title: "Purpose Prestige",
-      path: "/src/images/section 2/purpose-prestige.png",
+      name: tBeranda("second", "card1_name", "Purpose\nPrestige"),
+      title: tBeranda("second", "card1_title", "Purpose Prestige"),
+      path:
+        resolveCmsImage(tBeranda("second", "card1_image", "")) ||
+        "/src/images/section 2/purpose-prestige.png",
       colorClass: "text-[#0D71BA]",
     },
     {
       id: 2,
-      name: "Peaceful\nCalm",
-      title: "Peaceful Calm",
-      path: "/src/images/section 2/peaceful-calm.png",
+      name: tBeranda("second", "card2_name", "Peaceful\nCalm"),
+      title: tBeranda("second", "card2_title", "Peaceful Calm"),
+      path:
+        resolveCmsImage(tBeranda("second", "card2_image", "")) ||
+        "/src/images/section 2/peaceful-calm.png",
       colorClass: "text-[#5EA14A]",
     },
     {
       id: 3,
-      name: "Rabel\nBrave",
-      title: "Rebel Brave",
-      path: "/src/images/section 2/rabel-brave.png",
+      name: tBeranda("second", "card3_name", "Rabel\nBrave"),
+      title: tBeranda("second", "card3_title", "Rebel Brave"),
+      path:
+        resolveCmsImage(tBeranda("second", "card3_image", "")) ||
+        "/src/images/section 2/rabel-brave.png",
       colorClass: "text-[#E33D35]",
     },
     {
       id: 4,
-      name: "Sweet\nShy",
-      title: "Sweet Shy",
-      path: "/src/images/section 2/sweet-shy.png",
+      name: tBeranda("second", "card4_name", "Sweet\nShy"),
+      title: tBeranda("second", "card4_title", "Sweet Shy"),
+      path:
+        resolveCmsImage(tBeranda("second", "card4_image", "")) ||
+        "/src/images/section 2/sweet-shy.png",
       colorClass: "text-[#DD74A5]",
     },
   ];
@@ -192,7 +203,7 @@ export default function SecondSection() {
           onClick={handleBelanjaAction}
           className="bg-[#0071BC] text-white text-[12px] md:text-[18.3px] font-bold px-6 md:px-9 py-3 md:py-4 rounded-full shadow-lg inline-flex items-center gap-2 mb-10 md:mb-15 md:mt-10 relative z-10 transform transition-all duration-200 ease-out hover:scale-95 hover:translate-y-1 hover:shadow-sm cursor-pointer border-none outline-none"
         >
-          Lihat Semua Karakter
+          {tBeranda("second", "cta_label", "Lihat Semua Karakter")}
           <svg
             className="w-4 h-4 md:w-[19px] md:h-[19px]"
             viewBox="0 0 19 19"

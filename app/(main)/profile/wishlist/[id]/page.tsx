@@ -5,6 +5,24 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, ShoppingCart } from "lucide-react";
 import { wishlistApi, formatProductPrice, getProductImageUrl } from "@/lib/api";
 
+/** Warna bg gambar produk — sama seperti halaman Belanja */
+const PRODUCT_IMG_BG: Record<string, string> = {
+  purpose_prestige: "#1172BA",
+  prestige: "#1172BA",
+  peaceful_calm: "#5EA14A",
+  rebel_brave: "#E33D35",
+  sweet_shy: "#DD74A5",
+};
+
+function getProductImageBg(product?: {
+  color?: string | null;
+  personality_type?: string | null;
+} | null) {
+  if (product?.color) return product.color;
+  const key = product?.personality_type ?? "";
+  return PRODUCT_IMG_BG[key] || "#1172BA";
+}
+
 export default function WishlistDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -98,20 +116,22 @@ export default function WishlistDetailPage() {
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-10 grid md:grid-cols-2 gap-10 items-start">
           {/* Kolom Gambar */}
           {/* Kolom Gambar */}
-          <div className="w-full aspect-square bg-gray-50 rounded-2xl p-8 flex items-center justify-center overflow-hidden">
-            {item.product?.image_produk_belanja ? (
+          <div
+            className="w-full aspect-square rounded-2xl p-8 flex items-center justify-center overflow-hidden"
+            style={{
+              backgroundColor: getProductImageBg(item.product),
+            }}
+          >
+            {item.product?.image_1 ? (
               <img
-                // Tambahkan fallback || "" agar jika fungsi mereturn null, src akan menerima string kosong
                 src={
-                  getProductImageUrl(
-                    item.product.image_produk_belanja as string,
-                  ) || ""
+                  getProductImageUrl(item.product.image_1 as string) || ""
                 }
                 alt={item.product.title}
-                className="w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
+                className="max-h-full max-w-full w-auto h-auto object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
               />
             ) : (
-              <span className="text-gray-400">Gambar tidak tersedia</span>
+              <span className="text-white/80">Gambar tidak tersedia</span>
             )}
           </div>
 

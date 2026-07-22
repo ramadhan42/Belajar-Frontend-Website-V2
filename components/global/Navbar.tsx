@@ -14,6 +14,7 @@ import {
 import { motion, AnimatePresence, useInView } from "framer-motion";
 
 import { SITE_STRINGS } from "@/components/constans/strings";
+import { useCms } from "@/context/CmsContext";
 
 interface NavModalState {
   isOpen: boolean;
@@ -27,6 +28,7 @@ interface NavModalState {
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { navbarColor } = useNavbarColor();
+  const { tNav } = useCms();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -164,6 +166,8 @@ export default function Navbar() {
 
   // Auth state
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
 
   const [navModal, setNavModal] = useState<NavModalState>({
@@ -181,11 +185,26 @@ export default function Navbar() {
         try {
           const user = JSON.parse(userRaw);
           setUserEmail(user.email ?? null);
+          setUserName(user.name ?? null);
+          const avatar = user.avatar_profile;
+          if (avatar) {
+            setUserAvatar(
+              avatar.startsWith("http")
+                ? avatar
+                : `${SITE_STRINGS.base_url.url_backend}/storage/${avatar}`,
+            );
+          } else {
+            setUserAvatar(null);
+          }
         } catch {
           setUserEmail(null);
+          setUserAvatar(null);
+          setUserName(null);
         }
       } else {
         setUserEmail(null);
+        setUserAvatar(null);
+        setUserName(null);
       }
     };
     readAuth();
@@ -249,6 +268,8 @@ export default function Navbar() {
       localStorage.removeItem("auth_token");
       localStorage.removeItem("auth_user");
       setUserEmail(null);
+      setUserAvatar(null);
+      setUserName(null);
       window.dispatchEvent(new Event("auth-change"));
       setIsLogoutLoading(false);
       setNavModal({
@@ -267,7 +288,7 @@ export default function Navbar() {
   const navLinkClass =
     "nav-pill flex justify-center items-center w-full md:w-auto md:px-6 text-[12px] md:text-[18px] py-2.5 font-normal rounded-full text-center text-white hover:bg-white/95 hover:text-[var(--nav-color)] hover:shadow-sm";
 
-  const userInitial = userEmail ? userEmail.charAt(0).toUpperCase() : "";
+  const userInitial = (userName || userEmail || "?").charAt(0).toUpperCase();
 
   return (
     <>
@@ -543,7 +564,7 @@ export default function Navbar() {
                   }
                   className={navItemClass("/")}
                 >
-                  Beranda
+                  {tNav("beranda", "Beranda")}
                 </Link>
               </motion.div>
               <motion.div variants={itemVariants}>
@@ -559,7 +580,7 @@ export default function Navbar() {
                   }
                   className={navItemClass("/#third-section")}
                 >
-                  Tentang
+                  {tNav("tentang", "Tentang")}
                 </Link>
               </motion.div>
               <motion.div variants={itemVariants}>
@@ -575,7 +596,7 @@ export default function Navbar() {
                   }
                   className={navItemClass("/belanja")}
                 >
-                  Belanja
+                  {tNav("belanja", "Belanja")}
                 </Link>
               </motion.div>
               <motion.div variants={itemVariants}>
@@ -591,7 +612,7 @@ export default function Navbar() {
                   }
                   className={navItemClass("/kuis")}
                 >
-                  Kuis
+                  {tNav("kuis", "Kuis")}
                 </Link>
               </motion.div>
             </div>
@@ -615,8 +636,18 @@ export default function Navbar() {
                       aria-label="Buka profil"
                     >
                       <span className="nav-avatar-ring" aria-hidden />
-                      <span className="relative z-[1] select-none tracking-tight">
-                        {userInitial}
+                      <span className="relative z-[1] h-full w-full rounded-full overflow-hidden flex items-center justify-center">
+                        {userAvatar ? (
+                          <img
+                            src={userAvatar}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <span className="select-none tracking-tight">
+                            {userInitial}
+                          </span>
+                        )}
                       </span>
 
 
@@ -636,8 +667,16 @@ export default function Navbar() {
                     <div className="nav-avatar-tooltip" role="tooltip">
                       <div className="relative z-[1] space-y-2.5 text-left">
                         <div className="flex items-center gap-2.5">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--nav-color)] text-white text-sm font-bold">
-                            {userInitial}
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--nav-color)] text-white text-sm font-bold overflow-hidden">
+                            {userAvatar ? (
+                              <img
+                                src={userAvatar}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              userInitial
+                            )}
                           </span>
                           <div className="min-w-0">
                             <p className="text-[12px] font-bold text-gray-900 leading-tight">
@@ -758,7 +797,7 @@ export default function Navbar() {
                         } as React.CSSProperties
                       }
                     >
-                      <span>Logout</span>
+                      <span>{tNav("logout", "Logout")}</span>
                       <svg
                         className="nav-logout-icon w-3.5 h-3.5 md:w-4 md:h-4"
                         fill="none"
@@ -791,7 +830,7 @@ export default function Navbar() {
                       }
                       className={navLinkClass}
                     >
-                      Login
+                      {tNav("login", "Login")}
                     </Link>
                   </motion.div>
                   <motion.div variants={itemVariants}>
@@ -807,7 +846,7 @@ export default function Navbar() {
                       }
                       className={navLinkClass}
                     >
-                      Daftar
+                      {tNav("register", "Daftar")}
                     </Link>
                   </motion.div>
                 </>
@@ -886,7 +925,7 @@ export default function Navbar() {
                   }
                   className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
                 >
-                  Beranda
+                  {tNav("beranda", "Beranda")}
                 </Link>
                 <Link
                   href="/#third-section"
@@ -900,7 +939,7 @@ export default function Navbar() {
                   }
                   className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
                 >
-                  Tentang
+                  {tNav("tentang", "Tentang")}
                 </Link>
                 <Link
                   href="/belanja"
@@ -914,7 +953,7 @@ export default function Navbar() {
                   }
                   className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
                 >
-                  Belanja
+                  {tNav("belanja", "Belanja")}
                 </Link>
                 <Link
                   href="/kuis"
@@ -928,7 +967,7 @@ export default function Navbar() {
                   }
                   className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
                 >
-                  Kuis
+                  {tNav("kuis", "Kuis")}
                 </Link>
                 <div
                   className="my-1.5"
@@ -951,8 +990,16 @@ export default function Navbar() {
                       }
                       className="group flex items-center gap-3 w-full rounded-2xl px-2 py-2 transition-colors duration-300 ease-out hover:bg-white/10"
                     >
-                      <span className="relative flex items-center justify-center w-[40px] h-[40px] shrink-0 rounded-full bg-white text-[var(--nav-color)] font-bold text-[14px] border-2 border-white/90 shadow-sm transition-transform duration-300 ease-out group-hover:scale-105 group-hover:shadow-md">
-                        {userInitial}
+                      <span className="relative flex items-center justify-center w-[40px] h-[40px] shrink-0 rounded-full bg-white text-[var(--nav-color)] font-bold text-[14px] border-2 border-white/90 shadow-sm overflow-hidden transition-transform duration-300 ease-out group-hover:scale-105 group-hover:shadow-md">
+                        {userAvatar ? (
+                          <img
+                            src={userAvatar}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          userInitial
+                        )}
                         {unreadCount > 0 && (
                           <span className="absolute -top-1 -right-1 flex h-5 min-w-5 px-1 items-center justify-center rounded-full bg-green-500 text-white text-[10px] font-bold shadow-md ring-2 ring-white">
                             {unreadCount > 99 ? "99+" : unreadCount}
@@ -977,7 +1024,7 @@ export default function Navbar() {
                         } as React.CSSProperties
                       }
                     >
-                      <span>Logout</span>
+                      <span>{tNav("logout", "Logout")}</span>
                       <svg
                         className="nav-logout-icon w-3.5 h-3.5"
                         fill="none"
@@ -1008,7 +1055,7 @@ export default function Navbar() {
                       }
                       className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
                     >
-                      Login
+                      {tNav("login", "Login")}
                     </Link>
                     <Link
                       href="/register"
@@ -1022,7 +1069,7 @@ export default function Navbar() {
                       }
                       className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
                     >
-                      Daftar
+                      {tNav("register", "Daftar")}
                     </Link>
                   </>
                 )}

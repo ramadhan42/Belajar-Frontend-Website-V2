@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Search, Mail, HelpCircle } from "lucide-react";
+import { getPublicFaqs, FaqItem } from "@/lib/cms";
 
 export const dynamic = "force-dynamic";
 
-const faqData = {
+const FALLBACK_FAQ: Record<string, { q: string; a: string }[]> = {
   "Pesanan & Pembayaran": [
     {
       q: "Bagaimana cara melacak pesanan saya?",
@@ -38,6 +39,15 @@ const faqData = {
     },
   ],
 };
+
+function faqsToGrouped(items: FaqItem[]): Record<string, { q: string; a: string }[]> {
+  const grouped: Record<string, { q: string; a: string }[]> = {};
+  for (const item of items) {
+    if (!grouped[item.category]) grouped[item.category] = [];
+    grouped[item.category].push({ q: item.question, a: item.answer });
+  }
+  return grouped;
+}
 
 const FAQItem = ({
   question,
@@ -80,12 +90,18 @@ const FAQItem = ({
 
 export default function FAQPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [faqData, setFaqData] = useState(FALLBACK_FAQ);
 
-  // Logika Filter Pencarian
+  useEffect(() => {
+    getPublicFaqs().then((items) => {
+      if (items.length > 0) setFaqData(faqsToGrouped(items));
+    });
+  }, []);
+
   const filteredData = useMemo(() => {
     if (!searchQuery) return faqData;
 
-    const filtered: any = {};
+    const filtered: Record<string, { q: string; a: string }[]> = {};
     Object.entries(faqData).forEach(([category, items]) => {
       const filteredItems = items.filter(
         (item) =>
@@ -95,7 +111,7 @@ export default function FAQPage() {
       if (filteredItems.length > 0) filtered[category] = filteredItems;
     });
     return filtered;
-  }, [searchQuery]);
+  }, [searchQuery, faqData]);
 
   return (
     <div className="min-h-screen bg-white pt-24 sm:pt-28 md:pt-32 pb-16 md:pb-24 px-4 sm:px-6 md:px-12 lg:px-24 font-nohemi">
@@ -117,47 +133,44 @@ export default function FAQPage() {
 
       <div className="max-w-4xl mx-auto grid grid-cols-1 gap-12">
         {Object.keys(filteredData).length > 0 ? (
-          Object.entries(filteredData).map(([category, items]: any) => (
+          Object.entries(filteredData).map(([category, items]) => (
             <div key={category}>
-              <h2 className="text-[20px] font-bold text-[#1172BA] mb-4 uppercase tracking-widest text-sm">
-                {category}
-              </h2>
-              <div className="bg-white rounded-2xl">
-                {items.map((item: any, index: number) => (
-                  <FAQItem key={index} question={item.q} answer={item.a} />
+              <div className="flex items-center gap-3 mb-6">
+                <HelpCircle className="text-[#1172BA] w-6 h-6" />
+                <h2 className="text-[20px] md:text-[24px] font-bold text-gray-900">
+                  {category}
+                </h2>
+              </div>
+              <div className="bg-white">
+                {items.map((item, idx) => (
+                  <FAQItem key={idx} question={item.q} answer={item.a} />
                 ))}
               </div>
             </div>
           ))
         ) : (
-          <p className="text-center text-gray-500 py-10">
-            Maaf, pertanyaan yang Anda cari tidak ditemukan.
-          </p>
+          <div className="text-center py-20">
+            <p className="text-gray-500">Tidak ada hasil untuk pencarian Anda.</p>
+          </div>
         )}
       </div>
 
-      {/* Contact Section */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        className="max-w-4xl mx-auto mt-20 p-8 md:p-12 bg-gray-50 rounded-[32px] text-center"
-      >
-        <HelpCircle className="w-12 h-12 text-[#1172BA] mx-auto mb-6" />
-        <h3 className="text-[24px] font-bold text-gray-900 mb-2">
-          Masih butuh bantuan?
-        </h3>
-        <p className="text-gray-600 mb-8">
-          Tim kami siap membantu Anda setiap hari Senin - Jumat.
-        </p>
+      <div className="max-w-4xl mx-auto mt-20 p-8 bg-blue-50 rounded-[32px] flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="text-center md:text-left">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Masih butuh bantuan?
+          </h3>
+          <p className="text-gray-600">
+            Tim support Evomi siap membantu Anda melalui email.
+          </p>
+        </div>
         <a
           href="/kontak"
-          className="inline-flex items-center gap-2 bg-[#1172BA] text-white px-8 py-4 rounded-full font-bold hover:bg-[#0e609d] transition-all"
+          className="flex items-center gap-2 bg-[#1172BA] text-white px-8 py-4 rounded-full font-bold hover:bg-[#0e609d] transition-all"
         >
-          <Mail className="w-5 h-5" />
-          Hubungi Customer Service
+          <Mail size={18} /> Hubungi Kami
         </a>
-      </motion.div>
+      </div>
     </div>
   );
 }
