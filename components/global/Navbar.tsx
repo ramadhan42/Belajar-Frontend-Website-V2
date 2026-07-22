@@ -528,8 +528,8 @@ export default function Navbar() {
             </motion.div>
 
             {/* DESKTOP: MENU TENGAH */}
-            {/* Tetap menggunakan space-x-0.5 agar antar menu tetap rapat */}
-            <div className="hidden md:flex items-center space-x-0.5">
+            {/* Menggunakan space-x-1 agar rapih berdampingan */}
+            <div className="hidden md:flex items-center space-x-1">
               <motion.div variants={itemVariants}>
                 <Link
                   href="/"
@@ -618,6 +618,7 @@ export default function Navbar() {
                       <span className="relative z-[1] select-none tracking-tight">
                         {userInitial}
                       </span>
+
 
                       {unreadCount > 0 && (
                         <span
@@ -1031,14 +1032,13 @@ export default function Navbar() {
         </nav>
       </motion.div>
 
-      {/* CUSTOM MODAL: DIKELUARKAN DARI CONTAINER NAVBAR UNTUK MEMASTIKAN Z-INDEX DAN POSISI TENGAH */}
+      {/* CUSTOM MODAL */}
       <AnimatePresence>
         {navModal.isOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            // z-[9999] agar dipastikan paling atas
             className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
             onClick={() => {
               if (navModal.type === "confirm")
@@ -1051,10 +1051,8 @@ export default function Navbar() {
               exit={{ opacity: 0, scale: 0.8, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              // SIZING UNTUK GALAXY S20: max-w-[280px] & p-5 di mobile agar proporsional
               className="relative bg-white rounded-[20px] md:rounded-[24px] p-5 md:p-8 max-w-[280px] md:max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
             >
-              {/* IKON: h-14 w-14 di mobile */}
               <div
                 className={`mx-auto flex items-center justify-center h-14 w-14 md:h-20 md:w-20 rounded-full mb-3 md:mb-5 transition-colors duration-300
                 ${navModal.type === "success" ? "bg-green-50 text-green-500" : ""}
@@ -1121,7 +1119,6 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* TEKS: Ukuran font lebih proporsional untuk S20 */}
               <div className="space-y-1.5 md:space-y-3">
                 <h3 className="text-[16px] md:text-[20px] font-bold text-gray-800 tracking-wide">
                   {navModal.title}
@@ -1131,7 +1128,6 @@ export default function Navbar() {
                 </p>
               </div>
 
-              {/* TOMBOL: Padding vertical dikurangi */}
               {navModal.type === "confirm" && (
                 <div className="flex space-x-2 md:space-x-3 mt-4 md:mt-6">
                   <button
