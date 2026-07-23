@@ -4,45 +4,44 @@ import Image from "next/image";
 import { motion, Variants } from "framer-motion";
 import { useCms } from "@/context/CmsContext";
 import { resolveCmsImage } from "@/lib/cms";
+import { cmsFontStyle } from "@/lib/cmsFonts";
 
 export default function ThirdSection() {
   const { tBeranda } = useCms();
+  const read = (key: string, fb = "") => tBeranda("third", key, fb);
 
   // Brand values
   const brandValues = [
     {
-      title: tBeranda("third", "card1_title", "Self\nAwareness"),
-      description: tBeranda(
-        "third",
+      title: read("card1_title", "Self\nAwareness"),
+      description: read(
         "card1_desc",
         "Setiap aroma dirancang untuk merepresentasikan versi diri, emosi, dan karakter manusia yang berbeda, sehingga parfum menjadi medium ekspresi personal, bukan sekadar wewangian.",
       ),
       icon:
-        resolveCmsImage(tBeranda("third", "card1_icon", "")) ||
+        resolveCmsImage(read("card1_icon", "")) ||
         "/src/images/section 3/star-medium.png",
       hoverClass: "hover:rotate-[5deg] md:hover:rotate-[5deg]",
     },
     {
-      title: tBeranda("third", "card2_title", "Environment\nFriendly"),
-      description: tBeranda(
-        "third",
+      title: read("card2_title", "Environment\nFriendly"),
+      description: read(
         "card2_desc",
         "Mengusung kepedulian terhadap lingkungan melalui pemanfaatan daur ulang tutup botol plastik menjadi bagian dari identitas produk, sebagai bentuk kontribusi kecil dalam mengurangi limbah plastik sekaligus menghadirkan nilai sustainability.",
       ),
       icon:
-        resolveCmsImage(tBeranda("third", "card2_icon", "")) ||
+        resolveCmsImage(read("card2_icon", "")) ||
         "/src/images/section 3/peaceful-calm.png",
       hoverClass: "hover:-rotate-[5deg] md:hover:-rotate-[5deg]",
     },
     {
-      title: tBeranda("third", "card3_title", "Playful Design\nConcept"),
-      description: tBeranda(
-        "third",
+      title: read("card3_title", "Playful Design\nConcept"),
+      description: read(
         "card3_desc",
         "Dikemas dengan pendekatan visual yang playful, ekspresif, dan dekat dengan generasi muda agar pengalaman menggunakan parfum terasa lebih personal dan menyenangkan.",
       ),
       icon:
-        resolveCmsImage(tBeranda("third", "card3_icon", "")) ||
+        resolveCmsImage(read("card3_icon", "")) ||
         "/src/images/section 3/triangle.png",
       hoverClass: "hover:rotate-[5deg] md:hover:rotate-[5deg]",
     },
@@ -77,9 +76,19 @@ export default function ThirdSection() {
         transition={{ duration: 0.6 }}
         className="group flex items-center justify-center gap-3 md:gap-4 mt-10 md:mt-15 mb-6 md:mb-[30px] cursor-pointer"
       >
-        <h2 className="text-[28px] md:text-[42px] font-bold leading-tight transition-transform duration-300 ease-in-out group-hover:rotate-[4deg]">
-          <span className="text-white">Brand </span>
-          <span className="text-[#90EE90]">Value</span>
+        <h2 className="text-[28px] md:text-[42px] leading-tight transition-transform duration-300 ease-in-out group-hover:rotate-[4deg]">
+          <span
+            className="text-white"
+            style={cmsFontStyle(read, "title_1", { weight: "700" })}
+          >
+            {read("title_1", "Brand ")}
+          </span>
+          <span
+            className="text-[#90EE90]"
+            style={cmsFontStyle(read, "title_2", { weight: "700" })}
+          >
+            {read("title_2", "Value")}
+          </span>
         </h2>
         <div className="w-[24px] md:w-[24px] h-[24px] md:h-[24px] relative flex justify-center items-center transition-transform duration-300 ease-in-out group-hover:-rotate-[4deg]">
           <Image
@@ -110,7 +119,12 @@ export default function ThirdSection() {
               variants={cardVariants}
               className="flex flex-col"
             >
-              <h3 className="text-white text-[18px] md:text-[22px] font-bold mb-4 md:mb-6 text-left px-1 whitespace-pre-line">
+              <h3
+                className="text-white text-[18px] md:text-[22px] mb-4 md:mb-6 text-left px-1 whitespace-pre-line"
+                style={cmsFontStyle(read, `card${index + 1}_title`, {
+                  weight: "700",
+                })}
+              >
                 {card.title}
               </h3>
               <div
@@ -125,7 +139,10 @@ export default function ThirdSection() {
                     className="object-contain drop-shadow-md"
                   />
                 </div>
-                <p className="text-left text-[#0071BC] text-[13px] md:text-[14px] leading-relaxed">
+                <p
+                  className="text-left text-[#0071BC] text-[13px] md:text-[14px] leading-relaxed"
+                  style={cmsFontStyle(read, `card${index + 1}_desc`)}
+                >
                   {card.description}
                 </p>
               </div>
@@ -139,9 +156,10 @@ export default function ThirdSection() {
         initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: false }}
-        className="text-white text-[20px] md:text-[28px] font-bold mt-4 md:mt-[10px] mb-8 md:mb-5 relative z-10 cursor-pointer"
+        className="text-white text-[20px] md:text-[28px] mt-4 md:mt-[10px] mb-8 md:mb-5 relative z-10 cursor-pointer"
+        style={cmsFontStyle(read, "tagline", { weight: "700" })}
       >
-        Every Version of Me
+        {read("tagline", "Every Version of Me")}
       </motion.p>
     </section>
   );

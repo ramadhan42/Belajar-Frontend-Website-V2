@@ -5,7 +5,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { useCms } from "@/context/CmsContext";
+import { useLocale } from "@/context/LocaleContext";
 import { resolveCmsImage } from "@/lib/cms";
+import { cmsFontStyle } from "@/lib/cmsFonts";
+import { L } from "@/lib/localeText";
 
 // Interface untuk state modal
 interface NavModalState {
@@ -20,6 +23,8 @@ interface NavModalState {
 export default function SecondSection() {
   const router = useRouter();
   const { tBeranda } = useCms();
+  const { locale } = useLocale();
+  const read = (key: string, fb = "") => tBeranda("second", key, fb);
 
   // State untuk mengontrol modal
   const [navModal, setNavModal] = useState<NavModalState>({
@@ -29,40 +34,44 @@ export default function SecondSection() {
     message: "",
   });
 
+  const headline1 = read("headline_1", L(locale, "Kenalan sama", "Meet our"));
+  const headline2 = read("headline_2", L(locale, "karakter ", "characters "));
+  const headline3 = read("headline_3", L(locale, "kita yuk!", "today!"));
+
   const characters = [
     {
       id: 1,
-      name: tBeranda("second", "card1_name", "Purpose\nPrestige"),
-      title: tBeranda("second", "card1_title", "Purpose Prestige"),
+      name: read("card1_name", "Purpose\nPrestige"),
+      title: read("card1_title", "Purpose Prestige"),
       path:
-        resolveCmsImage(tBeranda("second", "card1_image", "")) ||
+        resolveCmsImage(read("card1_image", "")) ||
         "/src/images/section 2/purpose-prestige.png",
       colorClass: "text-[#0D71BA]",
     },
     {
       id: 2,
-      name: tBeranda("second", "card2_name", "Peaceful\nCalm"),
-      title: tBeranda("second", "card2_title", "Peaceful Calm"),
+      name: read("card2_name", "Peaceful\nCalm"),
+      title: read("card2_title", "Peaceful Calm"),
       path:
-        resolveCmsImage(tBeranda("second", "card2_image", "")) ||
+        resolveCmsImage(read("card2_image", "")) ||
         "/src/images/section 2/peaceful-calm.png",
       colorClass: "text-[#5EA14A]",
     },
     {
       id: 3,
-      name: tBeranda("second", "card3_name", "Rabel\nBrave"),
-      title: tBeranda("second", "card3_title", "Rebel Brave"),
+      name: read("card3_name", "Rabel\nBrave"),
+      title: read("card3_title", "Rebel Brave"),
       path:
-        resolveCmsImage(tBeranda("second", "card3_image", "")) ||
+        resolveCmsImage(read("card3_image", "")) ||
         "/src/images/section 2/rabel-brave.png",
       colorClass: "text-[#E33D35]",
     },
     {
       id: 4,
-      name: tBeranda("second", "card4_name", "Sweet\nShy"),
-      title: tBeranda("second", "card4_title", "Sweet Shy"),
+      name: read("card4_name", "Sweet\nShy"),
+      title: read("card4_title", "Sweet Shy"),
       path:
-        resolveCmsImage(tBeranda("second", "card4_image", "")) ||
+        resolveCmsImage(read("card4_image", "")) ||
         "/src/images/section 2/sweet-shy.png",
       colorClass: "text-[#DD74A5]",
     },
@@ -89,14 +98,17 @@ export default function SecondSection() {
     },
   };
 
-  // Handler saat tombol "Lihat Semua Karakter" diklik
   const handleBelanjaAction = (e: React.MouseEvent) => {
     e.preventDefault();
     setNavModal({
       isOpen: true,
       type: "loading",
-      title: "Katalog Produk",
-      message: "Mengarahkan ke halaman belanja Evomi...",
+      title: L(locale, "Katalog Produk", "Product Catalog"),
+      message: L(
+        locale,
+        "Mengarahkan ke halaman belanja Evomi...",
+        "Taking you to the Evomi shop...",
+      ),
     });
 
     setTimeout(() => {
@@ -114,7 +126,11 @@ export default function SecondSection() {
       isOpen: true,
       type: "loading",
       title: formattedName,
-      message: `Mengarahkan ke detail karakter ${formattedName}...`,
+      message: L(
+        locale,
+        `Mengarahkan ke detail karakter ${formattedName}...`,
+        `Taking you to ${formattedName} details...`,
+      ),
     });
 
     setTimeout(() => {
@@ -152,11 +168,27 @@ export default function SecondSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.8 }}
-        className="font-nohemi font-semibold mt-14 md:mt-25 mb-8 md:mb-10 text-[24px] md:text-[42px] leading-tight px-2"
+        className="mt-14 md:mt-25 mb-8 md:mb-10 text-[24px] md:text-[42px] leading-tight px-2"
       >
-        <span className="text-[#0071BC]">Kenalan sama </span>
-        <span className="text-[#FF8A84]">karakter </span>
-        <span className="text-[#0071BC]">kita yuk!</span>
+        <span
+          className="text-[#0071BC]"
+          style={cmsFontStyle(read, "headline_1", { weight: "600" })}
+        >
+          {headline1}
+        </span>
+        <br />
+        <span
+          className="text-[#FF8A84]"
+          style={cmsFontStyle(read, "headline_2", { weight: "600" })}
+        >
+          {headline2}
+        </span>{" "}
+        <span
+          className="text-[#0071BC]"
+          style={cmsFontStyle(read, "headline_3", { weight: "600" })}
+        >
+          {headline3}
+        </span>
       </motion.h2>
 
       {/* 2. Grid 4 Gambar Karakter */}
@@ -184,7 +216,10 @@ export default function SecondSection() {
               />
             </div>
             <h3
-              className={`font-heavy text-l md:text-2xl tracking-tight whitespace-pre-line md:mt-3 ${char.colorClass}`}
+              className={`text-l md:text-2xl tracking-tight whitespace-pre-line md:mt-3 ${char.colorClass}`}
+              style={cmsFontStyle(read, `card${char.id}_name`, {
+                family: "heavy",
+              })}
             >
               {char.name}
             </h3>
@@ -201,9 +236,13 @@ export default function SecondSection() {
       >
         <button
           onClick={handleBelanjaAction}
-          className="bg-[#0071BC] text-white text-[12px] md:text-[18.3px] font-bold px-6 md:px-9 py-3 md:py-4 rounded-full shadow-lg inline-flex items-center gap-2 mb-10 md:mb-15 md:mt-10 relative z-10 transform transition-all duration-200 ease-out hover:scale-95 hover:translate-y-1 hover:shadow-sm cursor-pointer border-none outline-none"
+          className="bg-[#0071BC] text-white text-[12px] md:text-[18.3px] px-6 md:px-9 py-3 md:py-4 rounded-full shadow-lg inline-flex items-center gap-2 mb-10 md:mb-15 md:mt-10 relative z-10 transform transition-all duration-200 ease-out hover:scale-95 hover:translate-y-1 hover:shadow-sm cursor-pointer border-none outline-none"
+          style={cmsFontStyle(read, "cta_label", { weight: "700" })}
         >
-          {tBeranda("second", "cta_label", "Lihat Semua Karakter")}
+          {read(
+            "cta_label",
+            L(locale, "Lihat Semua Karakter", "See All Characters"),
+          )}
           <svg
             className="w-4 h-4 md:w-[19px] md:h-[19px]"
             viewBox="0 0 19 19"

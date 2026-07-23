@@ -25,6 +25,16 @@ import {
 } from "@/lib/cms";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 import CmsNumberInput from "@/components/admin/CmsNumberInput";
+import {
+  CMS_FONT_FAMILY_OPTIONS,
+  CMS_FONT_STYLE_OPTIONS,
+  CMS_FONT_WEIGHT_OPTIONS,
+  isCmsFontFamilyField,
+  isCmsFontField,
+  isCmsFontStyleField,
+  isCmsFontWeightField,
+  withFontFieldOrder,
+} from "@/lib/cmsFonts";
 
 type TabKey = "beranda" | "faq" | "kontak" | "navfooter" | "ui" | "admin";
 
@@ -88,18 +98,30 @@ const HERO_FIELD_ORDER = [
   // Headline content + style
   "headline_1",
   "headline_1_color",
+  "headline_1_font_family",
+  "headline_1_font_weight",
+  "headline_1_font_style",
   "headline_1_fs_mobile",
   "headline_1_fs_desktop",
   "headline_2",
   "headline_2_color",
+  "headline_2_font_family",
+  "headline_2_font_weight",
+  "headline_2_font_style",
   "headline_2_fs_mobile",
   "headline_2_fs_desktop",
   "headline_3",
   "headline_3_color",
+  "headline_3_font_family",
+  "headline_3_font_weight",
+  "headline_3_font_style",
   "headline_3_fs_mobile",
   "headline_3_fs_desktop",
   "headline_4",
   "headline_4_color",
+  "headline_4_font_family",
+  "headline_4_font_weight",
+  "headline_4_font_style",
   "headline_4_fs_mobile",
   "headline_4_fs_desktop",
   "headline_pos_top_mobile",
@@ -109,6 +131,9 @@ const HERO_FIELD_ORDER = [
   // Badge left
   "badge_left",
   "badge_left_icon",
+  "badge_left_font_family",
+  "badge_left_font_weight",
+  "badge_left_font_style",
   "badge_left_fs_mobile",
   "badge_left_fs_desktop",
   "badge_left_icon_size_mobile",
@@ -120,6 +145,9 @@ const HERO_FIELD_ORDER = [
   // Badge right
   "badge_right",
   "badge_right_icon",
+  "badge_right_font_family",
+  "badge_right_font_weight",
+  "badge_right_font_style",
   "badge_right_fs_mobile",
   "badge_right_fs_desktop",
   "badge_right_icon_size_mobile",
@@ -192,6 +220,9 @@ const HERO_FIELD_ORDER = [
   "product4_rotate_desktop",
   // Divider
   "marquee_text",
+  "marquee_font_family",
+  "marquee_font_weight",
+  "marquee_font_style",
   "marquee_fs_mobile",
   "marquee_fs_desktop",
   "divider_icon_1",
@@ -223,18 +254,30 @@ const FIELD_LABELS: Record<string, string> = {
   favicon: "Favicon (Icon Tab)",
   headline_1: "Headline 1",
   headline_1_color: "Warna Headline 1",
+  headline_1_font_family: "Headline 1 — Font Family",
+  headline_1_font_weight: "Headline 1 — Font Weight",
+  headline_1_font_style: "Headline 1 — Font Style",
   headline_1_fs_mobile: "Headline 1 — Font Size Mobile",
   headline_1_fs_desktop: "Headline 1 — Font Size Desktop",
   headline_2: "Headline 2",
   headline_2_color: "Warna Headline 2",
+  headline_2_font_family: "Headline 2 — Font Family",
+  headline_2_font_weight: "Headline 2 — Font Weight",
+  headline_2_font_style: "Headline 2 — Font Style",
   headline_2_fs_mobile: "Headline 2 — Font Size Mobile",
   headline_2_fs_desktop: "Headline 2 — Font Size Desktop",
   headline_3: "Headline 3",
   headline_3_color: "Warna Headline 3",
+  headline_3_font_family: "Headline 3 — Font Family",
+  headline_3_font_weight: "Headline 3 — Font Weight",
+  headline_3_font_style: "Headline 3 — Font Style",
   headline_3_fs_mobile: "Headline 3 — Font Size Mobile",
   headline_3_fs_desktop: "Headline 3 — Font Size Desktop",
   headline_4: "Headline 4",
   headline_4_color: "Warna Headline 4",
+  headline_4_font_family: "Headline 4 — Font Family",
+  headline_4_font_weight: "Headline 4 — Font Weight",
+  headline_4_font_style: "Headline 4 — Font Style",
   headline_4_fs_mobile: "Headline 4 — Font Size Mobile",
   headline_4_fs_desktop: "Headline 4 — Font Size Desktop",
   headline_pos_top_mobile: "Posisi Headline — Top Mobile",
@@ -244,6 +287,9 @@ const FIELD_LABELS: Record<string, string> = {
 
   badge_left: "Teks Badge Kiri",
   badge_left_icon: "Icon Badge Kiri",
+  badge_left_font_family: "Badge Kiri — Font Family",
+  badge_left_font_weight: "Badge Kiri — Font Weight",
+  badge_left_font_style: "Badge Kiri — Font Style",
   badge_left_fs_mobile: "Badge Kiri — Font Size Mobile",
   badge_left_fs_desktop: "Badge Kiri — Font Size Desktop",
   badge_left_icon_size_mobile: "Badge Kiri — Size Icon Mobile",
@@ -255,6 +301,9 @@ const FIELD_LABELS: Record<string, string> = {
 
   badge_right: "Teks Badge Kanan",
   badge_right_icon: "Icon Badge Kanan",
+  badge_right_font_family: "Badge Kanan — Font Family",
+  badge_right_font_weight: "Badge Kanan — Font Weight",
+  badge_right_font_style: "Badge Kanan — Font Style",
   badge_right_fs_mobile: "Badge Kanan — Font Size Mobile",
   badge_right_fs_desktop: "Badge Kanan — Font Size Desktop",
   badge_right_icon_size_mobile: "Badge Kanan — Size Icon Mobile",
@@ -330,6 +379,9 @@ const FIELD_LABELS: Record<string, string> = {
   product4_rotate_desktop: "Produk 4 — Rotate Desktop",
 
   marquee_text: "Teks Divider Marquee",
+  marquee_font_family: "Marquee — Font Family",
+  marquee_font_weight: "Marquee — Font Weight",
+  marquee_font_style: "Marquee — Font Style",
   marquee_fs_mobile: "Marquee — Font Size Mobile",
   marquee_fs_desktop: "Marquee — Font Size Desktop",
   divider_icon_1: "Icon Divider 1",
@@ -402,9 +454,184 @@ const FIELD_LABELS: Record<string, string> = {
   label4_top_desktop: "Label 4 (Sweet) — Top Desktop",
   label4_bottom_mobile: "Label 4 (Sweet) — Bottom Mobile",
   label4_bottom_desktop: "Label 4 (Sweet) — Bottom Desktop",
+
+  title_1: "Judul Bagian 1",
+  title_2: "Judul Bagian 2",
+  subtitle: "Subtitle",
+  tagline: "Tagline",
+  cta_label: "Teks Tombol CTA",
+  card1_name: "Kartu 1 — Nama",
+  card2_name: "Kartu 2 — Nama",
+  card3_name: "Kartu 3 — Nama",
+  card4_name: "Kartu 4 — Nama",
+  card1_title: "Kartu 1 — Judul",
+  card2_title: "Kartu 2 — Judul",
+  card3_title: "Kartu 3 — Judul",
+  card4_title: "Kartu 4 — Judul",
+  card1_desc: "Kartu 1 — Deskripsi",
+  card2_desc: "Kartu 2 — Deskripsi",
+  card3_desc: "Kartu 3 — Deskripsi",
+  card4_desc: "Kartu 4 — Deskripsi",
+  card1_badge: "Kartu 1 — Badge",
+  card2_badge: "Kartu 2 — Badge",
+  card3_badge: "Kartu 3 — Badge",
+  card4_badge: "Kartu 4 — Badge",
+  card1_price: "Kartu 1 — Harga",
+  card2_price: "Kartu 2 — Harga",
+  card3_price: "Kartu 3 — Harga",
+  card4_price: "Kartu 4 — Harga",
+  label1: "Label 1 — Teks",
+  label2: "Label 2 — Teks",
+  label3: "Label 3 — Teks",
+  label4: "Label 4 — Teks",
+  en_l1: "Headline EN 1",
+  en_l2: "Headline EN 2",
+  en_l3: "Headline EN 3",
+  en_l4: "Headline EN 4",
 };
 
-const SEVENTH_FIELD_ORDER = [
+function fieldLabel(key: string) {
+  if (FIELD_LABELS[key]) return FIELD_LABELS[key];
+  if (isCmsFontFamilyField(key)) {
+    const base = key.replace(/_font_family$/, "");
+    return `${FIELD_LABELS[base] || base.replace(/_/g, " ")} — Font Family`;
+  }
+  if (isCmsFontWeightField(key)) {
+    const base = key.replace(/_font_weight$/, "");
+    return `${FIELD_LABELS[base] || base.replace(/_/g, " ")} — Font Weight`;
+  }
+  if (isCmsFontStyleField(key)) {
+    const base = key.replace(/_font_style$/, "");
+    return `${FIELD_LABELS[base] || base.replace(/_/g, " ")} — Font Style`;
+  }
+  return key.replace(/_/g, " ");
+}
+
+const SECOND_FIELD_ORDER = withFontFieldOrder(
+  [
+    "headline_1",
+    "headline_2",
+    "headline_3",
+    "card1_name",
+    "card1_title",
+    "card1_image",
+    "card2_name",
+    "card2_title",
+    "card2_image",
+    "card3_name",
+    "card3_title",
+    "card3_image",
+    "card4_name",
+    "card4_title",
+    "card4_image",
+    "cta_label",
+  ],
+  [
+    "headline_1",
+    "headline_2",
+    "headline_3",
+    "card1_name",
+    "card2_name",
+    "card3_name",
+    "card4_name",
+    "cta_label",
+  ],
+);
+
+const THIRD_FIELD_ORDER = withFontFieldOrder(
+  [
+    "title_1",
+    "title_2",
+    "card1_title",
+    "card1_desc",
+    "card1_icon",
+    "card2_title",
+    "card2_desc",
+    "card2_icon",
+    "card3_title",
+    "card3_desc",
+    "card3_icon",
+    "tagline",
+  ],
+  [
+    "title_1",
+    "title_2",
+    "card1_title",
+    "card1_desc",
+    "card2_title",
+    "card2_desc",
+    "card3_title",
+    "card3_desc",
+    "tagline",
+  ],
+);
+
+const FIFTH_FIELD_ORDER = withFontFieldOrder(
+  [
+    "title_1",
+    "title_2",
+    "subtitle",
+    "card1_badge",
+    "card1_title",
+    "card1_desc",
+    "card1_price",
+    "card1_image",
+    "card2_badge",
+    "card2_title",
+    "card2_desc",
+    "card2_price",
+    "card2_image",
+    "card3_badge",
+    "card3_title",
+    "card3_desc",
+    "card3_price",
+    "card3_image",
+    "card4_badge",
+    "card4_title",
+    "card4_desc",
+    "card4_price",
+    "card4_image",
+    "cta_label",
+  ],
+  [
+    "title_1",
+    "title_2",
+    "subtitle",
+    "card1_badge",
+    "card1_title",
+    "card1_desc",
+    "card1_price",
+    "card2_badge",
+    "card2_title",
+    "card2_desc",
+    "card2_price",
+    "card3_badge",
+    "card3_title",
+    "card3_desc",
+    "card3_price",
+    "card4_badge",
+    "card4_title",
+    "card4_desc",
+    "card4_price",
+    "cta_label",
+  ],
+);
+
+const SIXTH_FIELD_ORDER = withFontFieldOrder(
+  [
+    "title_1",
+    "title_2",
+    "label1",
+    "label2",
+    "label3",
+    "label4",
+    "marquee_text",
+    "image",
+  ],
+  ["title_1", "title_2", "label1", "label2", "label3", "label4", "marquee_text"],
+);
+
+const SEVENTH_FIELD_ORDER_BASE = [
   "headline_1",
   "headline_2",
   "headline_3",
@@ -417,6 +644,7 @@ const SEVENTH_FIELD_ORDER = [
   "cta_label",
   "product_image",
   "label1_text",
+  "label1",
   "label1_title",
   "label1_color",
   "label1_fs_mobile",
@@ -430,6 +658,7 @@ const SEVENTH_FIELD_ORDER = [
   "label1_bottom_mobile",
   "label1_bottom_desktop",
   "label2_text",
+  "label2",
   "label2_title",
   "label2_color",
   "label2_fs_mobile",
@@ -443,6 +672,7 @@ const SEVENTH_FIELD_ORDER = [
   "label2_bottom_mobile",
   "label2_bottom_desktop",
   "label3_text",
+  "label3",
   "label3_title",
   "label3_color",
   "label3_fs_mobile",
@@ -456,6 +686,7 @@ const SEVENTH_FIELD_ORDER = [
   "label3_bottom_mobile",
   "label3_bottom_desktop",
   "label4_text",
+  "label4",
   "label4_title",
   "label4_color",
   "label4_fs_mobile",
@@ -470,19 +701,40 @@ const SEVENTH_FIELD_ORDER = [
   "label4_bottom_desktop",
 ];
 
-function fieldLabel(key: string) {
-  return FIELD_LABELS[key] || key.replace(/_/g, " ");
-}
+const SEVENTH_FIELD_ORDER = withFontFieldOrder(SEVENTH_FIELD_ORDER_BASE, [
+  "headline_1",
+  "headline_2",
+  "headline_3",
+  "headline_4",
+  "headline_5",
+  "en_l1",
+  "en_l2",
+  "en_l3",
+  "en_l4",
+  "cta_label",
+  "label1",
+  "label2",
+  "label3",
+  "label4",
+]);
 
 function sortSectionFields(section: string, sectionFields: CmsField[]) {
   const order =
     section === "hero"
       ? HERO_FIELD_ORDER
-      : section === "seventh"
-        ? SEVENTH_FIELD_ORDER
-        : section === "site"
-          ? SITE_FIELD_ORDER
-          : null;
+      : section === "second"
+        ? SECOND_FIELD_ORDER
+        : section === "third"
+          ? THIRD_FIELD_ORDER
+          : section === "fifth"
+            ? FIFTH_FIELD_ORDER
+            : section === "sixth"
+              ? SIXTH_FIELD_ORDER
+              : section === "seventh"
+                ? SEVENTH_FIELD_ORDER
+                : section === "site"
+                  ? SITE_FIELD_ORDER
+                  : null;
   if (!order) return sectionFields;
   return [...sectionFields].sort((a, b) => {
     const ai = order.indexOf(a.key);
@@ -502,6 +754,7 @@ function looksLikeCssNumber(value: string | null | undefined) {
 
 function isNumericStyleField(key: string, value?: string | null) {
   if (key.endsWith("_color")) return false;
+  if (isCmsFontField(key)) return false;
   if (
     key.includes("badge_label") ||
     key.endsWith("_icon") ||
@@ -1089,10 +1342,17 @@ export default function CmsDashboardPage() {
                         f.key === field.key,
                     );
                     const isColorField = field.key.endsWith("_color");
-                    const isNumericField = isNumericStyleField(
-                      field.key,
-                      field.value,
-                    );
+                    const isFontSelectField = isCmsFontField(field.key);
+                    const isNumericField =
+                      !isFontSelectField &&
+                      isNumericStyleField(field.key, field.value);
+                    const fontSelectOptions = isCmsFontFamilyField(field.key)
+                      ? CMS_FONT_FAMILY_OPTIONS
+                      : isCmsFontWeightField(field.key)
+                        ? CMS_FONT_WEIGHT_OPTIONS
+                        : isCmsFontStyleField(field.key)
+                          ? CMS_FONT_STYLE_OPTIONS
+                          : [];
                     const numericParsed = isNumericField
                       ? parseNumericCmsValue(field.value)
                       : null;
@@ -1136,6 +1396,43 @@ export default function CmsDashboardPage() {
                               className="flex-1 text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white"
                             />
                           </div>
+                        ) : isFontSelectField ? (
+                          <select
+                            value={field.value || ""}
+                            onChange={(e) =>
+                              updateFieldValue(globalIndex, e.target.value)
+                            }
+                            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                          >
+                            {isCmsFontFamilyField(field.key) ? (
+                              <>
+                                <optgroup label="Font Project (Next.js)">
+                                  {CMS_FONT_FAMILY_OPTIONS.filter(
+                                    (o) => o.group === "project",
+                                  ).map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                                <optgroup label="Font Sistem">
+                                  {CMS_FONT_FAMILY_OPTIONS.filter(
+                                    (o) => o.group === "system",
+                                  ).map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              </>
+                            ) : (
+                              fontSelectOptions.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))
+                            )}
+                          </select>
                         ) : isColorField ? (
                           <div className="flex items-center gap-3">
                             <input

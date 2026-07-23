@@ -4,13 +4,25 @@
  */
 
 export const HERO_STYLE_DEFAULTS = {
-  // Headline font sizes (shared look today: 28 / 42)
+  // Headline typography
+  headline_1_font_family: "nohemi",
+  headline_1_font_weight: "600",
+  headline_1_font_style: "normal",
   headline_1_fs_mobile: "28px",
   headline_1_fs_desktop: "42px",
+  headline_2_font_family: "nohemi",
+  headline_2_font_weight: "600",
+  headline_2_font_style: "normal",
   headline_2_fs_mobile: "28px",
   headline_2_fs_desktop: "42px",
+  headline_3_font_family: "nohemi",
+  headline_3_font_weight: "600",
+  headline_3_font_style: "normal",
   headline_3_fs_mobile: "28px",
   headline_3_fs_desktop: "42px",
+  headline_4_font_family: "nohemi",
+  headline_4_font_weight: "600",
+  headline_4_font_style: "normal",
   headline_4_fs_mobile: "28px",
   headline_4_fs_desktop: "42px",
   headline_pos_top_mobile: "0px",
@@ -19,6 +31,9 @@ export const HERO_STYLE_DEFAULTS = {
   headline_pos_left_desktop: "0px",
 
   // Badge left
+  badge_left_font_family: "nohemi",
+  badge_left_font_weight: "700",
+  badge_left_font_style: "normal",
   badge_left_fs_mobile: "7px",
   badge_left_fs_desktop: "14px",
   badge_left_icon_size_mobile: "8px",
@@ -29,6 +44,9 @@ export const HERO_STYLE_DEFAULTS = {
   badge_left_top_desktop: "5%",
 
   // Badge right
+  badge_right_font_family: "nohemi",
+  badge_right_font_weight: "700",
+  badge_right_font_style: "normal",
   badge_right_fs_mobile: "7px",
   badge_right_fs_desktop: "14px",
   badge_right_icon_size_mobile: "8px",
@@ -94,6 +112,9 @@ export const HERO_STYLE_DEFAULTS = {
   product4_rotate_desktop: "-4",
 
   // Divider marquee
+  marquee_font_family: "nohemi",
+  marquee_font_weight: "500",
+  marquee_font_style: "normal",
   marquee_fs_mobile: "8px",
   marquee_fs_desktop: "14px",
   divider_icon_1_size_mobile: "14px",

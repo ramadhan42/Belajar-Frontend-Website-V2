@@ -1,16 +1,23 @@
 "use client";
 
-import React from "react";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
 import { useCms } from "@/context/CmsContext";
 import { resolveCmsImage } from "@/lib/cms";
+import { cmsFontStyle } from "@/lib/cmsFonts";
 
 export default function SixthSection() {
   const { tBeranda } = useCms();
+  const read = (key: string, fb = "") => tBeranda("sixth", key, fb);
   const packagingSrc =
-    resolveCmsImage(tBeranda("sixth", "image", "")) ||
+    resolveCmsImage(read("image", "")) ||
     "/src/images/section 6/packaging.png";
+
+  const label1 = read("label1", "Purpose\nPrestige");
+  const label2 = read("label2", "Rebel\nBrave");
+  const label3 = read("label3", "Peaceful\nCalm");
+  const label4 = read("label4", "Sweet\nShy");
+  const marqueeText = read("marquee_text", "Every Version of Me");
 
   const fadeUpVariants: Variants = {
     hidden: { opacity: 0, y: 40 },
@@ -26,7 +33,7 @@ export default function SixthSection() {
 
   return (
     <section
-      className="bg-[#1172BA] flex flex-col items-center justify-center pt-6 pb-24 md:pt-1 md:pb-28 overflow-hidden select-none relative w-full font-nohemi"
+      className="bg-[#1172BA] flex flex-col items-center justify-center pt-6 pb-24 md:pt-1 md:pb-28 overflow-hidden select-none relative w-full"
     >
       <style>{`
         @keyframes marquee {
@@ -48,12 +55,18 @@ export default function SixthSection() {
         variants={fadeUpVariants}
         className="relative z-30 flex items-center justify-center gap-2 md:gap-3 text-center px-3 sm:px-4 py-2 mb-3 md:top-12 md:mb-19"
       >
-        <h2 className="font-nohemi font-semibold text-[24px] sm:text-[28px] md:text-[42px] font-bold leading-tight">
-          <span className="text-white">
-            {tBeranda("sixth", "title_1", "Packaging")}
+        <h2 className="text-[24px] sm:text-[28px] md:text-[42px] leading-tight">
+          <span
+            className="text-white"
+            style={cmsFontStyle(read, "title_1", { weight: "700" })}
+          >
+            {read("title_1", "Packaging")}
           </span>{" "}
-          <span className="text-[#A5E194]">
-            {tBeranda("sixth", "title_2", "Reveal")}
+          <span
+            className="text-[#A5E194]"
+            style={cmsFontStyle(read, "title_2", { weight: "700" })}
+          >
+            {read("title_2", "Reveal")}
           </span>
         </h2>
         <img
@@ -86,7 +99,7 @@ export default function SixthSection() {
         />
 
         {/* --- Label atas DESKTOP only --- */}
-        <div className="hidden md:flex absolute top-17 left-8 lg:left-35 w-full px-12 lg:px-60 z-30 justify-between items-center text-white text-lg font-medium pointer-events-none">
+        <div className="hidden md:flex absolute top-17 left-8 lg:left-35 w-full px-12 lg:px-60 z-30 justify-between items-center text-white text-lg pointer-events-none">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -94,8 +107,11 @@ export default function SixthSection() {
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
             className={`${labelBase} gap-1.5 translate-x-[calc(-40px-2%)] lg:translate-x-[calc(-70px-2%)] translate-y-[calc(-40px-3%)] lg:translate-y-[calc(-72px-3%)]`}
           >
-            <span className="text-[16px] font-medium leading-tight">
-              Purpose{"\n"}Prestige
+            <span
+              className="text-[16px] leading-tight whitespace-pre-line"
+              style={cmsFontStyle(read, "label1", { weight: "500" })}
+            >
+              {label1}
             </span>
             <img
               src="/src/images/section 6/purpose.png"
@@ -111,8 +127,11 @@ export default function SixthSection() {
             transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
             className={`${labelBase} gap-1.5 mr-8 lg:mr-80 translate-x-[calc(-80px+13%)] lg:translate-x-[calc(-245px+13%)] translate-y-[calc(-30px-2%)] lg:translate-y-[calc(-58px-2%)]`}
           >
-            <span className="text-[16px] font-medium leading-tight">
-              Rebel{"\n"}Brave
+            <span
+              className="text-[16px] leading-tight whitespace-pre-line"
+              style={cmsFontStyle(read, "label2", { weight: "500" })}
+            >
+              {label2}
             </span>
             <img
               src="/src/images/section 6/rabel.png"
@@ -146,8 +165,11 @@ export default function SixthSection() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className={`${labelBase} absolute left-[0%] top-[-28%] bg-[#0A5A96]/55 backdrop-blur-[2px] px-1.5 py-1 rounded-full`}
               >
-                <span className="text-[9px] font-medium leading-tight">
-                  Purpose{"\n"}Prestige
+                <span
+                  className="text-[9px] leading-tight whitespace-pre-line"
+                  style={cmsFontStyle(read, "label1", { weight: "500" })}
+                >
+                  {label1}
                 </span>
                 <img
                   src="/src/images/section 6/purpose.png"
@@ -163,8 +185,11 @@ export default function SixthSection() {
                 transition={{ duration: 0.5, delay: 0.3 }}
                 className={`${labelBase} absolute right-[31%] top-[-27%] bg-[#0A5A96]/55 backdrop-blur-[2px] px-1.5 py-1 rounded-full`}
               >
-                <span className="text-[9px] font-medium leading-tight">
-                  Rebel{"\n"}Brave
+                <span
+                  className="text-[9px] leading-tight whitespace-pre-line"
+                  style={cmsFontStyle(read, "label2", { weight: "500" })}
+                >
+                  {label2}
                 </span>
                 <img
                   src="/src/images/section 6/rabel.png"
@@ -180,8 +205,11 @@ export default function SixthSection() {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className={`${labelBase} absolute left-[17%] bottom-[-27%] bg-[#0A5A96]/55 backdrop-blur-[2px] px-1.5 py-1 rounded-full`}
               >
-                <span className="text-[9px] font-medium leading-tight">
-                  Peaceful{"\n"}Calm
+                <span
+                  className="text-[9px] leading-tight whitespace-pre-line"
+                  style={cmsFontStyle(read, "label3", { weight: "500" })}
+                >
+                  {label3}
                 </span>
                 <img
                   src="/src/images/section 6/peaceful.png"
@@ -197,8 +225,11 @@ export default function SixthSection() {
                 transition={{ duration: 0.5, delay: 0.5 }}
                 className={`${labelBase} absolute right-[8%] bottom-[-27%] bg-[#0A5A96]/55 backdrop-blur-[2px] px-1.5 py-1 rounded-full`}
               >
-                <span className="text-[9px] font-medium leading-tight">
-                  Sweet{"\n"}Shy
+                <span
+                  className="text-[9px] leading-tight whitespace-pre-line"
+                  style={cmsFontStyle(read, "label4", { weight: "500" })}
+                >
+                  {label4}
                 </span>
                 <img
                   src="/src/images/section 6/sweetshy.png"
@@ -211,7 +242,7 @@ export default function SixthSection() {
         </motion.div>
 
         {/* --- Label bawah DESKTOP only --- */}
-        <div className="hidden md:flex absolute bottom-18 left-8 lg:left-20 w-full px-12 lg:px-100 z-30 justify-between items-center text-white text-lg font-medium translate-x-[15px] pointer-events-none">
+        <div className="hidden md:flex absolute bottom-18 left-8 lg:left-20 w-full px-12 lg:px-100 z-30 justify-between items-center text-white text-lg translate-x-[15px] pointer-events-none">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -219,8 +250,11 @@ export default function SixthSection() {
             transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
             className={`${labelBase} gap-1.5 translate-x-[calc(2rem-12vw)] lg:translate-x-[calc(8.75rem-12vw)] translate-y-[calc(30px-4vh)] lg:translate-y-[calc(52px-4vh)]`}
           >
-            <span className="text-[16px] font-medium leading-tight">
-              Peaceful{"\n"}Calm
+            <span
+              className="text-[16px] leading-tight whitespace-pre-line"
+              style={cmsFontStyle(read, "label3", { weight: "500" })}
+            >
+              {label3}
             </span>
             <img
               src="/src/images/section 6/peaceful.png"
@@ -236,8 +270,11 @@ export default function SixthSection() {
             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
             className={`${labelBase} gap-1.5 mr-4 translate-x-[calc(-20px-2%)] lg:translate-x-[calc(-60px-2%)] translate-y-[calc(28px+9%-4vh)] lg:translate-y-[calc(48px+9%-4vh)]`}
           >
-            <span className="text-[16px] font-medium leading-tight">
-              Sweet{"\n"}Shy
+            <span
+              className="text-[16px] leading-tight whitespace-pre-line"
+              style={cmsFontStyle(read, "label4", { weight: "500" })}
+            >
+              {label4}
             </span>
             <img
               src="/src/images/section 6/sweetshy.png"
@@ -253,8 +290,11 @@ export default function SixthSection() {
         <div className="animate-marquee flex items-center gap-4 md:gap-8">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center gap-4 md:gap-8">
-              <span className="text-[11px] md:text-[14px] font-medium whitespace-nowrap text-white">
-                Every Version of Me
+              <span
+                className="text-[11px] md:text-[14px] whitespace-nowrap text-white"
+                style={cmsFontStyle(read, "marquee_text", { weight: "500" })}
+              >
+                {marqueeText}
               </span>
               <div className="relative w-[14px] h-[14px] md:w-[25px] md:h-[25px]">
                 <Image
@@ -265,8 +305,11 @@ export default function SixthSection() {
                 />
               </div>
 
-              <span className="text-[11px] md:text-[14px] font-medium whitespace-nowrap text-white">
-                Every Version of Me
+              <span
+                className="text-[11px] md:text-[14px] whitespace-nowrap text-white"
+                style={cmsFontStyle(read, "marquee_text", { weight: "500" })}
+              >
+                {marqueeText}
               </span>
               <div className="relative w-[14px] h-[14px] md:w-[25px] md:h-[25px]">
                 <Image
@@ -277,8 +320,11 @@ export default function SixthSection() {
                 />
               </div>
 
-              <span className="text-[11px] md:text-[14px] font-medium whitespace-nowrap text-white">
-                Every Version of Me
+              <span
+                className="text-[11px] md:text-[14px] whitespace-nowrap text-white"
+                style={cmsFontStyle(read, "marquee_text", { weight: "500" })}
+              >
+                {marqueeText}
               </span>
               <div className="relative w-[14px] h-[14px] md:w-[25px] md:h-[25px]">
                 <Image
@@ -289,8 +335,11 @@ export default function SixthSection() {
                 />
               </div>
 
-              <span className="text-[11px] md:text-[14px] font-medium whitespace-nowrap text-white">
-                Every Version of Me
+              <span
+                className="text-[11px] md:text-[14px] whitespace-nowrap text-white"
+                style={cmsFontStyle(read, "marquee_text", { weight: "500" })}
+              >
+                {marqueeText}
               </span>
               <div className="relative w-[14px] h-[14px] md:w-[25px] md:h-[25px]">
                 <Image

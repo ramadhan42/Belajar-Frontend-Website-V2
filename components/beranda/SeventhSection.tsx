@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState, type CSSProperties } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCms } from "@/context/CmsContext";
+import { useLocale } from "@/context/LocaleContext";
 import { resolveCmsImage } from "@/lib/cms";
+import { cmsFontStyle } from "@/lib/cmsFonts";
+import { L } from "@/lib/localeText";
 
 interface NavModalState {
   isOpen: boolean;
@@ -13,60 +16,104 @@ interface NavModalState {
   message: string;
 }
 
-const PRODUCT_BADGES = [
+type ProductLabel = {
+  id: number;
+  key: "label1" | "label2" | "label3" | "label4";
+  textFallback: string;
+  titleFallback: string;
+  colorFallback: string;
+  leftFallback: string;
+  topFallback: string;
+};
+
+const PRODUCT_LABEL_DEFS: ProductLabel[] = [
   {
-    id: 4,
-    label: "Sweet",
-    title: "Sweet Shy",
-    labelColor: "text-[#DD74A5]",
-    position: "left-[47.5%] top-[-3%]",
-  },
-  {
-    id: 3,
-    label: "Rebel",
-    title: "Rebel Brave",
-    labelColor: "text-[#E33D35]",
-    position: "left-[26%] top-[15%]",
+    id: 1,
+    key: "label1",
+    textFallback: "Prestige",
+    titleFallback: "Purpose Prestige",
+    colorFallback: "#5CB2ED",
+    leftFallback: "61%",
+    topFallback: "33%",
   },
   {
     id: 2,
-    label: "Calm",
-    title: "Peaceful Calm",
-    labelColor: "text-[#5EA14A]",
-    position: "left-[82%] top-[15%]",
+    key: "label2",
+    textFallback: "Calm",
+    titleFallback: "Peaceful Calm",
+    colorFallback: "#5EA14A",
+    leftFallback: "82%",
+    topFallback: "15%",
   },
   {
-    id: 1,
-    label: "Prestige",
-    title: "Purpose Prestige",
-    labelColor: "text-[#5CB2ED]",
-    position: "left-[61%] top-[33%]",
+    id: 3,
+    key: "label3",
+    textFallback: "Rebel",
+    titleFallback: "Rebel Brave",
+    colorFallback: "#E33D35",
+    leftFallback: "26%",
+    topFallback: "15%",
+  },
+  {
+    id: 4,
+    key: "label4",
+    textFallback: "Sweet",
+    titleFallback: "Sweet Shy",
+    colorFallback: "#DD74A5",
+    leftFallback: "47.5%",
+    topFallback: "-3%",
   },
 ];
 
 function ProductBadge({
-  product,
+  label,
+  title,
+  color,
+  fontSize,
+  left,
+  right,
+  top,
+  bottom,
+  fontStyle,
   size = "desktop",
   onClick,
 }: {
-  product: (typeof PRODUCT_BADGES)[number];
+  label: string;
+  title: string;
+  color: string;
+  fontSize: string;
+  left: string;
+  right: string;
+  top: string;
+  bottom: string;
+  fontStyle?: CSSProperties;
   size?: "mobile" | "desktop";
   onClick: () => void;
 }) {
   const isMobile = size === "mobile";
+  const style: CSSProperties = {
+    color: color || undefined,
+    fontSize: fontSize || undefined,
+    left: left || undefined,
+    right: right || undefined,
+    top: top || undefined,
+    bottom: bottom || undefined,
+    ...fontStyle,
+  };
 
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={`Lihat detail ${product.title}`}
-      className={`s7-badge-hit absolute ${product.position} -translate-x-1/2 ${
+      aria-label={`Lihat detail ${title}`}
+      style={style}
+      className={`s7-badge-hit absolute -translate-x-1/2 ${
         isMobile
-          ? "-translate-y-[calc(100%+6px)] px-2.5 py-0.5 text-[9px]"
-          : "-translate-y-[calc(100%+10px)] px-3.5 lg:px-4 py-1 text-[13px] lg:text-[16px]"
-      } bg-white rounded-full shadow-md font-bold ${product.labelColor} whitespace-nowrap z-30 border-0 cursor-pointer`}
+          ? "-translate-y-[calc(100%+6px)] px-2.5 py-0.5"
+          : "-translate-y-[calc(100%+10px)] px-3.5 lg:px-4 py-1"
+      } bg-white rounded-full shadow-md whitespace-nowrap z-30 border-0 cursor-pointer pointer-events-auto`}
     >
-      {product.label}
+      {label}
     </button>
   );
 }
@@ -74,8 +121,11 @@ function ProductBadge({
 export default function SeventhSection() {
   const router = useRouter();
   const { tBeranda } = useCms();
+  const { locale } = useLocale();
+  const en = locale === "en";
+  const read = (key: string, fb = "") => tBeranda("seventh", key, fb);
   const productImg =
-    resolveCmsImage(tBeranda("seventh", "product_image", "")) ||
+    resolveCmsImage(read("product_image", "")) ||
     "/src/images/section 7/produk.png";
 
   const [navModal, setNavModal] = useState<NavModalState>({
@@ -85,13 +135,46 @@ export default function SeventhSection() {
     message: "",
   });
 
+  const productLabels = useMemo(() => {
+    const sectionRead = (key: string, fb = "") =>
+      tBeranda("seventh", key, fb);
+    return PRODUCT_LABEL_DEFS.map((def) => {
+      const k = def.key;
+      return {
+        id: def.id,
+        text: tBeranda("seventh", `${k}_text`, def.textFallback),
+        title: tBeranda("seventh", `${k}_title`, def.titleFallback),
+        color: tBeranda("seventh", `${k}_color`, def.colorFallback),
+        fsMobile: tBeranda("seventh", `${k}_fs_mobile`, "9px"),
+        fsDesktop: tBeranda("seventh", `${k}_fs_desktop`, "16px"),
+        leftMobile: tBeranda("seventh", `${k}_left_mobile`, def.leftFallback),
+        leftDesktop: tBeranda(
+          "seventh",
+          `${k}_left_desktop`,
+          def.leftFallback,
+        ),
+        rightMobile: tBeranda("seventh", `${k}_right_mobile`, ""),
+        rightDesktop: tBeranda("seventh", `${k}_right_desktop`, ""),
+        topMobile: tBeranda("seventh", `${k}_top_mobile`, def.topFallback),
+        topDesktop: tBeranda("seventh", `${k}_top_desktop`, def.topFallback),
+        bottomMobile: tBeranda("seventh", `${k}_bottom_mobile`, ""),
+        bottomDesktop: tBeranda("seventh", `${k}_bottom_desktop`, ""),
+        fontStyle: cmsFontStyle(sectionRead, k, { weight: "700" }),
+      };
+    });
+  }, [tBeranda]);
+
   const handleQuizRouting = (e: React.MouseEvent) => {
     e.preventDefault();
     setNavModal({
       isOpen: true,
       type: "loading",
-      title: "Kuis Persona",
-      message: "Mengarahkan ke halaman Kuis Karakteristik...",
+      title: L(locale, "Kuis Persona", "Persona Quiz"),
+      message: L(
+        locale,
+        "Mengarahkan ke halaman Kuis Karakteristik...",
+        "Taking you to the scent quiz...",
+      ),
     });
 
     setTimeout(() => {
@@ -105,7 +188,11 @@ export default function SeventhSection() {
       isOpen: true,
       type: "loading",
       title,
-      message: `Mengarahkan ke detail produk ${title}...`,
+      message: L(
+        locale,
+        `Mengarahkan ke detail produk ${title}...`,
+        `Taking you to ${title} details...`,
+      ),
     });
 
     setTimeout(() => {
@@ -176,32 +263,81 @@ export default function SeventhSection() {
           variants={itemVariants}
           className="flex flex-col justify-center items-center md:items-start gap-6 md:gap-8 text-center md:text-left"
         >
-          <h2 className="font-nohemi font-semibold text-[30px] sm:text-[36px] md:text-[48px] lg:text-[55px] leading-[1.12]">
-            <span className="text-[#1172BA]">
-              {tBeranda("seventh", "headline_1", "Temukan")}
-            </span>
-            <br />
-            <span className="text-[#DD74A5]">
-              {tBeranda("seventh", "headline_2", "aromamu")}
-            </span>
-            <br />
-            <span className="text-[#1172BA]">
-              {tBeranda("seventh", "headline_3", "dengan")}
-            </span>
-            <br />
-            <span className="text-[#1172BA]">
-              {tBeranda("seventh", "headline_4", "bermain")}{" "}
-            </span>
-            <span className="text-[#5EA14A]">
-              {tBeranda("seventh", "headline_5", "kuis")}
-            </span>
+          <h2 className="text-[30px] sm:text-[36px] md:text-[48px] lg:text-[55px] leading-[1.12]">
+            {en ? (
+              <>
+                <span
+                  className="text-[#1172BA]"
+                  style={cmsFontStyle(read, "en_l1", { weight: "600" })}
+                >
+                  {read("en_l1", "Find your")}
+                </span>
+                <br />
+                <span
+                  className="text-[#DD74A5]"
+                  style={cmsFontStyle(read, "en_l2", { weight: "600" })}
+                >
+                  {read("en_l2", "scent by")}
+                </span>
+                <br />
+                <span
+                  className="text-[#1172BA]"
+                  style={cmsFontStyle(read, "en_l3", { weight: "600" })}
+                >
+                  {read("en_l3", "playing the ")}
+                </span>
+                <span
+                  className="text-[#5EA14A]"
+                  style={cmsFontStyle(read, "en_l4", { weight: "600" })}
+                >
+                  {read("en_l4", "quiz")}
+                </span>
+              </>
+            ) : (
+              <>
+                <span
+                  className="text-[#1172BA]"
+                  style={cmsFontStyle(read, "headline_1", { weight: "600" })}
+                >
+                  {read("headline_1", "Temukan")}
+                </span>
+                <br />
+                <span
+                  className="text-[#DD74A5]"
+                  style={cmsFontStyle(read, "headline_2", { weight: "600" })}
+                >
+                  {read("headline_2", "aromamu")}
+                </span>
+                <br />
+                <span
+                  className="text-[#1172BA]"
+                  style={cmsFontStyle(read, "headline_3", { weight: "600" })}
+                >
+                  {read("headline_3", "dengan")}
+                </span>
+                <br />
+                <span
+                  className="text-[#1172BA]"
+                  style={cmsFontStyle(read, "headline_4", { weight: "600" })}
+                >
+                  {read("headline_4", "bermain")}{" "}
+                </span>
+                <span
+                  className="text-[#5EA14A]"
+                  style={cmsFontStyle(read, "headline_5", { weight: "600" })}
+                >
+                  {read("headline_5", "kuis")}
+                </span>
+              </>
+            )}
           </h2>
 
           <button
             onClick={handleQuizRouting}
-            className="relative z-50 cursor-pointer font-nohemi text-[15px] md:text-[22px] lg:text-[24px] text-white bg-[#1172BA] px-10 md:px-12 py-2.5 md:py-2.5 rounded-full shadow-md hover:scale-95 transition-all inline-flex items-center gap-2"
+            className="relative z-50 cursor-pointer text-[15px] md:text-[22px] lg:text-[24px] text-white bg-[#1172BA] px-10 md:px-12 py-2.5 md:py-2.5 rounded-full shadow-md hover:scale-95 transition-all inline-flex items-center gap-2"
+            style={cmsFontStyle(read, "cta_label", { weight: "600" })}
           >
-            {tBeranda("seventh", "cta_label", "Mulai Kuis")}
+            {read("cta_label", L(locale, "Mulai Kuis", "Start Quiz"))}
           </button>
         </motion.div>
       </motion.div>
@@ -222,10 +358,18 @@ export default function SeventhSection() {
                 alt="Produk Evomi"
                 className="w-full h-auto object-contain"
               />
-              {PRODUCT_BADGES.map((product) => (
+              {productLabels.map((product) => (
                 <ProductBadge
                   key={`mobile-${product.id}`}
-                  product={product}
+                  label={product.text}
+                  title={product.title}
+                  color={product.color}
+                  fontSize={product.fsMobile}
+                  left={product.leftMobile}
+                  right={product.rightMobile}
+                  top={product.topMobile}
+                  bottom={product.bottomMobile}
+                  fontStyle={product.fontStyle}
                   size="mobile"
                   onClick={() =>
                     handleProductClick(product.id, product.title)
@@ -261,10 +405,18 @@ export default function SeventhSection() {
             alt="Produk Evomi"
             className="w-full h-auto object-contain"
           />
-          {PRODUCT_BADGES.map((product) => (
+          {productLabels.map((product) => (
             <ProductBadge
               key={`desktop-${product.id}`}
-              product={product}
+              label={product.text}
+              title={product.title}
+              color={product.color}
+              fontSize={product.fsDesktop}
+              left={product.leftDesktop}
+              right={product.rightDesktop}
+              top={product.topDesktop}
+              bottom={product.bottomDesktop}
+              fontStyle={product.fontStyle}
               size="desktop"
               onClick={() => handleProductClick(product.id, product.title)}
             />

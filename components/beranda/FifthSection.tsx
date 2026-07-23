@@ -5,7 +5,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { useCms } from "@/context/CmsContext";
+import { useLocale } from "@/context/LocaleContext";
 import { resolveCmsImage } from "@/lib/cms";
+import { cmsFontStyle } from "@/lib/cmsFonts";
+import { L } from "@/lib/localeText";
 
 interface NavModalState {
   isOpen: boolean;
@@ -19,6 +22,8 @@ interface NavModalState {
 export default function FifthSection() {
   const router = useRouter();
   const { tBeranda } = useCms();
+  const { locale } = useLocale();
+  const read = (key: string, fb = "") => tBeranda("fifth", key, fb);
 
   const [navModal, setNavModal] = useState<NavModalState>({
     isOpen: false,
@@ -31,80 +36,92 @@ export default function FifthSection() {
     {
       id: 1,
       path:
-        resolveCmsImage(tBeranda("fifth", "card1_image", "")) ||
+        resolveCmsImage(read("card1_image", "")) ||
         "/src/images/section 5/purpose-prestige.png",
       imgBg: "bg-[#1172BA]",
       cardBg: "bg-[#9CD6FF]",
       textColor: "text-[#1172BA]",
-      badge: tBeranda("fifth", "card1_badge", "Optimis"),
-      title: tBeranda("fifth", "card1_title", "Purpose Prestige"),
-      desc: tBeranda(
-        "fifth",
+      badge: read("card1_badge", L(locale, "Optimis", "Optimistic")),
+      title: read("card1_title", "Purpose Prestige"),
+      desc: read(
         "card1_desc",
-        "Aroma yang merefleksikan ketenangan dan kejelasan tujuan.",
+        L(
+          locale,
+          "Aroma yang merefleksikan ketenangan dan kejelasan tujuan.",
+          "A scent that reflects calm and clarity of purpose.",
+        ),
       ),
       descColor: "text-[#1172BAB2]",
-      price: tBeranda("fifth", "card1_price", "Rp189.000"),
+      price: read("card1_price", "Rp189.000"),
       btnBg: "bg-[#1172BA]",
       hoverClass: "hover:-rotate-[3deg]",
     },
     {
       id: 2,
       path:
-        resolveCmsImage(tBeranda("fifth", "card2_image", "")) ||
+        resolveCmsImage(read("card2_image", "")) ||
         "/src/images/section 5/peaceful-calm.png",
       imgBg: "bg-[#5EA14A]",
       cardBg: "bg-[#C6F5B8]",
       textColor: "text-[#5EA14A]",
-      badge: tBeranda("fifth", "card2_badge", "Damai"),
-      title: tBeranda("fifth", "card2_title", "Peaceful Calm"),
-      desc: tBeranda(
-        "fifth",
+      badge: read("card2_badge", L(locale, "Damai", "Peaceful")),
+      title: read("card2_title", "Peaceful Calm"),
+      desc: read(
         "card2_desc",
-        "Aroma menenangkan yang menyatu dengan diri.",
+        L(
+          locale,
+          "Aroma menenangkan yang menyatu dengan diri.",
+          "A calming scent that blends with who you are.",
+        ),
       ),
       descColor: "text-[#5EA14A]",
-      price: tBeranda("fifth", "card2_price", "Rp199.000"),
+      price: read("card2_price", "Rp199.000"),
       btnBg: "bg-[#5EA14A]",
       hoverClass: "hover:rotate-[3deg]",
     },
     {
       id: 3,
       path:
-        resolveCmsImage(tBeranda("fifth", "card3_image", "")) ||
+        resolveCmsImage(read("card3_image", "")) ||
         "/src/images/section 5/rabel-brave.png",
       imgBg: "bg-[#E33D35]",
       cardBg: "bg-[#FFBBB5]",
       textColor: "text-[#E33D35]",
-      badge: tBeranda("fifth", "card3_badge", "Berani"),
-      title: tBeranda("fifth", "card3_title", "Rebel Brave"),
-      desc: tBeranda(
-        "fifth",
+      badge: read("card3_badge", L(locale, "Berani", "Brave")),
+      title: read("card3_title", "Rebel Brave"),
+      desc: read(
         "card3_desc",
-        "Keberanian dan semangat untuk mengekspresikan diri.",
+        L(
+          locale,
+          "Keberanian dan semangat untuk mengekspresikan diri.",
+          "Courage and spirit to express yourself.",
+        ),
       ),
       descColor: "text-[#E33D35]",
-      price: tBeranda("fifth", "card3_price", "Rp179.000"),
+      price: read("card3_price", "Rp179.000"),
       btnBg: "bg-[#E33D35]",
       hoverClass: "hover:-rotate-[3deg]",
     },
     {
       id: 4,
       path:
-        resolveCmsImage(tBeranda("fifth", "card4_image", "")) ||
+        resolveCmsImage(read("card4_image", "")) ||
         "/src/images/section 5/sweet-shy.png",
       imgBg: "bg-[#DD74A5]",
       cardBg: "bg-[#F5D7E7]",
       textColor: "text-[#DD74A5]",
-      badge: tBeranda("fifth", "card4_badge", "Manis"),
-      title: tBeranda("fifth", "card4_title", "Sweet Shy"),
-      desc: tBeranda(
-        "fifth",
+      badge: read("card4_badge", L(locale, "Manis", "Sweet")),
+      title: read("card4_title", "Sweet Shy"),
+      desc: read(
         "card4_desc",
-        "Aroma menenangkan yang menyatu dengan diri.",
+        L(
+          locale,
+          "Aroma menenangkan yang menyatu dengan diri.",
+          "A gentle scent that feels close to you.",
+        ),
       ),
       descColor: "text-[#DD74A5]",
-      price: tBeranda("fifth", "card4_price", "Rp189.000"),
+      price: read("card4_price", "Rp189.000"),
       btnBg: "bg-[#DD74A5]",
       hoverClass: "hover:rotate-[3deg]",
     },
@@ -132,8 +149,12 @@ export default function FifthSection() {
     setNavModal({
       isOpen: true,
       type: "loading",
-      title: "Katalog Produk",
-      message: "Mengarahkan ke halaman belanja Evomi...",
+      title: L(locale, "Katalog Produk", "Product Catalog"),
+      message: L(
+        locale,
+        "Mengarahkan ke halaman belanja Evomi...",
+        "Taking you to the Evomi shop...",
+      ),
     });
 
     setTimeout(() => {
@@ -147,7 +168,11 @@ export default function FifthSection() {
       isOpen: true,
       type: "loading",
       title: title,
-      message: `Mengarahkan ke detail produk ${title}...`,
+      message: L(
+        locale,
+        `Mengarahkan ke detail produk ${title}...`,
+        `Taking you to ${title} details...`,
+      ),
     });
 
     setTimeout(() => {
@@ -204,12 +229,32 @@ export default function FifthSection() {
         transition={{ duration: 0.7, ease: "easeOut" }}
         className="relative z-10 mb-6 md:mb-10"
       >
-        <h2 className="font-nohemi text-[26px] sm:text-[32px] md:text-[38px] font-bold mb-2 md:mb-3 leading-tight">
-          <span className="text-[#1172BA]">Khas </span>
-          <span className="text-[#FF8A84]">Evomi</span>
+        <h2 className="text-[26px] sm:text-[32px] md:text-[38px] mb-2 md:mb-3 leading-tight">
+          <span
+            className="text-[#1172BA]"
+            style={cmsFontStyle(read, "title_1", { weight: "700" })}
+          >
+            {read("title_1", L(locale, "Khas ", "Made by "))}
+          </span>
+          <span
+            className="text-[#FF8A84]"
+            style={cmsFontStyle(read, "title_2", { weight: "700" })}
+          >
+            {read("title_2", "Evomi")}
+          </span>
         </h2>
-        <p className="font-nohemi text-[12px] sm:text-[14px] md:text-[16px] text-[#5D5D5D] max-w-xl mx-auto px-2 font-normal leading-relaxed">
-          Empat karakter aroma yang mewakili sisi berbeda dari dirimu.
+        <p
+          className="text-[12px] sm:text-[14px] md:text-[16px] text-[#5D5D5D] max-w-xl mx-auto px-2 leading-relaxed"
+          style={cmsFontStyle(read, "subtitle")}
+        >
+          {read(
+            "subtitle",
+            L(
+              locale,
+              "Empat karakter aroma yang mewakili sisi berbeda dari dirimu.",
+              "Four scent characters that represent different sides of you.",
+            ),
+          )}
         </p>
       </motion.div>
 
@@ -226,7 +271,7 @@ export default function FifthSection() {
             key={product.id}
             variants={cardVariants}
             onClick={() => handleProductClick(product.id, product.title)}
-            className={`font-nohemi relative w-full max-w-[260px] mx-auto rounded-[18px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-black/5 hover:z-20 cursor-pointer ${product.hoverClass}`}
+            className={`relative w-full max-w-[260px] mx-auto rounded-[18px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-black/5 hover:z-20 cursor-pointer ${product.hoverClass}`}
           >
             {/* Area gambar */}
             <div
@@ -234,7 +279,10 @@ export default function FifthSection() {
             >
               <div className="absolute top-2.5 left-2.5 md:top-3.5 md:left-3.5 z-20">
                 <span
-                  className={`bg-white px-2.5 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-[12px] font-bold shadow-sm ${product.textColor}`}
+                  className={`bg-white px-2.5 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-[12px] shadow-sm ${product.textColor}`}
+                  style={cmsFontStyle(read, `card${product.id}_badge`, {
+                    weight: "700",
+                  })}
                 >
                   {product.badge}
                 </span>
@@ -266,19 +314,28 @@ export default function FifthSection() {
               className={`relative p-3 sm:p-3.5 md:p-4 flex flex-col flex-grow text-left ${product.cardBg} z-20 pt-5 md:pt-6`}
             >
               <h3
-                className={`text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] font-bold mb-1 md:mb-1.5 ${product.textColor} leading-tight`}
+                className={`text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] mb-1 md:mb-1.5 ${product.textColor} leading-tight`}
+                style={cmsFontStyle(read, `card${product.id}_title`, {
+                  weight: "700",
+                })}
               >
                 {product.title}
               </h3>
               <p
-                className={`text-[10px] md:text-[11px] font-medium mb-3 md:mb-4 line-clamp-2 leading-snug ${product.descColor}`}
+                className={`text-[10px] md:text-[11px] mb-3 md:mb-4 line-clamp-2 leading-snug ${product.descColor}`}
+                style={cmsFontStyle(read, `card${product.id}_desc`, {
+                  weight: "500",
+                })}
               >
                 {product.desc}
               </p>
 
               <div className="flex justify-between items-center mt-auto gap-2">
                 <span
-                  className={`text-[11px] md:text-[12px] font-bold ${product.textColor}`}
+                  className={`text-[11px] md:text-[12px] ${product.textColor}`}
+                  style={cmsFontStyle(read, `card${product.id}_price`, {
+                    weight: "700",
+                  })}
                 >
                   {product.price}
                 </span>
@@ -318,7 +375,8 @@ export default function FifthSection() {
       >
         <button
           onClick={handleBelanjaAction}
-          className="font-nohemi group flex items-center justify-center gap-2 md:gap-3 bg-[#1172BA] text-white text-[13px] md:text-[14px] font-bold px-7 py-2.5 md:px-10 md:py-3 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 shadow-md"
+          className="group flex items-center justify-center gap-2 md:gap-3 bg-[#1172BA] text-white text-[13px] md:text-[14px] px-7 py-2.5 md:px-10 md:py-3 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 shadow-md"
+          style={cmsFontStyle(read, "cta_label", { weight: "700" })}
         >
           <div className="relative w-[16px] h-[16px] md:w-[19px] md:h-[19px]">
             <Image
@@ -328,7 +386,7 @@ export default function FifthSection() {
               className="object-contain brightness-0 invert"
             />
           </div>
-          Lihat Koleksi &rarr;
+          {read("cta_label", L(locale, "Lihat Koleksi", "View Collection"))}
         </button>
       </motion.div>
 

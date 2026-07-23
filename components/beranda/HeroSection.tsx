@@ -16,6 +16,11 @@ import {
   HERO_STYLE_DEFAULTS,
   HeroStyleKey,
 } from "@/lib/heroCmsStyles";
+import {
+  resolveCmsFontFamily,
+  resolveCmsFontStyle,
+  resolveCmsFontWeight,
+} from "@/lib/cmsFonts";
 
 /** Keep hero PNGs close to source fidelity when scaled down. */
 const HERO_IMG_QUALITY = 100;
@@ -157,12 +162,24 @@ export default function HeroSection() {
   );
 
   const heroCssVars = {
+    "--hero-hl1-ff": resolveCmsFontFamily(styleVal("headline_1_font_family")),
+    "--hero-hl1-fw": resolveCmsFontWeight(styleVal("headline_1_font_weight"), "600"),
+    "--hero-hl1-fst": resolveCmsFontStyle(styleVal("headline_1_font_style")),
     "--hero-hl1-fs-m": styleVal("headline_1_fs_mobile"),
     "--hero-hl1-fs-d": styleVal("headline_1_fs_desktop"),
+    "--hero-hl2-ff": resolveCmsFontFamily(styleVal("headline_2_font_family")),
+    "--hero-hl2-fw": resolveCmsFontWeight(styleVal("headline_2_font_weight"), "600"),
+    "--hero-hl2-fst": resolveCmsFontStyle(styleVal("headline_2_font_style")),
     "--hero-hl2-fs-m": styleVal("headline_2_fs_mobile"),
     "--hero-hl2-fs-d": styleVal("headline_2_fs_desktop"),
+    "--hero-hl3-ff": resolveCmsFontFamily(styleVal("headline_3_font_family")),
+    "--hero-hl3-fw": resolveCmsFontWeight(styleVal("headline_3_font_weight"), "600"),
+    "--hero-hl3-fst": resolveCmsFontStyle(styleVal("headline_3_font_style")),
     "--hero-hl3-fs-m": styleVal("headline_3_fs_mobile"),
     "--hero-hl3-fs-d": styleVal("headline_3_fs_desktop"),
+    "--hero-hl4-ff": resolveCmsFontFamily(styleVal("headline_4_font_family")),
+    "--hero-hl4-fw": resolveCmsFontWeight(styleVal("headline_4_font_weight"), "600"),
+    "--hero-hl4-fst": resolveCmsFontStyle(styleVal("headline_4_font_style")),
     "--hero-hl4-fs-m": styleVal("headline_4_fs_mobile"),
     "--hero-hl4-fs-d": styleVal("headline_4_fs_desktop"),
     "--hero-hl-top-m": styleVal("headline_pos_top_mobile"),
@@ -170,6 +187,9 @@ export default function HeroSection() {
     "--hero-hl-left-m": styleVal("headline_pos_left_mobile"),
     "--hero-hl-left-d": styleVal("headline_pos_left_desktop"),
 
+    "--hero-badge-l-ff": resolveCmsFontFamily(styleVal("badge_left_font_family")),
+    "--hero-badge-l-fw": resolveCmsFontWeight(styleVal("badge_left_font_weight"), "700"),
+    "--hero-badge-l-fst": resolveCmsFontStyle(styleVal("badge_left_font_style")),
     "--hero-badge-l-fs-m": styleVal("badge_left_fs_mobile"),
     "--hero-badge-l-fs-d": styleVal("badge_left_fs_desktop"),
     "--hero-badge-l-icon-m": styleVal("badge_left_icon_size_mobile"),
@@ -179,6 +199,9 @@ export default function HeroSection() {
     "--hero-badge-l-top-m": styleVal("badge_left_top_mobile"),
     "--hero-badge-l-top-d": styleVal("badge_left_top_desktop"),
 
+    "--hero-badge-r-ff": resolveCmsFontFamily(styleVal("badge_right_font_family")),
+    "--hero-badge-r-fw": resolveCmsFontWeight(styleVal("badge_right_font_weight"), "700"),
+    "--hero-badge-r-fst": resolveCmsFontStyle(styleVal("badge_right_font_style")),
     "--hero-badge-r-fs-m": styleVal("badge_right_fs_mobile"),
     "--hero-badge-r-fs-d": styleVal("badge_right_fs_desktop"),
     "--hero-badge-r-icon-m": styleVal("badge_right_icon_size_mobile"),
@@ -241,6 +264,9 @@ export default function HeroSection() {
     "--hero-p4-rot-m": degCss(styleVal("product4_rotate_mobile")),
     "--hero-p4-rot-d": degCss(styleVal("product4_rotate_desktop")),
 
+    "--hero-marquee-ff": resolveCmsFontFamily(styleVal("marquee_font_family")),
+    "--hero-marquee-fw": resolveCmsFontWeight(styleVal("marquee_font_weight"), "500"),
+    "--hero-marquee-fst": resolveCmsFontStyle(styleVal("marquee_font_style")),
     "--hero-marquee-fs-m": styleVal("marquee_fs_mobile"),
     "--hero-marquee-fs-d": styleVal("marquee_fs_desktop"),
     "--hero-div-icon1-m": styleVal("divider_icon_1_size_mobile"),
@@ -405,8 +431,6 @@ export default function HeroSection() {
         }
 
         .hero-headline {
-          font-family: inherit;
-          font-weight: 600;
           line-height: 1.1;
           margin: 0;
           padding: 0;
@@ -417,10 +441,30 @@ export default function HeroSection() {
           min-height: calc(var(--hero-hl1-fs-m) * 1.1 * 2);
           box-sizing: content-box;
         }
-        .hero-hl-1 { font-size: var(--hero-hl1-fs-m); }
-        .hero-hl-2 { font-size: var(--hero-hl2-fs-m); }
-        .hero-hl-3 { font-size: var(--hero-hl3-fs-m); }
-        .hero-hl-4 { font-size: var(--hero-hl4-fs-m); }
+        .hero-hl-1 {
+          font-family: var(--hero-hl1-ff);
+          font-weight: var(--hero-hl1-fw);
+          font-style: var(--hero-hl1-fst);
+          font-size: var(--hero-hl1-fs-m);
+        }
+        .hero-hl-2 {
+          font-family: var(--hero-hl2-ff);
+          font-weight: var(--hero-hl2-fw);
+          font-style: var(--hero-hl2-fst);
+          font-size: var(--hero-hl2-fs-m);
+        }
+        .hero-hl-3 {
+          font-family: var(--hero-hl3-ff);
+          font-weight: var(--hero-hl3-fw);
+          font-style: var(--hero-hl3-fst);
+          font-size: var(--hero-hl3-fs-m);
+        }
+        .hero-hl-4 {
+          font-family: var(--hero-hl4-ff);
+          font-weight: var(--hero-hl4-fw);
+          font-style: var(--hero-hl4-fst);
+          font-size: var(--hero-hl4-fs-m);
+        }
 
         .hero-visual-stage {
           contain: layout;
@@ -430,6 +474,9 @@ export default function HeroSection() {
         .hero-badge-left {
           left: var(--hero-badge-l-left-m);
           top: var(--hero-badge-l-top-m);
+          font-family: var(--hero-badge-l-ff);
+          font-weight: var(--hero-badge-l-fw);
+          font-style: var(--hero-badge-l-fst);
           font-size: var(--hero-badge-l-fs-m);
           min-width: max-content;
         }
@@ -441,6 +488,9 @@ export default function HeroSection() {
         .hero-badge-right {
           right: var(--hero-badge-r-right-m);
           bottom: var(--hero-badge-r-bottom-m);
+          font-family: var(--hero-badge-r-ff);
+          font-weight: var(--hero-badge-r-fw);
+          font-style: var(--hero-badge-r-fst);
           font-size: var(--hero-badge-r-fs-m);
           min-width: max-content;
         }
@@ -486,6 +536,9 @@ export default function HeroSection() {
           bottom: var(--hero-div-bottom-m);
         }
         .hero-marquee-text {
+          font-family: var(--hero-marquee-ff);
+          font-weight: var(--hero-marquee-fw);
+          font-style: var(--hero-marquee-fst);
           font-size: var(--hero-marquee-fs-m);
         }
         .hero-div-icon-1 {
@@ -616,7 +669,7 @@ export default function HeroSection() {
       >
         <motion.h1
           animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          className="hero-headline font-nohemi"
+          className="hero-headline"
         >
           <span className="hero-hl-1 locale-shimmer-text" style={{ color: headlineColors[1] }}>
             {tBeranda("hero", "headline_1", "Temukan")}{" "}
@@ -820,7 +873,7 @@ export default function HeroSection() {
                 : { opacity: 0, scale: 0.7, rotate: 15 }
             }
             transition={{ duration: 0.5, delay: 0.8 }}
-            className="hero-badge-left origin-bottom-right cursor-pointer absolute inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
+            className="hero-badge-left origin-bottom-right cursor-pointer absolute inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
           >
             <div className="hero-badge-left-icon relative shrink-0">
               <Image
@@ -845,7 +898,7 @@ export default function HeroSection() {
                 : { opacity: 0, scale: 0.7, rotate: -12 }
             }
             transition={{ duration: 0.5, delay: 0.9 }}
-            className="hero-badge-right origin-bottom-left cursor-pointer absolute inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
+            className="hero-badge-right origin-bottom-left cursor-pointer absolute inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
           >
             <div className="hero-badge-right-icon relative shrink-0">
               <Image
@@ -927,7 +980,7 @@ export default function HeroSection() {
                   key={`${i}-${iconIdx}`}
                   className="flex items-center gap-4 sm:gap-6 md:gap-8"
                 >
-                  <span className="hero-marquee-text locale-shimmer-text font-medium whitespace-nowrap text-white">
+                  <span className="hero-marquee-text locale-shimmer-text whitespace-nowrap text-white">
                     {marqueeText}
                   </span>
                   <div
