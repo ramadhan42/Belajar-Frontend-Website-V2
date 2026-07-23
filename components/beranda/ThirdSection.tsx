@@ -81,8 +81,8 @@ export default function ThirdSection() {
             className="text-white"
             style={cmsFontStyle(read, "title_1", { weight: "700" })}
           >
-            {read("title_1", "Brand ")}
-          </span>
+            {read("title_1", "Brand")}
+          </span>{" "}
           <span
             className="text-[#90EE90]"
             style={cmsFontStyle(read, "title_2", { weight: "700" })}

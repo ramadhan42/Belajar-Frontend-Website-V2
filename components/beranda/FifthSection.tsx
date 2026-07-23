@@ -234,8 +234,8 @@ export default function FifthSection() {
             className="text-[#1172BA]"
             style={cmsFontStyle(read, "title_1", { weight: "700" })}
           >
-            {read("title_1", L(locale, "Khas ", "Made by "))}
-          </span>
+            {read("title_1", L(locale, "Khas", "Made by"))}
+          </span>{" "}
           <span
             className="text-[#FF8A84]"
             style={cmsFontStyle(read, "title_2", { weight: "700" })}
