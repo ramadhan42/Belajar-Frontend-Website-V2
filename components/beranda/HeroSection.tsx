@@ -7,68 +7,253 @@ import {
   useTransform,
   useMotionValueEvent,
 } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo, CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { useCms } from "@/context/CmsContext";
+import { useLocale } from "@/context/LocaleContext";
+import { resolveCmsImage } from "@/lib/cms";
+import {
+  HERO_STYLE_DEFAULTS,
+  HeroStyleKey,
+} from "@/lib/heroCmsStyles";
 
-const HERO_PRODUCTS = [
+/** Keep hero PNGs close to source fidelity when scaled down. */
+const HERO_IMG_QUALITY = 100;
+
+function isSvgSrc(src: string) {
+  return /\.svg(\?|$)/i.test(src);
+}
+
+const HERO_PRODUCT_LAYOUT = [
   {
     id: 1,
-    title: "Purpose Prestige",
-    image: "/src/images/section 1/botol-purpose-prestige.png",
-    labelImage: "/src/images/section 1/purpose-prestige.png",
+    cmsKey: "product1" as const,
+    titleFallback: "Purpose Prestige",
+    imageFallback: "/src/images/section 1/botol-purpose-prestige.png",
+    labelFallback: "/src/images/section 1/purpose-prestige.png",
     labelClass:
       "left-[30%] md:left-[31%] top-[2%] md:top-[4%] w-[9.3%] h-[9.3%] md:w-[8.2%] md:h-[8.2%] hover:-rotate-[5deg]",
-    wrapClass: "left-[19.7%] top-[22.5%]",
-    rotateClass: "rotate-3",
     floatDelay: 1.1,
-    zClass: "",
+    zClass: "z-20",
+    bgClass: "bg-transparent",
   },
   {
     id: 3,
-    title: "Rebel Brave",
-    image: "/src/images/section 1/botol-rabel-brave.png",
-    labelImage: "/src/images/section 1/rabel-brave.png",
+    cmsKey: "product2" as const,
+    titleFallback: "Rebel Brave",
+    imageFallback: "/src/images/section 1/botol-rabel-brave.png",
+    labelFallback: "/src/images/section 1/rabel-brave.png",
     labelClass:
       "left-[43%] top-[10.8%] md:top-[12.8%] w-[7.2%] h-[7.2%] md:w-[6.2%] md:h-[6.2%] hover:-rotate-[5deg]",
-    wrapClass: "left-[10.7%] top-[32%]",
-    rotateClass: "-rotate-3",
     floatDelay: 1.4,
     zClass: "z-30",
+    bgClass: "bg-transparent",
   },
   {
     id: 2,
-    title: "Peaceful Calm",
-    image: "/src/images/section 1/botol-peaceful-calm.png",
-    labelImage: "/src/images/section 1/peaceful-calm.png",
+    cmsKey: "product3" as const,
+    titleFallback: "Peaceful Calm",
+    imageFallback: "/src/images/section 1/botol-peaceful-calm.png",
+    labelFallback: "/src/images/section 1/peaceful-calm.png",
     labelClass:
-      "right-[38%] top-[7%] md:top-[3.8%] w-[8.2%] h-[8.2%] md:w-[7.2%] md:h-[7.2%] hover:rotate-[5deg]",
-    wrapClass: "top-[23%] right-[1%]",
-    rotateClass: "rotate-4",
+      "right-[38%] top-[10%] md:top-[6.8%] w-[8.2%] h-[8.2%] md:w-[7.2%] md:h-[7.2%] hover:rotate-[5deg]",
     floatDelay: 1.7,
     zClass: "",
+    bgClass: "bg-transparent",
   },
   {
     id: 4,
-    title: "Sweet Shy",
-    image: "/src/images/section 1/botol-sweet-shy.png",
-    labelImage: "/src/images/section 1/sweet-shy.png",
+    cmsKey: "product4" as const,
+    titleFallback: "Sweet Shy",
+    imageFallback: "/src/images/section 1/botol-sweet-shy.png",
+    labelFallback: "/src/images/section 1/sweet-shy.png",
     labelClass:
       "right-[27%] md:right-[28%] top-[10.4%] md:top-[10.8%] w-[7.2%] h-[7.2%] md:w-[6.2%] md:h-[6.2%] hover:rotate-[5deg]",
-    wrapClass: "left-[-9.5%] top-[27%]",
-    rotateClass: "-rotate-4",
     floatDelay: 2.0,
     zClass: "z-30",
+    bgClass: "bg-transparent",
   },
 ];
+
+const DIVIDER_ICON_FALLBACKS = [
+  "/src/images/section 1/purpose.png",
+  "/src/images/section 1/peaceful.png",
+  "/src/images/section 1/rab.png",
+  "/src/images/section 1/sweetshy.png",
+];
+
+function scaleCss(value: string) {
+  const n = Number.parseFloat(value);
+  if (Number.isFinite(n)) return String(n / 100);
+  return "1";
+}
+
+function degCss(value: string) {
+  const n = Number.parseFloat(value);
+  if (Number.isFinite(n)) return `${n}deg`;
+  return "0deg";
+}
 
 export default function HeroSection() {
   const router = useRouter();
   const { tBeranda } = useCms();
+  const { isLocaleLoading } = useLocale();
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
   const [isScrollVisible, setIsScrollVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+
+  const styleVal = (key: HeroStyleKey) => {
+    const raw = tBeranda("hero", key, HERO_STYLE_DEFAULTS[key]);
+    const trimmed = raw.trim();
+    return trimmed || HERO_STYLE_DEFAULTS[key];
+  };
+
+  const products = useMemo(
+    () =>
+      HERO_PRODUCT_LAYOUT.map((layout) => ({
+        ...layout,
+        title: tBeranda(
+          "hero",
+          `${layout.cmsKey}_badge_label`,
+          layout.titleFallback,
+        ),
+        image:
+          resolveCmsImage(
+            tBeranda("hero", `${layout.cmsKey}_image`, ""),
+          ) || layout.imageFallback,
+        labelImage:
+          resolveCmsImage(
+            tBeranda("hero", `${layout.cmsKey}_badge_icon`, ""),
+          ) || layout.labelFallback,
+      })),
+    [tBeranda],
+  );
+
+  const headlineColors = {
+    1: tBeranda("hero", "headline_1_color", "#FFFFFF"),
+    2: tBeranda("hero", "headline_2_color", "#5CB2ED"),
+    3: tBeranda("hero", "headline_3_color", "#FFA3CB"),
+    4: tBeranda("hero", "headline_4_color", "#FFFFFF"),
+  };
+
+  const badgeLeftIcon =
+    resolveCmsImage(tBeranda("hero", "badge_left_icon", "")) ||
+    "/src/images/section 1/badge-left-star.svg";
+  const badgeRightIcon =
+    resolveCmsImage(tBeranda("hero", "badge_right_icon", "")) ||
+    "/src/images/section 1/recycle.png";
+
+  const dividerIcons = DIVIDER_ICON_FALLBACKS.map(
+    (fallback, i) =>
+      resolveCmsImage(tBeranda("hero", `divider_icon_${i + 1}`, "")) ||
+      fallback,
+  );
+
+  const marqueeText = tBeranda(
+    "hero",
+    "marquee_text",
+    "Every Version of Me",
+  );
+
+  const heroCssVars = {
+    "--hero-hl1-fs-m": styleVal("headline_1_fs_mobile"),
+    "--hero-hl1-fs-d": styleVal("headline_1_fs_desktop"),
+    "--hero-hl2-fs-m": styleVal("headline_2_fs_mobile"),
+    "--hero-hl2-fs-d": styleVal("headline_2_fs_desktop"),
+    "--hero-hl3-fs-m": styleVal("headline_3_fs_mobile"),
+    "--hero-hl3-fs-d": styleVal("headline_3_fs_desktop"),
+    "--hero-hl4-fs-m": styleVal("headline_4_fs_mobile"),
+    "--hero-hl4-fs-d": styleVal("headline_4_fs_desktop"),
+    "--hero-hl-top-m": styleVal("headline_pos_top_mobile"),
+    "--hero-hl-top-d": styleVal("headline_pos_top_desktop"),
+    "--hero-hl-left-m": styleVal("headline_pos_left_mobile"),
+    "--hero-hl-left-d": styleVal("headline_pos_left_desktop"),
+
+    "--hero-badge-l-fs-m": styleVal("badge_left_fs_mobile"),
+    "--hero-badge-l-fs-d": styleVal("badge_left_fs_desktop"),
+    "--hero-badge-l-icon-m": styleVal("badge_left_icon_size_mobile"),
+    "--hero-badge-l-icon-d": styleVal("badge_left_icon_size_desktop"),
+    "--hero-badge-l-left-m": styleVal("badge_left_left_mobile"),
+    "--hero-badge-l-left-d": styleVal("badge_left_left_desktop"),
+    "--hero-badge-l-top-m": styleVal("badge_left_top_mobile"),
+    "--hero-badge-l-top-d": styleVal("badge_left_top_desktop"),
+
+    "--hero-badge-r-fs-m": styleVal("badge_right_fs_mobile"),
+    "--hero-badge-r-fs-d": styleVal("badge_right_fs_desktop"),
+    "--hero-badge-r-icon-m": styleVal("badge_right_icon_size_mobile"),
+    "--hero-badge-r-icon-d": styleVal("badge_right_icon_size_desktop"),
+    "--hero-badge-r-right-m": styleVal("badge_right_right_mobile"),
+    "--hero-badge-r-right-d": styleVal("badge_right_right_desktop"),
+    "--hero-badge-r-bottom-m": styleVal("badge_right_bottom_mobile"),
+    "--hero-badge-r-bottom-d": styleVal("badge_right_bottom_desktop"),
+
+    "--hero-wave-l-left-m": styleVal("wave_left_left_mobile"),
+    "--hero-wave-l-left-d": styleVal("wave_left_left_desktop"),
+    "--hero-wave-l-top-m": styleVal("wave_left_top_mobile"),
+    "--hero-wave-l-top-d": styleVal("wave_left_top_desktop"),
+    "--hero-wave-r-right-m": styleVal("wave_right_right_mobile"),
+    "--hero-wave-r-right-d": styleVal("wave_right_right_desktop"),
+    "--hero-wave-r-top-m": styleVal("wave_right_top_mobile"),
+    "--hero-wave-r-top-d": styleVal("wave_right_top_desktop"),
+
+    "--hero-p1-size-m": scaleCss(styleVal("product1_size_mobile")),
+    "--hero-p1-size-d": scaleCss(styleVal("product1_size_desktop")),
+    "--hero-p1-left-m": styleVal("product1_left_mobile") || "auto",
+    "--hero-p1-left-d": styleVal("product1_left_desktop") || "auto",
+    "--hero-p1-top-m": styleVal("product1_top_mobile"),
+    "--hero-p1-top-d": styleVal("product1_top_desktop"),
+    "--hero-p1-right-m": styleVal("product1_right_mobile") || "auto",
+    "--hero-p1-right-d": styleVal("product1_right_desktop") || "auto",
+    "--hero-p1-rot-m": degCss(styleVal("product1_rotate_mobile")),
+    "--hero-p1-rot-d": degCss(styleVal("product1_rotate_desktop")),
+
+    "--hero-p2-size-m": scaleCss(styleVal("product2_size_mobile")),
+    "--hero-p2-size-d": scaleCss(styleVal("product2_size_desktop")),
+    "--hero-p2-left-m": styleVal("product2_left_mobile") || "auto",
+    "--hero-p2-left-d": styleVal("product2_left_desktop") || "auto",
+    "--hero-p2-top-m": styleVal("product2_top_mobile"),
+    "--hero-p2-top-d": styleVal("product2_top_desktop"),
+    "--hero-p2-right-m": styleVal("product2_right_mobile") || "auto",
+    "--hero-p2-right-d": styleVal("product2_right_desktop") || "auto",
+    "--hero-p2-rot-m": degCss(styleVal("product2_rotate_mobile")),
+    "--hero-p2-rot-d": degCss(styleVal("product2_rotate_desktop")),
+
+    "--hero-p3-size-m": scaleCss(styleVal("product3_size_mobile")),
+    "--hero-p3-size-d": scaleCss(styleVal("product3_size_desktop")),
+    "--hero-p3-left-m": styleVal("product3_left_mobile") || "auto",
+    "--hero-p3-left-d": styleVal("product3_left_desktop") || "auto",
+    "--hero-p3-top-m": styleVal("product3_top_mobile"),
+    "--hero-p3-top-d": styleVal("product3_top_desktop"),
+    "--hero-p3-right-m": styleVal("product3_right_mobile") || "auto",
+    "--hero-p3-right-d": styleVal("product3_right_desktop") || "auto",
+    "--hero-p3-rot-m": degCss(styleVal("product3_rotate_mobile")),
+    "--hero-p3-rot-d": degCss(styleVal("product3_rotate_desktop")),
+
+    "--hero-p4-size-m": scaleCss(styleVal("product4_size_mobile")),
+    "--hero-p4-size-d": scaleCss(styleVal("product4_size_desktop")),
+    "--hero-p4-left-m": styleVal("product4_left_mobile") || "auto",
+    "--hero-p4-left-d": styleVal("product4_left_desktop") || "auto",
+    "--hero-p4-top-m": styleVal("product4_top_mobile"),
+    "--hero-p4-top-d": styleVal("product4_top_desktop"),
+    "--hero-p4-right-m": styleVal("product4_right_mobile") || "auto",
+    "--hero-p4-right-d": styleVal("product4_right_desktop") || "auto",
+    "--hero-p4-rot-m": degCss(styleVal("product4_rotate_mobile")),
+    "--hero-p4-rot-d": degCss(styleVal("product4_rotate_desktop")),
+
+    "--hero-marquee-fs-m": styleVal("marquee_fs_mobile"),
+    "--hero-marquee-fs-d": styleVal("marquee_fs_desktop"),
+    "--hero-div-icon1-m": styleVal("divider_icon_1_size_mobile"),
+    "--hero-div-icon1-d": styleVal("divider_icon_1_size_desktop"),
+    "--hero-div-icon2-m": styleVal("divider_icon_2_size_mobile"),
+    "--hero-div-icon2-d": styleVal("divider_icon_2_size_desktop"),
+    "--hero-div-icon3-m": styleVal("divider_icon_3_size_mobile"),
+    "--hero-div-icon3-d": styleVal("divider_icon_3_size_desktop"),
+    "--hero-div-icon4-m": styleVal("divider_icon_4_size_mobile"),
+    "--hero-div-icon4-d": styleVal("divider_icon_4_size_desktop"),
+    "--hero-div-bottom-m": styleVal("divider_bottom_mobile"),
+    "--hero-div-bottom-d": styleVal("divider_bottom_desktop"),
+  } as CSSProperties;
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -101,6 +286,22 @@ export default function HeroSection() {
   const yScroll = useTransform(scrollYProgress, [0, 0.6], [0, -50]);
   const shouldAnimate = isReady && isScrollVisible;
 
+  // Inline so CMS position always wins over stylesheet / Framer Motion.
+  const waveLeftStyle: CSSProperties = {
+    left: styleVal(
+      isMobile ? "wave_left_left_mobile" : "wave_left_left_desktop",
+    ),
+    top: styleVal(isMobile ? "wave_left_top_mobile" : "wave_left_top_desktop"),
+  };
+  const waveRightStyle: CSSProperties = {
+    right: styleVal(
+      isMobile ? "wave_right_right_mobile" : "wave_right_right_desktop",
+    ),
+    top: styleVal(
+      isMobile ? "wave_right_top_mobile" : "wave_right_top_desktop",
+    ),
+  };
+
   const handleProductClick = (id: number) => {
     router.push(`/belanja/${id}`);
   };
@@ -108,25 +309,47 @@ export default function HeroSection() {
   return (
     <section
       ref={sectionRef}
-      // Disesuaikan: mengubah pb-23 menjadi pb-10 agar jarak bagian bawah section tidak terlalu kosong/renggang
-      className="hero-section bg-[#0071BC] md:mb-6 md:mt-10 text-white pt-4 pb-10 md:pt-0 md:pb-10 px-4 flex flex-col items-center justify-center text-center select-none overflow-hidden relative"
+      style={heroCssVars}
+      className={`hero-section bg-[#0071BC] md:mb-6 md:mt-10 text-white pt-4 pb-10 md:pt-0 md:pb-10 px-4 flex flex-col items-center justify-center text-center select-none overflow-hidden relative${
+        isLocaleLoading ? " is-locale-loading" : ""
+      }`}
     >
       <style>{`
         .gambar-utama-hover {
           transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-          transform: translate(-50%, -50%) scale(1) rotate(0deg); 
+          transform: scale(1) rotate(0deg);
+          transform-origin: center center;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
         }
-        
+
         .hero-product-hit:hover .gambar-utama-hover {
-          transform: translate(-50%, -50%) scale(1.04) rotate(2.5deg);
+          transform: scale(1.04) rotate(2.5deg);
         }
 
-        .hero-product-hit {
-          cursor: pointer;
+        .hero-visual-stage img,
+        .hero-divider-marquee img,
+        .hero-badge-left-icon img,
+        .hero-badge-right-icon img {
+          image-rendering: auto;
+          -webkit-user-drag: none;
         }
 
-        .hero-label-hit {
-          cursor: pointer;
+        .hero-wave-svg,
+        .hero-wave-svg svg {
+          shape-rendering: geometricPrecision;
+        }
+
+        .hero-product-hit { cursor: pointer; }
+        .hero-label-hit { cursor: pointer; }
+
+        .hero-bottle-1,
+        .hero-bottle-2,
+        .hero-bottle-3,
+        .hero-bottle-4 {
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         @keyframes flashFadeOnce {
@@ -136,22 +359,6 @@ export default function HeroSection() {
         }
         .sayap-hover-effect:hover {
           animation: flashFadeOnce 0.8s ease-in-out;
-        }
-
-        .badge-kiri-rotate {
-          transform: rotate(15deg);
-          transition: transform 0.3s ease-out;
-        }
-        .badge-kiri-rotate:hover {
-          transform: rotate(17deg);
-        }
-
-        .badge-kanan-rotate {
-          transform: rotate(-15deg);
-          transition: transform 0.3s ease-out;
-        }
-        .badge-kanan-rotate:hover {
-          transform: rotate(-17deg);
         }
 
         @keyframes marquee {
@@ -171,177 +378,358 @@ export default function HeroSection() {
           pointer-events: none;
           overflow: visible;
         }
-
         .hero-wave-svg {
           position: absolute;
           overflow: visible;
         }
-
         .hero-wave-svg path {
           filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.12));
         }
-
         .hero-wave-left {
-          left: -11%;
-          top: -35%;
-          width: 46%;
+          left: var(--hero-wave-l-left-m, -17%);
+          top: var(--hero-wave-l-top-m, -31%);
+          width: 56%;
           height: auto;
           aspect-ratio: 394 / 269;
-          transform: scale(1.14) rotate(-9deg);
+          transform: scale(1.12) rotate(-8deg);
           transform-origin: 88% 78%;
         }
-
         .hero-wave-right {
-          right: -11%;
-          top: -50%;
-          width: 40%;
+          right: var(--hero-wave-r-right-m, -17%);
+          top: var(--hero-wave-r-top-m, -49%);
+          width: 48%;
           height: auto;
           aspect-ratio: 418 / 449;
-          transform: scale(1.14) rotate(9deg);
+          transform: scale(1.12) rotate(8deg);
           transform-origin: 12% 78%;
         }
 
-        @media (max-width: 767px) {
-          .hero-wave-left {
-            left: -17%;
-            top: -31%;
-            width: 56%;
-            transform: scale(1.12) rotate(-8deg);
-            transform-origin: 88% 78%;
+        .hero-headline {
+          font-family: inherit;
+          font-weight: 600;
+          line-height: 1.1;
+          margin: 0;
+          padding: 0;
+          position: relative;
+          top: var(--hero-hl-top-m);
+          left: var(--hero-hl-left-m);
+          /* reserve 2 lines so ID/EN swap doesn't shove the visual stage */
+          min-height: calc(var(--hero-hl1-fs-m) * 1.1 * 2);
+          box-sizing: content-box;
+        }
+        .hero-hl-1 { font-size: var(--hero-hl1-fs-m); }
+        .hero-hl-2 { font-size: var(--hero-hl2-fs-m); }
+        .hero-hl-3 { font-size: var(--hero-hl3-fs-m); }
+        .hero-hl-4 { font-size: var(--hero-hl4-fs-m); }
+
+        .hero-visual-stage {
+          contain: layout;
+          isolation: isolate;
+        }
+
+        .hero-badge-left {
+          left: var(--hero-badge-l-left-m);
+          top: var(--hero-badge-l-top-m);
+          font-size: var(--hero-badge-l-fs-m);
+          min-width: max-content;
+        }
+        .hero-badge-left-icon {
+          width: var(--hero-badge-l-icon-m);
+          height: var(--hero-badge-l-icon-m);
+          flex-shrink: 0;
+        }
+        .hero-badge-right {
+          right: var(--hero-badge-r-right-m);
+          bottom: var(--hero-badge-r-bottom-m);
+          font-size: var(--hero-badge-r-fs-m);
+          min-width: max-content;
+        }
+        .hero-badge-right-icon {
+          width: var(--hero-badge-r-icon-m);
+          height: var(--hero-badge-r-icon-m);
+        }
+
+        .hero-bottle-1 {
+          left: var(--hero-p1-left-m);
+          right: var(--hero-p1-right-m);
+          top: var(--hero-p1-top-m);
+        }
+        .hero-bottle-1 .hero-product-hit {
+          transform: rotate(var(--hero-p1-rot-m)) scale(var(--hero-p1-size-m));
+        }
+        .hero-bottle-2 {
+          left: var(--hero-p2-left-m);
+          right: var(--hero-p2-right-m);
+          top: var(--hero-p2-top-m);
+        }
+        .hero-bottle-2 .hero-product-hit {
+          transform: rotate(var(--hero-p2-rot-m)) scale(var(--hero-p2-size-m));
+        }
+        .hero-bottle-3 {
+          left: var(--hero-p3-left-m);
+          right: var(--hero-p3-right-m);
+          top: var(--hero-p3-top-m);
+        }
+        .hero-bottle-3 .hero-product-hit {
+          transform: rotate(var(--hero-p3-rot-m)) scale(var(--hero-p3-size-m));
+        }
+        .hero-bottle-4 {
+          left: var(--hero-p4-left-m);
+          right: var(--hero-p4-right-m);
+          top: var(--hero-p4-top-m);
+        }
+        .hero-bottle-4 .hero-product-hit {
+          transform: rotate(var(--hero-p4-rot-m)) scale(var(--hero-p4-size-m));
+        }
+
+        .hero-divider-marquee {
+          bottom: var(--hero-div-bottom-m);
+        }
+        .hero-marquee-text {
+          font-size: var(--hero-marquee-fs-m);
+        }
+        .hero-div-icon-1 {
+          width: var(--hero-div-icon1-m);
+          height: var(--hero-div-icon1-m);
+        }
+        .hero-div-icon-2 {
+          width: var(--hero-div-icon2-m);
+          height: var(--hero-div-icon2-m);
+        }
+        .hero-div-icon-3 {
+          width: var(--hero-div-icon3-m);
+          height: var(--hero-div-icon3-m);
+        }
+        .hero-div-icon-4 {
+          width: var(--hero-div-icon4-m);
+          height: var(--hero-div-icon4-m);
+        }
+
+        @media (min-width: 768px) {
+          .hero-headline {
+            top: var(--hero-hl-top-d);
+            left: var(--hero-hl-left-d);
+            min-height: calc(var(--hero-hl1-fs-d) * 1.1 * 2);
+          }
+          .hero-hl-1 { font-size: var(--hero-hl1-fs-d); }
+          .hero-hl-2 { font-size: var(--hero-hl2-fs-d); }
+          .hero-hl-3 { font-size: var(--hero-hl3-fs-d); }
+          .hero-hl-4 { font-size: var(--hero-hl4-fs-d); }
+
+          .hero-badge-left {
+            left: var(--hero-badge-l-left-d);
+            top: var(--hero-badge-l-top-d);
+            font-size: var(--hero-badge-l-fs-d);
+          }
+          .hero-badge-left-icon {
+            width: var(--hero-badge-l-icon-d);
+            height: var(--hero-badge-l-icon-d);
+          }
+          .hero-badge-right {
+            right: var(--hero-badge-r-right-d);
+            bottom: var(--hero-badge-r-bottom-d);
+            font-size: var(--hero-badge-r-fs-d);
+          }
+          .hero-badge-right-icon {
+            width: var(--hero-badge-r-icon-d);
+            height: var(--hero-badge-r-icon-d);
           }
 
+          .hero-bottle-1 {
+            left: var(--hero-p1-left-d);
+            right: var(--hero-p1-right-d);
+            top: var(--hero-p1-top-d);
+          }
+          .hero-bottle-1 .hero-product-hit {
+            transform: rotate(var(--hero-p1-rot-d)) scale(var(--hero-p1-size-d));
+          }
+          .hero-bottle-2 {
+            left: var(--hero-p2-left-d);
+            right: var(--hero-p2-right-d);
+            top: var(--hero-p2-top-d);
+          }
+          .hero-bottle-2 .hero-product-hit {
+            transform: rotate(var(--hero-p2-rot-d)) scale(var(--hero-p2-size-d));
+          }
+          .hero-bottle-3 {
+            left: var(--hero-p3-left-d);
+            right: var(--hero-p3-right-d);
+            top: var(--hero-p3-top-d);
+          }
+          .hero-bottle-3 .hero-product-hit {
+            transform: rotate(var(--hero-p3-rot-d)) scale(var(--hero-p3-size-d));
+          }
+          .hero-bottle-4 {
+            left: var(--hero-p4-left-d);
+            right: var(--hero-p4-right-d);
+            top: var(--hero-p4-top-d);
+          }
+          .hero-bottle-4 .hero-product-hit {
+            transform: rotate(var(--hero-p4-rot-d)) scale(var(--hero-p4-size-d));
+          }
+
+          .hero-divider-marquee {
+            bottom: var(--hero-div-bottom-d);
+          }
+          .hero-marquee-text {
+            font-size: var(--hero-marquee-fs-d);
+          }
+          .hero-div-icon-1 {
+            width: var(--hero-div-icon1-d);
+            height: var(--hero-div-icon1-d);
+          }
+          .hero-div-icon-2 {
+            width: var(--hero-div-icon2-d);
+            height: var(--hero-div-icon2-d);
+          }
+          .hero-div-icon-3 {
+            width: var(--hero-div-icon3-d);
+            height: var(--hero-div-icon3-d);
+          }
+          .hero-div-icon-4 {
+            width: var(--hero-div-icon4-d);
+            height: var(--hero-div-icon4-d);
+          }
+        }
+
+        @media (min-width: 768px) {
+          .hero-wave-left {
+            left: var(--hero-wave-l-left-d, -11%);
+            top: var(--hero-wave-l-top-d, -35%);
+            width: 46%;
+            transform: scale(1.14) rotate(-9deg);
+            transform-origin: 88% 78%;
+          }
           .hero-wave-right {
-            right: -17%;
-            top: -46%;
-            width: 48%;
-            transform: scale(1.12) rotate(8deg);
+            right: var(--hero-wave-r-right-d, -11%);
+            top: var(--hero-wave-r-top-d, -50%);
+            width: 40%;
+            transform: scale(1.14) rotate(9deg);
             transform-origin: 12% 78%;
           }
         }
       `}</style>
 
-      {/* Wrapper Utama */}
       <motion.div
         style={{ opacity: opacityScroll, y: yScroll }}
-        // Disesuaikan: Menghapus gap dan margin (m-0, p-0, gap-0) agar benar-benar rapat
         className="w-full flex flex-col items-center justify-center flex-1 z-10 gap-0 m-0 p-0"
       >
-        {/* 1. Judul Utama */}
         <motion.h1
           animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          className="font-nohemi font-semibold text-[28px] md:text-[42px] leading-[1.1] m-0 p-0"
+          className="hero-headline font-nohemi"
         >
-          <span className="text-white">
+          <span className="hero-hl-1 locale-shimmer-text" style={{ color: headlineColors[1] }}>
             {tBeranda("hero", "headline_1", "Temukan")}{" "}
           </span>
-          <span className="text-[#5CB2ED]">
+          <span className="hero-hl-2 locale-shimmer-text" style={{ color: headlineColors[2] }}>
             {tBeranda("hero", "headline_2", "karakter")}
           </span>
           <br />
-          <span className="text-[#FFA3CB]">
+          <span className="hero-hl-3 locale-shimmer-text" style={{ color: headlineColors[3] }}>
             {tBeranda("hero", "headline_3", "aromamu")}{" "}
           </span>
-          <span className="text-white">
+          <span className="hero-hl-4 locale-shimmer-text" style={{ color: headlineColors[4] }}>
             {tBeranda("hero", "headline_4", "di Evomi")}
           </span>
         </motion.h1>
 
-        {/* 2. Image Poster Area */}
-        {/* Disesuaikan: Margin vertikal (mt dan mb) diminimalkan agar jarak antar elemen sangat sempit */}
-        <div className="relative mt-2 mb-0 md:mt-3 md:mb-0 w-[100%] md:w-[90%] lg:w-full max-w-7xl mx-auto aspect-[1280/412]">
-          {/* Wave dekorasi — dari produk ke atas kiri & kanan */}
+        <div
+          data-locale-stable
+          className="hero-visual-stage relative mt-2 mb-0 md:mt-3 md:mb-0 w-[100%] md:w-[90%] lg:w-full max-w-7xl mx-auto aspect-[1280/412]"
+        >
           <div className="hero-wave-layer sayap-hover-effect" aria-hidden>
-            {/* Sayap kiri */}
-            <motion.div
-              className="hero-wave-svg hero-wave-left"
-              initial={{ opacity: 0 }}
-              animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
-              transition={{
-                duration: 1.15,
-                delay: 0.65,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            >
+            <div className="hero-wave-svg hero-wave-left" style={waveLeftStyle}>
               <motion.div
-                className="w-full h-auto will-change-transform"
-                style={{ transformOrigin: "88% 78%" }}
-                animate={
-                  shouldAnimate
-                    ? {
-                        rotate: isMobile
-                          ? [-1.6, 1.8, -1.6]
-                          : [-2.4, 2.8, -2.4],
-                        y: isMobile ? [0, -5, 0] : [0, -10, 0],
-                        scale: [1, 1.03, 1],
-                      }
-                    : { rotate: 0, y: 0, scale: 1 }
-                }
+                className="w-full h-auto"
+                initial={{ opacity: 0 }}
+                animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
                 transition={{
-                  duration: isMobile ? 5.2 : 6.4,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1.1,
+                  duration: 1.15,
+                  delay: 0.65,
+                  ease: [0.22, 1, 0.36, 1],
                 }}
               >
-                <svg
-                  className="w-full h-auto block overflow-visible"
-                  viewBox="0 0 394 269"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+                <motion.div
+                  className="w-full h-auto will-change-transform"
+                  style={{ transformOrigin: "88% 78%" }}
+                  animate={
+                    shouldAnimate
+                      ? {
+                          rotate: isMobile
+                            ? [-1.6, 1.8, -1.6]
+                            : [-2.4, 2.8, -2.4],
+                          y: isMobile ? [0, -5, 0] : [0, -10, 0],
+                          scale: [1, 1.03, 1],
+                        }
+                      : { rotate: 0, y: 0, scale: 1 }
+                  }
+                  transition={{
+                    duration: isMobile ? 5.2 : 6.4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 1.1,
+                  }}
                 >
-                  <defs>
-                    <linearGradient
-                      id="heroWaveLeftGrad"
-                      x1="-16.1182"
-                      y1="57.6073"
-                      x2="385.318"
-                      y2="143.822"
-                      gradientUnits="userSpaceOnUse"
-                    >
-                      <stop offset="0.339313" stopColor="#60BBFF" />
-                      <stop offset="1" stopColor="#FF8A84" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M249.353 208.572C227.104 254.765 336.005 229.301 393.236 210.795L391.597 225.206C240.842 287.445 208.166 270.156 206.182 247.054C204.198 223.951 268.222 182.812 179.508 180.809C90.7932 178.807 64.5628 160.794 64.6262 140.17C64.6895 119.546 109.343 90.8905 73.5016 87.1579C44.8283 84.1719 19.1086 93.2575 9.8329 98.1736L-34.5957 0C39.6156 62.1945 77.1964 34.9117 133.299 67.9779C189.402 101.044 75.6897 118.705 125.496 141.25C175.302 163.794 277.164 150.83 249.353 208.572Z"
-                    fill="url(#heroWaveLeftGrad)"
-                  />
-                </svg>
+                  <svg
+                    className="w-full h-auto block overflow-visible"
+                    viewBox="0 0 394 269"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <defs>
+                      <linearGradient
+                        id="heroWaveLeftGrad"
+                        x1="-16.1182"
+                        y1="57.6073"
+                        x2="385.318"
+                        y2="143.822"
+                        gradientUnits="userSpaceOnUse"
+                      >
+                        <stop offset="0.339313" stopColor="#60BBFF" />
+                        <stop offset="1" stopColor="#FF8A84" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M249.353 208.572C227.104 254.765 336.005 229.301 393.236 210.795L391.597 225.206C240.842 287.445 208.166 270.156 206.182 247.054C204.198 223.951 268.222 182.812 179.508 180.809C90.7932 178.807 64.5628 160.794 64.6262 140.17C64.6895 119.546 109.343 90.8905 73.5016 87.1579C44.8283 84.1719 19.1086 93.2575 9.8329 98.1736L-34.5957 0C39.6156 62.1945 77.1964 34.9117 133.299 67.9779C189.402 101.044 75.6897 118.705 125.496 141.25C175.302 163.794 277.164 150.83 249.353 208.572Z"
+                      fill="url(#heroWaveLeftGrad)"
+                    />
+                  </svg>
+                </motion.div>
               </motion.div>
-            </motion.div>
+            </div>
 
-            {/* Sayap kanan */}
-            <motion.div
-              className="hero-wave-svg hero-wave-right"
-              initial={{ opacity: 0 }}
-              animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
-              transition={{
-                duration: 1.15,
-                delay: 0.85,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            >
+            <div className="hero-wave-svg hero-wave-right" style={waveRightStyle}>
               <motion.div
-                className="w-full h-auto will-change-transform"
-                style={{ transformOrigin: "12% 78%" }}
-                animate={
-                  shouldAnimate
-                    ? {
-                        rotate: isMobile
-                          ? [1.6, -1.8, 1.6]
-                          : [2.4, -2.8, 2.4],
-                        y: isMobile ? [0, -5, 0] : [0, -10, 0],
-                        scale: [1.025, 1, 1.025],
-                      }
-                    : { rotate: 0, y: 0, scale: 1 }
-                }
+                className="w-full h-auto"
+                initial={{ opacity: 0 }}
+                animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
                 transition={{
-                  duration: isMobile ? 5.6 : 7,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1.45,
+                  duration: 1.15,
+                  delay: 0.85,
+                  ease: [0.22, 1, 0.36, 1],
                 }}
               >
+                <motion.div
+                  className="w-full h-auto will-change-transform"
+                  style={{ transformOrigin: "12% 78%" }}
+                  animate={
+                    shouldAnimate
+                      ? {
+                          rotate: isMobile
+                            ? [1.6, -1.8, 1.6]
+                            : [2.4, -2.8, 2.4],
+                          y: isMobile ? [0, -5, 0] : [0, -10, 0],
+                          scale: [1.025, 1, 1.025],
+                        }
+                      : { rotate: 0, y: 0, scale: 1 }
+                  }
+                  transition={{
+                    duration: isMobile ? 5.6 : 7,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 1.45,
+                  }}
+                >
                 <svg
                   className="w-full h-auto block overflow-visible"
                   viewBox="0 0 418 449"
@@ -381,12 +769,12 @@ export default function HeroSection() {
                     fill="url(#heroWaveRightGradInner)"
                   />
                 </svg>
+                </motion.div>
               </motion.div>
-            </motion.div>
+            </div>
           </div>
 
-          {/* Floating Labels */}
-          {HERO_PRODUCTS.map((product) => (
+          {products.map((product) => (
             <motion.button
               key={`label-${product.id}`}
               type="button"
@@ -398,17 +786,33 @@ export default function HeroSection() {
               aria-label={`Lihat detail ${product.title}`}
               className={`hero-label-hit absolute z-40 transition-transform duration-300 ease-out bg-transparent border-0 p-0 ${product.labelClass}`}
             >
-              <Image
-                src={product.labelImage}
-                alt={product.title}
-                fill
-                className="object-contain pointer-events-none"
-              />
+              <motion.div
+                animate={
+                  shouldAnimate
+                    ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] }
+                    : {}
+                }
+                transition={{
+                  duration: isMobile ? 3 : 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: product.floatDelay,
+                }}
+                className="relative w-full h-full"
+              >
+                <Image
+                  src={product.labelImage}
+                  alt={product.title}
+                  fill
+                  sizes="(max-width: 768px) 12vw, 7vw"
+                  quality={HERO_IMG_QUALITY}
+                  unoptimized={isSvgSrc(product.labelImage)}
+                  className="object-contain pointer-events-none"
+                />
+              </motion.div>
             </motion.button>
           ))}
 
-          {/* Badges */}
-          {/* Eau de parfum — samping kiri 4 botol */}
           <motion.div
             animate={
               shouldAnimate
@@ -416,25 +820,24 @@ export default function HeroSection() {
                 : { opacity: 0, scale: 0.7, rotate: 15 }
             }
             transition={{ duration: 0.5, delay: 0.8 }}
-            className="origin-bottom-right cursor-pointer absolute left-[4%] md:left-[9%] top-[8%] md:top-[5%] inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
+            className="hero-badge-left origin-bottom-right cursor-pointer absolute inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
           >
-            <svg
-              className="w-2 h-2 sm:w-3 sm:h-3 md:w-5 md:h-5"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M4.44444 4.15153L-3.61099e-05 5.78063L1.83007 10.1457L0.332174 14.6364L4.88613 15.9286L7.46318 19.9L11.3117 17.1448L16.0236 17.6062L16.2697 12.8784L19.5674 9.48231L16.0249 6.34218L15.4258 1.64729L10.7622 2.4587L6.71773 4.00083e-06L4.44444 4.15153Z"
-                fill="#F899C6"
+            <div className="hero-badge-left-icon relative shrink-0">
+              <Image
+                src={badgeLeftIcon}
+                alt=""
+                fill
+                sizes="40px"
+                quality={HERO_IMG_QUALITY}
+                unoptimized={isSvgSrc(badgeLeftIcon)}
+                className="object-contain"
               />
-            </svg>
-            <p className="whitespace-nowrap">
+            </div>
+            <p className="locale-shimmer-text whitespace-nowrap">
               {tBeranda("hero", "badge_left", "Eau de Parfum")}
             </p>
           </motion.div>
 
-          {/* Recycle Bottle */}
           <motion.div
             animate={
               shouldAnimate
@@ -442,119 +845,106 @@ export default function HeroSection() {
                 : { opacity: 0, scale: 0.7, rotate: -12 }
             }
             transition={{ duration: 0.5, delay: 0.9 }}
-            className="origin-bottom-left cursor-pointer absolute right-[4%] md:right-[4.7%] bottom-[72%] md:bottom-[80.4%] inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] text-[7px] sm:text-[10px] md:text-[14px] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
+            className="hero-badge-right origin-bottom-left cursor-pointer absolute inline-flex items-center justify-center gap-1 md:gap-2 bg-white text-[#0071BC] font-bold px-2 py-1 md:px-7 md:py-3 rounded-md md:rounded-xl shadow-md select-none whitespace-nowrap z-30"
           >
-            <div className="relative w-2 h-2 sm:w-3 sm:h-3 md:w-4 md:h-4">
+            <div className="hero-badge-right-icon relative shrink-0">
               <Image
-                src="/src/images/section 1/recycle.png"
+                src={badgeRightIcon}
                 alt="Recycle Icon"
                 fill
+                sizes="40px"
+                quality={HERO_IMG_QUALITY}
+                unoptimized={isSvgSrc(badgeRightIcon)}
                 className="object-contain"
               />
             </div>
-            <p className="whitespace-nowrap">
+            <p className="locale-shimmer-text whitespace-nowrap">
               {tBeranda("hero", "badge_right", "Recycle Bottle Cap")}
             </p>
           </motion.div>
 
-          {/* GAMBAR UTAMA (4 Botol) */}
           <div className="relative top-20 md:top-65 left-1/2 -translate-x-2/5 -translate-y-[46%] z-10 w-[80%] h-[63%] flex items-center justify-between gap-1 md:gap-4 bg-transparent overflow-visible">
-            {HERO_PRODUCTS.map((product) => (
-              <motion.div
-                key={product.id}
-                animate={
-                  shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
-                }
-                transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-                className={`relative w-full h-full ${product.wrapClass} ${product.zClass}`}
-              >
+            {products.map((product) => {
+              const bottleClass = `hero-bottle-${product.cmsKey.replace("product", "")}`;
+              return (
                 <motion.div
+                  key={product.id}
                   animate={
                     shouldAnimate
-                      ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] }
-                      : {}
+                      ? { opacity: 1, y: 0 }
+                      : { opacity: 0, y: 60 }
                   }
-                  transition={{
-                    duration: isMobile ? 3 : 4,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: product.floatDelay,
-                  }}
-                  className="relative w-full h-full"
+                  transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+                  className={`relative w-full h-full ${bottleClass} ${product.zClass}`}
                 >
-                  <button
-                    type="button"
-                    className={`hero-product-hit relative w-full h-full scale-100 ${product.rotateClass} bg-transparent border-0 p-0`}
-                    aria-label={`Lihat detail ${product.title}`}
-                    onClick={() => handleProductClick(product.id)}
+                  <motion.div
+                    animate={
+                      shouldAnimate
+                        ? { y: isMobile ? [-2, 2, -2] : [-10, 10, -10] }
+                        : {}
+                    }
+                    transition={{
+                      duration: isMobile ? 3 : 4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: product.floatDelay,
+                    }}
+                    className="relative flex h-full w-full items-center justify-center"
                   >
-                    <Image
-                      src={product.image}
-                      alt={`Botol ${product.title}`}
-                      fill
-                      className="object-contain gambar-utama-hover pointer-events-none"
-                      priority
-                    />
-                  </button>
+                    <button
+                      type="button"
+                      className={`hero-product-hit relative inline-flex h-full max-w-full items-center justify-center border-0 p-0 ${product.bgClass}`}
+                      aria-label={`Lihat detail ${product.title}`}
+                      onClick={() => handleProductClick(product.id)}
+                    >
+                      <Image
+                        src={product.image}
+                        alt={`Botol ${product.title}`}
+                        width={1200}
+                        height={2400}
+                        sizes="(max-width: 768px) 30vw, 18vw"
+                        quality={HERO_IMG_QUALITY}
+                        // Serve original PNG so downscale stays close to source
+                        unoptimized
+                        className="pointer-events-none h-full w-auto max-w-full object-contain gambar-utama-hover"
+                        priority
+                      />
+                    </button>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </motion.div>
 
-      {/* Divider Marquee Looping */}
-      <div className="absolute bottom-2 md:mt-5 md:bottom-0 left-0 w-full overflow-hidden py-1.5 md:py-4 border-y border-white/10 z-40 bg-[#0071BC]">
+      <div className="hero-divider-marquee absolute md:mt-5 left-0 w-full overflow-hidden py-1.5 md:py-4 border-y border-white/10 z-40 bg-[#0071BC]">
         <div className="animate-marquee flex items-center gap-4 sm:gap-6 md:gap-8">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center gap-4 sm:gap-6 md:gap-8">
-              <span className="text-[8px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
-                {tBeranda("hero", "marquee_text", "Every Version of Me")}
-              </span>
-              <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
-                <Image
-                  src="/src/images/section 1/purpose.png"
-                  alt="Purpose"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-
-              <span className="text-[8px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
-                {tBeranda("hero", "marquee_text", "Every Version of Me")}
-              </span>
-              <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
-                <Image
-                  src="/src/images/section 1/peaceful.png"
-                  alt="Peaceful"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-
-              <span className="text-[8px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
-                {tBeranda("hero", "marquee_text", "Every Version of Me")}
-              </span>
-              <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
-                <Image
-                  src="/src/images/section 1/rab.png"
-                  alt="Rab"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-
-              <span className="text-[8px] sm:text-[16px] md:text-[14px] font-medium whitespace-nowrap text-white">
-                {tBeranda("hero", "marquee_text", "Every Version of Me")}
-              </span>
-              <div className="relative w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] md:w-[25px] md:h-[25px]">
-                <Image
-                  src="/src/images/section 1/sweetshy.png"
-                  alt="Sweet Shy"
-                  fill
-                  className="object-contain"
-                />
-              </div>
+              {dividerIcons.map((iconSrc, iconIdx) => (
+                <div
+                  key={`${i}-${iconIdx}`}
+                  className="flex items-center gap-4 sm:gap-6 md:gap-8"
+                >
+                  <span className="hero-marquee-text locale-shimmer-text font-medium whitespace-nowrap text-white">
+                    {marqueeText}
+                  </span>
+                  <div
+                    className={`hero-div-icon-${iconIdx + 1} relative shrink-0`}
+                  >
+                    <Image
+                      src={iconSrc}
+                      alt=""
+                      fill
+                      sizes="48px"
+                      quality={HERO_IMG_QUALITY}
+                      unoptimized={isSvgSrc(iconSrc)}
+                      className="object-contain"
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
