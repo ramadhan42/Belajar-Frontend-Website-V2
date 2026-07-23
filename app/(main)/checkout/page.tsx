@@ -8,6 +8,7 @@ import {
   Banknote,
   CheckCircle2,
   Loader2,
+  Mail,
   MapPin,
   Phone,
   QrCode,
@@ -20,11 +21,16 @@ import {
   getProduct,
   getProductImageUrl,
   formatProductPrice,
+  guestCheckoutApi,
   Product,
 } from "@/lib/api";
 import { useNavbarColor } from "@/context/NavbarColorContext";
 import StatusModal from "@/components/StatusModal";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import { useLocale } from "@/context/LocaleContext";
+import { L } from "@/lib/localeText";
+import { useCms } from "@/context/CmsContext";
+import { useTrackLocaleLoad } from "@/hooks/useTrackLocaleLoad";
 
 interface CheckoutItemType {
   id: string | number;
@@ -40,33 +46,33 @@ const VISUAL_BY_PERSONALITY: Record<
   string,
   {
     navbarColor: string;
-    badge: string;
+    badge: { id: string; en: string };
     characterPath: string;
   }
 > = {
   purpose_prestige: {
     navbarColor: "#1172BA",
-    badge: "Optimis",
+    badge: { id: "Optimis", en: "Optimistic" },
     characterPath: "/src/images/belanja/detail/purpose-character.svg",
   },
   prestige: {
     navbarColor: "#1172BA",
-    badge: "Optimis",
+    badge: { id: "Optimis", en: "Optimistic" },
     characterPath: "/src/images/belanja/detail/purpose-character.svg",
   },
   peaceful_calm: {
     navbarColor: "#5EA14A",
-    badge: "Damai",
+    badge: { id: "Damai", en: "Peaceful" },
     characterPath: "/src/images/belanja/detail/peaceful-character.svg",
   },
   rebel_brave: {
     navbarColor: "#E33D35",
-    badge: "Berani",
+    badge: { id: "Berani", en: "Bold" },
     characterPath: "/src/images/belanja/detail/rebel-character.svg",
   },
   sweet_shy: {
     navbarColor: "#DD74A5",
-    badge: "Manis",
+    badge: { id: "Manis", en: "Sweet" },
     characterPath: "/src/images/belanja/detail/sweet-character.svg",
   },
 };
@@ -78,6 +84,8 @@ const XENDIT_AUTH =
 
 function CheckoutContent() {
   const BASE_URL = SITE_STRINGS.base_url.url_backend;
+  const { locale } = useLocale();
+  const { tUi } = useCms();
 
   const router = useRouter();
   const [modal, setModal] = useState<{
@@ -94,6 +102,7 @@ function CheckoutContent() {
 
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
     phone: "",
     address: "",
     courier: "JNE",
@@ -103,10 +112,13 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const type = searchParams.get("type");
   const productId = searchParams.get("productId");
+  const isGuestBuyNow = type === "buynow";
+  const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
 
   const [items, setItems] = useState<CheckoutItemType[]>([]);
   const [paymentMethod, setPaymentMethod] = useState("qris");
   const [isLoading, setIsLoading] = useState(true);
+  useTrackLocaleLoad(isLoading);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -136,6 +148,137 @@ function CheckoutContent() {
     return VISUAL_BY_PERSONALITY[firstItemType ?? ""] ?? VISUAL_FALLBACK;
   }, [items]);
 
+  const copy = useMemo(
+    () => ({
+      badge: L(locale, visual.badge.id, visual.badge.en),
+      emptyCart: L(locale, "Keranjang Anda kosong.", "Your cart is empty."),
+      productFallback: L(locale, "Produk", "Product"),
+      invalidOrder: L(
+        locale,
+        "Data pesanan tidak valid.",
+        "Invalid order data.",
+      ),
+      loadFailed: L(
+        locale,
+        "Gagal memuat data checkout.",
+        "Failed to load checkout data.",
+      ),
+      orderCreateFailed: L(
+        locale,
+        "Gagal memproses pembuatan pesanan",
+        "Failed to process order creation",
+      ),
+      successTitle: L(locale, "Berhasil!", "Success!"),
+      successMessage: L(
+        locale,
+        "Pesanan Anda berhasil dibuat dan sedang diproses. Notifikasi dikirim ke email Anda.",
+        "Your order has been created and is being processed. A notification was sent to your email.",
+      ),
+      failedTitle: L(locale, "Gagal", "Failed"),
+      systemErrorMessage: L(
+        locale,
+        "Terjadi kesalahan sistem.",
+        "A system error occurred.",
+      ),
+      qrisGenerateFailed: L(
+        locale,
+        "Gagal menggenerate QRIS dari sistem",
+        "Failed to generate QRIS from the system",
+      ),
+      qrisCreateFailed: L(
+        locale,
+        "Gagal membuat QR Code",
+        "Failed to create QR Code",
+      ),
+      preparingOrder: L(
+        locale,
+        "Mempersiapkan pesanan...",
+        "Preparing your order...",
+      ),
+      back: L(locale, "Kembali", "Back"),
+      pageTitle: tUi(
+        "checkout",
+        "page_title",
+        L(locale, "Penyelesaian Pesanan", "Complete Your Order"),
+      ),
+      shippingInfo: tUi(
+        "checkout",
+        "shipping_info",
+        L(locale, "Informasi Pengiriman", "Shipping Information"),
+      ),
+      recipientName: L(locale, "Nama Penerima", "Recipient Name"),
+      emailAddress: L(locale, "Email (untuk notifikasi)", "Email (for notifications)"),
+      phoneNumber: L(locale, "Nomor HP", "Phone Number"),
+      fullAddress: L(locale, "Alamat Lengkap", "Full Address"),
+      fillShippingData: L(
+        locale,
+        "Mohon lengkapi data pengiriman dan email!",
+        "Please complete shipping details and email!",
+      ),
+      invalidEmail: L(
+        locale,
+        "Format email tidak valid.",
+        "Invalid email format.",
+      ),
+      loginRequiredCart: L(
+        locale,
+        "Silakan login untuk checkout dari keranjang.",
+        "Please log in to checkout from your cart.",
+      ),
+      sessionExpired: L(
+        locale,
+        "Sesi login tidak valid. Harap login kembali.",
+        "Your session expired. Please log in again.",
+      ),
+      paymentMethod: tUi(
+        "checkout",
+        "payment_method",
+        L(locale, "Metode Pembayaran", "Payment Method"),
+      ),
+      qrisDesc: L(
+        locale,
+        "Scan via M-Banking / E-Wallet",
+        "Scan via M-Banking / E-Wallet",
+      ),
+      codTitle: L(locale, "Cash on Delivery", "Cash on Delivery"),
+      codDesc: L(
+        locale,
+        "Bayar saat barang sampai",
+        "Pay when the item arrives",
+      ),
+      orderSummary: tUi(
+        "checkout",
+        "order_summary",
+        L(locale, "Ringkasan Pesanan", "Order Summary"),
+      ),
+      subtotal: L(locale, "Subtotal", "Subtotal"),
+      shippingCost: L(locale, "Ongkir", "Shipping"),
+      total: L(locale, "Total", "Total"),
+      processing: L(locale, "Memproses...", "Processing..."),
+      payNow: tUi(
+        "checkout",
+        "pay_now",
+        L(locale, "Bayar Sekarang", "Pay Now"),
+      ),
+      completePayment: L(
+        locale,
+        "Selesaikan Pembayaran",
+        "Complete Payment",
+      ),
+      qrisScanHint: L(
+        locale,
+        "Scan QR Code ini menggunakan aplikasi e-wallet atau m-banking",
+        "Scan this QR Code using your e-wallet or m-banking app",
+      ),
+      waitingPayment: L(
+        locale,
+        "Menunggu pembayaran...",
+        "Waiting for payment...",
+      ),
+    }),
+    [locale, visual, tUi],
+  );
+
   useEffect(() => {
     setNavbarAndFooterColor(visual.navbarColor);
     return () => setNavbarAndFooterColor("#000000");
@@ -148,16 +291,24 @@ function CheckoutContent() {
         setError(null);
 
         if (type === "cart") {
+          const rawToken = localStorage.getItem("auth_token");
+          const token = rawToken ? rawToken.replace(/['"]+/g, "").trim() : null;
+          if (!token) {
+            alert(copy.loginRequiredCart);
+            router.push("/login");
+            return;
+          }
+
           const cartData = await getCartItems();
           if (cartData.length === 0) {
-            setError("Keranjang Anda kosong.");
+            setError(copy.emptyCart);
             return;
           }
 
           const formattedItems = cartData.map((item) => ({
             id: item.id,
             product_id: item.product_id,
-            title: item.product?.title || "Produk",
+            title: item.product?.title || copy.productFallback,
             price: parseFloat(item.product?.price || "0"),
             quantity: item.quantity,
             image:
@@ -168,7 +319,7 @@ function CheckoutContent() {
           }));
           setItems(formattedItems);
         } else if (type === "buynow" && productId) {
-          const productData = await getProduct(productId);
+          const productData = await getProduct(productId, locale);
           setItems([
             {
               id: `buy-${productData.id}`,
@@ -184,17 +335,17 @@ function CheckoutContent() {
             },
           ]);
         } else {
-          setError("Data pesanan tidak valid.");
+          setError(copy.invalidOrder);
         }
       } catch (err: any) {
-        setError(err.message || "Gagal memuat data checkout.");
+        setError(err.message || copy.loadFailed);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchCheckoutData();
-  }, [type, productId]);
+  }, [type, productId, locale, copy]);
 
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -205,9 +356,16 @@ function CheckoutContent() {
   const processInternalCheckout = async (customInvoiceId: string) => {
     const rawToken = localStorage.getItem("auth_token");
     const token = rawToken ? rawToken.replace(/['"]+/g, "").trim() : null;
+    const isGuest = isGuestBuyNow && !token;
 
-    if (!token) {
-      alert("Sesi Anda telah habis. Silakan login kembali untuk melanjutkan.");
+    if (!isGuestBuyNow && !token) {
+      alert(copy.loginRequiredCart);
+      router.push("/login");
+      return;
+    }
+
+    if (!isGuest && !token) {
+      alert(copy.sessionExpired);
       router.push("/login");
       return;
     }
@@ -218,59 +376,81 @@ function CheckoutContent() {
       const formattedPaymentMethod =
         paymentMethod === "qris" ? "QRIS" : "Cash on Delivery";
 
-      const res = await fetch(`${BASE_URL}/api/checkout`, {
-        method: "POST",
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      if (isGuest) {
+        await guestCheckoutApi({
+          guest_email: formData.email.trim(),
           invoice_id: customInvoiceId,
-          items: items,
+          items: items.map((item) => ({
+            product_id: Number(item.product_id),
+            quantity: item.quantity,
+            price: item.price,
+            title: item.title,
+          })),
           payment_method: formattedPaymentMethod,
           total: totalTagihan,
           recipient_name: formData.name,
           recipient_phone: formData.phone,
           recipient_address: formData.address,
           courier: formData.courier,
-        }),
-      });
+        });
+        setCompletedOrderId(customInvoiceId);
+      } else {
+        const res = await fetch(`${BASE_URL}/api/checkout`, {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            invoice_id: customInvoiceId,
+            items: items,
+            payment_method: formattedPaymentMethod,
+            total: totalTagihan,
+            guest_email: formData.email.trim() || undefined,
+            recipient_name: formData.name,
+            recipient_phone: formData.phone,
+            recipient_address: formData.address,
+            courier: formData.courier,
+          }),
+        });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.error_detail ||
-          errorData.message ||
-          "Gagal memproses pembuatan pesanan",
-        );
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(
+            errorData.error_detail ||
+              errorData.message ||
+              copy.orderCreateFailed,
+          );
+        }
+
+        await fetch(`${BASE_URL}/api/trackings`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            order_id: customInvoiceId,
+            status: "Menunggu Konfirmasi",
+            courier: formData.courier,
+            recipient_name: formData.name,
+            recipient_phone: formData.phone,
+            recipient_address: formData.address,
+            timeline: [
+              { status: "Pesanan dibuat", date: new Date().toISOString() },
+            ],
+          }),
+        });
+        setCompletedOrderId(null);
       }
-
-      await fetch(`${BASE_URL}/api/trackings`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          order_id: customInvoiceId,
-          status: "Menunggu Konfirmasi",
-          courier: formData.courier,
-          recipient_name: formData.name,
-          recipient_phone: formData.phone,
-          recipient_address: formData.address,
-          timeline: [
-            { status: "Pesanan dibuat", date: new Date().toISOString() },
-          ],
-        }),
-      });
 
       setModal({
         isOpen: true,
-        title: "Berhasil!",
-        message: "Pesanan Anda berhasil dibuat dan sedang diproses.",
+        title: copy.successTitle,
+        message: copy.successMessage,
         type: "success",
       });
       window.dispatchEvent(new Event("cart_updated"));
@@ -278,8 +458,8 @@ function CheckoutContent() {
     } catch (err: any) {
       setModal({
         isOpen: true,
-        title: "Gagal",
-        message: err.message || "Terjadi kesalahan sistem.",
+        title: copy.failedTitle,
+        message: err.message || copy.systemErrorMessage,
         type: "error",
       });
     } finally {
@@ -288,9 +468,24 @@ function CheckoutContent() {
   };
 
   const handleCheckout = async () => {
-    if (!formData.name || !formData.address || !formData.phone) {
-      alert("Mohon lengkapi data pengiriman!");
+    if (!formData.name || !formData.address || !formData.phone || !formData.email) {
+      alert(copy.fillShippingData);
       return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      alert(copy.invalidEmail);
+      return;
+    }
+
+    if (type === "cart") {
+      const rawToken = localStorage.getItem("auth_token");
+      const token = rawToken ? rawToken.replace(/['"]+/g, "").trim() : null;
+      if (!token) {
+        alert(copy.loginRequiredCart);
+        router.push("/login");
+        return;
+      }
     }
 
     const invoiceId = `INV-${Math.floor(Math.random() * 1000000)}`;
@@ -320,7 +515,7 @@ function CheckoutContent() {
 
         if (!res.ok) {
           throw new Error(
-            data.message || "Gagal menggenerate QRIS dari sistem",
+            data.message || copy.qrisGenerateFailed,
           );
         }
 
@@ -333,8 +528,8 @@ function CheckoutContent() {
       } catch (err: any) {
         setModal({
           isOpen: true,
-          title: "Gagal",
-          message: err.message || "Gagal membuat QR Code",
+          title: copy.failedTitle,
+          message: err.message || copy.qrisCreateFailed,
           type: "error",
         });
       } finally {
@@ -392,7 +587,7 @@ function CheckoutContent() {
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <Loader2 className="w-10 h-10 animate-spin text-gray-400 mb-4" />
         <p className="text-gray-500 font-parkinsans">
-          Mempersiapkan pesanan...
+          {copy.preparingOrder}
         </p>
       </div>
     );
@@ -406,7 +601,7 @@ function CheckoutContent() {
           onClick={() => router.back()}
           className="px-5 py-2 bg-black text-white rounded-xl text-sm"
         >
-          Kembali
+          {copy.back}
         </button>
       </div>
     );
@@ -431,7 +626,7 @@ function CheckoutContent() {
             className="text-3xl md:text-4xl font-bold font-nohemi"
             style={{ color: visual.navbarColor }}
           >
-            Penyelesaian Pesanan
+            {copy.pageTitle}
           </h1>
           <div className="hidden md:block w-14 h-14 md:w-20 md:h-20">
             <Image
@@ -454,7 +649,7 @@ function CheckoutContent() {
                 style={{ color: visual.navbarColor }}
               >
                 <MapPin className="w-5 h-5 md:w-6 md:h-6" />
-                Informasi Pengiriman
+                {copy.shippingInfo}
               </h2>
 
               <div className="space-y-4 md:space-y-5 font-parkinsans text-sm md:text-base">
@@ -465,7 +660,7 @@ function CheckoutContent() {
                     </div>
                     <input
                       type="text"
-                      placeholder="Nama Penerima"
+                      placeholder={copy.recipientName}
                       className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
                       style={{
                         ...(formData.name
@@ -480,11 +675,32 @@ function CheckoutContent() {
 
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
+                    </div>
+                    <input
+                      type="email"
+                      placeholder={copy.emailAddress}
+                      className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
+                      style={{
+                        ...(formData.email
+                          ? { borderColor: visual.navbarColor }
+                          : {}),
+                      }}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <Phone className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
                     </div>
                     <input
                       type="tel"
-                      placeholder="Nomor HP"
+                      placeholder={copy.phoneNumber}
                       className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
                       style={{
                         ...(formData.phone
@@ -503,7 +719,7 @@ function CheckoutContent() {
                     <MapPin className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
                   </div>
                   <textarea
-                    placeholder="Alamat Lengkap"
+                    placeholder={copy.fullAddress}
                     rows={3}
                     className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm resize-none"
                     style={{
@@ -566,20 +782,20 @@ function CheckoutContent() {
                 style={{ color: visual.navbarColor }}
               >
                 <Banknote className="w-5 h-5 md:w-6 md:h-6" />
-                Metode Pembayaran
+                {copy.paymentMethod}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 font-parkinsans">
                 {[
                   {
                     id: "qris",
                     title: "QRIS",
-                    desc: "Scan via M-Banking / E-Wallet",
+                    desc: copy.qrisDesc,
                     icon: QrCode,
                   },
                   {
                     id: "cash",
-                    title: "Cash on Delivery",
-                    desc: "Bayar saat barang sampai",
+                    title: copy.codTitle,
+                    desc: copy.codDesc,
                     icon: Banknote,
                   },
                 ].map((m) => {
@@ -655,7 +871,7 @@ function CheckoutContent() {
                 className="text-xl md:text-2xl font-bold font-nohemi mb-4 md:mb-6"
                 style={{ color: visual.navbarColor }}
               >
-                Ringkasan Pesanan
+                {copy.orderSummary}
               </h2>
 
               <div className="space-y-4 mb-6 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
@@ -685,18 +901,18 @@ function CheckoutContent() {
 
               <div className="space-y-3 text-sm md:text-base font-parkinsans border-t border-gray-100 pt-4 md:pt-6 mb-6">
                 <div className="flex justify-between text-gray-500">
-                  <span>Subtotal</span>
+                  <span>{copy.subtotal}</span>
                   <span>{formatProductPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-gray-500">
-                  <span>Ongkir</span>
+                  <span>{copy.shippingCost}</span>
                   <span>{formatProductPrice(ongkosKirim)}</span>
                 </div>
                 <div
                   className="flex justify-between text-xl md:text-2xl font-bold pt-2 md:pt-3 font-nohemi"
                   style={{ color: visual.navbarColor }}
                 >
-                  <span>Total</span>
+                  <span>{copy.total}</span>
                   <span>{formatProductPrice(totalTagihan)}</span>
                 </div>
               </div>
@@ -708,7 +924,7 @@ function CheckoutContent() {
                 style={{ backgroundColor: visual.navbarColor }}
               >
                 {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
-                {isProcessing ? "Memproses..." : "Bayar Sekarang"}
+                {isProcessing ? copy.processing : copy.payNow}
               </button>
             </div>
           </div>
@@ -743,10 +959,10 @@ function CheckoutContent() {
               className="text-lg font-bold font-nohemi mb-1"
               style={{ color: visual.navbarColor }}
             >
-              Selesaikan Pembayaran
+              {copy.completePayment}
             </h3>
             <p className="text-xs text-gray-500 font-parkinsans mb-4">
-              Scan QR Code ini menggunakan aplikasi e-wallet atau m-banking
+              {copy.qrisScanHint}
             </p>
 
             <div className="bg-white p-3 rounded-2xl border-2 border-gray-100 inline-block shadow-sm">
@@ -761,7 +977,7 @@ function CheckoutContent() {
 
             <div className="mt-4 p-3 rounded-xl bg-blue-50 text-blue-800 text-xs font-parkinsans flex items-center justify-center gap-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
-              Menunggu pembayaran...
+              {copy.waitingPayment}
             </div>
           </div>
         </div>
@@ -773,7 +989,11 @@ function CheckoutContent() {
         onClose={() => {
           setModal({ ...modal, isOpen: false });
           if (modal.type === "success") {
-            router.push("/profile/history");
+            if (isGuestBuyNow && completedOrderId) {
+              router.push(`/pengiriman/${completedOrderId}`);
+            } else {
+              router.push("/profile/history");
+            }
           }
         }}
         title={modal.title}

@@ -14,7 +14,6 @@ import {
   CmsField,
   CmsPageKey,
   FaqItem,
-  Locale,
   adminGetCmsPage,
   adminSaveCmsPage,
   adminGetFaqs,
@@ -25,6 +24,7 @@ import {
   resolveCmsImage,
 } from "@/lib/cms";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
+import CmsNumberInput from "@/components/admin/CmsNumberInput";
 
 type TabKey = "beranda" | "faq" | "kontak" | "navfooter" | "ui" | "admin";
 
@@ -48,7 +48,7 @@ const SECTION_LABELS: Record<string, string> = {
   header: "Header",
   info: "Info Kontak",
   menu: "Menu",
-  site: "Browser Tab",
+  site: "Judul Tab Browser",
   bulletin: "Buletin",
   help: "Bantuan",
   social: "Sosial",
@@ -128,6 +128,15 @@ const HERO_FIELD_ORDER = [
   "badge_right_right_desktop",
   "badge_right_bottom_mobile",
   "badge_right_bottom_desktop",
+  // Wave SVGs (sayap)
+  "wave_left_left_mobile",
+  "wave_left_left_desktop",
+  "wave_left_top_mobile",
+  "wave_left_top_desktop",
+  "wave_right_right_mobile",
+  "wave_right_right_desktop",
+  "wave_right_top_mobile",
+  "wave_right_top_desktop",
   // Products
   "product1_badge_label",
   "product1_badge_icon",
@@ -201,8 +210,16 @@ const HERO_FIELD_ORDER = [
   "divider_bottom_desktop",
 ];
 
+/** Urutan field di section Browser Tab (Navbar / Footer) */
+const SITE_FIELD_ORDER = [
+  "browser_title",
+  "dashboard_browser_title",
+  "favicon",
+];
+
 const FIELD_LABELS: Record<string, string> = {
-  browser_title: "Judul Tab Browser",
+  browser_title: "Judul Tab Frontend",
+  dashboard_browser_title: "Judul Tab Dashboard",
   favicon: "Favicon (Icon Tab)",
   headline_1: "Headline 1",
   headline_1_color: "Warna Headline 1",
@@ -247,61 +264,70 @@ const FIELD_LABELS: Record<string, string> = {
   badge_right_bottom_mobile: "Badge Kanan — Posisi Bottom Mobile",
   badge_right_bottom_desktop: "Badge Kanan — Posisi Bottom Desktop",
 
+  wave_left_left_mobile: "Wave Kiri (Sayap) — Left Mobile",
+  wave_left_left_desktop: "Wave Kiri (Sayap) — Left Desktop",
+  wave_left_top_mobile: "Wave Kiri (Sayap) — Top Mobile",
+  wave_left_top_desktop: "Wave Kiri (Sayap) — Top Desktop",
+  wave_right_right_mobile: "Wave Kanan (Sayap) — Right Mobile",
+  wave_right_right_desktop: "Wave Kanan (Sayap) — Right Desktop",
+  wave_right_top_mobile: "Wave Kanan (Sayap) — Top Mobile",
+  wave_right_top_desktop: "Wave Kanan (Sayap) — Top Desktop",
+
   product1_badge_label: "Produk 1 — Teks Badge Label",
   product1_badge_icon: "Produk 1 — Icon Badge",
   product1_image: "Produk 1 — Gambar Botol",
-  product1_size_mobile: "Produk 1 — Size Mobile (%)",
-  product1_size_desktop: "Produk 1 — Size Desktop (%)",
+  product1_size_mobile: "Produk 1 — Size Mobile",
+  product1_size_desktop: "Produk 1 — Size Desktop",
   product1_left_mobile: "Produk 1 — Left Mobile",
   product1_left_desktop: "Produk 1 — Left Desktop",
   product1_top_mobile: "Produk 1 — Top Mobile",
   product1_top_desktop: "Produk 1 — Top Desktop",
   product1_right_mobile: "Produk 1 — Right Mobile",
   product1_right_desktop: "Produk 1 — Right Desktop",
-  product1_rotate_mobile: "Produk 1 — Rotate Mobile (deg)",
-  product1_rotate_desktop: "Produk 1 — Rotate Desktop (deg)",
+  product1_rotate_mobile: "Produk 1 — Rotate Mobile",
+  product1_rotate_desktop: "Produk 1 — Rotate Desktop",
 
   product2_badge_label: "Produk 2 — Teks Badge Label",
   product2_badge_icon: "Produk 2 — Icon Badge",
   product2_image: "Produk 2 — Gambar Botol",
-  product2_size_mobile: "Produk 2 — Size Mobile (%)",
-  product2_size_desktop: "Produk 2 — Size Desktop (%)",
+  product2_size_mobile: "Produk 2 — Size Mobile",
+  product2_size_desktop: "Produk 2 — Size Desktop",
   product2_left_mobile: "Produk 2 — Left Mobile",
   product2_left_desktop: "Produk 2 — Left Desktop",
   product2_top_mobile: "Produk 2 — Top Mobile",
   product2_top_desktop: "Produk 2 — Top Desktop",
   product2_right_mobile: "Produk 2 — Right Mobile",
   product2_right_desktop: "Produk 2 — Right Desktop",
-  product2_rotate_mobile: "Produk 2 — Rotate Mobile (deg)",
-  product2_rotate_desktop: "Produk 2 — Rotate Desktop (deg)",
+  product2_rotate_mobile: "Produk 2 — Rotate Mobile",
+  product2_rotate_desktop: "Produk 2 — Rotate Desktop",
 
   product3_badge_label: "Produk 3 — Teks Badge Label",
   product3_badge_icon: "Produk 3 — Icon Badge",
   product3_image: "Produk 3 — Gambar Botol",
-  product3_size_mobile: "Produk 3 — Size Mobile (%)",
-  product3_size_desktop: "Produk 3 — Size Desktop (%)",
+  product3_size_mobile: "Produk 3 — Size Mobile",
+  product3_size_desktop: "Produk 3 — Size Desktop",
   product3_left_mobile: "Produk 3 — Left Mobile",
   product3_left_desktop: "Produk 3 — Left Desktop",
   product3_top_mobile: "Produk 3 — Top Mobile",
   product3_top_desktop: "Produk 3 — Top Desktop",
   product3_right_mobile: "Produk 3 — Right Mobile",
   product3_right_desktop: "Produk 3 — Right Desktop",
-  product3_rotate_mobile: "Produk 3 — Rotate Mobile (deg)",
-  product3_rotate_desktop: "Produk 3 — Rotate Desktop (deg)",
+  product3_rotate_mobile: "Produk 3 — Rotate Mobile",
+  product3_rotate_desktop: "Produk 3 — Rotate Desktop",
 
   product4_badge_label: "Produk 4 — Teks Badge Label",
   product4_badge_icon: "Produk 4 — Icon Badge",
   product4_image: "Produk 4 — Gambar Botol",
-  product4_size_mobile: "Produk 4 — Size Mobile (%)",
-  product4_size_desktop: "Produk 4 — Size Desktop (%)",
+  product4_size_mobile: "Produk 4 — Size Mobile",
+  product4_size_desktop: "Produk 4 — Size Desktop",
   product4_left_mobile: "Produk 4 — Left Mobile",
   product4_left_desktop: "Produk 4 — Left Desktop",
   product4_top_mobile: "Produk 4 — Top Mobile",
   product4_top_desktop: "Produk 4 — Top Desktop",
   product4_right_mobile: "Produk 4 — Right Mobile",
   product4_right_desktop: "Produk 4 — Right Desktop",
-  product4_rotate_mobile: "Produk 4 — Rotate Mobile (deg)",
-  product4_rotate_desktop: "Produk 4 — Rotate Desktop (deg)",
+  product4_rotate_mobile: "Produk 4 — Rotate Mobile",
+  product4_rotate_desktop: "Produk 4 — Rotate Desktop",
 
   marquee_text: "Teks Divider Marquee",
   marquee_fs_mobile: "Marquee — Font Size Mobile",
@@ -320,25 +346,254 @@ const FIELD_LABELS: Record<string, string> = {
   divider_icon_4_size_desktop: "Icon Divider 4 — Size Desktop",
   divider_bottom_mobile: "Divider — Posisi Bottom Mobile",
   divider_bottom_desktop: "Divider — Posisi Bottom Desktop",
+
+  label1_text: "Label 1 (Prestige) — Teks",
+  label1_title: "Label 1 (Prestige) — Judul Produk",
+  label1_color: "Label 1 (Prestige) — Warna Teks",
+  label1_fs_mobile: "Label 1 (Prestige) — Font Size Mobile",
+  label1_fs_desktop: "Label 1 (Prestige) — Font Size Desktop",
+  label1_left_mobile: "Label 1 (Prestige) — Left Mobile",
+  label1_left_desktop: "Label 1 (Prestige) — Left Desktop",
+  label1_right_mobile: "Label 1 (Prestige) — Right Mobile",
+  label1_right_desktop: "Label 1 (Prestige) — Right Desktop",
+  label1_top_mobile: "Label 1 (Prestige) — Top Mobile",
+  label1_top_desktop: "Label 1 (Prestige) — Top Desktop",
+  label1_bottom_mobile: "Label 1 (Prestige) — Bottom Mobile",
+  label1_bottom_desktop: "Label 1 (Prestige) — Bottom Desktop",
+
+  label2_text: "Label 2 (Calm) — Teks",
+  label2_title: "Label 2 (Calm) — Judul Produk",
+  label2_color: "Label 2 (Calm) — Warna Teks",
+  label2_fs_mobile: "Label 2 (Calm) — Font Size Mobile",
+  label2_fs_desktop: "Label 2 (Calm) — Font Size Desktop",
+  label2_left_mobile: "Label 2 (Calm) — Left Mobile",
+  label2_left_desktop: "Label 2 (Calm) — Left Desktop",
+  label2_right_mobile: "Label 2 (Calm) — Right Mobile",
+  label2_right_desktop: "Label 2 (Calm) — Right Desktop",
+  label2_top_mobile: "Label 2 (Calm) — Top Mobile",
+  label2_top_desktop: "Label 2 (Calm) — Top Desktop",
+  label2_bottom_mobile: "Label 2 (Calm) — Bottom Mobile",
+  label2_bottom_desktop: "Label 2 (Calm) — Bottom Desktop",
+
+  label3_text: "Label 3 (Rebel) — Teks",
+  label3_title: "Label 3 (Rebel) — Judul Produk",
+  label3_color: "Label 3 (Rebel) — Warna Teks",
+  label3_fs_mobile: "Label 3 (Rebel) — Font Size Mobile",
+  label3_fs_desktop: "Label 3 (Rebel) — Font Size Desktop",
+  label3_left_mobile: "Label 3 (Rebel) — Left Mobile",
+  label3_left_desktop: "Label 3 (Rebel) — Left Desktop",
+  label3_right_mobile: "Label 3 (Rebel) — Right Mobile",
+  label3_right_desktop: "Label 3 (Rebel) — Right Desktop",
+  label3_top_mobile: "Label 3 (Rebel) — Top Mobile",
+  label3_top_desktop: "Label 3 (Rebel) — Top Desktop",
+  label3_bottom_mobile: "Label 3 (Rebel) — Bottom Mobile",
+  label3_bottom_desktop: "Label 3 (Rebel) — Bottom Desktop",
+
+  label4_text: "Label 4 (Sweet) — Teks",
+  label4_title: "Label 4 (Sweet) — Judul Produk",
+  label4_color: "Label 4 (Sweet) — Warna Teks",
+  label4_fs_mobile: "Label 4 (Sweet) — Font Size Mobile",
+  label4_fs_desktop: "Label 4 (Sweet) — Font Size Desktop",
+  label4_left_mobile: "Label 4 (Sweet) — Left Mobile",
+  label4_left_desktop: "Label 4 (Sweet) — Left Desktop",
+  label4_right_mobile: "Label 4 (Sweet) — Right Mobile",
+  label4_right_desktop: "Label 4 (Sweet) — Right Desktop",
+  label4_top_mobile: "Label 4 (Sweet) — Top Mobile",
+  label4_top_desktop: "Label 4 (Sweet) — Top Desktop",
+  label4_bottom_mobile: "Label 4 (Sweet) — Bottom Mobile",
+  label4_bottom_desktop: "Label 4 (Sweet) — Bottom Desktop",
 };
+
+const SEVENTH_FIELD_ORDER = [
+  "headline_1",
+  "headline_2",
+  "headline_3",
+  "headline_4",
+  "headline_5",
+  "en_l1",
+  "en_l2",
+  "en_l3",
+  "en_l4",
+  "cta_label",
+  "product_image",
+  "label1_text",
+  "label1_title",
+  "label1_color",
+  "label1_fs_mobile",
+  "label1_fs_desktop",
+  "label1_left_mobile",
+  "label1_left_desktop",
+  "label1_right_mobile",
+  "label1_right_desktop",
+  "label1_top_mobile",
+  "label1_top_desktop",
+  "label1_bottom_mobile",
+  "label1_bottom_desktop",
+  "label2_text",
+  "label2_title",
+  "label2_color",
+  "label2_fs_mobile",
+  "label2_fs_desktop",
+  "label2_left_mobile",
+  "label2_left_desktop",
+  "label2_right_mobile",
+  "label2_right_desktop",
+  "label2_top_mobile",
+  "label2_top_desktop",
+  "label2_bottom_mobile",
+  "label2_bottom_desktop",
+  "label3_text",
+  "label3_title",
+  "label3_color",
+  "label3_fs_mobile",
+  "label3_fs_desktop",
+  "label3_left_mobile",
+  "label3_left_desktop",
+  "label3_right_mobile",
+  "label3_right_desktop",
+  "label3_top_mobile",
+  "label3_top_desktop",
+  "label3_bottom_mobile",
+  "label3_bottom_desktop",
+  "label4_text",
+  "label4_title",
+  "label4_color",
+  "label4_fs_mobile",
+  "label4_fs_desktop",
+  "label4_left_mobile",
+  "label4_left_desktop",
+  "label4_right_mobile",
+  "label4_right_desktop",
+  "label4_top_mobile",
+  "label4_top_desktop",
+  "label4_bottom_mobile",
+  "label4_bottom_desktop",
+];
 
 function fieldLabel(key: string) {
   return FIELD_LABELS[key] || key.replace(/_/g, " ");
 }
 
 function sortSectionFields(section: string, sectionFields: CmsField[]) {
-  if (section !== "hero") return sectionFields;
+  const order =
+    section === "hero"
+      ? HERO_FIELD_ORDER
+      : section === "seventh"
+        ? SEVENTH_FIELD_ORDER
+        : section === "site"
+          ? SITE_FIELD_ORDER
+          : null;
+  if (!order) return sectionFields;
   return [...sectionFields].sort((a, b) => {
-    const ai = HERO_FIELD_ORDER.indexOf(a.key);
-    const bi = HERO_FIELD_ORDER.indexOf(b.key);
+    const ai = order.indexOf(a.key);
+    const bi = order.indexOf(b.key);
     return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
   });
 }
 
+const NUMERIC_STYLE_KEY_RE =
+  /(_fs_|_pos_|_left_|_top_|_right_|_bottom_|_size_|_rotate_|_icon_size_|^wave_)/;
+
+function looksLikeCssNumber(value: string | null | undefined) {
+  const v = (value ?? "").trim();
+  if (!v) return false;
+  return /^-?\d+(\.\d+)?\s*(px|%|deg)?$/i.test(v);
+}
+
+function isNumericStyleField(key: string, value?: string | null) {
+  if (key.endsWith("_color")) return false;
+  if (
+    key.includes("badge_label") ||
+    key.endsWith("_icon") ||
+    key.endsWith("_text") ||
+    key.endsWith("_title")
+  ) {
+    return false;
+  }
+  if (NUMERIC_STYLE_KEY_RE.test(key)) return true;
+  return looksLikeCssNumber(value);
+}
+
+function parseNumericCmsValue(raw: string | null | undefined): {
+  num: string;
+  unit: string;
+} {
+  const value = (raw ?? "").trim();
+  if (!value) return { num: "", unit: "" };
+
+  // Allow "28px", "28 px", "7.7%", "-24.5 %"
+  const spaced = value.match(/^(-?\d+(?:\.\d+)?)\s*(px|%|deg)$/i);
+  if (spaced) {
+    return { num: spaced[1], unit: spaced[2].toLowerCase() };
+  }
+
+  const unitMatch = value.match(/(px|%|deg)$/i);
+  const unit = unitMatch ? unitMatch[1].toLowerCase() : "";
+  const numPart = unit ? value.slice(0, -unit.length).trim() : value;
+
+  if (numPart === "" || /^-?\d*\.?\d*$/.test(numPart)) {
+    return { num: numPart, unit };
+  }
+
+  const match = value.match(/^(-?\d+(?:\.\d+)?)/);
+  if (match) return { num: match[1], unit: unit || "" };
+  return { num: value, unit: "" };
+}
+
+function inferNumericUnit(key: string): string {
+  if (/_rotate_/.test(key) || /product\d+_size_/.test(key)) return "";
+  if (
+    /_fs_/.test(key) ||
+    /_icon_size_/.test(key) ||
+    /divider_icon_\d+_size_/.test(key) ||
+    /divider_bottom_/.test(key) ||
+    /headline_pos_/.test(key)
+  ) {
+    return "px";
+  }
+  if (
+    /_left_/.test(key) ||
+    /_top_/.test(key) ||
+    /_right_/.test(key) ||
+    /_bottom_/.test(key) ||
+    /^wave_/.test(key)
+  ) {
+    return "%";
+  }
+  return "";
+}
+
+/** Unit shown beside the input (may differ from stored suffix for rotate/size). */
+function displayUnitForField(key: string, storageUnit: string) {
+  if (storageUnit) return storageUnit;
+  if (/_rotate_/.test(key)) return "deg";
+  if (/product\d+_size_/.test(key)) return "%";
+  return "";
+}
+
+function resolveNumericUnit(key: string, raw: string | null | undefined) {
+  const parsed = parseNumericCmsValue(raw);
+  if (parsed.unit) return parsed.unit;
+  return inferNumericUnit(key);
+}
+
+function composeNumericCmsValue(num: string, unit: string) {
+  const trimmed = num.trim();
+  if (!trimmed) return "";
+  return `${trimmed}${unit}`;
+}
+
+function numericStepForField(key: string, unit: string) {
+  if (unit === "%" || /_left_|_top_|_right_|_bottom_|^wave_/.test(key)) {
+    return 0.1;
+  }
+  if (/_rotate_/.test(key)) return 1;
+  return 1;
+}
+
 export default function CmsDashboardPage() {
-  const { t, common } = useAdminI18n();
+  const { t, common, locale } = useAdminI18n();
   const [tab, setTab] = useState<TabKey>("beranda");
-  const [editLocale, setEditLocale] = useState<Locale>("id");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fields, setFields] = useState<CmsField[]>([]);
@@ -370,13 +625,13 @@ export default function CmsDashboardPage() {
         setFields([]);
       } else if (tab === "navfooter") {
         const [nav, foot] = await Promise.all([
-          adminGetCmsPage("navbar", editLocale),
-          adminGetCmsPage("footer", editLocale),
+          adminGetCmsPage("navbar", locale),
+          adminGetCmsPage("footer", locale),
         ]);
         setFields([...nav, ...foot]);
       } else {
         const page = pageForTab(tab);
-        if (page) setFields(await adminGetCmsPage(page, editLocale));
+        if (page) setFields(await adminGetCmsPage(page, locale));
       }
     } catch (e) {
       showNotice(
@@ -388,7 +643,7 @@ export default function CmsDashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [tab, editLocale, t]);
+  }, [tab, locale, t]);
 
   useEffect(() => {
     load();
@@ -478,8 +733,8 @@ export default function CmsDashboardPage() {
             type: f.type,
             value: f.value,
           }));
-        await adminSaveCmsPage("navbar", navFields, editLocale);
-        await adminSaveCmsPage("footer", footFields, editLocale);
+        await adminSaveCmsPage("navbar", navFields, locale);
+        await adminSaveCmsPage("footer", footFields, locale);
       } else {
         const page = pageForTab(tab);
         if (!page) return;
@@ -491,7 +746,7 @@ export default function CmsDashboardPage() {
             type: f.type,
             value: f.value,
           })),
-          editLocale,
+          locale,
         );
       }
       showNotice(
@@ -617,30 +872,12 @@ export default function CmsDashboardPage() {
             {t(
               "cms",
               "subtitle",
-              "Edit teks & gambar (ID/EN). Layout tetap sama.",
-              "Edit text & images (ID/EN). Layout stays the same.",
+              "Kelola teks dan gambar per section. Layout halaman tetap sama.",
+              "Manage text and images per section. Page layout stays the same.",
             )}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {tab !== "faq" && (
-            <div className="inline-flex items-center gap-0.5 p-0.5 rounded-full bg-gray-100">
-              {(["id", "en"] as Locale[]).map((loc) => (
-                <button
-                  key={loc}
-                  type="button"
-                  onClick={() => setEditLocale(loc)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-                    editLocale === loc
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500"
-                  }`}
-                >
-                  {loc.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          )}
           {tab !== "faq" && (
           <button
             type="button"
@@ -852,6 +1089,16 @@ export default function CmsDashboardPage() {
                         f.key === field.key,
                     );
                     const isColorField = field.key.endsWith("_color");
+                    const isNumericField = isNumericStyleField(
+                      field.key,
+                      field.value,
+                    );
+                    const numericParsed = isNumericField
+                      ? parseNumericCmsValue(field.value)
+                      : null;
+                    const numericUnit = isNumericField
+                      ? resolveNumericUnit(field.key, field.value)
+                      : "";
                     return (
                       <div
                         key={`${field.section}-${field.key}`}
@@ -889,15 +1136,6 @@ export default function CmsDashboardPage() {
                               className="flex-1 text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white"
                             />
                           </div>
-                        ) : field.type === "text" ? (
-                          <textarea
-                            rows={3}
-                            value={field.value || ""}
-                            onChange={(e) =>
-                              updateFieldValue(globalIndex, e.target.value)
-                            }
-                            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm resize-none outline-none focus:ring-2 focus:ring-gray-900"
-                          />
                         ) : isColorField ? (
                           <div className="flex items-center gap-3">
                             <input
@@ -922,6 +1160,27 @@ export default function CmsDashboardPage() {
                               className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 font-mono uppercase"
                             />
                           </div>
+                        ) : isNumericField ? (
+                          <CmsNumberInput
+                            value={numericParsed?.num ?? ""}
+                            unit={displayUnitForField(field.key, numericUnit)}
+                            step={numericStepForField(field.key, numericUnit)}
+                            onChange={(num) =>
+                              updateFieldValue(
+                                globalIndex,
+                                composeNumericCmsValue(num, numericUnit),
+                              )
+                            }
+                          />
+                        ) : field.type === "text" ? (
+                          <textarea
+                            rows={3}
+                            value={field.value || ""}
+                            onChange={(e) =>
+                              updateFieldValue(globalIndex, e.target.value)
+                            }
+                            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm resize-none outline-none focus:ring-2 focus:ring-gray-900"
+                          />
                         ) : (
                           <input
                             type="text"

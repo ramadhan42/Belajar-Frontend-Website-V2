@@ -42,13 +42,19 @@ export interface AuthResponse {
 export interface Product {
   id: number;
   title: string; // bukan "name"
+  title_en?: string | null;
   description?: string;
+  description_en?: string | null;
   color?: string;
   price: string; // string "10000.00" dari Laravel
   personality_type?: string;
+  personality_type_en?: string | null;
   top_note?: string;
+  top_note_en?: string | null;
   middle_note?: string;
+  middle_note_en?: string | null;
   base_note?: string;
+  base_note_en?: string | null;
   image_produk_belanja?: string;
   image_1?: string;
   image_2?: string;
@@ -220,12 +226,42 @@ export async function getProfile(): Promise<User> {
   return (res as { data: User }).data ?? (res as User);
 }
 
-/** GET /api/shopping-history */
-export async function getShoppingHistory(): Promise<ShoppingHistoryItem[]> {
-  return request<ShoppingHistoryItem[]>("/api/shopping-history", {
-    method: "GET",
-    headers: buildHeaders(true),
-  });
+/** GET /api/shopping-history?locale= */
+export async function getShoppingHistory(
+  locale: "id" | "en" = "id",
+): Promise<ShoppingHistoryItem[]> {
+  return request<ShoppingHistoryItem[]>(
+    `/api/shopping-history?locale=${locale}`,
+    {
+      method: "GET",
+      headers: buildHeaders(true),
+    },
+  );
+}
+
+export interface BadgeCounts {
+  cart: number;
+  wishlist: number;
+  history: number;
+  unread: number;
+}
+
+/** GET /api/badges — lightweight counts for navbar/profile badges */
+export async function getBadgeCounts(): Promise<BadgeCounts> {
+  const res = await request<{ success?: boolean; data: BadgeCounts }>(
+    "/api/badges",
+    {
+      method: "GET",
+      headers: buildHeaders(true),
+    },
+  );
+
+  return {
+    cart: Number(res.data?.cart ?? 0),
+    wishlist: Number(res.data?.wishlist ?? 0),
+    history: Number(res.data?.history ?? 0),
+    unread: Number(res.data?.unread ?? 0),
+  };
 }
 
 // Tambahkan di file api.ts
@@ -282,30 +318,78 @@ export const checkoutApi = {
   },
 };
 
+export type GuestCheckoutPayload = {
+  guest_email: string;
+  invoice_id: string;
+  payment_method: string;
+  total: number;
+  items: Array<{
+    product_id: number;
+    quantity: number;
+    price: number;
+    title?: string;
+  }>;
+  recipient_name: string;
+  recipient_phone: string;
+  recipient_address: string;
+  courier?: string;
+};
+
+/** POST /api/checkout/guest — buy-now tanpa login */
+export async function guestCheckoutApi(payload: GuestCheckoutPayload) {
+  const res = await fetch(`${BASE_URL}/api/checkout/guest`, {
+    method: "POST",
+    mode: "cors",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(
+      data.error_detail ||
+        data.message ||
+        "Gagal melakukan checkout tamu",
+    );
+  }
+  return data as {
+    success: boolean;
+    message: string;
+    data?: { order_id: string; tracking_url_hint?: string };
+  };
+}
+
 // ---------------------------------------------------------------------------
 // 3. Products
 // ---------------------------------------------------------------------------
 
-/** GET /api/products */
-export async function getProducts(): Promise<Product[]> {
-  const res = await request<{ data: Product[] } | Product[]>("/api/products", {
-    method: "GET",
-    headers: buildHeaders(),
-  });
-  // Unwrap Laravel Resource Collection { data: [...] }
-  return Array.isArray(res) ? res : ((res as { data: Product[] }).data ?? []);
-}
-
-/** GET /api/products/:id */
-export async function getProduct(id: number | string): Promise<Product> {
-  const res = await request<{ data: Product } | Product>(
-    `/api/products/${id}`,
+/** GET /api/products?locale= */
+export async function getProducts(locale: "id" | "en" = "id"): Promise<Product[]> {
+  const res = await request<{ data: Product[] } | Product[]>(
+    `/api/products?locale=${locale}`,
     {
       method: "GET",
       headers: buildHeaders(),
     },
   );
-  // Unwrap Laravel Resource { data: {...} }
+  return Array.isArray(res) ? res : ((res as { data: Product[] }).data ?? []);
+}
+
+/** GET /api/products/:id?locale= */
+export async function getProduct(
+  id: number | string,
+  locale: "id" | "en" = "id",
+): Promise<Product> {
+  const res = await request<{ data: Product } | Product>(
+    `/api/products/${id}?locale=${locale}`,
+    {
+      method: "GET",
+      headers: buildHeaders(),
+    },
+  );
   return (res as { data: Product }).data ?? (res as Product);
 }
 
@@ -313,9 +397,11 @@ export async function getProduct(id: number | string): Promise<Product> {
 // 4. Cart
 // ---------------------------------------------------------------------------
 
-/** GET /api/carts */
-export async function getCartItems(): Promise<CartItem[]> {
-  return request<CartItem[]>("/api/carts", {
+/** GET /api/carts?locale= */
+export async function getCartItems(
+  locale: "id" | "en" = "id",
+): Promise<CartItem[]> {
+  return request<CartItem[]>(`/api/carts?locale=${locale}`, {
     method: "GET",
     headers: buildHeaders(true),
   });
@@ -345,9 +431,11 @@ export async function removeFromCart(cartItemId: number): Promise<void> {
 // 5. Wishlist
 // ---------------------------------------------------------------------------
 
-/** GET /api/wishlists */
-export async function getWishlistItems(): Promise<WishlistItem[]> {
-  return request<WishlistItem[]>("/api/wishlists", {
+/** GET /api/wishlists?locale= */
+export async function getWishlistItems(
+  locale: "id" | "en" = "id",
+): Promise<WishlistItem[]> {
+  return request<WishlistItem[]>(`/api/wishlists?locale=${locale}`, {
     method: "GET",
     headers: buildHeaders(true),
   });
@@ -377,25 +465,56 @@ export async function removeFromWishlist(
 // ---------------------------------------------------------------------------
 
 /** GET /api/quiz/questions */
-export async function getQuizQuestions(): Promise<QuizQuestion[]> {
-  return request<QuizQuestion[]>("/api/quiz/questions", {
+export async function getQuizQuestions(
+  locale: "id" | "en" = "id",
+): Promise<QuizQuestion[]> {
+  return request<QuizQuestion[]>(`/api/quiz/questions?locale=${locale}`, {
     method: "GET",
     headers: buildHeaders(),
   });
 }
 
+export interface QuizPersonalityResultCopy {
+  personality_key: string;
+  title: string;
+  description: string;
+  color?: string | null;
+  bg_image?: string | null;
+  product_image?: string | null;
+  forced_product_id?: string | null;
+}
+
+/** GET /api/quiz/results?locale= */
+export async function getQuizResults(
+  locale: "id" | "en" = "id",
+): Promise<Record<string, QuizPersonalityResultCopy>> {
+  const res = await request<{
+    success?: boolean;
+    data?: Record<string, QuizPersonalityResultCopy>;
+  }>(`/api/quiz/results?locale=${locale}`, {
+    method: "GET",
+    headers: buildHeaders(),
+  });
+  return res?.data ?? {};
+}
+
 /** POST /api/quiz/submit */
-export async function submitQuiz(answers: QuizAnswer[]): Promise<QuizResult> {
-  return request<QuizResult>("/api/quiz/submit", {
+export async function submitQuiz(
+  answers: QuizAnswer[],
+  locale: "id" | "en" = "id",
+): Promise<QuizResult> {
+  return request<QuizResult>(`/api/quiz/submit?locale=${locale}`, {
     method: "POST",
     headers: buildHeaders(true),
-    body: JSON.stringify({ answers }),
+    body: JSON.stringify({ answers, locale }),
   });
 }
 
 /** GET /api/quiz/history */
-export async function getQuizHistory(): Promise<QuizResult[]> {
-  return request<QuizResult[]>("/api/quiz/history", {
+export async function getQuizHistory(
+  locale: "id" | "en" = "id",
+): Promise<QuizResult[]> {
+  return request<QuizResult[]>(`/api/quiz/history?locale=${locale}`, {
     method: "GET",
     headers: buildHeaders(true),
   });
@@ -547,9 +666,8 @@ export const cartApi = {
 
 // 3. API UNTUK WISHLIST (Perbaikan)
 export const wishlistApi = {
-  getWishlist: async () => {
-    // Tambahkan /api/ di depan dan 's' di belakang agar sesuai route Laravel
-    const res = await fetch(`${BASE_URL}/api/wishlists`, {
+  getWishlist: async (locale: "id" | "en" = "id") => {
+    const res = await fetch(`${BASE_URL}/api/wishlists?locale=${locale}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -587,18 +705,21 @@ export const wishlistApi = {
   },
 
   // 👇 TAMBAHKAN KODE INI DI BAWAHNYA 👇
-  getWishlistDetail: async (id: number) => {
+  getWishlistDetail: async (id: number, locale: "id" | "en" = "id") => {
     const token =
       typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
 
-    const response = await fetch(`${BASE_URL}/api/wishlists/${id}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
+    const response = await fetch(
+      `${BASE_URL}/api/wishlists/${id}?locale=${locale}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error("Gagal mengambil detail wishlist");
