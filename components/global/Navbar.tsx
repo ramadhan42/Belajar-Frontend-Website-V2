@@ -1,20 +1,19 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useNavbarColor } from "@/context/NavbarColorContext";
-import {
-  logout,
-  getCartItems,
-  getWishlistItems,
-  getShoppingHistory,
-} from "@/lib/api";
+import { logout } from "@/lib/api";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 
 import { SITE_STRINGS } from "@/components/constans/strings";
 import { useCms } from "@/context/CmsContext";
+import LanguageSwitcher from "@/components/global/LanguageSwitcher";
+import { useLocale } from "@/context/LocaleContext";
+import { useBadgeCounts } from "@/context/BadgeCountsContext";
+import { L } from "@/lib/localeText";
 
 interface NavModalState {
   isOpen: boolean;
@@ -27,85 +26,283 @@ interface NavModalState {
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
   const { navbarColor } = useNavbarColor();
-  const { tNav } = useCms();
+  const { tNav, tUi } = useCms();
+  const { locale } = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const {
+    unread: unreadCount,
+    cart: cartCount,
+    history: historyCount,
+    wishlist: wishlistCount,
+  } = useBadgeCounts();
 
-  // STATE UNTUK BADGE UNREAD + MENU AKUN
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [cartCount, setCartCount] = useState(0);
-  const [historyCount, setHistoryCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
+  const en = locale === "en";
+  const account = useMemo(
+    () => ({
+      myAccount: tUi(
+        "account",
+        "my_account",
+        en ? "My Account" : "Akun Saya",
+      ),
+      menuLabel: tUi(
+        "account",
+        "menu_label",
+        en ? "Account menu" : "Menu akun",
+      ),
+      profile: tUi(
+        "account",
+        "profile",
+        en ? "Profile Settings" : "Pengaturan Profil",
+      ),
+      profileDesc: tUi(
+        "account",
+        "profile_desc",
+        en ? "Account data & settings" : "Data akun & pengaturan",
+      ),
+      profileTitle: tUi(
+        "account",
+        "profile_title",
+        en ? "User Profile" : "Profil Pengguna",
+      ),
+      profileLoading: tUi(
+        "account",
+        "profile_loading",
+        en ? "Opening your profile..." : "Membuka halaman profil Anda...",
+      ),
+      messages: tUi(
+        "account",
+        "messages",
+        en ? "Unread messages" : "Pesan belum dibaca",
+      ),
+      messagesShort: tUi("account", "messages_short", en ? "Messages" : "Pesan"),
+      messagesTitle: tUi(
+        "account",
+        "messages_title",
+        en ? "Your Messages" : "Pesan Anda",
+      ),
+      messagesLoading: tUi(
+        "account",
+        "messages_loading",
+        en ? "Opening your inbox..." : "Membuka kotak pesan...",
+      ),
+      messagesNew: tUi(
+        "account",
+        "messages_new",
+        en ? "New reply from admin" : "Ada balasan baru dari admin",
+      ),
+      messagesEmpty: tUi(
+        "account",
+        "messages_empty",
+        en ? "No new messages" : "Tidak ada pesan baru",
+      ),
+      unreadTip: tUi(
+        "account",
+        "unread_tip",
+        en ? "unread messages" : "pesan belum dibaca",
+      ),
+      cart: tUi(
+        "account",
+        "cart",
+        en ? "Shopping cart" : "Keranjang belanja",
+      ),
+      cartShort: tUi("account", "cart_short", en ? "Cart" : "Keranjang"),
+      cartTitle: tUi(
+        "account",
+        "cart_title",
+        en ? "Shopping Cart" : "Keranjang Belanja",
+      ),
+      cartLoading: tUi(
+        "account",
+        "cart_loading",
+        en ? "Opening shopping cart..." : "Membuka keranjang belanja...",
+      ),
+      cartReady: tUi(
+        "account",
+        "cart_ready",
+        en ? "Ready to checkout" : "Produk siap checkout",
+      ),
+      cartEmpty: tUi(
+        "account",
+        "cart_empty",
+        en ? "Cart is empty" : "Keranjang masih kosong",
+      ),
+      history: tUi(
+        "account",
+        "history",
+        en ? "Order history" : "Riwayat belanja",
+      ),
+      historyShort: tUi(
+        "account",
+        "history_short",
+        en ? "History" : "Riwayat",
+      ),
+      historyTitle: tUi(
+        "account",
+        "history_title",
+        en ? "Order History" : "Riwayat Belanja",
+      ),
+      historyLoading: tUi(
+        "account",
+        "history_loading",
+        en ? "Opening order history..." : "Membuka riwayat belanja...",
+      ),
+      historyReady: tUi(
+        "account",
+        "history_ready",
+        en ? "Orders you've placed" : "Pesanan yang pernah dibuat",
+      ),
+      historyEmpty: tUi(
+        "account",
+        "history_empty",
+        en ? "No order history yet" : "Belum ada riwayat",
+      ),
+      wishlist: tUi("account", "wishlist", "Wishlist"),
+      wishlistTitle: tUi("account", "wishlist_title", "Wishlist"),
+      wishlistLoading: tUi(
+        "account",
+        "wishlist_loading",
+        en ? "Opening wishlist..." : "Membuka wishlist...",
+      ),
+      wishlistReady: tUi(
+        "account",
+        "wishlist_ready",
+        en ? "Saved products" : "Produk yang disimpan",
+      ),
+      wishlistEmpty: tUi(
+        "account",
+        "wishlist_empty",
+        en ? "Wishlist is empty" : "Wishlist masih kosong",
+      ),
+      language: tUi("account", "language", en ? "Language" : "Bahasa"),
+    }),
+    [tUi, en],
+  );
+
+  const navAction = useMemo(
+    () => ({
+      beranda: {
+        title: L(locale, "Beranda Utama", "Home"),
+        message: L(
+          locale,
+          "Mengarahkan ke halaman utama Evomi...",
+          "Redirecting to the Evomi home page...",
+        ),
+      },
+      tentang: {
+        title: L(locale, "Tentang Evomi", "About Evomi"),
+        message: L(
+          locale,
+          "Mengarahkan ke informasi tentang Evomi...",
+          "Redirecting to information about Evomi...",
+        ),
+      },
+      belanja: {
+        title: L(locale, "Katalog Produk", "Product Catalog"),
+        message: L(
+          locale,
+          "Mengarahkan ke halaman belanja Evomi...",
+          "Redirecting to the Evomi shop page...",
+        ),
+      },
+      kuis: {
+        title: L(locale, "Kuis Persona", "Persona Quiz"),
+        message: L(
+          locale,
+          "Mengarahkan ke halaman Kuis Karakteristik...",
+          "Redirecting to the Personality Quiz page...",
+        ),
+      },
+      login: {
+        title: L(locale, "Halaman Masuk", "Login Page"),
+        message: L(
+          locale,
+          "Mengarahkan ke halaman masuk...",
+          "Redirecting to the login page...",
+        ),
+      },
+      register: {
+        title: L(locale, "Halaman Pendaftaran", "Registration Page"),
+        message: L(
+          locale,
+          "Mengarahkan ke halaman pendaftaran...",
+          "Redirecting to the registration page...",
+        ),
+      },
+    }),
+    [locale],
+  );
+
+  const logoutCopy = useMemo(
+    () => ({
+      confirmTitle: L(locale, "Konfirmasi Keluar", "Confirm Logout"),
+      confirmMessage: L(
+        locale,
+        "Apakah Anda yakin ingin keluar dari akun Evomi?",
+        "Are you sure you want to log out of your Evomi account?",
+      ),
+      confirmAction: L(locale, "Ya, Keluar", "Yes, Log Out"),
+      processingTitle: L(locale, "Memproses...", "Processing..."),
+      processingMessage: L(
+        locale,
+        "Sedang mengeluarkan akun Anda...",
+        "Logging you out...",
+      ),
+      successTitle: L(locale, "Berhasil Keluar", "Logged Out Successfully"),
+      successMessage: L(
+        locale,
+        "Sampai jumpa kembali di Evomi!",
+        "See you again at Evomi!",
+      ),
+      cancel: L(locale, "Batal", "Cancel"),
+    }),
+    [locale],
+  );
+
+  const menuLabel = {
+    close: L(locale, "Tutup menu", "Close menu"),
+    open: L(locale, "Buka menu", "Open menu"),
+  };
 
   const formatBadge = (count: number) => (count > 99 ? "99+" : count);
 
-  const fetchUnreadCount = async () => {
-    try {
-      const storedUser = localStorage.getItem("auth_user");
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        if (user.email) {
-          const res = await fetch(
-            `${SITE_STRINGS.base_url.url_backend}/api/contact/unread-count?email=${user.email}`,
-          );
-          const data = await res.json();
-          if (data.success) {
-            setUnreadCount(data.count);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Gagal load unread badge di Navbar:", error);
-    }
-  };
-
-  const fetchMenuCounts = useCallback(async () => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      setCartCount(0);
-      setHistoryCount(0);
-      setWishlistCount(0);
-      return;
-    }
-
-    try {
-      const [cart, history, wishlist] = await Promise.all([
-        getCartItems().catch(() => []),
-        getShoppingHistory().catch(() => []),
-        getWishlistItems().catch(() => []),
-      ]);
-
-      setCartCount(Array.isArray(cart) ? cart.length : 0);
-      setHistoryCount(Array.isArray(history) ? history.length : 0);
-      setWishlistCount(Array.isArray(wishlist) ? wishlist.length : 0);
-    } catch (error) {
-      console.error("Gagal load badge menu akun di Navbar:", error);
-    }
-  }, []);
+  useEffect(() => {
+    setIsAccountMenuOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
-    fetchUnreadCount();
-    fetchMenuCounts();
+    if (!isAccountMenuOpen) return;
 
-    const intervalId = setInterval(() => {
-      fetchUnreadCount();
-      fetchMenuCounts();
-    }, 5000);
-
-    window.addEventListener("messages_read", fetchUnreadCount);
-    window.addEventListener("cart_updated", fetchMenuCounts);
-    window.addEventListener("wishlist_updated", fetchMenuCounts);
-    window.addEventListener("history_updated", fetchMenuCounts);
-
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener("messages_read", fetchUnreadCount);
-      window.removeEventListener("cart_updated", fetchMenuCounts);
-      window.removeEventListener("wishlist_updated", fetchMenuCounts);
-      window.removeEventListener("history_updated", fetchMenuCounts);
+    const onPointerDown = (event: PointerEvent | MouseEvent | TouchEvent) => {
+      const target = event.target as Node | null;
+      if (
+        accountMenuRef.current &&
+        target &&
+        !accountMenuRef.current.contains(target)
+      ) {
+        setIsAccountMenuOpen(false);
+      }
     };
-  }, [pathname, fetchMenuCounts]);
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsAccountMenuOpen(false);
+    };
+
+    // capture: true agar tetap tertangkap meski ada stopPropagation di elemen lain
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("mousedown", onPointerDown, true);
+    document.addEventListener("touchstart", onPointerDown, true);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("mousedown", onPointerDown, true);
+      document.removeEventListener("touchstart", onPointerDown, true);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isAccountMenuOpen]);
 
   // Helper: cek apakah menu aktif berdasarkan path
   const isActive = (path: string) => {
@@ -114,8 +311,9 @@ export default function Navbar() {
   };
 
   // Class menu: aktif = bg-white teks warna navbar, tidak aktif = teks putih + hover soft
+  // Desktop: lebar pill disamakan (grid 4 kolom) agar bg putih tidak pendek/panjang beda-beda
   const navItemClass = (path: string) =>
-    `nav-pill flex justify-center items-center w-full md:w-auto md:px-6 text-[12px] md:text-[18px] py-2.5 font-normal rounded-full text-center ${
+    `nav-pill flex justify-center items-center w-full md:min-w-[7.25rem] md:px-5 text-[12px] md:text-[18px] py-2.5 font-normal rounded-full text-center whitespace-nowrap ${
       isActive(path)
         ? "is-active bg-white text-[var(--nav-color)] shadow-sm"
         : "text-white hover:bg-white/95 hover:text-[var(--nav-color)] hover:shadow-sm"
@@ -127,6 +325,17 @@ export default function Navbar() {
 
   // Warna navbar selalu dari context (default #1172BA)
   const finalBg = navbarColor;
+
+  // Latar di belakang pill navbar (padding luar) — biru seperti beranda
+  const hasBlueNavBackdrop =
+    pathname === "/" ||
+    pathname === "/beranda" ||
+    pathname === "/belanja" ||
+    pathname === "/about" ||
+    pathname === "/contact";
+  const navBackdropColor = hasBlueNavBackdrop
+    ? finalBg || "#1172BA"
+    : "transparent";
 
   // Stagger variants — re-trigger tiap isInView berubah
   const containerVariants = {
@@ -243,15 +452,15 @@ export default function Navbar() {
     setNavModal({
       isOpen: true,
       type: "confirm",
-      title: "Konfirmasi Keluar",
-      message: "Apakah Anda yakin ingin keluar dari akun Evomi?",
-      confirmText: "Ya, Keluar",
+      title: logoutCopy.confirmTitle,
+      message: logoutCopy.confirmMessage,
+      confirmText: logoutCopy.confirmAction,
       onConfirm: async () => {
         setNavModal({
           isOpen: true,
           type: "loading",
-          title: "Memproses...",
-          message: "Sedang mengeluarkan akun Anda...",
+          title: logoutCopy.processingTitle,
+          message: logoutCopy.processingMessage,
         });
         await performLogout();
       },
@@ -267,6 +476,7 @@ export default function Navbar() {
     } finally {
       localStorage.removeItem("auth_token");
       localStorage.removeItem("auth_user");
+      localStorage.removeItem("user");
       setUserEmail(null);
       setUserAvatar(null);
       setUserName(null);
@@ -275,8 +485,8 @@ export default function Navbar() {
       setNavModal({
         isOpen: true,
         type: "success",
-        title: "Berhasil Keluar",
-        message: "Sampai jumpa kembali di Evomi!",
+        title: logoutCopy.successTitle,
+        message: logoutCopy.successMessage,
       });
       setTimeout(() => {
         setNavModal((prev) => ({ ...prev, isOpen: false }));
@@ -295,16 +505,21 @@ export default function Navbar() {
       <motion.div
         ref={navRef}
         className="px-2 py-2 md:p-4 md:pt-7 md:px-15 w-full relative z-50"
+        style={{
+          backgroundColor: navBackdropColor,
+          transition: `background-color var(--theme-bg-duration, 0ms) cubic-bezier(0.22, 1, 0.36, 1)`,
+        }}
         variants={containerVariants}
         initial="hidden"
         animate={isInView ? "visible" : "hidden"}
       >
         <nav
-          className="text-white rounded-[18px] md:rounded-[25px] px-3 py-2 md:px-8 md:py-3 relative w-[100%] max-w-[4200px] mx-auto"
+          className="theme-color-shimmer-chrome text-white rounded-[18px] md:rounded-[25px] px-3 py-2 md:px-8 md:py-3 relative w-[100%] max-w-[4200px] mx-auto"
           style={
             {
               backgroundColor: finalBg,
-              transition: "background-color 0.6s ease",
+              transition:
+                "background-color var(--theme-bg-duration, 0ms) cubic-bezier(0.22, 1, 0.36, 1)",
               "--nav-color": finalBg,
             } as React.CSSProperties
           }
@@ -372,8 +587,8 @@ export default function Navbar() {
               position: absolute;
               top: calc(100% + 14px);
               right: 0;
-              min-width: 240px;
-              max-width: 300px;
+              min-width: 260px;
+              max-width: 320px;
               padding: 12px 14px;
               border-radius: 16px;
               background: #ffffff;
@@ -390,7 +605,7 @@ export default function Navbar() {
                 opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
                 transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
                 visibility 0.28s;
-              z-index: 70;
+              z-index: 80;
             }
             .nav-avatar-tooltip::before {
               content: "";
@@ -403,15 +618,25 @@ export default function Navbar() {
               transform: rotate(45deg);
               box-shadow: -1px -1px 0 rgba(17, 24, 39, 0.06);
             }
-            .nav-avatar-wrap:hover .nav-avatar-tooltip {
+            .nav-avatar-wrap.is-open .nav-avatar-tooltip {
               opacity: 1;
               visibility: visible;
+              pointer-events: auto;
               transform: translateY(0) scale(1);
             }
-            .nav-avatar-wrap:has(.nav-unread-badge:hover) .nav-avatar-tooltip {
-              opacity: 0;
-              visibility: hidden;
-              transform: translateY(-8px) scale(0.96);
+            .nav-account-item {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 12px;
+              width: 100%;
+              padding: 8px 10px;
+              border-radius: 12px;
+              text-align: left;
+              transition: background-color 0.2s ease;
+            }
+            .nav-account-item:hover {
+              background-color: #f3f4f6;
             }
             .nav-unread-badge {
               position: absolute;
@@ -532,8 +757,8 @@ export default function Navbar() {
                   handleNavAction(
                     e,
                     "/",
-                    "Beranda Utama",
-                    "Mengarahkan ke halaman utama Evomi...",
+                    navAction.beranda.title,
+                    navAction.beranda.message,
                   )
                 }
               >
@@ -548,18 +773,17 @@ export default function Navbar() {
               </Link>
             </motion.div>
 
-            {/* DESKTOP: MENU TENGAH */}
-            {/* Menggunakan space-x-1 agar rapih berdampingan */}
-            <div className="hidden md:flex items-center space-x-1">
-              <motion.div variants={itemVariants}>
+            {/* DESKTOP: MENU TENGAH — lebar pill disamakan (4 kolom) */}
+            <div className="hidden md:grid grid-cols-4 gap-1 items-center">
+              <motion.div variants={itemVariants} className="w-full">
                 <Link
                   href="/"
                   onClick={(e) =>
                     handleNavAction(
                       e,
                       "/",
-                      "Beranda Utama",
-                      "Mengarahkan ke halaman utama Evomi...",
+                      navAction.beranda.title,
+                      navAction.beranda.message,
                     )
                   }
                   className={navItemClass("/")}
@@ -567,31 +791,31 @@ export default function Navbar() {
                   {tNav("beranda", "Beranda")}
                 </Link>
               </motion.div>
-              <motion.div variants={itemVariants}>
+              <motion.div variants={itemVariants} className="w-full">
                 <Link
-                  href="/#third-section"
+                  href="/#about"
                   onClick={(e) =>
                     handleNavAction(
                       e,
-                      "/#third-section",
-                      "Tentang Evomi",
-                      "Mengarahkan ke informasi tentang Evomi...",
+                      "/#about",
+                      navAction.tentang.title,
+                      navAction.tentang.message,
                     )
                   }
-                  className={navItemClass("/#third-section")}
+                  className={navItemClass("/#about")}
                 >
                   {tNav("tentang", "Tentang")}
                 </Link>
               </motion.div>
-              <motion.div variants={itemVariants}>
+              <motion.div variants={itemVariants} className="w-full">
                 <Link
                   href="/belanja"
                   onClick={(e) =>
                     handleNavAction(
                       e,
                       "/belanja",
-                      "Katalog Produk",
-                      "Mengarahkan ke halaman belanja Evomi...",
+                      navAction.belanja.title,
+                      navAction.belanja.message,
                     )
                   }
                   className={navItemClass("/belanja")}
@@ -599,15 +823,15 @@ export default function Navbar() {
                   {tNav("belanja", "Belanja")}
                 </Link>
               </motion.div>
-              <motion.div variants={itemVariants}>
+              <motion.div variants={itemVariants} className="w-full">
                 <Link
                   href="/kuis"
                   onClick={(e) =>
                     handleNavAction(
                       e,
                       "/kuis",
-                      "Kuis Persona",
-                      "Mengarahkan ke halaman Kuis Karakteristik...",
+                      navAction.kuis.title,
+                      navAction.kuis.message,
                     )
                   }
                   className={navItemClass("/kuis")}
@@ -621,19 +845,26 @@ export default function Navbar() {
             <div className="hidden md:flex items-center space-x-2 md:mr-2">
               {userEmail ? (
                 <>
-                  <motion.div variants={itemVariants} className="nav-avatar-wrap">
-                    <Link
-                      href="/profile"
-                      onClick={(e) =>
-                        handleNavAction(
-                          e,
-                          "/profile",
-                          "Profil Pengguna",
-                          "Membuka halaman profil Anda...",
-                        )
-                      }
+                  {isAccountMenuOpen ? (
+                    <button
+                      type="button"
+                      aria-label="Tutup menu akun"
+                      className="fixed inset-0 z-[65] cursor-default bg-transparent"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                    />
+                  ) : null}
+                  <motion.div
+                    variants={itemVariants}
+                    className={`nav-avatar-wrap relative z-[70]${isAccountMenuOpen ? " is-open" : ""}`}
+                    ref={accountMenuRef}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setIsAccountMenuOpen((open) => !open)}
                       className="nav-avatar relative flex items-center justify-center w-[44px] h-[44px] rounded-full bg-white text-[var(--nav-color)] font-bold text-[17px] border-2 border-white/90 shadow-sm"
-                      aria-label="Buka profil"
+                      aria-label={account.menuLabel}
+                      aria-expanded={isAccountMenuOpen}
+                      aria-haspopup="menu"
                     >
                       <span className="nav-avatar-ring" aria-hidden />
                       <span className="relative z-[1] h-full w-full rounded-full overflow-hidden flex items-center justify-center">
@@ -650,23 +881,26 @@ export default function Navbar() {
                         )}
                       </span>
 
-
                       {unreadCount > 0 && (
                         <span
                           className="nav-unread-badge flex h-5 min-w-5 px-1 items-center justify-center rounded-full bg-green-500 text-white text-[10px] font-bold shadow-md ring-2 ring-white"
-                          aria-label={`${unreadCount} pesan belum dibaca`}
+                          aria-label={`${formatBadge(unreadCount)} ${account.unreadTip}`}
                         >
                           {formatBadge(unreadCount)}
                           <span className="nav-unread-tip" role="tooltip">
-                            {formatBadge(unreadCount)} pesan belum dibaca
+                            {formatBadge(unreadCount)} {account.unreadTip}
                           </span>
                         </span>
                       )}
-                    </Link>
+                    </button>
 
-                    <div className="nav-avatar-tooltip" role="tooltip">
+                    <div
+                      className="nav-avatar-tooltip"
+                      role="menu"
+                      aria-label={account.menuLabel}
+                    >
                       <div className="relative z-[1] space-y-2.5 text-left">
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-2.5 px-1">
                           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--nav-color)] text-white text-sm font-bold overflow-hidden">
                             {userAvatar ? (
                               <img
@@ -680,7 +914,7 @@ export default function Navbar() {
                           </span>
                           <div className="min-w-0">
                             <p className="text-[12px] font-bold text-gray-900 leading-tight">
-                              Akun Saya
+                              {account.myAccount}
                             </p>
                             <p className="text-[11px] text-gray-500 truncate mt-0.5">
                               {userEmail}
@@ -690,16 +924,53 @@ export default function Navbar() {
 
                         <div className="h-px bg-gray-100" />
 
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between gap-3">
+                        <div className="space-y-0.5">
+                          <Link
+                            href="/profile"
+                            role="menuitem"
+                            onClick={(e) => {
+                              setIsAccountMenuOpen(false);
+                              handleNavAction(
+                                e,
+                                "/profile",
+                                account.profileTitle,
+                                account.profileLoading,
+                              );
+                            }}
+                            className="nav-account-item"
+                          >
                             <div className="min-w-0">
                               <p className="text-[11px] font-semibold text-gray-800">
-                                Pesan belum dibaca
+                                {account.profile}
+                              </p>
+                              <p className="text-[10px] text-gray-500 mt-0.5">
+                                {account.profileDesc}
+                              </p>
+                            </div>
+                          </Link>
+
+                          <Link
+                            href="/profile/chat"
+                            role="menuitem"
+                            onClick={(e) => {
+                              setIsAccountMenuOpen(false);
+                              handleNavAction(
+                                e,
+                                "/profile/chat",
+                                account.messagesTitle,
+                                account.messagesLoading,
+                              );
+                            }}
+                            className="nav-account-item"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-[11px] font-semibold text-gray-800">
+                                {account.messages}
                               </p>
                               <p className="text-[10px] text-gray-500 mt-0.5">
                                 {unreadCount > 0
-                                  ? "Ada balasan baru dari admin"
-                                  : "Tidak ada pesan baru"}
+                                  ? account.messagesNew
+                                  : account.messagesEmpty}
                               </p>
                             </div>
                             <span
@@ -711,17 +982,30 @@ export default function Navbar() {
                             >
                               {formatBadge(unreadCount)}
                             </span>
-                          </div>
+                          </Link>
 
-                          <div className="flex items-center justify-between gap-3">
+                          <Link
+                            href="/profile/cart"
+                            role="menuitem"
+                            onClick={(e) => {
+                              setIsAccountMenuOpen(false);
+                              handleNavAction(
+                                e,
+                                "/profile/cart",
+                                account.cartTitle,
+                                account.cartLoading,
+                              );
+                            }}
+                            className="nav-account-item"
+                          >
                             <div className="min-w-0">
                               <p className="text-[11px] font-semibold text-gray-800">
-                                Keranjang belanja
+                                {account.cart}
                               </p>
                               <p className="text-[10px] text-gray-500 mt-0.5">
                                 {cartCount > 0
-                                  ? "Produk siap checkout"
-                                  : "Keranjang masih kosong"}
+                                  ? account.cartReady
+                                  : account.cartEmpty}
                               </p>
                             </div>
                             <span
@@ -733,17 +1017,30 @@ export default function Navbar() {
                             >
                               {formatBadge(cartCount)}
                             </span>
-                          </div>
+                          </Link>
 
-                          <div className="flex items-center justify-between gap-3">
+                          <Link
+                            href="/profile/history"
+                            role="menuitem"
+                            onClick={(e) => {
+                              setIsAccountMenuOpen(false);
+                              handleNavAction(
+                                e,
+                                "/profile/history",
+                                account.historyTitle,
+                                account.historyLoading,
+                              );
+                            }}
+                            className="nav-account-item"
+                          >
                             <div className="min-w-0">
                               <p className="text-[11px] font-semibold text-gray-800">
-                                Riwayat belanja
+                                {account.history}
                               </p>
                               <p className="text-[10px] text-gray-500 mt-0.5">
                                 {historyCount > 0
-                                  ? "Pesanan yang pernah dibuat"
-                                  : "Belum ada riwayat"}
+                                  ? account.historyReady
+                                  : account.historyEmpty}
                               </p>
                             </div>
                             <span
@@ -755,17 +1052,30 @@ export default function Navbar() {
                             >
                               {formatBadge(historyCount)}
                             </span>
-                          </div>
+                          </Link>
 
-                          <div className="flex items-center justify-between gap-3">
+                          <Link
+                            href="/profile/wishlist"
+                            role="menuitem"
+                            onClick={(e) => {
+                              setIsAccountMenuOpen(false);
+                              handleNavAction(
+                                e,
+                                "/profile/wishlist",
+                                account.wishlistTitle,
+                                account.wishlistLoading,
+                              );
+                            }}
+                            className="nav-account-item"
+                          >
                             <div className="min-w-0">
                               <p className="text-[11px] font-semibold text-gray-800">
-                                Wishlist
+                                {account.wishlist}
                               </p>
                               <p className="text-[10px] text-gray-500 mt-0.5">
                                 {wishlistCount > 0
-                                  ? "Produk yang disimpan"
-                                  : "Wishlist masih kosong"}
+                                  ? account.wishlistReady
+                                  : account.wishlistEmpty}
                               </p>
                             </div>
                             <span
@@ -777,12 +1087,17 @@ export default function Navbar() {
                             >
                               {formatBadge(wishlistCount)}
                             </span>
-                          </div>
+                          </Link>
                         </div>
 
-                        <p className="text-[10px] text-gray-400">
-                          Klik untuk membuka profil
-                        </p>
+                        <div className="h-px bg-gray-100" />
+
+                        <div className="flex items-center justify-between gap-3 px-1 pt-0.5">
+                          <p className="text-[11px] font-semibold text-gray-800">
+                            {account.language}
+                          </p>
+                          <LanguageSwitcher variant="dark" />
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -824,8 +1139,8 @@ export default function Navbar() {
                         handleNavAction(
                           e,
                           "/login",
-                          "Halaman Masuk",
-                          "Mengarahkan ke halaman masuk...",
+                          navAction.login.title,
+                          navAction.login.message,
                         )
                       }
                       className={navLinkClass}
@@ -840,8 +1155,8 @@ export default function Navbar() {
                         handleNavAction(
                           e,
                           "/register",
-                          "Halaman Pendaftaran",
-                          "Mengarahkan ke halaman pendaftaran...",
+                          navAction.register.title,
+                          navAction.register.message,
                         )
                       }
                       className={navLinkClass}
@@ -856,9 +1171,12 @@ export default function Navbar() {
             {/* MOBILE: HAMBURGER */}
             <div className="md:hidden flex items-center">
               <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => {
+                  setIsAccountMenuOpen(false);
+                  setIsOpen(!isOpen);
+                }}
                 className="text-white focus:outline-none p-1.5 rounded-full transition-transform duration-300 ease-out hover:bg-white/10 active:scale-95"
-                aria-label={isOpen ? "Tutup menu" : "Buka menu"}
+                aria-label={isOpen ? menuLabel.close : menuLabel.open}
               >
                 <motion.div
                   animate={{ rotate: isOpen ? 90 : 0 }}
@@ -911,6 +1229,8 @@ export default function Navbar() {
                 style={{
                   backgroundColor: finalBg,
                   borderColor: `${finalBg}99`,
+                  transition:
+                    "background-color var(--theme-bg-duration, 0ms) cubic-bezier(0.22, 1, 0.36, 1), border-color var(--theme-bg-duration, 0ms) cubic-bezier(0.22, 1, 0.36, 1)",
                 }}
               >
                 <Link
@@ -919,8 +1239,8 @@ export default function Navbar() {
                     handleNavAction(
                       e,
                       "/",
-                      "Beranda Utama",
-                      "Mengarahkan ke halaman utama Evomi...",
+                      navAction.beranda.title,
+                      navAction.beranda.message,
                     )
                   }
                   className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
@@ -928,13 +1248,13 @@ export default function Navbar() {
                   {tNav("beranda", "Beranda")}
                 </Link>
                 <Link
-                  href="/#third-section"
+                  href="/#about"
                   onClick={(e) =>
                     handleNavAction(
                       e,
-                      "/#third-section",
-                      "Tentang Evomi",
-                      "Mengarahkan ke informasi tentang Evomi...",
+                      "/#about",
+                      navAction.tentang.title,
+                      navAction.tentang.message,
                     )
                   }
                   className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
@@ -947,8 +1267,8 @@ export default function Navbar() {
                     handleNavAction(
                       e,
                       "/belanja",
-                      "Katalog Produk",
-                      "Mengarahkan ke halaman belanja Evomi...",
+                      navAction.belanja.title,
+                      navAction.belanja.message,
                     )
                   }
                   className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
@@ -961,8 +1281,8 @@ export default function Navbar() {
                     handleNavAction(
                       e,
                       "/kuis",
-                      "Kuis Persona",
-                      "Mengarahkan ke halaman Kuis Karakteristik...",
+                      navAction.kuis.title,
+                      navAction.kuis.message,
                     )
                   }
                   className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
@@ -977,20 +1297,9 @@ export default function Navbar() {
                   }}
                 />
                 {userEmail ? (
-                  <div className="flex flex-col items-stretch gap-3 w-full pt-1">
-                    <Link
-                      href="/profile"
-                      onClick={(e) =>
-                        handleNavAction(
-                          e,
-                          "/profile",
-                          "Profil Pengguna",
-                          "Membuka halaman profil Anda...",
-                        )
-                      }
-                      className="group flex items-center gap-3 w-full rounded-2xl px-2 py-2 transition-colors duration-300 ease-out hover:bg-white/10"
-                    >
-                      <span className="relative flex items-center justify-center w-[40px] h-[40px] shrink-0 rounded-full bg-white text-[var(--nav-color)] font-bold text-[14px] border-2 border-white/90 shadow-sm overflow-hidden transition-transform duration-300 ease-out group-hover:scale-105 group-hover:shadow-md">
+                  <div className="flex flex-col items-stretch gap-2 w-full pt-1">
+                    <div className="flex items-center gap-3 w-full rounded-2xl px-2 py-2">
+                      <span className="relative flex items-center justify-center w-[40px] h-[40px] shrink-0 rounded-full bg-white text-[var(--nav-color)] font-bold text-[14px] border-2 border-white/90 shadow-sm overflow-hidden">
                         {userAvatar ? (
                           <img
                             src={userAvatar}
@@ -1008,13 +1317,128 @@ export default function Navbar() {
                       </span>
                       <span className="flex flex-col min-w-0 text-left">
                         <span className="text-[12px] font-bold text-white truncate">
-                          Akun Saya
+                          {account.myAccount}
                         </span>
                         <span className="text-[10px] text-white/70 truncate">
                           {userEmail}
                         </span>
                       </span>
+                    </div>
+
+                    <Link
+                      href="/profile"
+                      onClick={(e) =>
+                        handleNavAction(
+                          e,
+                          "/profile",
+                          account.profileTitle,
+                          account.profileLoading,
+                        )
+                      }
+                      className="nav-mobile-link flex items-center justify-between w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
+                    >
+                      <span>{account.profile}</span>
                     </Link>
+                    <Link
+                      href="/profile/chat"
+                      onClick={(e) =>
+                        handleNavAction(
+                          e,
+                          "/profile/chat",
+                          account.messagesTitle,
+                          account.messagesLoading,
+                        )
+                      }
+                      className="nav-mobile-link flex items-center justify-between w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
+                    >
+                      <span>{account.messagesShort}</span>
+                      <span
+                        className={`flex h-5 min-w-5 px-1.5 items-center justify-center rounded-full text-[10px] font-bold ${
+                          unreadCount > 0
+                            ? "bg-green-500 text-white"
+                            : "bg-white/20 text-white/70"
+                        }`}
+                      >
+                        {formatBadge(unreadCount)}
+                      </span>
+                    </Link>
+                    <Link
+                      href="/profile/cart"
+                      onClick={(e) =>
+                        handleNavAction(
+                          e,
+                          "/profile/cart",
+                          account.cartTitle,
+                          account.cartLoading,
+                        )
+                      }
+                      className="nav-mobile-link flex items-center justify-between w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
+                    >
+                      <span>{account.cartShort}</span>
+                      <span
+                        className={`flex h-5 min-w-5 px-1.5 items-center justify-center rounded-full text-[10px] font-bold ${
+                          cartCount > 0
+                            ? "bg-green-500 text-white"
+                            : "bg-white/20 text-white/70"
+                        }`}
+                      >
+                        {formatBadge(cartCount)}
+                      </span>
+                    </Link>
+                    <Link
+                      href="/profile/history"
+                      onClick={(e) =>
+                        handleNavAction(
+                          e,
+                          "/profile/history",
+                          account.historyTitle,
+                          account.historyLoading,
+                        )
+                      }
+                      className="nav-mobile-link flex items-center justify-between w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
+                    >
+                      <span>{account.historyShort}</span>
+                      <span
+                        className={`flex h-5 min-w-5 px-1.5 items-center justify-center rounded-full text-[10px] font-bold ${
+                          historyCount > 0
+                            ? "bg-green-500 text-white"
+                            : "bg-white/20 text-white/70"
+                        }`}
+                      >
+                        {formatBadge(historyCount)}
+                      </span>
+                    </Link>
+                    <Link
+                      href="/profile/wishlist"
+                      onClick={(e) =>
+                        handleNavAction(
+                          e,
+                          "/profile/wishlist",
+                          account.wishlistTitle,
+                          account.wishlistLoading,
+                        )
+                      }
+                      className="nav-mobile-link flex items-center justify-between w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
+                    >
+                      <span>{account.wishlist}</span>
+                      <span
+                        className={`flex h-5 min-w-5 px-1.5 items-center justify-center rounded-full text-[10px] font-bold ${
+                          wishlistCount > 0
+                            ? "bg-green-500 text-white"
+                            : "bg-white/20 text-white/70"
+                        }`}
+                      >
+                        {formatBadge(wishlistCount)}
+                      </span>
+                    </Link>
+
+                    <div className="flex items-center justify-between gap-3 px-3 py-2">
+                      <span className="text-[12px] font-bold text-white">
+                        {account.language}
+                      </span>
+                      <LanguageSwitcher variant="light" />
+                    </div>
+
                     <button
                       onClick={confirmLogout}
                       className="nav-logout flex items-center justify-center gap-2 w-full text-[12px] py-2.5 px-3 font-bold rounded-full"
@@ -1049,8 +1473,8 @@ export default function Navbar() {
                         handleNavAction(
                           e,
                           "/login",
-                          "Halaman Masuk",
-                          "Mengarahkan ke halaman masuk...",
+                          navAction.login.title,
+                          navAction.login.message,
                         )
                       }
                       className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
@@ -1063,8 +1487,8 @@ export default function Navbar() {
                         handleNavAction(
                           e,
                           "/register",
-                          "Halaman Pendaftaran",
-                          "Mengarahkan ke halaman pendaftaran...",
+                          navAction.register.title,
+                          navAction.register.message,
                         )
                       }
                       className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
@@ -1183,7 +1607,7 @@ export default function Navbar() {
                     }
                     className="w-full font-bold py-2 md:py-3 rounded-xl text-[11px] md:text-[12px] bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
                   >
-                    Batal
+                    {logoutCopy.cancel}
                   </button>
                   <button
                     onClick={navModal.onConfirm}

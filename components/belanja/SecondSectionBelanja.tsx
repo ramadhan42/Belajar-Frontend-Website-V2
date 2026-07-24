@@ -11,6 +11,8 @@ import {
   Product,
 } from "@/lib/api";
 import { Loader2 } from "lucide-react";
+import { useLocale } from "@/context/LocaleContext";
+import { useTrackLocaleLoad } from "@/hooks/useTrackLocaleLoad";
 
 // ---------------------------------------------------------------------------
 // Data visual statis — hanya warna & badge, dipetakan dari personality_type
@@ -24,6 +26,7 @@ const VISUAL_BY_PERSONALITY: Record<
     descColor: string;
     btnBg: string;
     badge: string;
+    badgeEn: string;
   }
 > = {
   purpose_prestige: {
@@ -33,6 +36,7 @@ const VISUAL_BY_PERSONALITY: Record<
     descColor: "text-[#1172BAB2]",
     btnBg: "bg-[#1172BA]",
     badge: "Optimis",
+    badgeEn: "Optimistic",
   },
   peaceful_calm: {
     imgBg: "bg-[#5EA14A]",
@@ -41,6 +45,7 @@ const VISUAL_BY_PERSONALITY: Record<
     descColor: "text-[#5EA14A]",
     btnBg: "bg-[#5EA14A]",
     badge: "Damai",
+    badgeEn: "Peaceful",
   },
   rebel_brave: {
     imgBg: "bg-[#E33D35]",
@@ -49,6 +54,7 @@ const VISUAL_BY_PERSONALITY: Record<
     descColor: "text-[#E33D35]",
     btnBg: "bg-[#E33D35]",
     badge: "Berani",
+    badgeEn: "Brave",
   },
   sweet_shy: {
     imgBg: "bg-[#DD74A5]",
@@ -57,6 +63,7 @@ const VISUAL_BY_PERSONALITY: Record<
     descColor: "text-[#DD74A5]",
     btnBg: "bg-[#DD74A5]",
     badge: "Manis",
+    badgeEn: "Sweet",
   },
 };
 
@@ -81,13 +88,16 @@ export default function SecondSectionBelanja() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { locale } = useLocale();
+  useTrackLocaleLoad(isLoading);
 
   useEffect(() => {
-    getProducts()
+    setIsLoading(true);
+    getProducts(locale)
       .then((data) => setProducts(data))
       .catch(() => setProducts([]))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [locale]);
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -172,7 +182,7 @@ export default function SecondSectionBelanja() {
                   <span
                     className={`absolute top-2 left-2 md:top-5 md:left-5 bg-white px-2 py-1 md:px-2 md:py-1 rounded-full text-[10px] md:text-[10px] font-bold z-20 ${visual.textColor}`}
                   >
-                    {visual.badge}
+                    {locale === "en" ? visual.badgeEn : visual.badge}
                   </span>
 
                   {imageUrl ? (

@@ -3,10 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect, Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
 import {
   Banknote,
   CheckCircle2,
+  ChevronDown,
   Loader2,
   Mail,
   MapPin,
@@ -24,13 +24,13 @@ import {
   guestCheckoutApi,
   Product,
 } from "@/lib/api";
-import { useNavbarColor } from "@/context/NavbarColorContext";
-import StatusModal from "@/components/StatusModal";
-import { SITE_STRINGS } from "@/components/constans/strings";
 import { useLocale } from "@/context/LocaleContext";
 import { L } from "@/lib/localeText";
 import { useCms } from "@/context/CmsContext";
 import { useTrackLocaleLoad } from "@/hooks/useTrackLocaleLoad";
+import { useProductThemeTransition } from "@/hooks/useProductThemeTransition";
+import StatusModal from "@/components/StatusModal";
+import { SITE_STRINGS } from "@/components/constans/strings";
 
 interface CheckoutItemType {
   id: string | number;
@@ -108,7 +108,6 @@ function CheckoutContent() {
     courier: "JNE",
   });
 
-  const { setNavbarAndFooterColor } = useNavbarColor();
   const searchParams = useSearchParams();
   const type = searchParams.get("type");
   const productId = searchParams.get("productId");
@@ -121,18 +120,21 @@ function CheckoutContent() {
   useTrackLocaleLoad(isLoading);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [orderNote, setOrderNote] = useState("");
 
-  const COURIER_LIST = [
-    "JNE",
-    "JNE Express",
-    "J&T",
-    "J&T Express",
-    "SiCepat",
-    "SiCepat Ekspres",
-    "TIKI",
-    "Anteraja",
-    "Ninja Express",
-  ];
+  type KurirOption = {
+    id: number;
+    nama: string;
+    jenis: string;
+    harga: number | string;
+    destinasi?: string;
+    estimasi_hari?: number;
+    is_active?: boolean;
+  };
+
+  const [kurirs, setKurirs] = useState<KurirOption[]>([]);
+  const [selectedKurirId, setSelectedKurirId] = useState<number | null>(null);
 
   const [qrisData, setQrisData] = useState<{
     id: string;
@@ -141,7 +143,43 @@ function CheckoutContent() {
   } | null>(null);
   const [isQrisModalOpen, setIsQrisModalOpen] = useState(false);
 
-  const ongkosKirim = 2000;
+  const qtyParam = searchParams.get("qty");
+  const kurirIdParam = searchParams.get("kurirId");
+  const unitPriceParam = searchParams.get("unitPrice");
+
+  const selectedKurir = useMemo(
+    () => kurirs.find((k) => k.id === selectedKurirId) ?? kurirs[0] ?? null,
+    [kurirs, selectedKurirId],
+  );
+
+  /** Ongkir hanya dari harga kurir API — tidak dicampur ke harga produk */
+  const ongkosKirim = selectedKurir ? Number(selectedKurir.harga) || 0 : 0;
+
+  const courierLabel = selectedKurir
+    ? `${selectedKurir.nama}${selectedKurir.jenis ? ` ${selectedKurir.jenis}` : ""}`.trim()
+    : formData.courier;
+
+  const shippingEtaLabel = useMemo(() => {
+    if (!selectedKurir) {
+      return L(
+        locale,
+        "Estimasi tiba 2–4 hari kerja",
+        "Estimated arrival in 2–4 business days",
+      );
+    }
+    const days = Number(selectedKurir.estimasi_hari) || 3;
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    const dateStr = date.toLocaleDateString(
+      locale === "en" ? "en-US" : "id-ID",
+      { day: "numeric", month: "short" },
+    );
+    return L(
+      locale,
+      `Estimasi tiba ${dateStr} (±${days} hari)`,
+      `Est. arrival ${dateStr} (±${days} days)`,
+    );
+  }, [selectedKurir, locale]);
 
   const visual = useMemo(() => {
     const firstItemType = items[0]?.personality_type;
@@ -196,10 +234,54 @@ function CheckoutContent() {
         "Preparing your order...",
       ),
       back: L(locale, "Kembali", "Back"),
+      shippingAddress: L(locale, "Alamat Pengiriman", "Shipping Address"),
+      changeAddress: L(locale, "Ganti", "Change"),
+      saveAddress: L(locale, "Simpan Alamat", "Save Address"),
+      cancelEdit: L(locale, "Batal", "Cancel"),
+      orderDetails: L(locale, "Detail Pesanan", "Order Details"),
+      storeName: L(locale, "Evomi Official", "Evomi Official"),
+      shippingMethod: L(locale, "Pengiriman", "Shipping"),
+      addNote: L(locale, "Kasih Catatan", "Add a note"),
+      notePlaceholder: L(
+        locale,
+        "Contoh: titip di satpam, warna, dll.",
+        "E.g. leave with security, color preference, etc.",
+      ),
+      summaryTitle: L(
+        locale,
+        "Cek ringkasan transaksimu, yuk",
+        "Review your transaction summary",
+      ),
+      totalPrice: (n: number) =>
+        L(
+          locale,
+          `Total Harga Produk (${n} Barang)`,
+          `Product Total (${n} item${n === 1 ? "" : "s"})`,
+        ),
+      totalShipping: L(locale, "Total Ongkos Kirim", "Total Shipping"),
+      totalBill: L(locale, "Total Tagihan", "Total Bill"),
+      termsHint: L(
+        locale,
+        "Dengan lanjut bayar, kamu menyetujui Syarat & Ketentuan Evomi.",
+        "By continuing, you agree to Evomi Terms & Conditions.",
+      ),
+      addressIncomplete: L(
+        locale,
+        "Lengkapi alamat pengiriman terlebih dahulu",
+        "Please complete your shipping address first",
+      ),
+      homeLabel: L(locale, "Rumah", "Home"),
+      qty: L(locale, "Jumlah", "Qty"),
+      seeAll: L(locale, "Lihat Semua", "See all"),
+      emptyAddressHint: L(
+        locale,
+        "Belum ada alamat. Isi data penerima di bawah.",
+        "No address yet. Fill in recipient details below.",
+      ),
       pageTitle: tUi(
         "checkout",
         "page_title",
-        L(locale, "Penyelesaian Pesanan", "Complete Your Order"),
+        L(locale, "Checkout", "Checkout"),
       ),
       shippingInfo: tUi(
         "checkout",
@@ -279,10 +361,61 @@ function CheckoutContent() {
     [locale, visual, tUi],
   );
 
+  const brand = visual.navbarColor;
+  const themeReady = !isLoading;
+  const isThemeLoading = useProductThemeTransition(
+    items.length > 0 ? visual.navbarColor : "#1172BA",
+    themeReady,
+    { textFx: false },
+  ).isThemeLoading;
+  const isContentRevealed = !isLoading && !error && !isThemeLoading;
+
   useEffect(() => {
-    setNavbarAndFooterColor(visual.navbarColor);
-    return () => setNavbarAndFooterColor("#000000");
-  }, [visual.navbarColor, setNavbarAndFooterColor]);
+    try {
+      const raw = localStorage.getItem("auth_user");
+      if (!raw) return;
+      const user = JSON.parse(raw);
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || user.name || user.nama_lengkap || "",
+        email: prev.email || user.email || "",
+        phone: prev.phone || user.phone || "",
+        address: prev.address || user.alamat_lengkap || "",
+      }));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedKurir) {
+      setFormData((prev) => ({
+        ...prev,
+        courier: `${selectedKurir.nama}${selectedKurir.jenis ? ` ${selectedKurir.jenis}` : ""}`.trim(),
+      }));
+    }
+  }, [selectedKurir]);
+
+  useEffect(() => {
+    const loadKurirs = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/api/kurirs`);
+        if (!res.ok) throw new Error("Failed to load couriers");
+        const data = await res.json();
+        const list: KurirOption[] = Array.isArray(data?.data) ? data.data : [];
+        setKurirs(list);
+        if (list.length === 0) return;
+
+        const preferredId = kurirIdParam ? Number(kurirIdParam) : NaN;
+        const match = list.find((k) => k.id === preferredId);
+        setSelectedKurirId(match?.id ?? list[0].id);
+      } catch (err) {
+        console.error(err);
+        setKurirs([]);
+      }
+    };
+    loadKurirs();
+  }, [BASE_URL, kurirIdParam]);
 
   useEffect(() => {
     const fetchCheckoutData = async () => {
@@ -320,13 +453,24 @@ function CheckoutContent() {
           setItems(formattedItems);
         } else if (type === "buynow" && productId) {
           const productData = await getProduct(productId, locale);
+          const qty = Math.max(1, Number(qtyParam) || 1);
+
+          // Harga produk murni saja (tanpa ongkir).
+          // unitPrice dari belanja details = (harga katalog - promo).
+          const catalogPrice = parseFloat(String(productData.price || "0")) || 0;
+          const fromQuery = Number(unitPriceParam);
+          const unitPrice =
+            Number.isFinite(fromQuery) && fromQuery >= 0
+              ? fromQuery
+              : catalogPrice;
+
           setItems([
             {
               id: `buy-${productData.id}`,
               product_id: productData.id,
               title: productData.title,
-              price: parseFloat(productData.price || "0"),
-              quantity: 1,
+              price: unitPrice,
+              quantity: qty,
               image:
                 getProductImageUrl(
                   productData.image_produk_belanja || productData.image_1,
@@ -345,13 +489,15 @@ function CheckoutContent() {
     };
 
     fetchCheckoutData();
-  }, [type, productId, locale, copy]);
+  }, [type, productId, qtyParam, unitPriceParam, locale, copy, router]);
 
-  const subtotal = items.reduce(
+  /** Subtotal produk saja — ongkir dihitung terpisah dari API kurir */
+  const productSubtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
-  const totalTagihan = subtotal + ongkosKirim;
+  const subtotal = productSubtotal;
+  const totalTagihan = productSubtotal + ongkosKirim;
 
   const processInternalCheckout = async (customInvoiceId: string) => {
     const rawToken = localStorage.getItem("auth_token");
@@ -391,7 +537,7 @@ function CheckoutContent() {
           recipient_name: formData.name,
           recipient_phone: formData.phone,
           recipient_address: formData.address,
-          courier: formData.courier,
+          courier: courierLabel,
         });
         setCompletedOrderId(customInvoiceId);
       } else {
@@ -412,7 +558,9 @@ function CheckoutContent() {
             recipient_name: formData.name,
             recipient_phone: formData.phone,
             recipient_address: formData.address,
-            courier: formData.courier,
+            courier: courierLabel,
+            kurir_id: selectedKurir?.id,
+            shipping_cost: ongkosKirim,
           }),
         });
 
@@ -435,7 +583,7 @@ function CheckoutContent() {
           body: JSON.stringify({
             order_id: customInvoiceId,
             status: "Menunggu Konfirmasi",
-            courier: formData.courier,
+            courier: courierLabel,
             recipient_name: formData.name,
             recipient_phone: formData.phone,
             recipient_address: formData.address,
@@ -582,24 +730,14 @@ function CheckoutContent() {
     };
   }, [isQrisModalOpen, qrisData]);
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-10 h-10 animate-spin text-gray-400 mb-4" />
-        <p className="text-gray-500 font-parkinsans">
-          {copy.preparingOrder}
-        </p>
-      </div>
-    );
-  }
-
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+      <div className="max-w-4xl mx-auto px-4 py-12 text-center bg-[#F0F3F7] min-h-[50vh]">
         <p className="text-red-500 mb-4 font-nohemi">{error}</p>
         <button
           onClick={() => router.back()}
-          className="px-5 py-2 bg-black text-white rounded-xl text-sm"
+          className="px-5 py-2.5 text-white rounded-xl text-sm font-semibold"
+          style={{ backgroundColor: brand }}
         >
           {copy.back}
         </button>
@@ -607,184 +745,383 @@ function CheckoutContent() {
     );
   }
 
-  return (
-    // Dikurangi padding top (pt-6 ke pt-4) dan bottom (pb-24 ke pb-12)
-    <section className="bg-[#F6F6F6] w-full pt-4 pb-12 relative overflow-hidden">
-      <style>{`
-        @keyframes slideRightSeamless {
-          0% { transform: translateX(-50%); }
-          100% { transform: translateX(0%); }
-        }
-        .animate-slide-right-40s {
-          animation: slideRightSeamless 80s linear infinite;
-        }
-      `}</style>
+  const itemCount = items.reduce((s, i) => s + i.quantity, 0);
+  const hasAddress =
+    Boolean(formData.name?.trim()) &&
+    Boolean(formData.phone?.trim()) &&
+    Boolean(formData.address?.trim()) &&
+    Boolean(formData.email?.trim());
 
-      <div className="max-w-6xl mx-auto px-4 md:px-8 relative z-10">
-        <div className="flex justify-between items-end mb-6 md:mb-8">
+  const updateQty = (id: string | number, delta: number) => {
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== id) return item;
+        const next = Math.max(1, item.quantity + delta);
+        return { ...item, quantity: next };
+      }),
+    );
+  };
+
+  return (
+    <section className="bg-[#F0F3F7] w-full min-h-screen pt-4 pb-16 relative">
+      {!isContentRevealed && (
+        <div
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center min-h-[70vh] bg-[#F0F3F7]"
+          aria-busy="true"
+        >
+          <Loader2
+            className="w-10 h-10 animate-spin mb-4"
+            style={{ color: brand }}
+          />
+          <p className="text-gray-500 font-parkinsans text-sm">
+            {copy.preparingOrder}
+          </p>
+        </div>
+      )}
+
+      {!isLoading && (
+        <div
+          className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 relative z-10 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity,transform]"
+          style={{
+            opacity: isContentRevealed ? 1 : 0,
+            transform: isContentRevealed
+              ? "translateY(0)"
+              : "translateY(14px)",
+            pointerEvents: isContentRevealed ? "auto" : "none",
+          }}
+        >
+        <div className="flex items-center justify-between mb-4 md:mb-5">
           <h1
-            className="text-3xl md:text-4xl font-bold font-nohemi"
-            style={{ color: visual.navbarColor }}
+            className="text-2xl md:text-[28px] font-bold font-nohemi tracking-tight"
+            style={{ color: brand }}
           >
             {copy.pageTitle}
           </h1>
-          <div className="hidden md:block w-14 h-14 md:w-20 md:h-20">
-            <Image
-              src={visual.characterPath}
-              alt="Character"
-              width={80}
-              height={80}
-              className="object-contain"
-            />
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          {/* KIRI: Form Pengiriman & Metode Pembayaran */}
-          <div className="lg:col-span-8 space-y-6 md:space-y-8">
-            {/* Form Informasi Pengiriman */}
-            <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-5 md:p-8 transition-all">
-              <h2
-                className="text-xl md:text-2xl font-bold font-nohemi mb-4 md:mb-6 flex items-center gap-2"
-                style={{ color: visual.navbarColor }}
-              >
-                <MapPin className="w-5 h-5 md:w-6 md:h-6" />
-                {copy.shippingInfo}
-              </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 items-start">
+          {/* ===== LEFT ===== */}
+          <div className="lg:col-span-8 space-y-3 md:space-y-4">
+            {/* Alamat */}
+            <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-3">
+                {copy.shippingAddress}
+              </p>
 
-              <div className="space-y-4 md:space-y-5 font-parkinsans text-sm md:text-base">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder={copy.recipientName}
-                      className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
-                      style={{
-                        ...(formData.name
-                          ? { borderColor: visual.navbarColor }
-                          : {}),
-                      }}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
-                    </div>
-                    <input
-                      type="email"
-                      placeholder={copy.emailAddress}
-                      className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
-                      style={{
-                        ...(formData.email
-                          ? { borderColor: visual.navbarColor }
-                          : {}),
-                      }}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Phone className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
-                    </div>
-                    <input
-                      type="tel"
-                      placeholder={copy.phoneNumber}
-                      className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm"
-                      style={{
-                        ...(formData.phone
-                          ? { borderColor: visual.navbarColor }
-                          : {}),
-                      }}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="relative group">
-                  <div className="absolute top-3 md:top-4 left-0 pl-4 pointer-events-none">
-                    <MapPin className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
-                  </div>
-                  <textarea
-                    placeholder={copy.fullAddress}
-                    rows={3}
-                    className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm resize-none"
-                    style={{
-                      ...(formData.address
-                        ? { borderColor: visual.navbarColor }
-                        : {}),
-                    }}
-                    onChange={(e) =>
-                      setFormData({ ...formData, address: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Truck className="h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
-                  </div>
-                  <select
-                    className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-gray-50/50 rounded-xl border border-gray-200 outline-none transition-all focus:bg-white focus:shadow-sm appearance-none cursor-pointer"
-                    style={{
-                      ...(formData.courier
-                        ? { borderColor: visual.navbarColor }
-                        : {}),
-                    }}
-                    value={formData.courier}
-                    onChange={(e) =>
-                      setFormData({ ...formData, courier: e.target.value })
-                    }
-                  >
-                    {/* Looping data kurir dari COURIER_LIST */}
-                    {COURIER_LIST.map((courier, index) => (
-                      <option key={index} value={courier}>
-                        {courier}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                    <svg
-                      className="w-3.5 h-3.5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+              {!isEditingAddress && hasAddress ? (
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <span
+                      className="mt-0.5 w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white"
+                      style={{ backgroundColor: brand }}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 9l-7 7-7-7"
-                      ></path>
-                    </svg>
+                      <MapPin className="w-4 h-4" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-gray-900">
+                        <span style={{ color: brand }}>{copy.homeLabel}</span>
+                        <span className="text-gray-400 font-medium"> · </span>
+                        {formData.name}
+                      </p>
+                      <p className="text-[13px] text-gray-600 mt-1 leading-relaxed">
+                        {formData.address}
+                      </p>
+                      <p className="text-[13px] text-gray-500 mt-0.5">
+                        {formData.phone}
+                        {formData.email ? ` · ${formData.email}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingAddress(true)}
+                    className="shrink-0 px-4 py-1.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+                  >
+                    {copy.changeAddress}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3 font-parkinsans">
+                  {!hasAddress && !isEditingAddress ? (
+                    <p className="text-sm text-gray-500 mb-2">
+                      {copy.emptyAddressHint}
+                    </p>
+                  ) : null}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={formData.name}
+                        placeholder={copy.recipientName}
+                        className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm outline-none focus:ring-2"
+                        style={{ ["--tw-ring-color" as string]: `${brand}40` }}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="email"
+                        value={formData.email}
+                        placeholder={copy.emailAddress}
+                        className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm outline-none focus:ring-2"
+                        style={{ ["--tw-ring-color" as string]: `${brand}40` }}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        placeholder={copy.phoneNumber}
+                        className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm outline-none focus:ring-2"
+                        style={{ ["--tw-ring-color" as string]: `${brand}40` }}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="relative">
+                      <Truck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <select
+                        value={selectedKurirId ?? ""}
+                        className="w-full pl-10 pr-8 py-2.5 rounded-lg border border-gray-200 bg-white text-sm outline-none appearance-none focus:ring-2"
+                        style={{ ["--tw-ring-color" as string]: `${brand}40` }}
+                        onChange={(e) =>
+                          setSelectedKurirId(Number(e.target.value))
+                        }
+                        disabled={kurirs.length === 0}
+                      >
+                        {kurirs.length === 0 ? (
+                          <option value="">
+                            {L(locale, "Memuat kurir...", "Loading couriers...")}
+                          </option>
+                        ) : (
+                          kurirs.map((k) => (
+                            <option key={k.id} value={k.id}>
+                              {k.nama} {k.jenis} —{" "}
+                              {formatProductPrice(Number(k.harga) || 0)}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                    <textarea
+                      value={formData.address}
+                      rows={3}
+                      placeholder={copy.fullAddress}
+                      className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm outline-none resize-none focus:ring-2"
+                      style={{ ["--tw-ring-color" as string]: `${brand}40` }}
+                      onChange={(e) =>
+                        setFormData({ ...formData, address: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-end pt-1">
+                    {hasAddress ? (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingAddress(false)}
+                        className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                      >
+                        {copy.cancelEdit}
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!hasAddress) {
+                          alert(copy.fillShippingData);
+                          return;
+                        }
+                        setIsEditingAddress(false);
+                      }}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold text-white"
+                      style={{ backgroundColor: brand }}
+                    >
+                      {copy.saveAddress}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Detail Pesanan */}
+            <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: brand }}
+                />
+                <h2 className="text-sm font-bold text-gray-900">
+                  {copy.storeName}
+                </h2>
+              </div>
+
+              <div className="space-y-4">
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex gap-3 sm:gap-4 items-start"
+                  >
+                    <div
+                      className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-lg overflow-hidden border border-gray-100 shrink-0 flex items-center justify-center"
+                      style={{ backgroundColor: `${brand}12` }}
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-contain p-1.5"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug">
+                        {item.title}
+                      </h3>
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <p
+                            className="text-sm font-bold"
+                            style={{ color: brand }}
+                          >
+                            {formatProductPrice(item.price)}
+                          </p>
+                          <p className="text-[11px] text-gray-400 mt-0.5">
+                            {L(
+                              locale,
+                              `${item.quantity} × ${formatProductPrice(item.price)} = ${formatProductPrice(item.price * item.quantity)}`,
+                              `${item.quantity} × ${formatProductPrice(item.price)} = ${formatProductPrice(item.price * item.quantity)}`,
+                            )}
+                          </p>
+                        </div>
+                        <div className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 p-0.5">
+                          <button
+                            type="button"
+                            aria-label="-"
+                            onClick={() => updateQty(item.id, -1)}
+                            className="w-7 h-7 rounded-md text-gray-600 hover:bg-white text-sm font-bold"
+                          >
+                            −
+                          </button>
+                          <span className="w-8 text-center text-sm font-semibold text-gray-800">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            aria-label="+"
+                            onClick={() => updateQty(item.id, 1)}
+                            className="w-7 h-7 rounded-md text-gray-600 hover:bg-white text-sm font-bold"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Shipping box */}
+              <div className="mt-4 rounded-xl border border-gray-200 p-3.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-bold text-gray-900">
+                        {courierLabel || copy.shippingMethod}{" "}
+                        <span className="font-semibold text-gray-700">
+                          ({formatProductPrice(ongkosKirim)})
+                        </span>
+                      </p>
+                      {paymentMethod === "cash" ? (
+                        <span
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded border"
+                          style={{
+                            color: brand,
+                            borderColor: `${brand}55`,
+                            backgroundColor: `${brand}10`,
+                          }}
+                        >
+                          COD
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {shippingEtaLabel}
+                    </p>
+                    {selectedKurir?.destinasi ? (
+                      <p className="text-[11px] text-gray-400 mt-0.5">
+                        {selectedKurir.destinasi}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="relative shrink-0">
+                    <select
+                      value={selectedKurirId ?? ""}
+                      onChange={(e) =>
+                        setSelectedKurirId(Number(e.target.value))
+                      }
+                      className="appearance-none text-xs font-semibold pl-2 pr-6 py-1.5 rounded-lg border border-gray-200 bg-white cursor-pointer outline-none max-w-[160px]"
+                      aria-label={copy.shippingMethod}
+                      disabled={kurirs.length === 0}
+                    >
+                      {kurirs.map((k) => (
+                        <option key={k.id} value={k.id}>
+                          {k.nama} {k.jenis}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Section Pilihan Metode Pembayaran */}
-            <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-5 md:p-8 transition-all">
-              <h2
-                className="text-xl md:text-2xl font-bold font-nohemi mb-4 md:mb-6 flex items-center gap-2"
-                style={{ color: visual.navbarColor }}
-              >
-                <Banknote className="w-5 h-5 md:w-6 md:h-6" />
-                {copy.paymentMethod}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 font-parkinsans">
+              {/* Note */}
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <label className="flex items-center justify-between gap-2 text-sm text-gray-600 mb-1.5">
+                  <span className="font-medium">{copy.addNote}</span>
+                  <span className="text-[11px] text-gray-400">
+                    {orderNote.length}/200
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  maxLength={200}
+                  value={orderNote}
+                  onChange={(e) => setOrderNote(e.target.value)}
+                  placeholder={copy.notePlaceholder}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:ring-2 bg-white"
+                  style={{ ["--tw-ring-color" as string]: `${brand}40` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ===== RIGHT ===== */}
+          <div className="lg:col-span-4 space-y-3 md:space-y-4 lg:sticky lg:top-24">
+            {/* Payment */}
+            <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-bold text-gray-900">
+                  {copy.paymentMethod}
+                </h2>
+                <span
+                  className="text-xs font-semibold"
+                  style={{ color: brand }}
+                >
+                  {copy.seeAll}
+                </span>
+              </div>
+
+              <div className="space-y-2">
                 {[
                   {
                     id: "qris",
@@ -799,155 +1136,125 @@ function CheckoutContent() {
                     icon: Banknote,
                   },
                 ].map((m) => {
-                  const isSelected = paymentMethod === m.id;
+                  const selected = paymentMethod === m.id;
                   const Icon = m.icon;
-
                   return (
-                    <label
+                    <button
                       key={m.id}
-                      className={`relative border-2 rounded-[16px] p-4 md:p-5 cursor-pointer flex flex-col gap-2 transition-all duration-300 overflow-hidden ${isSelected
-                          ? "shadow-sm transform scale-[1.02]"
-                          : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/50"
-                        }`}
-                      style={{
-                        borderColor: isSelected ? visual.navbarColor : "",
-                        backgroundColor: isSelected
-                          ? `${visual.navbarColor}08`
-                          : "",
-                      }}
+                      type="button"
+                      onClick={() => setPaymentMethod(m.id)}
+                      className={`w-full flex items-center gap-3 p-3 rounded-xl border transition text-left ${
+                        selected
+                          ? "border-transparent"
+                          : "border-gray-100 hover:border-gray-200"
+                      }`}
+                      style={
+                        selected
+                          ? {
+                              borderColor: brand,
+                              backgroundColor: `${brand}0A`,
+                            }
+                          : undefined
+                      }
                     >
-                      {isSelected && (
-                        <div className="absolute top-3 right-3">
-                          <CheckCircle2
-                            className="w-4 h-4"
-                            style={{ color: visual.navbarColor }}
-                          />
-                        </div>
-                      )}
-
-                      <input
-                        type="radio"
-                        className="hidden"
-                        checked={isSelected}
-                        onChange={() => setPaymentMethod(m.id)}
-                      />
-
-                      <div
-                        className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-1 transition-colors"
+                      <span
+                        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                         style={{
-                          backgroundColor: isSelected
-                            ? visual.navbarColor
-                            : "#F3F4F6",
-                          color: isSelected ? "#FFF" : "#9CA3AF",
+                          backgroundColor: selected ? brand : "#F3F4F6",
+                          color: selected ? "#fff" : "#9CA3AF",
                         }}
                       >
-                        <Icon className="w-5 h-5 md:w-6 md:h-6" />
-                      </div>
-
-                      <div>
-                        <span
-                          className="block font-bold text-base md:text-lg mb-1 line-clamp-1"
-                          style={{
-                            color: isSelected ? visual.navbarColor : "#374151",
-                          }}
-                        >
+                        <Icon className="w-5 h-5" />
+                      </span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-bold text-gray-900">
                           {m.title}
                         </span>
-                        <span className="text-xs md:text-sm text-gray-500 block leading-tight">
+                        <span className="block text-[11px] text-gray-500 truncate">
                           {m.desc}
                         </span>
-                      </div>
-                    </label>
+                      </span>
+                      <span
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          selected ? "border-transparent" : "border-gray-300"
+                        }`}
+                        style={
+                          selected
+                            ? { backgroundColor: brand, borderColor: brand }
+                            : undefined
+                        }
+                      >
+                        {selected ? (
+                          <CheckCircle2 className="w-4 h-4 text-white" />
+                        ) : null}
+                      </span>
+                    </button>
                   );
                 })}
               </div>
             </div>
-          </div>
 
-          {/* KANAN: Ringkasan Pesanan */}
-          <div className="lg:col-span-4">
-            <div className="bg-white rounded-[20px] p-5 md:p-8 shadow-sm border border-gray-100 sticky top-24">
-              <h2
-                className="text-xl md:text-2xl font-bold font-nohemi mb-4 md:mb-6"
-                style={{ color: visual.navbarColor }}
-              >
-                {copy.orderSummary}
+            {/* Summary */}
+            <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-5">
+              <h2 className="text-sm font-bold text-gray-900 mb-4">
+                {copy.summaryTitle}
               </h2>
 
-              <div className="space-y-4 mb-6 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
-                {items.map((item) => (
-                  <div key={item.id} className="flex gap-4 items-center">
-                    <div
-                      className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0"
-                      style={{ backgroundColor: visual.navbarColor + "10" }}
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-full object-contain p-2"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm md:text-base font-bold text-gray-900 line-clamp-2 font-nohemi mb-1">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs md:text-sm text-gray-500 font-parkinsans">
-                        {item.quantity} x {formatProductPrice(item.price)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="space-y-3 text-sm md:text-base font-parkinsans border-t border-gray-100 pt-4 md:pt-6 mb-6">
-                <div className="flex justify-between text-gray-500">
-                  <span>{copy.subtotal}</span>
-                  <span>{formatProductPrice(subtotal)}</span>
+              <div className="space-y-2.5 text-sm font-parkinsans">
+                <div className="flex justify-between text-gray-600">
+                  <span>{copy.totalPrice(itemCount)}</span>
+                  <span className="font-medium text-gray-800">
+                    {formatProductPrice(subtotal)}
+                  </span>
                 </div>
-                <div className="flex justify-between text-gray-500">
-                  <span>{copy.shippingCost}</span>
-                  <span>{formatProductPrice(ongkosKirim)}</span>
+                <div className="flex justify-between text-gray-600">
+                  <span>{copy.totalShipping}</span>
+                  <span className="font-medium text-gray-800">
+                    {formatProductPrice(ongkosKirim)}
+                  </span>
                 </div>
-                <div
-                  className="flex justify-between text-xl md:text-2xl font-bold pt-2 md:pt-3 font-nohemi"
-                  style={{ color: visual.navbarColor }}
-                >
-                  <span>{copy.total}</span>
-                  <span>{formatProductPrice(totalTagihan)}</span>
+                <div className="h-px bg-gray-100 my-2" />
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-gray-900">{copy.totalBill}</span>
+                  <span
+                    className="text-lg font-bold font-nohemi"
+                    style={{ color: brand }}
+                  >
+                    {formatProductPrice(totalTagihan)}
+                  </span>
                 </div>
               </div>
 
               <button
+                type="button"
                 onClick={handleCheckout}
                 disabled={isProcessing}
-                className="w-full text-white px-6 py-4 rounded-xl md:rounded-full font-bold text-base md:text-lg transition-all active:scale-95 shadow-md disabled:bg-gray-300 flex items-center justify-center gap-2 mt-2"
-                style={{ backgroundColor: visual.navbarColor }}
+                className="mt-4 w-full text-white px-5 py-3.5 rounded-xl font-bold text-[15px] transition active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
+                style={{
+                  backgroundColor: brand,
+                  boxShadow: `0 8px 20px ${brand}33`,
+                }}
               >
-                {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
+                {isProcessing ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-5 h-5" />
+                )}
                 {isProcessing ? copy.processing : copy.payNow}
               </button>
+
+              <p className="mt-3 text-[11px] text-gray-400 leading-relaxed text-center">
+                {copy.termsHint}
+              </p>
             </div>
           </div>
         </div>
       </div>
+      )}
 
-      {/* DIVIDER DEKORASI LINGKARAN */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none z-0">
-        <div className="flex w-max gap-[10px] md:gap-[15px] animate-slide-right-40s">
-          {Array.from({ length: 100 }).map((_, i) => (
-            <div
-              key={i}
-              className="w-[30px] h-[30px] md:w-[46px] md:h-[46px] rounded-full flex-shrink-0"
-              style={{ backgroundColor: visual.navbarColor }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* MODAL QRIS MODAL */}
       {isQrisModalOpen && qrisData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-[24px] w-full max-w-sm p-6 relative shadow-xl transform transition-all text-center">
+          <div className="bg-white rounded-[24px] w-full max-w-sm p-6 relative shadow-xl text-center">
             <button
               onClick={() => setIsQrisModalOpen(false)}
               className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full transition-colors"
@@ -957,7 +1264,7 @@ function CheckoutContent() {
 
             <h3
               className="text-lg font-bold font-nohemi mb-1"
-              style={{ color: visual.navbarColor }}
+              style={{ color: brand }}
             >
               {copy.completePayment}
             </h3>
@@ -975,15 +1282,20 @@ function CheckoutContent() {
               />
             </div>
 
-            <div className="mt-4 p-3 rounded-xl bg-blue-50 text-blue-800 text-xs font-parkinsans flex items-center justify-center gap-2">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+            <div
+              className="mt-4 p-3 rounded-xl text-xs font-parkinsans flex items-center justify-center gap-2"
+              style={{
+                backgroundColor: `${brand}12`,
+                color: brand,
+              }}
+            >
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
               {copy.waitingPayment}
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL STATUS */}
       <StatusModal
         isOpen={modal.isOpen}
         onClose={() => {
@@ -999,7 +1311,7 @@ function CheckoutContent() {
         title={modal.title}
         message={modal.message}
         type={modal.type}
-        themeColor={visual.navbarColor}
+        themeColor={brand}
       />
     </section>
   );

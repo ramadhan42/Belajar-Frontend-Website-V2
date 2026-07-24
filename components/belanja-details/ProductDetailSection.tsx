@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
-import { useNavbarColor } from "@/context/NavbarColorContext";
 import {
   getProduct,
   getProductImageUrl,
@@ -16,6 +15,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useLocale } from "@/context/LocaleContext";
 import { L } from "@/lib/localeText";
 import { useTrackLocaleLoad } from "@/hooks/useTrackLocaleLoad";
+import { useProductThemeTransition } from "@/hooks/useProductThemeTransition";
+import { BELANJA_EASE } from "@/lib/belanjaEnter";
 import {
   MessageCircle, // Kita pakai ini untuk WhatsApp
   Minus,
@@ -174,11 +175,37 @@ export default function ProductDetailSection({
   const id = forcedId || (params?.id as string) || "1";
   const { locale } = useLocale();
 
-  const { setNavbarAndFooterColor } = useNavbarColor();
-
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   useTrackLocaleLoad(isLoading);
+
+  const visual =
+    VISUAL_BY_PERSONALITY[product?.personality_type ?? ""] ?? VISUAL_FALLBACK;
+
+  const themeReady = !isLoading;
+  const { contentVisible } = useProductThemeTransition(
+    product ? visual.navbarColor : "#1172BA",
+    themeReady,
+    { colorShimmer: true },
+  );
+
+  const accentColor = visual.navbarColor;
+  const accentSurfaceStyle = {
+    backgroundColor: accentColor,
+    transition: `background-color var(--theme-bg-duration, 360ms) ${BELANJA_EASE}`,
+  } as const;
+  const accentTextStyle = {
+    color: accentColor,
+    transition: `color var(--theme-bg-duration, 360ms) ${BELANJA_EASE}`,
+  } as const;
+
+  // Selalu tampilkan shell konten saat shimmer agar navbar + div/teks shimmer bareng
+  const contentFadeStyle = {
+    opacity: 1,
+    transform: "translateY(0)",
+    pointerEvents: "auto" as const,
+  };
+
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Dummy Data State for Right Column Cart Box
@@ -449,6 +476,8 @@ export default function ProductDetailSection({
     (productPrice - hargaPromo) * quantity,
     0,
   );
+  const shippingCost = selectedKurir ? Number(selectedKurir.harga) || 0 : 0;
+  const totalWithShipping = dummySubtotalPrice + shippingCost;
 
   useEffect(() => {
     setIsLoading(true);
@@ -458,9 +487,6 @@ export default function ProductDetailSection({
       .catch(() => setProduct(null))
       .finally(() => setIsLoading(false));
   }, [id, locale]);
-
-  const visual =
-    VISUAL_BY_PERSONALITY[product?.personality_type ?? ""] ?? VISUAL_FALLBACK;
 
   const copy = useMemo(
     () => ({
@@ -515,6 +541,8 @@ export default function ProductDetailSection({
       ),
       stok: L(locale, "Stok:", "Stock:"),
       subtotal: L(locale, "Subtotal", "Subtotal"),
+      ongkir: L(locale, "Ongkir", "Shipping"),
+      totalBayar: L(locale, "Total", "Total"),
       beliLangsung: L(locale, "Beli Langsung", "Buy Now"),
       memproses: L(locale, "Memproses...", "Processing..."),
       tambahKeranjang: L(locale, "+ Keranjang", "+ Cart"),
@@ -619,10 +647,6 @@ export default function ProductDetailSection({
     }),
     [locale, visual],
   );
-
-  useEffect(() => {
-    setNavbarAndFooterColor(visual.navbarColor);
-  }, [visual.navbarColor, setNavbarAndFooterColor]);
 
   // Slider belanja details: hanya image_1 … image_3
   const imageSlots = ["image_1", "image_2", "image_3"] as const;
@@ -738,16 +762,23 @@ export default function ProductDetailSection({
     : "50ml • Eau de Parfum";
 
   return (
-    <section className="bg-[#F8F9FA] w-full pt-6 sm:pt-8 pb-12 md:pb-16 px-4 md:px-8 relative overflow-hidden flex flex-col items-center">
-      <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10 items-start mt-2 md:mt-4 mb-10 z-10">
+    <section className="bg-white w-full pt-6 sm:pt-8 pb-12 md:pb-16 px-4 md:px-8 relative overflow-hidden flex flex-col items-center">
+      <div
+        data-theme-content-fade
+        className={`w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10 items-start mt-2 md:mt-4 mb-10 z-10${
+          contentVisible ? " is-theme-content-ready" : ""
+        }`}
+        style={contentFadeStyle}
+      >
         {/* ================= KIRI: IMAGE GALLERY (Col 4) ================= */}
         <div className="lg:col-span-4 flex flex-col items-center w-full select-none">
           <div
+            data-theme-color-shimmer
             className="w-full aspect-square rounded-[24px] overflow-hidden flex justify-center items-center relative shadow-sm"
-            style={{ backgroundColor: visual.navbarColor }}
+            style={accentSurfaceStyle}
           >
             {isLoading ? (
-              <div className="w-full h-full bg-gray-300 animate-pulse" />
+              <div className="w-full h-full bg-transparent" />
             ) : currentImages.length > 0 ? (
               currentImages.map((imgSrc, index) => (
                 <div
@@ -783,10 +814,11 @@ export default function ProductDetailSection({
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index)}
+                  data-theme-color-shimmer
                   className={`h-[8px] rounded-full transition-all duration-300 ${
                     currentIndex === index ? "w-[24px]" : "w-[8px] opacity-30"
                   }`}
-                  style={{ backgroundColor: visual.navbarColor }}
+                  style={accentSurfaceStyle}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
@@ -826,8 +858,9 @@ export default function ProductDetailSection({
                     }}
                   >
                     <div
+                      data-theme-color-shimmer
                       className="absolute inset-0"
-                      style={{ backgroundColor: visual.navbarColor }}
+                      style={accentSurfaceStyle}
                     />
                     <Image
                       src={image}
@@ -860,7 +893,8 @@ export default function ProductDetailSection({
           {/* TITLE & DESC (Sesuai title desc.PNG) */}
           <h1
             className="font-nohemi text-[28px] sm:text-[34px] md:text-[42px] font-semibold leading-tight mb-2 tracking-tight"
-            style={{ color: visual.navbarColor }}
+            data-theme-text-shimmer
+            style={accentTextStyle}
           >
             {isLoading ? (
               <Skeleton className="w-48 h-12 block" />
@@ -885,7 +919,8 @@ export default function ProductDetailSection({
           <div className="bg-white border border-gray-100 rounded-[20px] p-4 sm:p-6 shadow-sm mb-6 md:mb-8 flex flex-col gap-4 md:gap-5">
             <h4
               className="font-nohemi text-[18px] md:text-[20.36px] font-semibold tracking-tight"
-              style={{ color: visual.navbarColor }}
+              data-theme-text-shimmer
+            style={accentTextStyle}
             >
               Notes {isLoading ? "" : product?.title}
             </h4>
@@ -911,14 +946,16 @@ export default function ProductDetailSection({
               ].map(({ label, value }) => (
                 <div key={label} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                   <span
+                    data-theme-color-shimmer
                     className="text-white font-nohemi text-[11px] md:text-[11.42px] regular px-3 md:px-4 py-1.5 rounded-full w-fit sm:min-w-[100px] text-center"
-                    style={{ backgroundColor: visual.navbarColor }}
+                    style={accentSurfaceStyle}
                   >
                     {label}
                   </span>
                   <span
                     className="text-[13px] md:text-[14.15px] font-parkinsans font-normal opacity-80"
-                    style={{ color: visual.navbarColor }}
+                    data-theme-text-shimmer
+            style={accentTextStyle}
                   >
                     {isLoading ? (
                       <Skeleton className="w-40 h-4 inline-block" />
@@ -935,7 +972,8 @@ export default function ProductDetailSection({
           <div className="mb-6">
             <h4
               className="font-nohemi text-[18px] md:text-[20px] font-bold mb-1"
-              style={{ color: visual.navbarColor }}
+              data-theme-text-shimmer
+            style={accentTextStyle}
             >
               {copy.harga}
             </h4>
@@ -952,7 +990,8 @@ export default function ProductDetailSection({
           <div className="mb-8">
             <h4
               className="font-nohemi text-[20px] font-semibold mb-4"
-              style={{ color: visual.navbarColor }}
+              data-theme-text-shimmer
+            style={accentTextStyle}
             >
               {copy.detailProduk}
             </h4>
@@ -1009,7 +1048,8 @@ export default function ProductDetailSection({
           <div className="mb-8">
             <h4
               className="font-nohemi text-[20px] font-semibold mb-3"
-              style={{ color: visual.navbarColor }}
+              data-theme-text-shimmer
+            style={accentTextStyle}
             >
               {copy.disclaimerTitle}
             </h4>
@@ -1076,7 +1116,8 @@ export default function ProductDetailSection({
                   <button
                     onClick={() => setShowKurirList(true)}
                     className="text-left font-parkinsans text-[15px] font-semibold underline-offset-4 hover:underline"
-                    style={{ color: visual.navbarColor }}
+                    data-theme-text-shimmer
+            style={accentTextStyle}
                   >
                     {copy.lihatKurirLainnya}
                   </button>
@@ -1096,8 +1137,9 @@ export default function ProductDetailSection({
             >
               {/* Header Box */}
               <div
+                data-theme-color-shimmer
                 className="px-4 py-2 text-[#FFFFFF] flex items-center gap-2 font-parkinsans font-medium text-[14px]"
-                style={{ backgroundColor: visual.navbarColor }}
+                style={accentSurfaceStyle}
               >
                 <MessageCircle size={18} /> {copy.diskusiTerbuka}
               </div>
@@ -1146,36 +1188,75 @@ export default function ProductDetailSection({
                   </div>
                 </div>
 
-                {/* Subtotal */}
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-[17px] font-parkinsans text-[#6A7282] font-normal">
-                    {copy.subtotal}
-                  </span>
-                  <span className="text-[17px] font-nohemi font-bold text-[#101828]">
-                    {formatProductPrice(dummySubtotalPrice)}
-                  </span>
+                {/* Ringkasan harga: produk + ongkir */}
+                <div className="flex flex-col gap-1.5 mt-1">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[14px] font-parkinsans text-[#6A7282] font-normal">
+                      {copy.subtotal}
+                    </span>
+                    <span className="text-[14px] font-nohemi font-semibold text-[#101828]">
+                      {formatProductPrice(dummySubtotalPrice)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[14px] font-parkinsans text-[#6A7282] font-normal">
+                      {copy.ongkir}
+                      {selectedKurir?.nama ? (
+                        <span className="text-[#99A1AF]">
+                          {" "}
+                          ({selectedKurir.nama})
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="text-[14px] font-nohemi font-semibold text-[#101828]">
+                      {formatProductPrice(shippingCost)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-1 border-t border-gray-100 mt-0.5">
+                    <span className="text-[17px] font-parkinsans text-[#6A7282] font-normal">
+                      {copy.totalBayar}
+                    </span>
+                    <span
+                      className="text-[17px] font-nohemi font-bold"
+                      data-theme-text-shimmer
+            style={accentTextStyle}
+                    >
+                      {formatProductPrice(totalWithShipping)}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-3 mt-1">
                   <button
-                    onClick={() =>
-                      router.push(
-                        `/checkout?type=buynow&productId=${id}&qty=${quantity}`,
-                      )
-                    }
+                    onClick={() => {
+                      const unitPrice = Math.max(productPrice - hargaPromo, 0);
+                      const params = new URLSearchParams({
+                        type: "buynow",
+                        productId: String(id),
+                        qty: String(quantity),
+                        unitPrice: String(unitPrice),
+                      });
+                      if (selectedKurir?.id) {
+                        params.set("kurirId", String(selectedKurir.id));
+                      }
+                      router.push(`/checkout?${params.toString()}`);
+                    }}
                     className="w-full text-white font-nohemi text-[16px] font-semibold py-3 rounded-full shadow-sm hover:opacity-90 active:scale-95 transition-all"
-                    style={{ backgroundColor: visual.navbarColor }}
+                    data-theme-color-shimmer
+                    style={accentSurfaceStyle}
                   >
                     {copy.beliLangsung}
                   </button>
                   <button
                     onClick={handleAddToCart}
                     disabled={cartStatus === "loading"}
+                    data-theme-text-shimmer
                     className="w-full bg-white font-nohemi text-[16px] font-semibold py-3 rounded-full border shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
                     style={{
-                      color: visual.navbarColor,
-                      borderColor: visual.navbarColor,
+                      ...accentTextStyle,
+                      borderColor: accentColor,
+                      transition: `color var(--theme-bg-duration, 360ms) ${BELANJA_EASE}, border-color var(--theme-bg-duration, 360ms) ${BELANJA_EASE}`,
                     }}
                   >
                     {cartStatus === "loading" ? copy.memproses : copy.tambahKeranjang}
@@ -1245,7 +1326,8 @@ export default function ProductDetailSection({
                 <Shield
                   size={20}
                   className="shrink-0 mt-0.5"
-                  style={{ color: visual.navbarColor }}
+                  data-theme-text-shimmer
+            style={accentTextStyle}
                 />
                 <div>
                   <h5 className="font-parkinsans font-semibold text-[14px] text-[#364153]">
@@ -1263,7 +1345,8 @@ export default function ProductDetailSection({
                 <CheckCircle
                   size={20}
                   className="shrink-0 mt-0.5"
-                  style={{ color: visual.navbarColor }}
+                  data-theme-text-shimmer
+            style={accentTextStyle}
                 />
                 <div>
                   <h5 className="font-parkinsans font-semibold text-[14px] text-[#364153]">
@@ -1284,8 +1367,9 @@ export default function ProductDetailSection({
         <div className="fixed bottom-0 right-0 md:bottom-6 md:right-6 w-full md:w-[350px] h-[500px] md:h-[550px] bg-white md:rounded-2xl shadow-2xl flex flex-col z-[100] border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5">
           {/* Header */}
           <div
+            data-theme-color-shimmer
             className="p-4 flex items-center justify-between text-white shadow-sm"
-            style={{ backgroundColor: visual.navbarColor }}
+            style={accentSurfaceStyle}
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -1341,7 +1425,8 @@ export default function ProductDetailSection({
                 onClick={() => handleSendChat(customMessage)}
                 disabled={!customMessage.trim() || isSendingChat}
                 className="w-full py-3 rounded-[12px] font-parkinsans font-bold text-white transition-opacity disabled:opacity-50"
-                style={{ backgroundColor: visual.navbarColor }}
+                data-theme-color-shimmer
+                style={accentSurfaceStyle}
               >
                 {isSendingChat ? copy.mengirim : copy.kirimPesan}
               </button>
@@ -1432,7 +1517,8 @@ export default function ProductDetailSection({
                     </div>
                     <span
                       className="font-parkinsans font-bold text-[16px]"
-                      style={{ color: visual.navbarColor }}
+                      data-theme-text-shimmer
+            style={accentTextStyle}
                     >
                       Rp{Number(kurir.harga).toLocaleString("id-ID")}
                     </span>
@@ -1541,7 +1627,11 @@ export default function ProductDetailSection({
                 <button
                   onClick={handleCopyLink}
                   className="px-4 py-2 bg-white border border-gray-200 shadow-sm rounded-[8px] text-[13px] font-semibold text-[#364153] hover:bg-gray-50 flex items-center gap-1.5 transition-colors shrink-0"
-                  style={{ color: isCopied ? visual.navbarColor : undefined }}
+                  data-theme-text-shimmer={isCopied || undefined}
+                  style={{
+                    color: isCopied ? accentColor : undefined,
+                    transition: `color var(--theme-bg-duration, 360ms) ${BELANJA_EASE}`,
+                  }}
                 >
                   {isCopied ? <CheckCircle size={14} /> : <Copy size={14} />}
                   {isCopied ? copy.disalin : copy.salin}
@@ -1598,7 +1688,8 @@ export default function ProductDetailSection({
                       router.push("/login"); // Mengarahkan ke halaman login
                     }}
                     className="flex-1 py-3 rounded-[12px] font-parkinsans font-semibold text-[14px] text-white transition-opacity hover:opacity-90"
-                    style={{ backgroundColor: visual.navbarColor }}
+                    data-theme-color-shimmer
+                    style={accentSurfaceStyle}
                   >
                     {copy.loginSekarang}
                   </button>
@@ -1609,7 +1700,8 @@ export default function ProductDetailSection({
                     setAlertInfo({ show: false, message: "", type: "error" })
                   }
                   className="w-full py-3 rounded-[12px] font-parkinsans font-semibold text-[14px] text-white transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: visual.navbarColor }}
+                  data-theme-color-shimmer
+                  style={accentSurfaceStyle}
                 >
                   {copy.tutup}
                 </button>
@@ -1620,7 +1712,11 @@ export default function ProductDetailSection({
       )}
 
       {/* ================= STICKY LINGKARAN DIVIDER BAWAH ================= */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none">
+      <div
+        data-theme-content-fade
+        className="absolute bottom-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none"
+        style={contentFadeStyle}
+      >
         <style>{`
           @keyframes slideLeftSeamless {
             0% { transform: translateX(0%); }
@@ -1637,8 +1733,9 @@ export default function ProductDetailSection({
           {Array.from({ length: 80 }).map((_, index) => (
             <div
               key={`bottom-${index}`}
+              data-theme-color-shimmer
               className="w-[30px] h-[30px] md:w-[46px] md:h-[46px] rounded-full flex-shrink-0"
-              style={{ backgroundColor: visual.navbarColor }}
+              style={accentSurfaceStyle}
             />
           ))}
         </div>

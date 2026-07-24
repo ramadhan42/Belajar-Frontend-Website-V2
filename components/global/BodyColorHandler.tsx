@@ -1,44 +1,53 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
+
+const BLUE = "#1172BA";
+const WHITE = "#FFFFFF";
 
 export default function BodyColorHandler() {
   const pathname = usePathname();
 
-  useEffect(() => {
-    // Ambil elemen body
+  useLayoutEffect(() => {
     const body = document.body;
+    const html = document.documentElement;
 
-    // Tentukan logika warna berdasarkan rute (pathname)
+    let color = "transparent";
+
     if (
       pathname === "/about" ||
       pathname === "/contact" ||
       pathname === "/" ||
+      pathname === "/beranda" ||
       pathname === "/belanja"
     ) {
-      body.style.backgroundColor = "#1172BA";
+      color = BLUE;
     } else if (pathname === "/layanan") {
-      body.style.backgroundColor = "#f0f0f0";
-    } else if (pathname === "/kuis") {
-      body.style.backgroundColor = "#F6F6F6";
-    }
-    // Menggunakan startsWith untuk menangkap rute dinamis /belanja/[id]
-    else if (pathname.startsWith("/belanja/")) {
-      body.style.backgroundColor = "#F6F6F6";
-    } else if (pathname.startsWith("/profile/")) {
-      body.style.backgroundColor = "#F6F6F6";
-    }
-    // Default warna untuk halaman lainnya
-    else {
-      body.style.backgroundColor = "transparent";
+      color = "#f0f0f0";
+    } else if (
+      pathname === "/profile" ||
+      pathname.startsWith("/profile/") ||
+      pathname.startsWith("/belanja/") ||
+      pathname === "/checkout" ||
+      pathname.startsWith("/checkout/") ||
+      pathname === "/kuis" ||
+      pathname.startsWith("/kuis/")
+    ) {
+      color = pathname.startsWith("/checkout") ? "#F0F3F7" : WHITE;
     }
 
-    // (Opsional) Cleanup function
-    return () => {
-      body.style.backgroundColor = "";
-    };
-  }, [pathname]); // Akan berjalan ulang setiap kali URL berubah
+    body.style.setProperty(
+      "transition",
+      "background-color var(--theme-bg-duration, 0ms) cubic-bezier(0.22, 1, 0.36, 1)",
+    );
+    html.style.setProperty(
+      "transition",
+      "background-color var(--theme-bg-duration, 0ms) cubic-bezier(0.22, 1, 0.36, 1)",
+    );
+    body.style.setProperty("background-color", color);
+    html.style.setProperty("background-color", color);
+  }, [pathname]);
 
-  return null; // Tidak me-render apapun ke layar
+  return null;
 }

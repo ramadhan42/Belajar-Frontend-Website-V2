@@ -29,12 +29,10 @@ body {
 }
 
 .hero-section h1 {
-  font-family: var(--font-nohemi), sans-serif;
   letter-spacing: 0.03em;
 }
 
 .hero-section p {
-  font-family: var(--font-nohemi), sans-serif;
   letter-spacing: 0.02em;
 }
 
@@ -100,3 +98,613 @@ body::-webkit-scrollbar,
   width: 0 !important;
   height: 0 !important;
 }
+
+/* ========== Locale switch: text-only shimmer + soft reveal ========== */
+@keyframes locale-text-shimmer {
+  0% {
+    background-position: 140% 0;
+  }
+  100% {
+    background-position: -140% 0;
+  }
+}
+
+@keyframes locale-text-reveal {
+  0% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/*
+  Default: glyph-shaped text shimmer (no bars).
+  Never touch transform / layout / images.
+*/
+html[data-locale-loading="true"]
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span,
+    a,
+    label,
+    li,
+    td,
+    th,
+    small,
+    strong,
+    em,
+    b,
+    legend,
+    figcaption,
+    dt,
+    dd
+  ) {
+  background-color: transparent !important;
+  background-image: linear-gradient(
+    100deg,
+    #94a3b8 0%,
+    #94a3b8 42%,
+    #f1f5f9 50%,
+    #94a3b8 58%,
+    #94a3b8 100%
+  ) !important;
+  background-size: 220% 100% !important;
+  background-repeat: no-repeat !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: locale-text-shimmer 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+  transition: none !important;
+}
+
+/* Hero: strip broad shimmer — only .locale-shimmer-text gets the effect */
+html[data-locale-loading="true"]
+  .hero-section
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span,
+    a,
+    label,
+    li,
+    small,
+    strong,
+    em,
+    b
+  ):not(.locale-shimmer-text),
+.hero-section.is-locale-loading
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span,
+    a,
+    label,
+    li,
+    small,
+    strong,
+    em,
+    b
+  ):not(.locale-shimmer-text) {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: unset !important;
+  color: inherit !important;
+  animation: none !important;
+}
+
+html[data-locale-loading="true"] .hero-section .locale-shimmer-text,
+.hero-section.is-locale-loading .locale-shimmer-text {
+  background-color: transparent !important;
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.4) 40%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.4) 60%,
+    rgba(255, 255, 255, 0.4) 100%
+  ) !important;
+  background-size: 220% 100% !important;
+  background-repeat: no-repeat !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: locale-text-shimmer 1.5s cubic-bezier(0.45, 0.05, 0.55, 0.95)
+    infinite !important;
+  /* paint-only — do not alter box model / transform */
+  margin: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  transition: none !important;
+  will-change: background-position;
+}
+
+html[data-locale-loading="true"]
+  .hero-section
+  .hero-badge-left
+  .locale-shimmer-text,
+html[data-locale-loading="true"]
+  .hero-section
+  .hero-badge-right
+  .locale-shimmer-text,
+.hero-section.is-locale-loading .hero-badge-left .locale-shimmer-text,
+.hero-section.is-locale-loading .hero-badge-right .locale-shimmer-text {
+  background-image: linear-gradient(
+    100deg,
+    rgba(17, 114, 186, 0.35) 0%,
+    rgba(17, 114, 186, 0.35) 40%,
+    rgba(17, 114, 186, 1) 50%,
+    rgba(17, 114, 186, 0.35) 60%,
+    rgba(17, 114, 186, 0.35) 100%
+  ) !important;
+}
+
+/* Hard-exempt media + stable visual layers (never touch transform/opacity) */
+html[data-locale-loading="true"] img,
+html[data-locale-loading="true"] svg,
+html[data-locale-loading="true"] picture,
+html[data-locale-loading="true"] video,
+html[data-locale-loading="true"] canvas,
+html[data-locale-loading="true"] :where(span, a, label, p, li, button):has(> img),
+html[data-locale-loading="true"] :where(span, a, label, p, li, button):has(> picture),
+html[data-locale-loading="true"] :where(span, a, label, p, li, button):has(> svg),
+html[data-locale-loading="true"] :where(span, a, label, p, li, button):has(> video),
+html[data-locale-loading="true"] [data-locale-stable]:not(.locale-shimmer-text),
+html[data-locale-loading="true"]
+  [data-locale-stable]
+  *:not(.locale-shimmer-text),
+html[data-locale-loading="true"] [data-no-locale-fx],
+html[data-locale-loading="true"] [data-no-locale-fx] * {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: unset !important;
+  color: inherit !important;
+  animation: none !important;
+}
+
+html[data-locale-reveal="true"]
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span,
+    a,
+    label,
+    li,
+    td,
+    th,
+    small,
+    strong,
+    em,
+    b,
+    legend,
+    figcaption,
+    dt,
+    dd
+  ) {
+  animation: locale-text-reveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Hero reveal: only opted-in text; opacity only (no blur/transform) */
+html[data-locale-reveal="true"]
+  .hero-section
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span,
+    a,
+    label,
+    li,
+    small,
+    strong,
+    em,
+    b
+  ):not(.locale-shimmer-text) {
+  animation: none !important;
+}
+
+html[data-locale-reveal="true"] .hero-section .locale-shimmer-text {
+  animation: locale-text-reveal 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html[data-locale-reveal="true"] :where(span, a, label, p, li):has(> img),
+html[data-locale-reveal="true"] :where(span, a, label, p, li):has(> svg),
+html[data-locale-reveal="true"] [data-locale-stable]:not(.locale-shimmer-text),
+html[data-locale-reveal="true"]
+  [data-locale-stable]
+  *:not(.locale-shimmer-text),
+html[data-locale-reveal="true"] [data-no-locale-fx],
+html[data-locale-reveal="true"] [data-no-locale-fx] * {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-locale-loading="true"]
+    :where(
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      p,
+      span,
+      a,
+      label,
+      li,
+      td,
+      th,
+      small,
+      strong,
+      em,
+      b,
+      legend,
+      figcaption,
+      dt,
+      dd
+    ),
+  html[data-locale-loading="true"] .locale-shimmer-text {
+    animation: none !important;
+    opacity: 0.55 !important;
+  }
+
+  html[data-locale-reveal="true"]
+    :where(
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      p,
+      span,
+      a,
+      label,
+      li,
+      td,
+      th,
+      small,
+      strong,
+      em,
+      b,
+      legend,
+      figcaption,
+      dt,
+      dd
+    ) {
+    animation: none !important;
+  }
+}
+
+/* ========== Theme color transition (belanja details / checkout) ========== */
+/* Reuse locale shimmer visuals while navbar/footer settle to product color */
+html[data-theme-loading="true"]
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span,
+    a,
+    label,
+    li,
+    td,
+    th,
+    small,
+    strong,
+    em,
+    b,
+    legend,
+    figcaption,
+    dt,
+    dd
+  ) {
+  background-color: transparent !important;
+  background-image: linear-gradient(
+    100deg,
+    #94a3b8 0%,
+    #94a3b8 42%,
+    #f1f5f9 50%,
+    #94a3b8 58%,
+    #94a3b8 100%
+  ) !important;
+  background-size: 220% 100% !important;
+  background-repeat: no-repeat !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: locale-text-shimmer 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+  transition: none !important;
+}
+
+html[data-theme-loading="true"] img,
+html[data-theme-loading="true"] svg,
+html[data-theme-loading="true"] picture,
+html[data-theme-loading="true"] video,
+html[data-theme-loading="true"] canvas,
+html[data-theme-loading="true"]
+  :where(span, a, label, p, li, button):has(> img),
+html[data-theme-loading="true"]
+  :where(span, a, label, p, li, button):has(> picture),
+html[data-theme-loading="true"]
+  :where(span, a, label, p, li, button):has(> svg),
+html[data-theme-loading="true"]
+  :where(span, a, label, p, li, button):has(> video),
+html[data-theme-loading="true"] [data-locale-stable]:not(.locale-shimmer-text),
+html[data-theme-loading="true"] [data-locale-stable] *:not(.locale-shimmer-text),
+html[data-theme-loading="true"] [data-no-locale-fx],
+html[data-theme-loading="true"] [data-no-locale-fx] * {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: unset !important;
+  color: inherit !important;
+  animation: none !important;
+}
+
+html[data-theme-reveal="true"]
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span,
+    a,
+    label,
+    li,
+    td,
+    th,
+    small,
+    strong,
+    em,
+    b,
+    legend,
+    figcaption,
+    dt,
+    dd
+  ) {
+  animation: locale-text-reveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Theme color duration dipakai navbar/footer via --theme-bg-duration */
+
+@keyframes theme-surface-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes theme-text-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes theme-accent-fade-in {
+  from {
+    opacity: 0.35;
+    filter: saturate(0.4);
+  }
+  to {
+    opacity: 1;
+    filter: saturate(1);
+  }
+}
+
+/* —— Shimmer permukaan (div) —— */
+html[data-theme-color-loading="true"] [data-theme-color-shimmer] {
+  position: relative;
+  isolation: isolate;
+}
+
+html[data-theme-color-loading="true"] [data-theme-color-shimmer]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    100deg,
+    #94a3b8 0%,
+    #94a3b8 40%,
+    #e2e8f0 50%,
+    #94a3b8 60%,
+    #94a3b8 100%
+  );
+  background-size: 220% 100%;
+  animation: theme-surface-shimmer 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 1;
+  transition: opacity var(--theme-color-fade-duration, 420ms)
+    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* —— Shimmer teks aksen produk —— */
+html[data-theme-color-loading="true"] [data-theme-text-shimmer] {
+  background-color: transparent !important;
+  background-image: linear-gradient(
+    100deg,
+    #94a3b8 0%,
+    #94a3b8 42%,
+    #f1f5f9 50%,
+    #94a3b8 58%,
+    #94a3b8 100%
+  ) !important;
+  background-size: 220% 100% !important;
+  background-repeat: no-repeat !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: theme-text-shimmer 1.25s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+  transition: none !important;
+}
+
+/* Stroke/ikon ikut shimmer lembut */
+html[data-theme-color-loading="true"] [data-theme-text-shimmer] svg {
+  opacity: 0.35;
+  transition: opacity var(--theme-color-fade-duration, 420ms)
+    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Lucide / SVG yang sendiri di-mark shimmer */
+html[data-theme-color-loading="true"] svg[data-theme-text-shimmer] {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: unset !important;
+  color: #94a3b8 !important;
+  stroke: #94a3b8 !important;
+  opacity: 0.55;
+  animation: none !important;
+  transition:
+    color var(--theme-color-fade-duration, 420ms)
+      cubic-bezier(0.22, 1, 0.36, 1),
+    stroke var(--theme-color-fade-duration, 420ms)
+      cubic-bezier(0.22, 1, 0.36, 1),
+    opacity var(--theme-color-fade-duration, 420ms)
+      cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+/* Navbar / footer chrome shimmer */
+html[data-theme-color-loading="true"] .theme-color-shimmer-chrome {
+  position: relative;
+  isolation: isolate;
+}
+
+html[data-theme-color-loading="true"] .theme-color-shimmer-chrome::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    100deg,
+    #94a3b8 0%,
+    #94a3b8 40%,
+    #e2e8f0 50%,
+    #94a3b8 60%,
+    #94a3b8 100%
+  );
+  background-size: 220% 100%;
+  animation: theme-surface-shimmer 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 1;
+  transition: opacity var(--theme-color-fade-duration, 420ms)
+    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* —— Fade reveal: shimmer hilang, warna produk muncul smooth —— */
+html[data-theme-color-reveal="true"] [data-theme-color-shimmer]::after,
+html[data-theme-color-reveal="true"] .theme-color-shimmer-chrome::after {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+html[data-theme-color-reveal="true"] [data-theme-text-shimmer] {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: unset !important;
+  color: inherit !important;
+  animation: theme-accent-fade-in var(--theme-color-fade-duration, 420ms)
+    cubic-bezier(0.22, 1, 0.36, 1) both !important;
+  transition:
+    color var(--theme-bg-duration, 360ms) cubic-bezier(0.22, 1, 0.36, 1),
+    opacity var(--theme-color-fade-duration, 420ms)
+      cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+html[data-theme-color-reveal="true"] [data-theme-text-shimmer] svg {
+  opacity: 1;
+}
+
+html[data-theme-color-reveal="true"] svg[data-theme-text-shimmer] {
+  background: none !important;
+  -webkit-text-fill-color: unset !important;
+  color: inherit !important;
+  stroke: currentColor !important;
+  opacity: 1;
+  animation: theme-accent-fade-in var(--theme-color-fade-duration, 420ms)
+    cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+html[data-theme-color-reveal="true"] [data-theme-color-shimmer],
+html[data-theme-color-reveal="true"] .theme-color-shimmer-chrome {
+  animation: theme-accent-fade-in var(--theme-color-fade-duration, 420ms)
+    cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Gambar + konten: soft fade setelah shimmer (konten tetap terlihat saat shimmer) */
+html[data-theme-color-loading="true"]:not([data-theme-content-reveal="true"])
+  [data-theme-content-fade]
+  img,
+html[data-theme-color-loading="true"]:not([data-theme-content-reveal="true"])
+  [data-theme-content-fade]
+  picture {
+  opacity: 0 !important;
+  transition: none !important;
+}
+
+html[data-theme-content-reveal="true"] [data-theme-content-fade] img,
+html[data-theme-content-reveal="true"] [data-theme-content-fade] picture {
+  opacity: 1 !important;
+  transition: opacity var(--theme-content-fade-duration, 520ms)
+    cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+

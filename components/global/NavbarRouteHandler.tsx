@@ -11,14 +11,15 @@ export default function NavbarRouteHandler() {
   const { resetColors } = useNavbarColor();
 
   useEffect(() => {
-    // IZINKAN halaman tertentu untuk TIDAK di-reset (biarkan komponen mengatur warnanya sendiri)
+    // Halaman khusus mengatur warna sendiri (detail/checkout/dll)
     const isSpecialPage =
       pathname.startsWith("/belanja/") ||
       pathname.startsWith("/kuis/") ||
       pathname.startsWith("/checkout") ||
       pathname.startsWith("/profile/");
 
-    if (!isSpecialPage) {
+    // /belanja di-handle BelanjaPageClient (timing enter sinkron)
+    if (!isSpecialPage && pathname !== "/belanja") {
       resetColors();
     }
   }, [pathname, resetColors]);

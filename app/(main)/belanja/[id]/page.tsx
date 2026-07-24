@@ -5,7 +5,7 @@ import Footer from "@/components/global/Footer";
 
 export default function BelanjaDetails() {
   return (
-    <div className="bg-[#1172BA] flex flex-col justify-center items-center">
+    <div className="bg-white flex flex-col justify-center items-center">
       <ProductDetailSection />
     </div>
   );
