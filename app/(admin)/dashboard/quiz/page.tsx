@@ -13,13 +13,16 @@ import {
   X,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import AdminModal from "@/components/admin/AdminModal";
 import { getAdminHeaders } from "@/lib/api";
+import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 type TabKey = "questions" | "scores";
 
 interface QuizOptionForm {
   id?: number;
   option_text: string;
+  option_text_en: string;
   prestige_score: number;
   peaceful_calm_score: number;
   rebel_brave_score: number;
@@ -29,6 +32,7 @@ interface QuizOptionForm {
 interface QuizQuestionItem {
   id: number;
   question_text: string;
+  question_text_en?: string | null;
   options_count?: number;
   options: QuizOptionForm[];
   created_at?: string;
@@ -50,12 +54,15 @@ interface QuizScoreItem {
   answers?: Array<{
     id: number;
     question_text?: string;
+    question_text_en?: string | null;
     option_text?: string;
+    option_text_en?: string | null;
   }>;
 }
 
 const emptyOption = (): QuizOptionForm => ({
   option_text: "",
+  option_text_en: "",
   prestige_score: 0,
   peaceful_calm_score: 0,
   rebel_brave_score: 0,
@@ -71,6 +78,7 @@ const PERSONALITY_LABELS: Record<string, string> = {
 };
 
 export default function QuizAdminPage() {
+  const { t, common, locale } = useAdminI18n();
   const baseUrl = SITE_STRINGS.base_url.url_backend;
   const [tab, setTab] = useState<TabKey>("questions");
   const [isLoading, setIsLoading] = useState(true);
@@ -82,6 +90,7 @@ export default function QuizAdminPage() {
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [questionText, setQuestionText] = useState("");
+  const [questionTextEn, setQuestionTextEn] = useState("");
   const [options, setOptions] = useState<QuizOptionForm[]>([
     emptyOption(),
     emptyOption(),
@@ -155,12 +164,32 @@ export default function QuizAdminPage() {
     loadData();
   }, [loadData]);
 
+  const localizedQuestionText = (item: {
+    question_text: string;
+    question_text_en?: string | null;
+  }) =>
+    locale === "en" && item.question_text_en?.trim()
+      ? item.question_text_en
+      : item.question_text;
+
+  const localizedOptionText = (item: {
+    option_text?: string | null;
+    option_text_en?: string | null;
+  }) =>
+    locale === "en" && item.option_text_en?.trim()
+      ? item.option_text_en
+      : item.option_text || "";
+
   const filteredQuestions = useMemo(() => {
-    const q = searchTerm.toLowerCase();
-    return questions.filter((item) =>
-      item.question_text.toLowerCase().includes(q),
-    );
-  }, [questions, searchTerm]);
+    const q = searchTerm.toLowerCase().trim();
+    if (!q) return questions;
+    return questions.filter((item) => {
+      const idText = item.question_text?.toLowerCase() || "";
+      const enText = item.question_text_en?.toLowerCase() || "";
+      const display = localizedQuestionText(item).toLowerCase();
+      return display.includes(q) || idText.includes(q) || enText.includes(q);
+    });
+  }, [questions, searchTerm, locale]);
 
   const filteredScores = useMemo(() => {
     const q = searchTerm.toLowerCase();
@@ -176,6 +205,7 @@ export default function QuizAdminPage() {
     setModalMode("add");
     setEditingId(null);
     setQuestionText("");
+    setQuestionTextEn("");
     setOptions([emptyOption(), emptyOption(), emptyOption(), emptyOption()]);
     setIsModalOpen(true);
   };
@@ -184,11 +214,13 @@ export default function QuizAdminPage() {
     setModalMode("edit");
     setEditingId(item.id);
     setQuestionText(item.question_text);
+    setQuestionTextEn(item.question_text_en || "");
     setOptions(
       item.options.length
         ? item.options.map((o) => ({
             id: o.id,
             option_text: o.option_text,
+            option_text_en: o.option_text_en || "",
             prestige_score: Number(o.prestige_score) || 0,
             peaceful_calm_score: Number(o.peaceful_calm_score) || 0,
             rebel_brave_score: Number(o.rebel_brave_score) || 0,
@@ -219,11 +251,27 @@ export default function QuizAdminPage() {
 
   const handleSaveQuestion = async () => {
     if (!questionText.trim()) {
-      showNotification("Teks soal wajib diisi.", "error");
+      showNotification(
+        t(
+          "quiz",
+          "validation_question_required",
+          "Teks soal wajib diisi.",
+          "Question text is required.",
+        ),
+        "error",
+      );
       return;
     }
     if (options.some((o) => !o.option_text.trim())) {
-      showNotification("Semua teks jawaban wajib diisi.", "error");
+      showNotification(
+        t(
+          "quiz",
+          "validation_options_required",
+          "Semua teks jawaban wajib diisi.",
+          "All answer texts are required.",
+        ),
+        "error",
+      );
       return;
     }
 
@@ -231,9 +279,11 @@ export default function QuizAdminPage() {
     try {
       const payload = {
         question_text: questionText.trim(),
+        question_text_en: questionTextEn.trim() || null,
         options: options.map((o) => ({
           ...(o.id ? { id: o.id } : {}),
           option_text: o.option_text.trim(),
+          option_text_en: o.option_text_en.trim() || null,
           prestige_score: Number(o.prestige_score) || 0,
           peaceful_calm_score: Number(o.peaceful_calm_score) || 0,
           rebel_brave_score: Number(o.rebel_brave_score) || 0,
@@ -257,13 +307,27 @@ export default function QuizAdminPage() {
 
       setIsModalOpen(false);
       showNotification(
-        modalMode === "add" ? "Soal berhasil ditambahkan." : "Soal berhasil diperbarui.",
+        modalMode === "add"
+          ? t(
+              "quiz",
+              "added_success",
+              "Soal berhasil ditambahkan.",
+              "Question added successfully.",
+            )
+          : t(
+              "quiz",
+              "updated_success",
+              "Soal berhasil diperbarui.",
+              "Question updated successfully.",
+            ),
         "success",
       );
       await fetchQuestions();
     } catch (err) {
       showNotification(
-        err instanceof Error ? err.message : "Gagal menyimpan soal",
+        err instanceof Error
+          ? err.message
+          : t("quiz", "save_error", "Gagal menyimpan soal", "Failed to save question"),
         "error",
       );
     } finally {
@@ -287,12 +351,17 @@ export default function QuizAdminPage() {
       if (!res.ok) throw new Error(data.message || "Gagal menghapus data");
 
       setDeleteTarget(null);
-      showNotification("Data berhasil dihapus.", "success");
+      showNotification(
+        t("quiz", "deleted_success", "Data berhasil dihapus.", "Data deleted successfully."),
+        "success",
+      );
       if (deleteTarget.type === "question") await fetchQuestions();
       else await fetchScores();
     } catch (err) {
       showNotification(
-        err instanceof Error ? err.message : "Gagal menghapus data",
+        err instanceof Error
+          ? err.message
+          : t("quiz", "delete_error", "Gagal menghapus data", "Failed to delete data"),
         "error",
       );
     }
@@ -343,11 +412,16 @@ export default function QuizAdminPage() {
 
       setIsScoreEditOpen(false);
       setScoreDetail(null);
-      showNotification("Skor berhasil diperbarui.", "success");
+      showNotification(
+        t("quiz", "score_updated_success", "Skor berhasil diperbarui.", "Score updated successfully."),
+        "success",
+      );
       await fetchScores();
     } catch (err) {
       showNotification(
-        err instanceof Error ? err.message : "Gagal memperbarui skor",
+        err instanceof Error
+          ? err.message
+          : t("quiz", "score_update_error", "Gagal memperbarui skor", "Failed to update score"),
         "error",
       );
     } finally {
@@ -399,10 +473,15 @@ export default function QuizAdminPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <ClipboardList size={28} />
-            Manajemen Quiz
+            {t("quiz", "title", "Manajemen Kuis", "Quiz Management")}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Kelola soal, jawaban, skor karakter, dan hasil kuis pengguna.
+            {t(
+              "quiz",
+              "subtitle",
+              "Kelola soal, jawaban, skor karakter, dan hasil kuis pengguna.",
+              "Manage questions, answers, character scores, and quiz results.",
+            )}
           </p>
         </div>
 
@@ -412,7 +491,7 @@ export default function QuizAdminPage() {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-medium hover:bg-gray-800"
           >
             <Plus size={16} />
-            Tambah Soal
+            {t("quiz", "add_question", "Tambah Soal", "Add Question")}
           </button>
         )}
       </div>
@@ -427,7 +506,7 @@ export default function QuizAdminPage() {
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            Soal & Jawaban
+            {t("quiz", "tab_questions", "Soal", "Questions")}
           </button>
           <button
             onClick={() => setTab("scores")}
@@ -437,7 +516,7 @@ export default function QuizAdminPage() {
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            Skor Akhir
+            {t("quiz", "tab_scores", "Skor", "Scores")}
           </button>
         </div>
 
@@ -447,8 +526,18 @@ export default function QuizAdminPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder={
             tab === "questions"
-              ? "Cari teks soal..."
-              : "Cari nama, email, atau kepribadian..."
+              ? t(
+                  "quiz",
+                  "search_questions",
+                  "Cari teks soal...",
+                  "Search question text...",
+                )
+              : t(
+                  "quiz",
+                  "search_scores",
+                  "Cari nama, email, atau kepribadian...",
+                  "Search name, email, or personality...",
+                )
           }
           className="flex-1 min-w-[220px] px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-gray-900/10"
         />
@@ -461,16 +550,16 @@ export default function QuizAdminPage() {
               <thead>
                 <tr className="bg-gray-50/80 border-b border-gray-100">
                   <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
-                    ID
+                    {common.id}
                   </th>
                   <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
-                    Soal
+                    {t("quiz", "col_question", "Soal", "Question")}
                   </th>
                   <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
-                    Jawaban
+                    {t("quiz", "col_answers", "Jawaban", "Answers")}
                   </th>
                   <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase text-right">
-                    Aksi
+                    {common.actions}
                   </th>
                 </tr>
               </thead>
@@ -478,7 +567,7 @@ export default function QuizAdminPage() {
                 {filteredQuestions.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-5 py-12 text-center text-gray-400">
-                      Belum ada soal kuis.
+                      {t("quiz", "empty_questions", "Belum ada soal kuis.", "No quiz questions yet.")}
                     </td>
                   </tr>
                 ) : (
@@ -486,10 +575,11 @@ export default function QuizAdminPage() {
                     <tr key={item.id} className="hover:bg-gray-50/60">
                       <td className="px-5 py-4 text-sm text-gray-500">#{item.id}</td>
                       <td className="px-5 py-4 text-sm text-gray-900 max-w-xl">
-                        {item.question_text}
+                        {localizedQuestionText(item)}
                       </td>
                       <td className="px-5 py-4 text-sm text-gray-600">
-                        {item.options?.length || item.options_count || 0} opsi
+                        {item.options?.length || item.options_count || 0}{" "}
+                        {t("quiz", "options_word", "opsi", "options")}
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex justify-end gap-2">
@@ -523,19 +613,19 @@ export default function QuizAdminPage() {
               <thead>
                 <tr className="bg-gray-50/80 border-b border-gray-100">
                   <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
-                    User
+                    {common.user}
                   </th>
                   <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
-                    Skor
+                    {t("quiz", "col_score", "Skor", "Score")}
                   </th>
                   <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
-                    Hasil
+                    {t("quiz", "col_result", "Hasil", "Result")}
                   </th>
                   <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
-                    Tanggal
+                    {common.date}
                   </th>
                   <th className="px-5 py-4 text-xs font-semibold text-gray-500 uppercase text-right">
-                    Aksi
+                    {common.actions}
                   </th>
                 </tr>
               </thead>
@@ -543,7 +633,7 @@ export default function QuizAdminPage() {
                 {filteredScores.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-5 py-12 text-center text-gray-400">
-                      Belum ada skor kuis.
+                      {t("quiz", "empty_scores", "Belum ada skor kuis.", "No quiz scores yet.")}
                     </td>
                   </tr>
                 ) : (
@@ -551,7 +641,8 @@ export default function QuizAdminPage() {
                     <tr key={item.id} className="hover:bg-gray-50/60">
                       <td className="px-5 py-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {item.user?.name || "User dihapus"}
+                          {item.user?.name ||
+                            t("quiz", "deleted_user", "User dihapus", "Deleted user")}
                         </div>
                         <div className="text-xs text-gray-500">
                           {item.user?.email || "-"}
@@ -610,12 +701,18 @@ export default function QuizAdminPage() {
       )}
 
       {/* Modal Soal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[80] bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
+      <AdminModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        zIndexClass="z-[80]"
+        panelClassName="max-w-3xl"
+      >
+          <div className="bg-white rounded-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">
-                {modalMode === "add" ? "Tambah Soal Quiz" : "Edit Soal Quiz"}
+                {modalMode === "add"
+                  ? t("quiz", "modal_add", "Tambah Soal Quiz", "Add Quiz Question")
+                  : t("quiz", "modal_edit", "Edit Soal Quiz", "Edit Quiz Question")}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-50 rounded-lg">
                 <X size={18} />
@@ -625,28 +722,57 @@ export default function QuizAdminPage() {
             <div className="p-6 space-y-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Teks Soal
+                  {t("quiz", "question_text_id", "Teks Soal (ID)", "Question Text (ID)")}
                 </label>
                 <textarea
                   value={questionText}
                   onChange={(e) => setQuestionText(e.target.value)}
                   rows={3}
                   className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-gray-900/10"
-                  placeholder="Masukkan pertanyaan kuis..."
+                  placeholder={t(
+                    "quiz",
+                    "question_placeholder_id",
+                    "Masukkan pertanyaan kuis...",
+                    "Enter quiz question...",
+                  )}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  {t("quiz", "question_text_en", "Teks Soal (EN)", "Question Text (EN)")}
+                </label>
+                <textarea
+                  value={questionTextEn}
+                  onChange={(e) => setQuestionTextEn(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-gray-900/10"
+                  placeholder={t(
+                    "quiz",
+                    "question_placeholder_en",
+                    "Enter quiz question in English...",
+                    "Enter quiz question in English...",
+                  )}
                 />
               </div>
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-gray-800">
-                    Pilihan Jawaban & Skor
+                    {t(
+                      "quiz",
+                      "options_scores_heading",
+                      "Pilihan Jawaban & Skor",
+                      "Answer Options & Scores",
+                    )}
                   </h3>
                   <button
                     type="button"
                     onClick={addOptionRow}
                     className="text-xs font-medium text-gray-700 hover:text-gray-900 inline-flex items-center gap-1"
                   >
-                    <Plus size={14} /> Tambah Opsi
+                    <Plus size={14} />{" "}
+                    {t("quiz", "add_option", "Tambah Opsi", "Add Option")}
                   </button>
                 </div>
 
@@ -657,7 +783,7 @@ export default function QuizAdminPage() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        Opsi {index + 1}
+                        {t("quiz", "option_label", "Opsi", "Option")} {index + 1}
                       </label>
                       {options.length > 2 && (
                         <button
@@ -675,7 +801,29 @@ export default function QuizAdminPage() {
                         updateOptionField(index, "option_text", e.target.value)
                       }
                       className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none"
-                      placeholder="Teks jawaban"
+                      placeholder={t(
+                        "quiz",
+                        "answer_placeholder_id",
+                        "Teks jawaban (ID)",
+                        "Answer text (ID)",
+                      )}
+                    />
+                    <input
+                      value={opt.option_text_en}
+                      onChange={(e) =>
+                        updateOptionField(
+                          index,
+                          "option_text_en",
+                          e.target.value,
+                        )
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none"
+                      placeholder={t(
+                        "quiz",
+                        "answer_placeholder_en",
+                        "Answer text (EN)",
+                        "Answer text (EN)",
+                      )}
                     />
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {(
@@ -716,26 +864,32 @@ export default function QuizAdminPage() {
                 onClick={() => setIsModalOpen(false)}
                 className="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600"
               >
-                Batal
+                {common.cancel}
               </button>
               <button
                 onClick={handleSaveQuestion}
                 disabled={isSaving}
                 className="px-4 py-2 rounded-xl bg-gray-900 text-white text-sm font-medium disabled:opacity-50"
               >
-                {isSaving ? "Menyimpan..." : "Simpan"}
+                {isSaving ? common.saving : common.save}
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </AdminModal>
 
       {/* Detail skor */}
-      {scoreDetail && !isScoreEditOpen && (
-        <div className="fixed inset-0 z-[80] bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg h-[80vh] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
+      <AdminModal
+        open={!!scoreDetail && !isScoreEditOpen}
+        onClose={() => setScoreDetail(null)}
+        zIndexClass="z-[80]"
+        panelClassName="max-w-lg"
+      >
+          <div className="bg-white rounded-2xl w-full h-[80vh] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
-              <h2 className="text-lg font-semibold">Detail Skor #{scoreDetail.id}</h2>
+              <h2 className="text-lg font-semibold">
+                {t("quiz", "score_detail_title", "Detail Skor", "Score Detail")} #
+                {scoreDetail?.id}
+              </h2>
               <button
                 type="button"
                 onClick={() => setScoreDetail(null)}
@@ -746,53 +900,85 @@ export default function QuizAdminPage() {
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide p-6 space-y-4 text-sm">
               <div>
-                <p className="text-gray-500">Pengguna</p>
+                <p className="text-gray-500">{common.user}</p>
                 <p className="font-medium text-gray-900">
-                  {scoreDetail.user?.name || "-"} ({scoreDetail.user?.email || "-"})
+                  {scoreDetail?.user?.name || "-"} ({scoreDetail?.user?.email || "-"})
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-gray-50 p-3">Peaceful: {scoreDetail.total_peaceful_calm}</div>
-                <div className="rounded-xl bg-gray-50 p-3">Prestige: {scoreDetail.total_prestige}</div>
-                <div className="rounded-xl bg-gray-50 p-3">Sweet: {scoreDetail.total_sweet_shy}</div>
-                <div className="rounded-xl bg-gray-50 p-3">Rebel: {scoreDetail.total_rebel_brave}</div>
+                <div className="rounded-xl bg-gray-50 p-3">Peaceful: {scoreDetail?.total_peaceful_calm}</div>
+                <div className="rounded-xl bg-gray-50 p-3">Prestige: {scoreDetail?.total_prestige}</div>
+                <div className="rounded-xl bg-gray-50 p-3">Sweet: {scoreDetail?.total_sweet_shy}</div>
+                <div className="rounded-xl bg-gray-50 p-3">Rebel: {scoreDetail?.total_rebel_brave}</div>
               </div>
               <div>
-                <p className="text-gray-500">Hasil Dominan</p>
+                <p className="text-gray-500">
+                  {t("quiz", "dominant_result", "Hasil Dominan", "Dominant Result")}
+                </p>
                 <p className="font-medium">
-                  {PERSONALITY_LABELS[scoreDetail.dominant_personality] ||
-                    scoreDetail.dominant_personality}{" "}
-                  ({scoreDetail.match_percentage}%)
+                  {scoreDetail
+                    ? PERSONALITY_LABELS[scoreDetail.dominant_personality] ||
+                      scoreDetail.dominant_personality
+                    : ""}{" "}
+                  ({scoreDetail?.match_percentage}%)
                 </p>
               </div>
-              {scoreDetail.recommended_product && (
+              {scoreDetail?.recommended_product && (
                 <div>
-                  <p className="text-gray-500">Produk Rekomendasi</p>
+                  <p className="text-gray-500">
+                    {t(
+                      "quiz",
+                      "recommended_product",
+                      "Produk Rekomendasi",
+                      "Recommended Product",
+                    )}
+                  </p>
                   <p className="font-medium">{scoreDetail.recommended_product.title}</p>
                 </div>
               )}
-              {scoreDetail.answers && scoreDetail.answers.length > 0 && (
+              {scoreDetail?.answers && scoreDetail.answers.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-gray-500">Jawaban User</p>
+                  <p className="text-gray-500">
+                    {t("quiz", "user_answers", "Jawaban User", "User Answers")}
+                  </p>
                   {scoreDetail.answers.map((a) => (
                     <div key={a.id} className="rounded-xl border border-gray-100 p-3">
-                      <p className="font-medium text-gray-800">{a.question_text}</p>
-                      <p className="text-gray-500 mt-1">{a.option_text}</p>
+                      <p className="font-medium text-gray-800">
+                        {localizedQuestionText({
+                          question_text: a.question_text || "",
+                          question_text_en: a.question_text_en,
+                        })}
+                      </p>
+                      <p className="text-gray-500 mt-1">
+                        {localizedOptionText({
+                          option_text: a.option_text,
+                          option_text_en: a.option_text_en,
+                        })}
+                      </p>
                     </div>
                   ))}
                 </div>
               )}
             </div>
           </div>
-        </div>
-      )}
+      </AdminModal>
 
       {/* Edit skor */}
-      {isScoreEditOpen && scoreDetail && (
-        <div className="fixed inset-0 z-[80] bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+      <AdminModal
+        open={isScoreEditOpen && !!scoreDetail}
+        onClose={() => {
+          setIsScoreEditOpen(false);
+          setScoreDetail(null);
+        }}
+        zIndexClass="z-[80]"
+        panelClassName="max-w-md"
+      >
+          <div className="bg-white rounded-2xl w-full shadow-2xl">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Edit Skor #{scoreDetail.id}</h2>
+              <h2 className="text-lg font-semibold">
+                {t("quiz", "score_edit_title", "Edit Skor", "Edit Score")} #
+                {scoreDetail?.id}
+              </h2>
               <button
                 onClick={() => {
                   setIsScoreEditOpen(false);
@@ -830,7 +1016,12 @@ export default function QuizAdminPage() {
               ))}
               <div>
                 <label className="block text-xs text-gray-500 mb-1">
-                  Kepribadian Dominan
+                  {t(
+                    "quiz",
+                    "dominant_personality_label",
+                    "Kepribadian Dominan",
+                    "Dominant Personality",
+                  )}
                 </label>
                 <select
                   value={scoreForm.dominant_personality}
@@ -857,45 +1048,54 @@ export default function QuizAdminPage() {
                 }}
                 className="px-4 py-2 rounded-xl border border-gray-200 text-sm"
               >
-                Batal
+                {common.cancel}
               </button>
               <button
                 onClick={handleSaveScore}
                 disabled={isSaving}
                 className="px-4 py-2 rounded-xl bg-gray-900 text-white text-sm disabled:opacity-50"
               >
-                {isSaving ? "Menyimpan..." : "Simpan"}
+                {isSaving ? common.saving : common.save}
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </AdminModal>
 
       {/* Delete confirm */}
-      {deleteTarget && (
-        <div className="fixed inset-0 z-[80] bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-            <h3 className="text-lg font-semibold text-gray-900">Hapus data?</h3>
+      <AdminModal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        zIndexClass="z-[80]"
+        panelClassName="max-w-sm"
+      >
+          <div className="bg-white rounded-2xl w-full p-6 shadow-2xl">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {common.confirm_delete}
+            </h3>
             <p className="text-sm text-gray-500 mt-2">
-              Tindakan ini tidak dapat dibatalkan.
+              {t(
+                "quiz",
+                "confirm_delete_desc",
+                "Tindakan ini tidak dapat dibatalkan.",
+                "This action cannot be undone.",
+              )}
             </p>
             <div className="mt-6 flex justify-end gap-2">
               <button
                 onClick={() => setDeleteTarget(null)}
                 className="px-4 py-2 rounded-xl border border-gray-200 text-sm"
               >
-                Batal
+                {common.cancel}
               </button>
               <button
                 onClick={handleDelete}
                 className="px-4 py-2 rounded-xl bg-red-600 text-white text-sm"
               >
-                Hapus
+                {common.delete}
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </AdminModal>
     </div>
   );
 }

@@ -11,11 +11,15 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import AdminModal from "@/components/admin/AdminModal";
+import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 interface Product {
   id: number | string;
   title: string;
+  title_en?: string | null;
   description: string;
+  description_en?: string | null;
   color?: string | null;
   price: string | number;
   personality_type: string;
@@ -36,6 +40,7 @@ interface Product {
 }
 
 export default function ProductsPage() {
+  const { t, common } = useAdminI18n();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -153,7 +158,15 @@ export default function ProductsPage() {
 
   const handleDelete = async (id: number | string) => {
     setProducts(products.filter((p) => p.id !== id));
-    showNotification("Produk berhasil dihapus!", "success");
+    showNotification(
+      t(
+        "products",
+        "deleted_success",
+        "Produk berhasil dihapus!",
+        "Product deleted successfully!",
+      ),
+      "success",
+    );
 
     try {
       const res = await fetch(`${baseUrl}/api/products/${id}`, {
@@ -198,14 +211,27 @@ export default function ProductsPage() {
         );
       }
 
-      showNotification("Produk berhasil diperbarui!", "success");
+      showNotification(
+        t(
+          "products",
+          "updated_success",
+          "Produk berhasil diperbarui!",
+          "Product updated successfully!",
+        ),
+        "success",
+      );
       setIsModalOpen(false);
       fetchProducts();
     } catch (error) {
       showNotification(
         error instanceof Error
           ? error.message
-          : "Terjadi kesalahan saat mengupdate produk.",
+          : t(
+              "products",
+              "update_error",
+              "Terjadi kesalahan saat mengupdate produk.",
+              "An error occurred while updating the product.",
+            ),
         "error",
       );
     }
@@ -244,13 +270,25 @@ export default function ProductsPage() {
       }
 
       // Jika berhasil
-      showNotification("Produk baru berhasil ditambahkan!", "success");
+      showNotification(
+        t(
+          "products",
+          "added_success",
+          "Produk baru berhasil ditambahkan!",
+          "New product added successfully!",
+        ),
+        "success",
+      );
       setIsModalOpen(false);
       fetchProducts(); // Refresh daftar produk
     } catch (error) {
       showNotification(
-        "Gagal menyimpan data: " +
-          (error instanceof Error ? error.message : "Periksa koneksi Anda"),
+        t(
+          "products",
+          "save_error_prefix",
+          "Gagal menyimpan data: ",
+          "Failed to save data: ",
+        ) + (error instanceof Error ? error.message : "Periksa koneksi Anda"),
         "error",
       );
     }
@@ -354,42 +392,61 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-bold text-gray-900">
-              Konfirmasi Hapus
-            </h3>
-            <p className="text-sm text-gray-500 mt-2">
-              Apakah Anda yakin ingin menghapus produk ini? Tindakan ini tidak
-              bisa dibatalkan.
-            </p>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                Batal
-              </button>
-              <button
-                onClick={() => {
-                  if (deleteId) handleDelete(deleteId);
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm"
-              >
-                Ya, Hapus
-              </button>
-            </div>
+      <AdminModal
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        zIndexClass="z-[60]"
+        panelClassName="max-w-sm"
+      >
+        <div className="bg-white rounded-2xl p-6 w-full shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+          <h3 className="text-lg font-bold text-gray-900">
+            {t(
+              "products",
+              "confirm_delete_title",
+              "Konfirmasi Hapus",
+              "Confirm Delete",
+            )}
+          </h3>
+          <p className="text-sm text-gray-500 mt-2">
+            {t(
+              "products",
+              "confirm_delete_desc",
+              "Apakah Anda yakin ingin menghapus produk ini? Tindakan ini tidak bisa dibatalkan.",
+              "Are you sure you want to delete this product? This action cannot be undone.",
+            )}
+          </p>
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              {common.cancel}
+            </button>
+            <button
+              onClick={() => {
+                if (deleteId) handleDelete(deleteId);
+              }}
+              className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm"
+            >
+              {common.yes_delete}
+            </button>
           </div>
         </div>
-      )}
+      </AdminModal>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Produk</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {t("products", "title", "Manajemen Produk", "Product Management")}
+          </h1>
           <p className="text-gray-500 mt-1">
-            Kelola inventaris, harga, notes, dan ketersediaan parfum Anda.
+            {t(
+              "products",
+              "subtitle",
+              "Kelola inventaris, harga, notes, dan ketersediaan parfum Anda.",
+              "Manage inventory, pricing, notes, and availability of your perfumes.",
+            )}
           </p>
         </div>
         <button
@@ -397,7 +454,7 @@ export default function ProductsPage() {
           className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-[0_4px_14px_0_rgb(0,0,0,0.1)]"
         >
           <Plus size={18} />
-          Tambah Produk
+          {t("products", "add", "Tambah Produk", "Add Product")}
         </button>
       </div>
 
@@ -409,7 +466,12 @@ export default function ProductsPage() {
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Cari nama parfum atau tipe kepribadian..."
+              placeholder={t(
+                "products",
+                "search_placeholder",
+                "Cari nama parfum atau tipe kepribadian...",
+                "Search perfume name or personality type...",
+              )}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50/50 focus:outline-none focus:ring-2 focus:ring-gray-900 outline-none transition-all"
@@ -424,22 +486,22 @@ export default function ProductsPage() {
               <tr className="bg-gray-50/70 border-b border-gray-100">
                 {/* Header Produk dibuat text-center agar presisi */}
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[300px]">
-                  Produk
+                  {common.product}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Tipe / Ukuran
+                  {t("products", "type_size", "Tipe / Ukuran", "Type / Size")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Harga
+                  {common.price}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Stok
+                  {t("products", "stock", "Stok", "Stock")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Status
+                  {common.status}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Aksi
+                  {common.actions}
                 </th>
               </tr>
             </thead>
@@ -466,7 +528,8 @@ export default function ProductsPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold text-gray-900 truncate">
-                            {product.title || "Tanpa Nama"}
+                            {product.title ||
+                              t("products", "no_name", "Tanpa Nama", "No Name")}
                           </p>
                           <p className="text-xs text-gray-500 mt-0.5 capitalize truncate">
                             {product.personality_type?.replace("_", " ")}
@@ -508,14 +571,14 @@ export default function ProductsPage() {
                         <button
                           onClick={() => handleOpenEdit(product)}
                           className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 border border-gray-150 shadow-sm bg-white transition-colors"
-                          title="Edit produk"
+                          title={common.edit}
                         >
                           <Edit2 size={14} />
                         </button>
                         <button
                           onClick={() => confirmDelete(product.id)}
                           className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 border border-gray-150 shadow-sm bg-white transition-colors"
-                          title="Hapus produk"
+                          title={common.delete}
                         >
                           <Trash2 size={14} />
                         </button>
@@ -529,7 +592,12 @@ export default function ProductsPage() {
                     colSpan={6}
                     className="px-6 py-12 text-center text-sm text-gray-400 font-medium"
                   >
-                    Tidak ada produk yang ditemukan.
+                    {t(
+                      "products",
+                      "empty",
+                      "Tidak ada produk yang ditemukan.",
+                      "No products found.",
+                    )}
                   </td>
                 </tr>
               )}
@@ -539,12 +607,17 @@ export default function ProductsPage() {
       </div>
 
       {/* MODAL CRUD (Add / Edit) */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl h-[80vh] max-h-[80vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 overflow-hidden border border-gray-100">
+      <AdminModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        panelClassName="max-w-3xl"
+      >
+        <div className="bg-white rounded-2xl shadow-xl w-full h-[80vh] max-h-[80vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 overflow-hidden border border-gray-100">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
               <h3 className="text-lg font-bold text-gray-900">
-                {modalMode === "add" ? "Tambah Parfum Baru" : "Edit Parfum"}
+                {modalMode === "add"
+                  ? t("products", "modal_add", "Tambah Parfum Baru", "Add New Perfume")
+                  : t("products", "modal_edit", "Edit Parfum", "Edit Perfume")}
               </h3>
               <button
                 type="button"
@@ -566,7 +639,7 @@ export default function ProductsPage() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                        Nama / Title
+                        Nama / Title (ID)
                       </label>
                       <input
                         type="text"
@@ -575,6 +648,19 @@ export default function ProductsPage() {
                         required
                         className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
                         placeholder="Contoh: Purpose Prestige"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Title (EN)
+                      </label>
+                      <input
+                        type="text"
+                        name="title_en"
+                        defaultValue={selectedProduct?.title_en || ""}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                        placeholder="e.g. Purpose Prestige"
                       />
                     </div>
 
@@ -645,7 +731,7 @@ export default function ProductsPage() {
 
                     <div>
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                        Deskripsi
+                        Deskripsi (ID)
                       </label>
                       <textarea
                         name="description"
@@ -654,6 +740,19 @@ export default function ProductsPage() {
                         rows={4}
                         className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all resize-none"
                         placeholder="Parfum elegan dengan notes vanilla..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Description (EN)
+                      </label>
+                      <textarea
+                        name="description_en"
+                        defaultValue={selectedProduct?.description_en || ""}
+                        rows={4}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all resize-none"
+                        placeholder="Elegant perfume with vanilla notes..."
                       />
                     </div>
 
@@ -842,19 +941,25 @@ export default function ProductsPage() {
                   onClick={() => setIsModalOpen(false)}
                   className="px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 border border-gray-200 rounded-xl shadow-sm transition-colors"
                 >
-                  Batal
+                  {common.cancel}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2.5 text-sm font-semibold text-white bg-gray-900 hover:bg-gray-800 rounded-xl transition-all shadow-sm"
                 >
-                  {modalMode === "add" ? "Simpan Produk" : "Simpan Perubahan"}
+                  {modalMode === "add"
+                    ? t(
+                        "products",
+                        "save_product",
+                        "Simpan Produk",
+                        "Save Product",
+                      )
+                    : common.save_changes}
                 </button>
               </div>
             </form>
           </div>
-        </div>
-      )}
+      </AdminModal>
     </div>
   );
 }

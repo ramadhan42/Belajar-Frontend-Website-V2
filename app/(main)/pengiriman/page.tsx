@@ -5,9 +5,6 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Truck, Package, Clock, ShieldCheck, MapPin } from "lucide-react";
 
-// Mencegah caching agar info pengiriman selalu update
-export const dynamic = "force-dynamic";
-
 const shippingSteps = [
   {
     icon: Package,
@@ -33,17 +30,17 @@ const shippingSteps = [
 
 export default function PengirimanPage() {
   const router = useRouter();
-  const [orderId, setOrderId] = useState("");
+  const [resi, setResi] = useState("");
+  const [error, setError] = useState("");
 
-  // Ubah bagian ini di dalam PengirimanPage
   const handleLacak = () => {
-    if (!orderId.trim()) {
-      alert("Silakan masukkan ID Order pesanan Anda terlebih dahulu.");
+    const value = resi.trim();
+    if (!value) {
+      setError("Masukkan nomor resi terlebih dahulu. Pesanan tanpa no resi belum bisa dilacak.");
       return;
     }
-    // Sebelumnya: `/profile/history/${orderId.trim()}`
-    // Ubah rute menjadi halaman lacak paket yang baru kita buat:
-    router.push(`/pengiriman/${orderId.trim()}`); 
+    setError("");
+    router.push(`/pengiriman/${encodeURIComponent(value)}`);
   };
 
   return (
@@ -101,31 +98,39 @@ export default function PengirimanPage() {
             <li>• Luar Pulau Jawa: 3-5 hari kerja</li>
           </ul>
         </div>
-        
-        {/* Section Lacak Pesanan yang Diperbarui */}
+
         <div className="p-8 bg-[#1172BA] text-white rounded-[32px]">
           <h3 className="text-[20px] font-bold mb-4">Lacak Pesanan Anda</h3>
           <p className="mb-6 opacity-90">
-            Masukkan ID order pesanan Anda untuk mengetahui posisi paket terkini.
+            Masukkan nomor resi pengiriman Anda. Jika resi belum tersedia,
+            paket belum bisa dilacak.
           </p>
           <div className="flex gap-2">
             <input
               type="text"
-              value={orderId}
-              onChange={(e) => setOrderId(e.target.value)}
-              placeholder="Masukkan ID order pesanan Anda..."
+              value={resi}
+              onChange={(e) => {
+                setResi(e.target.value);
+                if (error) setError("");
+              }}
+              placeholder="Masukkan nomor resi..."
               className="w-full h-[48px] rounded-full px-4 text-gray-900 outline-none bg-white text-sm"
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleLacak();
               }}
             />
-            <button 
+            <button
               onClick={handleLacak}
-              className="bg-white text-[#1172BA] px-6 rounded-full font-bold hover:bg-gray-100 transition-colors active:scale-95"
+              className="bg-white text-[#1172BA] px-6 rounded-full font-bold hover:bg-gray-100 transition-colors active:scale-95 shrink-0"
             >
               Lacak
             </button>
           </div>
+          {error ? (
+            <p className="mt-3 text-sm text-amber-100 bg-white/10 rounded-xl px-3 py-2">
+              {error}
+            </p>
+          ) : null}
         </div>
       </div>
     </div>

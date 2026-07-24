@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { CgClose } from "react-icons/cg";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import AdminModal from "@/components/admin/AdminModal";
+import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 interface Order {
   id: string;
@@ -31,6 +33,7 @@ interface Order {
 }
 
 export default function OrdersPage() {
+  const { t, common } = useAdminI18n();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -88,48 +91,93 @@ export default function OrdersPage() {
   const statusOptions = [
     {
       id: "dibatalkan",
-      label: "Order Dibatalkan",
-      desc: "Pesanan baru telah dibatalkan",
+      label: t("orders", "status_dibatalkan", "Order Dibatalkan", "Order Cancelled"),
+      desc: t(
+        "orders",
+        "status_dibatalkan_desc",
+        "Pesanan baru telah dibatalkan",
+        "The order has been cancelled",
+      ),
       color: "border-red-200 bg-red-50/50 text-red-700",
       activeColor: "ring-2 ring-red-500 bg-red-50 border-red-500",
       icon: <CgClose className="w-5 h-5 text-red-600" />,
     },
     {
       id: "menunggu_konfirmasi",
-      label: "Menunggu Konfirmasi",
-      desc: "Pesanan baru masuk dan perlu divalidasi",
+      label: t(
+        "orders",
+        "status_menunggu_konfirmasi",
+        "Menunggu Konfirmasi",
+        "Awaiting Confirmation",
+      ),
+      desc: t(
+        "orders",
+        "status_menunggu_konfirmasi_desc",
+        "Pesanan baru masuk dan perlu divalidasi",
+        "New order received and needs to be validated",
+      ),
       color: "border-yellow-200 bg-yellow-50/50 text-yellow-700",
       activeColor: "ring-2 ring-yellow-500 bg-yellow-50 border-yellow-500",
       icon: <Clock className="w-5 h-5 text-yellow-600" />,
     },
     {
       id: "pengemasan",
-      label: "Pengemasan",
-      desc: "Produk sedang disiapkan dan dibungkus",
+      label: t("orders", "status_pengemasan", "Pengemasan", "Packaging"),
+      desc: t(
+        "orders",
+        "status_pengemasan_desc",
+        "Produk sedang disiapkan dan dibungkus",
+        "The product is being prepared and packed",
+      ),
       color: "border-blue-200 bg-blue-50/50 text-blue-700",
       activeColor: "ring-2 ring-blue-500 bg-blue-50 border-blue-500",
       icon: <Package className="w-5 h-5 text-blue-600" />,
     },
     {
       id: "dalam_perjalanan",
-      label: "Dalam Perjalanan",
-      desc: "Pesanan telah diserahkan ke kurir logistik",
+      label: t(
+        "orders",
+        "status_dalam_perjalanan",
+        "Dalam Perjalanan",
+        "In Transit",
+      ),
+      desc: t(
+        "orders",
+        "status_dalam_perjalanan_desc",
+        "Pesanan telah diserahkan ke kurir logistik",
+        "The order has been handed over to the courier",
+      ),
       color: "border-purple-200 bg-purple-50/50 text-purple-700",
       activeColor: "ring-2 ring-purple-500 bg-purple-50 border-purple-500",
       icon: <Truck className="w-5 h-5 text-purple-600" />,
     },
     {
       id: "diterima",
-      label: "Diterima Pelanggan",
-      desc: "Pesanan telah diterima oleh pelanggan dengan baik",
+      label: t(
+        "orders",
+        "status_diterima",
+        "Diterima Pelanggan",
+        "Received by Customer",
+      ),
+      desc: t(
+        "orders",
+        "status_diterima_desc",
+        "Pesanan telah diterima oleh pelanggan dengan baik",
+        "The order has been successfully received by the customer",
+      ),
       color: "border-emerald-200 bg-emerald-50/50 text-emerald-700",
       activeColor: "ring-2 ring-emerald-500 bg-emerald-50 border-emerald-500",
       icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />,
     },
     {
       id: "selesai",
-      label: "Selesai",
-      desc: "Pesanan telah diterima oleh pelanggan dengan baik",
+      label: t("orders", "status_selesai", "Selesai", "Completed"),
+      desc: t(
+        "orders",
+        "status_diterima_desc",
+        "Pesanan telah diterima oleh pelanggan dengan baik",
+        "The order has been successfully received by the customer",
+      ),
       color: "border-emerald-200 bg-emerald-50/50 text-emerald-700",
       activeColor: "ring-2 ring-emerald-500 bg-emerald-50 border-emerald-500",
       icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />,
@@ -195,7 +243,14 @@ export default function OrdersPage() {
 
       if (!res.ok) {
         if (res.status === 401) {
-          alert("Sesi Anda telah berakhir. Silakan login kembali.");
+          alert(
+            t(
+              "orders",
+              "session_expired",
+              "Sesi Anda telah berakhir. Silakan login kembali.",
+              "Your session has expired. Please log in again.",
+            ),
+          );
           window.location.href = "/login";
           return;
         }
@@ -209,10 +264,24 @@ export default function OrdersPage() {
       );
 
       setIsStatusModalOpen(false);
-      showSuccess("Status pesanan berhasil diperbarui.");
+      showSuccess(
+        t(
+          "orders",
+          "status_updated_success",
+          "Status pesanan berhasil diperbarui.",
+          "Order status updated successfully.",
+        ),
+      );
     } catch (error) {
       console.error("Gagal update status:", error);
-      alert("Gagal mengupdate status. Periksa console.");
+      alert(
+        t(
+          "orders",
+          "status_update_error",
+          "Gagal mengupdate status. Periksa console.",
+          "Failed to update status. Check the console.",
+        ),
+      );
     }
   };
 
@@ -256,7 +325,14 @@ export default function OrdersPage() {
       if (res.ok) {
         setOrders(orders.filter((o) => o.id !== deleteId));
         setIsDeleteModalOpen(false);
-        showSuccess("Pesanan berhasil dihapus dari sistem.");
+        showSuccess(
+          t(
+            "orders",
+            "deleted_success",
+            "Pesanan berhasil dihapus dari sistem.",
+            "Order deleted from the system successfully.",
+          ),
+        );
         fetchOrders();
       } else {
         const errorData = await res.json();
@@ -286,14 +362,22 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6 pb-12">
       {/* Modal Update */}
-      {isStatusModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-all">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+      <AdminModal
+        open={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        panelClassName="max-w-md"
+      >
+          <div className="bg-white rounded-2xl w-full shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <div>
                 <h3 className="text-lg font-bold text-gray-900">
-                  Ubah Status Pesanan
+                  {t(
+                    "orders",
+                    "change_status_title",
+                    "Ubah Status Pesanan",
+                    "Change Order Status",
+                  )}
                 </h3>
                 <p className="text-xs text-gray-500 mt-0.5">
                   ID:{" "}
@@ -326,7 +410,8 @@ export default function OrdersPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-gray-500 truncate">
-                    Pelanggan: {selectedOrder?.user?.name}
+                    {t("orders", "customer_label", "Pelanggan", "Customer")}:{" "}
+                    {selectedOrder?.user?.name}
                   </p>
                   <p className="text-sm font-semibold text-gray-900 truncate">
                     {selectedOrder?.product?.title}
@@ -335,7 +420,12 @@ export default function OrdersPage() {
               </div>
 
               <label className="text-xs font-bold uppercase tracking-wider text-gray-400 block">
-                Pilih Status Baru
+                {t(
+                  "orders",
+                  "select_new_status",
+                  "Pilih Status Baru",
+                  "Select New Status",
+                )}
               </label>
 
               <div className="grid grid-cols-1 gap-2.5">
@@ -384,49 +474,63 @@ export default function OrdersPage() {
                 onClick={() => setIsStatusModalOpen(false)}
                 className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-sm font-semibold text-gray-700 shadow-sm transition-colors"
               >
-                Batal
+                {common.cancel}
               </button>
               <button
                 onClick={handleUpdateStatus}
                 className="px-5 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 shadow-sm transition-colors flex items-center gap-1.5"
               >
-                Simpan Perubahan
+                {common.save_changes}
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </AdminModal>
 
       {/* Modal Delete */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-bold text-gray-900">Hapus Pesanan?</h3>
+      <AdminModal
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        panelClassName="max-w-sm"
+      >
+          <div className="bg-white rounded-2xl p-6 w-full shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-gray-900">
+              {t("orders", "confirm_delete_title", "Hapus Pesanan?", "Delete Order?")}
+            </h3>
             <p className="text-sm text-gray-500 mt-2">
-              Tindakan ini bersifat permanen dan tidak dapat dibatalkan dari
-              sistem logistik.
+              {t(
+                "orders",
+                "confirm_delete_desc",
+                "Tindakan ini bersifat permanen dan tidak dapat dibatalkan dari sistem logistik.",
+                "This action is permanent and cannot be undone from the logistics system.",
+              )}
             </p>
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setIsDeleteModalOpen(false)}
                 className="flex-1 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-sm font-semibold text-gray-700 transition-colors"
               >
-                Batal
+                {common.cancel}
               </button>
               <button
                 onClick={() => handleDelete()}
                 className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm"
               >
-                Ya, Hapus
+                {common.yes_delete}
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </AdminModal>
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Pesanan</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          {t("orders", "title", "Pesanan", "Orders")}
+        </h1>
         <p className="text-gray-500 mt-1">
-          Kelola daftar pesanan masuk dari pelanggan.
+          {t(
+            "orders",
+            "subtitle",
+            "Kelola daftar pesanan masuk dari pelanggan.",
+            "Manage incoming customer orders.",
+          )}
         </p>
       </div>
 
@@ -436,7 +540,12 @@ export default function OrdersPage() {
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Cari ID pesanan atau nama user..."
+              placeholder={t(
+                "orders",
+                "search_ph",
+                "Cari ID pesanan atau nama user...",
+                "Search order ID or user name...",
+              )}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50/50 focus:outline-none focus:ring-2 focus:ring-gray-900 outline-none transition-all"
@@ -449,22 +558,22 @@ export default function OrdersPage() {
             <thead>
               <tr className="bg-gray-50/70 border-b border-gray-100">
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[160px]">
-                  Order ID
+                  {t("orders", "col_order_id", "Order ID", "Order ID")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-left">
-                  Pelanggan
+                  {t("orders", "col_customer", "Pelanggan", "Customer")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[280px]">
-                  Produk
+                  {common.product}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Total Harga
+                  {t("orders", "col_total", "Total Harga", "Total Price")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Status
+                  {common.status}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Aksi
+                  {common.actions}
                 </th>
               </tr>
             </thead>
@@ -483,10 +592,12 @@ export default function OrdersPage() {
 
                   <td className="px-6 py-4">
                     <div className="text-sm font-semibold text-gray-900">
-                      {order.user?.name || "No Name"}
+                      {order.user?.name ||
+                        t("orders", "no_name", "Tanpa Nama", "No Name")}
                     </div>
                     <div className="text-xs text-gray-400 mt-0.5">
-                      {order.user?.email || "No Email"}
+                      {order.user?.email ||
+                        t("orders", "no_email", "Tanpa Email", "No Email")}
                     </div>
                   </td>
 
@@ -496,7 +607,7 @@ export default function OrdersPage() {
                         {order.product?.image_1 ? (
                           <img
                             src={`${baseUrl}/storage/${order.product.image_1}`}
-                            alt={order.product?.title || "Produk"}
+                            alt={order.product?.title || common.product}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = "";
@@ -507,7 +618,8 @@ export default function OrdersPage() {
                         )}
                       </div>
                       <span className="text-sm font-semibold text-gray-900 truncate max-w-[240px]">
-                        {order.product?.title || "Tanpa Nama"}
+                        {order.product?.title ||
+                          t("orders", "no_name", "Tanpa Nama", "No Name")}
                       </span>
                     </div>
                   </td>
@@ -539,7 +651,7 @@ export default function OrdersPage() {
                           setIsStatusModalOpen(true);
                         }}
                         className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 border border-gray-150 bg-white shadow-sm transition-colors"
-                        title="Ubah status"
+                        title={t("orders", "edit_status", "Ubah status", "Update status")}
                       >
                         <Edit2 size={14} />
                       </button>
@@ -549,7 +661,7 @@ export default function OrdersPage() {
                           setIsDeleteModalOpen(true);
                         }}
                         className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 border border-gray-150 bg-white shadow-sm transition-colors"
-                        title="Hapus pesanan"
+                        title={common.delete}
                       >
                         <Trash2 size={14} />
                       </button>
@@ -569,7 +681,7 @@ export default function OrdersPage() {
               </div>
               <div>
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Total Pendapatan
+                  {t("orders", "total_revenue", "Total Pendapatan", "Total Revenue")}
                 </p>
                 <p className="text-xl font-black text-gray-900 mt-0.5">
                   {formatRupiah(totalRevenue)}

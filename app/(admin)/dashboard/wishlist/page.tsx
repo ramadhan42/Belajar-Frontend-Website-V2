@@ -9,6 +9,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import AdminModal from "@/components/admin/AdminModal";
+import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 interface WishlistItem {
   id: number;
@@ -22,6 +24,7 @@ interface WishlistItem {
 }
 
 export default function WishlistPage() {
+  const { t, common } = useAdminI18n();
   const [wishlists, setWishlists] = useState<WishlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -84,7 +87,14 @@ export default function WishlistPage() {
       if (res.ok) {
         setWishlists(wishlists.filter((w) => w.id !== deleteId));
         setIsDeleteModalOpen(false);
-        showNotification("Item berhasil dihapus dari wishlist.");
+        showNotification(
+          t(
+            "wishlist",
+            "deleted_success",
+            "Item berhasil dihapus dari wishlist.",
+            "Item removed from wishlist successfully.",
+          ),
+        );
 
         // Cek halaman setelah hapus
         const remainingOnPage = paginatedWishlists.length - 1;
@@ -134,16 +144,25 @@ export default function WishlistPage() {
             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
           </div>
           <div>
-            <h4 className="text-sm font-bold">Berhasil!</h4>
+            <h4 className="text-sm font-bold">
+              {t("common", "success_title", "Berhasil!", "Success!")}
+            </h4>
             <p className="text-xs text-gray-500">{notification.message}</p>
           </div>
         </div>
       )}
 
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Wishlist</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          {t("wishlist", "title", "Wishlist", "Wishlist")}
+        </h1>
         <p className="text-gray-500 mt-1 text-sm">
-          Kelola daftar produk yang disimpan pelanggan.
+          {t(
+            "wishlist",
+            "subtitle",
+            "Kelola daftar produk yang disimpan pelanggan.",
+            "Manage products saved by customers.",
+          )}
         </p>
       </div>
 
@@ -153,7 +172,12 @@ export default function WishlistPage() {
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Cari user atau nama produk..."
+              placeholder={t(
+                "wishlist",
+                "search_ph",
+                "Cari user atau nama produk...",
+                "Search user or product name...",
+              )}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900 outline-none transition-all"
@@ -166,16 +190,16 @@ export default function WishlistPage() {
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-center w-[160px] ">
-                  Produk
+                  {common.product}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-center">
-                  Pelanggan
+                  {t("wishlist", "col_customer", "Pelanggan", "Customer")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-left">
-                  Harga
+                  {common.price}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-center">
-                  Aksi
+                  {common.actions}
                 </th>
               </tr>
             </thead>
@@ -227,7 +251,7 @@ export default function WishlistPage() {
               ) : (
                 <tr>
                   <td colSpan={4} className="py-12 text-center text-gray-400">
-                    Tidak ada data ditemukan.
+                    {common.empty}
                   </td>
                 </tr>
               )}
@@ -260,32 +284,39 @@ export default function WishlistPage() {
       </div>
 
       {/* MODAL DELETE */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+      <AdminModal
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        panelClassName="max-w-sm"
+      >
+          <div className="bg-white rounded-2xl p-6 w-full shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
             <h3 className="text-lg font-bold text-gray-900">
-              Hapus dari Wishlist?
+              {t("wishlist", "confirm_delete_title", "Hapus dari Wishlist?", "Remove from Wishlist?")}
             </h3>
             <p className="text-sm text-gray-500 mt-2">
-              Item ini akan dihapus secara permanen.
+              {t(
+                "wishlist",
+                "confirm_delete_desc",
+                "Item ini akan dihapus secara permanen.",
+                "This item will be permanently deleted.",
+              )}
             </p>
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setIsDeleteModalOpen(false)}
                 className="flex-1 py-2.5 rounded-xl border font-bold text-sm"
               >
-                Batal
+                {common.cancel}
               </button>
               <button
                 onClick={handleDelete}
                 className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm"
               >
-                Ya, Hapus
+                {common.yes_delete}
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </AdminModal>
     </div>
   );
 }

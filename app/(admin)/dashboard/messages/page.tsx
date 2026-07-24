@@ -13,7 +13,9 @@ import {
   Reply,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import AdminModal from "@/components/admin/AdminModal";
 import { getAdminHeaders } from "@/lib/api";
+import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 // Definisikan tipe data untuk riwayat balasan
 interface ContactReply {
@@ -36,6 +38,7 @@ interface ContactMessage {
 }
 
 export default function MessagesPage() {
+  const { t, common } = useAdminI18n();
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -100,11 +103,26 @@ export default function MessagesPage() {
         setReplyText(""); // Kosongkan form teks
         await fetchMessages(); // Refresh data utama & list chat di dalam modal
       } else {
-        alert(data.message || "Gagal mengirim balasan.");
+        alert(
+          data.message ||
+            t(
+              "messages",
+              "reply_error",
+              "Gagal mengirim balasan.",
+              "Failed to send reply.",
+            ),
+        );
       }
     } catch (error) {
       console.error("Error mengirim balasan:", error);
-      alert("Terjadi kesalahan jaringan.");
+      alert(
+        t(
+          "messages",
+          "network_error",
+          "Terjadi kesalahan jaringan.",
+          "A network error occurred.",
+        ),
+      );
     } finally {
       setIsReplying(false);
     }
@@ -142,10 +160,15 @@ export default function MessagesPage() {
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-gray-900 tracking-tight">
-            Pesan Masuk
+            {t("messages", "title", "Pesan Masuk", "Inbox Messages")}
           </h1>
           <p className="text-sm font-medium text-gray-500 mt-1">
-            Kelola kritik, saran, dan obrolan pesan dari pelanggan.
+            {t(
+              "messages",
+              "subtitle",
+              "Kelola kritik, saran, dan obrolan pesan dari pelanggan.",
+              "Manage feedback, suggestions, and customer message threads.",
+            )}
           </p>
         </div>
 
@@ -157,7 +180,12 @@ export default function MessagesPage() {
           />
           <input
             type="text"
-            placeholder="Cari nama, email, subjek..."
+            placeholder={t(
+              "messages",
+              "search_ph",
+              "Cari nama, email, subjek...",
+              "Search name, email, subject...",
+            )}
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -175,19 +203,19 @@ export default function MessagesPage() {
             <thead>
               <tr className="bg-gray-50/70 border-b border-gray-100">
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider w-[22%]">
-                  Pelanggan
+                  {t("messages", "col_customer", "Pelanggan", "Customer")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider w-[20%]">
-                  Subjek
+                  {t("messages", "col_subject", "Subjek", "Subject")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider w-[28%]">
-                  Pesan
+                  {t("messages", "col_message", "Pesan", "Message")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider w-[15%]">
-                  Tanggal
+                  {common.date}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[15%]">
-                  Aksi
+                  {common.actions}
                 </th>
               </tr>
             </thead>
@@ -195,7 +223,7 @@ export default function MessagesPage() {
               {isLoading ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-sm font-medium text-gray-400">
-                    Sedang memuat data pesan...
+                    {common.loading}
                   </td>
                 </tr>
               ) : currentItems.length === 0 ? (
@@ -206,10 +234,20 @@ export default function MessagesPage() {
                         <Inbox size={28} />
                       </div>
                       <p className="text-sm font-bold text-gray-900">
-                        Tidak ada pesan ditemukan
+                        {t(
+                          "messages",
+                          "empty_title",
+                          "Tidak ada pesan ditemukan",
+                          "No messages found",
+                        )}
                       </p>
                       <p className="text-xs font-medium text-gray-400 text-center mt-1">
-                        Belum ada pesan masuk atau kata kunci pencarian Anda tidak cocok.
+                        {t(
+                          "messages",
+                          "empty_desc",
+                          "Belum ada pesan masuk atau kata kunci pencarian Anda tidak cocok.",
+                          "No inbox messages yet, or your search did not match.",
+                        )}
                       </p>
                     </div>
                   </td>
@@ -251,7 +289,7 @@ export default function MessagesPage() {
                           className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900 border border-gray-200 rounded-xl shadow-sm transition-all"
                         >
                           <Eye size={14} />
-                          Lihat
+                          {t("messages", "view", "Lihat", "View")}
                         </button>
 
                         {/* TOMBOL BALAS & RIWAYAT CHAT */}
@@ -265,8 +303,13 @@ export default function MessagesPage() {
                         >
                           <Reply size={14} />
                           {m.replies && m.replies.length > 0
-                            ? `Riwayat (${m.replies.length})`
-                            : "Balas"}
+                            ? t(
+                                "messages",
+                                "history",
+                                `Riwayat (${m.replies.length})`,
+                                `History (${m.replies.length})`,
+                              )
+                            : common.reply}
                         </button>
                       </div>
                     </td>
@@ -281,9 +324,11 @@ export default function MessagesPage() {
         {!isLoading && totalPages > 1 && (
           <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
             <span className="text-xs font-bold text-gray-500">
-              Menampilkan {indexOfFirstItem + 1}-
-              {Math.min(indexOfLastItem, filteredMessages.length)} dari{" "}
-              {filteredMessages.length} pesan
+              {t("messages", "showing", "Menampilkan", "Showing")}{" "}
+              {indexOfFirstItem + 1}-
+              {Math.min(indexOfLastItem, filteredMessages.length)}{" "}
+              {t("messages", "of", "dari", "of")} {filteredMessages.length}{" "}
+              {t("messages", "messages_word", "pesan", "messages")}
             </span>
 
             <div className="flex items-center gap-1.5">
@@ -324,9 +369,12 @@ export default function MessagesPage() {
       {/* ========================================================= */}
       {/* MODAL 1: DETAIL PESAN SAJA                                */}
       {/* ========================================================= */}
-      {isModalOpen && selectedMessage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/30 backdrop-blur-sm transition-all">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+      <AdminModal
+        open={isModalOpen && !!selectedMessage}
+        onClose={() => setIsModalOpen(false)}
+        panelClassName="max-w-lg"
+      >
+          <div className="bg-white rounded-3xl w-full shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
             {/* Header Modal */}
             <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <div className="flex items-center gap-3">
@@ -335,10 +383,11 @@ export default function MessagesPage() {
                 </div>
                 <div>
                   <h3 className="text-base font-black text-gray-900 tracking-tight">
-                    Detail Pesan Masuk
+                    {t("messages", "detail_title", "Detail Pesan Masuk", "Message Detail")}
                   </h3>
                   <p className="text-xs font-medium text-gray-400 mt-0.5">
-                    ID Pesan: #{selectedMessage.id}
+                    {t("messages", "message_id", "ID Pesan", "Message ID")}:
+                    #{selectedMessage?.id}
                   </p>
                 </div>
               </div>
@@ -355,51 +404,58 @@ export default function MessagesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-50/60 p-3.5 rounded-2xl border border-gray-100">
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">
-                    Nama Pengirim
+                    {t("messages", "sender_name", "Nama Pengirim", "Sender Name")}
                   </span>
                   <span className="text-sm font-bold text-gray-800">
-                    {selectedMessage.name}
+                    {selectedMessage?.name}
                   </span>
                 </div>
                 <div className="bg-gray-50/60 p-3.5 rounded-2xl border border-gray-100">
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">
-                    Alamat Email
+                    {t("messages", "email_address", "Alamat Email", "Email Address")}
                   </span>
                   <span className="text-sm font-bold text-gray-800 break-all">
-                    {selectedMessage.email}
+                    {selectedMessage?.email}
                   </span>
                 </div>
               </div>
 
               <div>
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
-                  Subjek Utama
+                  {t("messages", "main_subject", "Subjek Utama", "Main Subject")}
                 </span>
                 <div className="text-sm font-bold text-gray-900 bg-gray-50/50 px-4 py-2.5 rounded-xl border border-gray-100">
-                  {selectedMessage.subject}
+                  {selectedMessage?.subject}
                 </div>
               </div>
 
               <div>
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
-                  Isi Pesan Masuk
+                  {t(
+                    "messages",
+                    "message_content",
+                    "Isi Pesan Masuk",
+                    "Message Content",
+                  )}
                 </span>
                 <div className="text-sm text-gray-700 bg-gray-50/50 px-4 py-4 rounded-xl border border-gray-200 whitespace-pre-line leading-relaxed max-h-[200px] overflow-y-auto font-medium shadow-inner">
-                  "{selectedMessage.message}"
+                  "{selectedMessage?.message}"
                 </div>
               </div>
 
               <div className="flex items-center gap-2 text-xs font-bold text-gray-500 pt-2 border-t border-gray-50">
                 <Calendar size={14} className="text-gray-400" />
-                <span>Dikirim pada: </span>
+                <span>{t("messages", "sent_at", "Dikirim pada", "Sent at")}: </span>
                 <span className="text-gray-700">
-                  {new Date(selectedMessage.created_at).toLocaleDateString("id-ID", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}{" "}
+                  {selectedMessage
+                    ? new Date(selectedMessage.created_at).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : ""}{" "}
                   WIB
                 </span>
               </div>
@@ -411,19 +467,21 @@ export default function MessagesPage() {
                 onClick={() => setIsModalOpen(false)}
                 className="px-6 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 shadow-sm transition-all"
               >
-                Tutup Detail
+                {common.close}
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </AdminModal>
 
       {/* ========================================================= */}
       {/* MODAL 2: KHUSUS BALAS PESAN & THREAD CHAT RIWAYAT         */}
       {/* ========================================================= */}
-      {isReplyModalOpen && selectedMessage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-all">
-          <div className="bg-white rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+      <AdminModal
+        open={isReplyModalOpen && !!selectedMessage}
+        onClose={() => setIsReplyModalOpen(false)}
+        panelClassName="max-w-xl"
+      >
+          <div className="bg-white rounded-3xl w-full shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
             {/* Header Modal Balas */}
             <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-900">
               <div className="flex items-center gap-3">
@@ -432,10 +490,11 @@ export default function MessagesPage() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white tracking-tight">
-                    Balas Pesan Pelanggan
+                    {t("messages", "reply_title", "Balas Pesan Pelanggan", "Reply to Customer")}
                   </h3>
                   <p className="text-xs font-medium text-gray-300 mt-0.5">
-                    Ruang obrolan dengan {selectedMessage.name} ({selectedMessage.email})
+                    {t("messages", "chat_with", "Ruang obrolan dengan", "Chat with")}{" "}
+                    {selectedMessage?.name} ({selectedMessage?.email})
                   </p>
                 </div>
               </div>
@@ -454,27 +513,31 @@ export default function MessagesPage() {
               <div className="flex flex-col items-start mr-12">
                 <div className="bg-white p-4 rounded-2xl rounded-tl-sm border border-gray-200 shadow-sm text-left">
                   <span className="text-[9px] font-black text-gray-400 uppercase tracking-wide block mb-1">
-                    {selectedMessage.name} (Pesan Awal — {selectedMessage.subject})
+                    {selectedMessage?.name} (
+                    {t("messages", "initial_message", "Pesan Awal", "Initial Message")}{" "}
+                    — {selectedMessage?.subject})
                   </span>
                   <p className="text-sm text-gray-800 font-medium whitespace-pre-line leading-relaxed">
-                    {selectedMessage.message}
+                    {selectedMessage?.message}
                   </p>
                 </div>
                 <span className="text-[10px] text-gray-400 mt-1 ml-1 font-bold">
-                  {new Date(selectedMessage.created_at).toLocaleString("id-ID", {
-                    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
-                  })}
+                  {selectedMessage
+                    ? new Date(selectedMessage.created_at).toLocaleString("id-ID", {
+                        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
+                      })
+                    : ""}
                 </span>
               </div>
 
               {/* Balon Chat Loop: Riwayat Balasan Admin Sebelumnya */}
-              {selectedMessage.replies && selectedMessage.replies.length > 0 && (
+              {selectedMessage?.replies && selectedMessage.replies.length > 0 && (
                 <div className="space-y-4 pt-2">
                   {selectedMessage.replies.map((reply) => (
                     <div key={reply.id} className="flex flex-col items-end ml-12 animate-in fade-in slide-in-from-bottom-2 duration-200">
                       <div className="bg-gray-900 text-white p-4 rounded-2xl rounded-tr-sm shadow-sm text-left">
                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-wide block mb-1">
-                          Admin (Anda)
+                          {t("messages", "admin_you", "Admin (Anda)", "Admin (You)")}
                         </span>
                         <p className="text-sm font-medium whitespace-pre-line leading-relaxed">
                           {reply.reply_message}
@@ -495,13 +558,23 @@ export default function MessagesPage() {
             <div className="p-5 bg-white space-y-3">
               <div>
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-wider block mb-1.5">
-                  Tulis Balasan Follow-up / Balasan Baru
+                  {t(
+                    "messages",
+                    "write_reply_label",
+                    "Tulis Balasan Follow-up / Balasan Baru",
+                    "Write a Follow-up / New Reply",
+                  )}
                 </label>
                 <textarea
                   rows={3}
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  placeholder={`Ketik pesan balasan Anda ke ${selectedMessage.name}...`}
+                  placeholder={t(
+                    "messages",
+                    "reply_placeholder",
+                    `Ketik pesan balasan Anda ke ${selectedMessage?.name}...`,
+                    `Type your reply to ${selectedMessage?.name}...`,
+                  )}
                   className="w-full px-4 py-3 border border-gray-200 rounded-2xl text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition-all shadow-sm resize-none"
                 />
               </div>
@@ -511,7 +584,7 @@ export default function MessagesPage() {
                   onClick={() => setIsReplyModalOpen(false)}
                   className="px-5 py-2.5 rounded-xl bg-white text-gray-700 text-sm font-bold border border-gray-200 hover:bg-gray-50 shadow-sm transition-all"
                 >
-                  Batal
+                  {common.cancel}
                 </button>
                 <button
                   onClick={handleReplySubmit}
@@ -519,19 +592,18 @@ export default function MessagesPage() {
                   className="px-6 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 disabled:bg-gray-400 shadow-sm transition-all flex items-center justify-center gap-2"
                 >
                   {isReplying ? (
-                    "Mengirim..."
+                    common.saving
                   ) : (
                     <>
                       <Reply size={16} />
-                      Kirim Balasan
+                      {t("messages", "send_reply", "Kirim Balasan", "Send Reply")}
                     </>
                   )}
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+      </AdminModal>
     </div>
   );
 }

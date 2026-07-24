@@ -14,6 +14,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import AdminModal from "@/components/admin/AdminModal";
+import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 interface UserData {
   id: number;
@@ -26,6 +28,7 @@ interface UserData {
 }
 
 export default function UsersPage() {
+  const { t, common } = useAdminI18n();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -111,7 +114,14 @@ export default function UsersPage() {
     if (!userToDelete) return;
 
     if (userToDelete.is_admin) {
-      alert("Admin utama tidak dapat dihapus.");
+      alert(
+        t(
+          "users",
+          "admin_protected",
+          "Admin utama tidak dapat dihapus.",
+          "The primary admin cannot be deleted.",
+        ),
+      );
       setIsDeleteModalOpen(false);
       return;
     }
@@ -135,11 +145,26 @@ export default function UsersPage() {
         setUserToDelete(null);
       } else {
         const errorData = await res.json();
-        alert(errorData.message || "Gagal menghapus pengguna.");
+        alert(
+          errorData.message ||
+            t(
+              "users",
+              "delete_error",
+              "Gagal menghapus pengguna.",
+              "Failed to delete user.",
+            ),
+        );
       }
     } catch (error) {
       console.error("Terjadi kesalahan:", error);
-      alert("Gagal menghubungi server.");
+      alert(
+        t(
+          "users",
+          "server_contact_error",
+          "Gagal menghubungi server.",
+          "Failed to contact the server.",
+        ),
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -158,9 +183,16 @@ export default function UsersPage() {
       {/* Header & Pencarian */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Semua Pengguna</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {t("users", "title", "Semua Pengguna", "All Users")}
+          </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Kelola dan lihat daftar semua pengguna terdaftar.
+            {t(
+              "users",
+              "subtitle",
+              "Kelola dan lihat daftar semua pengguna terdaftar.",
+              "Manage and view all registered users.",
+            )}
           </p>
         </div>
 
@@ -170,7 +202,12 @@ export default function UsersPage() {
           </div>
           <input
             type="text"
-            placeholder="Cari nama atau email..."
+            placeholder={t(
+              "users",
+              "search_ph",
+              "Cari nama atau email...",
+              "Search name or email...",
+            )}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -188,11 +225,15 @@ export default function UsersPage() {
             <table className="w-full text-left border-collapse">
               <thead className="bg-gray-50/80 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500">
                 <tr>
-                  <th className="px-6 py-4 font-semibold">ID</th>
-                  <th className="px-6 py-4 font-semibold">Pengguna</th>
-                  <th className="px-6 py-4 font-semibold">Alamat / Info</th>
-                  <th className="px-6 py-4 font-semibold">Bergabung</th>
-                  <th className="px-6 py-4 font-semibold text-center">Aksi</th>
+                  <th className="px-6 py-4 font-semibold">{common.id}</th>
+                  <th className="px-6 py-4 font-semibold">{common.user}</th>
+                  <th className="px-6 py-4 font-semibold">
+                    {t("users", "col_address", "Alamat / Info", "Address / Info")}
+                  </th>
+                  <th className="px-6 py-4 font-semibold">
+                    {t("users", "col_joined", "Bergabung", "Joined")}
+                  </th>
+                  <th className="px-6 py-4 font-semibold text-center">{common.actions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
@@ -233,7 +274,7 @@ export default function UsersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="truncate max-w-[200px] block">
-                          {user.alamat_lengkap || "Belum ada alamat"}
+                          {user.alamat_lengkap || t("users", "no_address", "Belum ada alamat", "No address yet")}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -244,7 +285,7 @@ export default function UsersPage() {
                           <button
                             onClick={() => openViewModal(user)}
                             className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Lihat Detail"
+                            title={t("users", "view_detail", "Lihat Detail", "View Detail")}
                           >
                             <Eye className="w-5 h-5" />
                           </button>
@@ -262,8 +303,18 @@ export default function UsersPage() {
                             }`}
                             title={
                               user.is_admin
-                                ? "Admin tidak dapat dihapus"
-                                : "Hapus Pengguna"
+                                ? t(
+                                    "users",
+                                    "admin_no_delete",
+                                    "Admin tidak dapat dihapus",
+                                    "Admin cannot be deleted",
+                                  )
+                                : t(
+                                    "users",
+                                    "delete_user",
+                                    "Hapus Pengguna",
+                                    "Delete User",
+                                  )
                             }
                           >
                             <Trash2 className="w-5 h-5" />
@@ -279,8 +330,18 @@ export default function UsersPage() {
                       className="px-6 py-12 text-center text-gray-500"
                     >
                       {searchQuery
-                        ? "Tidak ada pengguna yang cocok dengan pencarian."
-                        : "Belum ada data pengguna."}
+                        ? t(
+                            "users",
+                            "empty_search",
+                            "Tidak ada pengguna yang cocok dengan pencarian.",
+                            "No users match your search.",
+                          )
+                        : t(
+                            "users",
+                            "empty",
+                            "Belum ada data pengguna.",
+                            "No users yet.",
+                          )}
                     </td>
                   </tr>
                 )}
@@ -292,19 +353,19 @@ export default function UsersPage() {
           {!loading && filteredUsers.length > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 gap-4">
               <div className="text-xs text-gray-500 text-center sm:text-left">
-                Menampilkan{" "}
+                {t("users", "showing", "Menampilkan", "Showing")}{" "}
                 <span className="font-semibold text-gray-700">
                   {startIndex + 1}
                 </span>{" "}
-                sampai{" "}
+                {t("users", "to", "sampai", "to")}{" "}
                 <span className="font-semibold text-gray-700">
                   {Math.min(startIndex + itemsPerPage, filteredUsers.length)}
                 </span>{" "}
-                dari{" "}
+                {t("users", "of", "dari", "of")}{" "}
                 <span className="font-semibold text-gray-700">
                   {filteredUsers.length}
                 </span>{" "}
-                pengguna
+                {t("users", "users_word", "pengguna", "users")}
               </div>
 
               <div className="flex items-center gap-3">
@@ -316,10 +377,11 @@ export default function UsersPage() {
                   className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  Sebelumnya
+                  {t("users", "prev", "Sebelumnya", "Previous")}
                 </button>
                 <span className="text-xs text-gray-500 font-medium min-w-[50px] text-center">
-                  Hal {currentPage} dari {totalPages || 1}
+                  {t("users", "page_label", "Hal", "Page")} {currentPage}{" "}
+                  {t("users", "of", "dari", "of")} {totalPages || 1}
                 </span>
                 <button
                   onClick={() =>
@@ -328,7 +390,7 @@ export default function UsersPage() {
                   disabled={currentPage === totalPages || totalPages === 0}
                   className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                 >
-                  Selanjutnya
+                  {t("users", "next", "Selanjutnya", "Next")}
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -338,23 +400,36 @@ export default function UsersPage() {
       </div>
 
       {/* Modal Hapus Pengguna */}
-      {isDeleteModalOpen && userToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl border border-gray-100 p-6 animate-in zoom-in-95 duration-200">
+      <AdminModal
+        open={isDeleteModalOpen && !!userToDelete}
+        onClose={() => setIsDeleteModalOpen(false)}
+        panelClassName="max-w-sm"
+      >
+          <div className="bg-white rounded-2xl w-full shadow-2xl border border-gray-100 p-6 animate-in zoom-in-95 duration-200">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
                 <AlertTriangle className="w-8 h-8" />
               </div>
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-1">
-                  Hapus Pengguna?
+                  {t("users", "confirm_delete_title", "Hapus Pengguna?", "Delete User?")}
                 </h3>
                 <p className="text-sm text-gray-500">
-                  Tindakan ini tidak dapat dibatalkan. Pengguna{" "}
+                  {t(
+                    "users",
+                    "confirm_delete_desc_1",
+                    "Tindakan ini tidak dapat dibatalkan. Pengguna",
+                    "This action cannot be undone. The user",
+                  )}{" "}
                   <span className="font-semibold text-gray-700">
-                    {userToDelete.name}
+                    {userToDelete?.name}
                   </span>{" "}
-                  akan dihapus secara permanen dari sistem.
+                  {t(
+                    "users",
+                    "confirm_delete_desc_2",
+                    "akan dihapus secara permanen dari sistem.",
+                    "will be permanently deleted from the system.",
+                  )}
                 </p>
               </div>
             </div>
@@ -364,7 +439,7 @@ export default function UsersPage() {
                 disabled={isDeleting}
                 className="flex-1 px-4 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-xl shadow-sm transition-colors"
               >
-                Batal
+                {common.cancel}
               </button>
               <button
                 onClick={confirmDelete}
@@ -374,24 +449,26 @@ export default function UsersPage() {
                 {isDeleting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Menghapus...
+                    {t("users", "deleting", "Menghapus...", "Deleting...")}
                   </>
                 ) : (
-                  "Ya, Hapus"
+                  common.yes_delete
                 )}
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </AdminModal>
 
       {/* Modal View Detail Pengguna */}
-      {isViewModalOpen && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
+      <AdminModal
+        open={isViewModalOpen && !!selectedUser}
+        onClose={() => setIsViewModalOpen(false)}
+        panelClassName="max-w-lg"
+      >
+          <div className="bg-white rounded-2xl w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <h3 className="text-lg font-bold text-gray-900">
-                Detail Pengguna
+                {t("users", "detail_title", "Detail Pengguna", "User Detail")}
               </h3>
               <button
                 onClick={() => setIsViewModalOpen(false)}
@@ -403,7 +480,7 @@ export default function UsersPage() {
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
-                  {selectedUser.is_admin ? (
+                  {selectedUser?.is_admin ? (
                     <ShieldCheck className="w-8 h-8" />
                   ) : (
                     <User className="w-8 h-8" />
@@ -411,48 +488,53 @@ export default function UsersPage() {
                 </div>
                 <div>
                   <h4 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    {selectedUser.name}
-                    {selectedUser.is_admin && (
+                    {selectedUser?.name}
+                    {selectedUser?.is_admin && (
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-blue-50 text-blue-600 border border-blue-100">
                         ADMIN
                       </span>
                     )}
                   </h4>
-                  <p className="text-sm text-gray-500">{selectedUser.email}</p>
+                  <p className="text-sm text-gray-500">{selectedUser?.email}</p>
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4">
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                    ID Pengguna
+                    {t("users", "user_id", "ID Pengguna", "User ID")}
                   </p>
                   <p className="text-gray-900 font-medium">
-                    #{selectedUser.id}
+                    #{selectedUser?.id}
                   </p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                    Nama Lengkap
+                    {t("users", "full_name", "Nama Lengkap", "Full Name")}
                   </p>
                   <p className="text-gray-900 font-medium">
-                    {selectedUser.nama_lengkap || "-"}
+                    {selectedUser?.nama_lengkap || "-"}
                   </p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                    Tanggal Bergabung
+                    {t("users", "joined_date", "Tanggal Bergabung", "Joined Date")}
                   </p>
                   <p className="text-gray-900 font-medium">
-                    {formatDate(selectedUser.created_at)}
+                    {selectedUser ? formatDate(selectedUser.created_at) : ""}
                   </p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                    Alamat Lengkap
+                    {t("users", "full_address", "Alamat Lengkap", "Full Address")}
                   </p>
                   <p className="text-gray-900 font-medium leading-relaxed">
-                    {selectedUser.alamat_lengkap ||
-                      "Belum ada alamat yang didaftarkan."}
+                    {selectedUser?.alamat_lengkap ||
+                      t(
+                        "users",
+                        "no_address_registered",
+                        "Belum ada alamat yang didaftarkan.",
+                        "No address registered yet.",
+                      )}
                   </p>
                 </div>
               </div>
@@ -462,12 +544,11 @@ export default function UsersPage() {
                 onClick={() => setIsViewModalOpen(false)}
                 className="px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
               >
-                Tutup
+                {common.close}
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </AdminModal>
     </div>
   );
 }

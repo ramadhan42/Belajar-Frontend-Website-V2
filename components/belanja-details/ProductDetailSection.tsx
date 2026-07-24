@@ -220,25 +220,44 @@ export default function ProductDetailSection({
   const [showKurirList, setShowKurirList] = useState(false);
 
   // Fungsi Hitung Estimasi Tiba (Bulan format 'Jul', 'Agt', dll)
-  const getEstimasiTiba = (jenis: string) => {
-    if (!jenis) return "-";
+  const getEstimasiTiba = (kurirOrJenis?: any) => {
     const date = new Date();
-    const j = jenis.toLowerCase();
+    let days = 3;
 
-    // Jika tipe pengiriman cepat (+1 hari)
-    if (
-      j.includes("yes") ||
-      j.includes("express") ||
-      j.includes("sameday") ||
-      j.includes("same day")
-    ) {
-      date.setDate(date.getDate() + 1);
-    } else {
-      // Jika reguler/ekonomi (+3 hari)
-      date.setDate(date.getDate() + 3);
+    if (kurirOrJenis && typeof kurirOrJenis === "object") {
+      const fromDb = Number(kurirOrJenis.estimasi_hari);
+      if (Number.isFinite(fromDb) && fromDb > 0) {
+        days = fromDb;
+      } else {
+        const j = String(kurirOrJenis.jenis || "").toLowerCase();
+        if (
+          j.includes("yes") ||
+          j.includes("express") ||
+          j.includes("sameday") ||
+          j.includes("same day") ||
+          j.includes("halu") ||
+          j.includes("gokil") ||
+          j.includes("ons")
+        ) {
+          days = 1;
+        }
+      }
+    } else if (typeof kurirOrJenis === "string") {
+      const j = kurirOrJenis.toLowerCase();
+      if (
+        j.includes("yes") ||
+        j.includes("express") ||
+        j.includes("sameday") ||
+        j.includes("same day") ||
+        j.includes("halu") ||
+        j.includes("gokil") ||
+        j.includes("ons")
+      ) {
+        days = 1;
+      }
     }
 
-    // Format menjadi "08 Jul"
+    date.setDate(date.getDate() + days);
     return date.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
   };
 
@@ -1043,8 +1062,13 @@ export default function ProductDetailSection({
                 </p>
                 <p className="text-[15px] text-[#99A1AF] font-parkinsans font-normal mt-0.5">
                   {copy.bisaCod}{" "}
-                  {selectedKurir ? getEstimasiTiba(selectedKurir.jenis) : "-"}
+                  {selectedKurir ? getEstimasiTiba(selectedKurir) : "-"}
                 </p>
+                {selectedKurir?.destinasi ? (
+                  <p className="text-[13px] text-[#99A1AF] font-parkinsans mt-0.5">
+                    {selectedKurir.destinasi}
+                  </p>
+                ) : null}
 
                 {/* Tombol & Dropdown Kurir Lainnya */}
                 {/* Tombol Kurir Lainnya */}
@@ -1387,7 +1411,7 @@ export default function ProductDetailSection({
                           : undefined,
                     }}
                   >
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1 min-w-0 pr-3">
                       <span className="font-parkinsans font-semibold text-[15px] text-[#364153]">
                         {kurir.nama}{" "}
                         <span className="font-normal text-gray-500">
@@ -1395,8 +1419,16 @@ export default function ProductDetailSection({
                         </span>
                       </span>
                       <span className="font-parkinsans text-[13px] text-[#6A7282]">
-                        {copy.estimasiTiba} {getEstimasiTiba(kurir.jenis)}
+                        {copy.estimasiTiba} {getEstimasiTiba(kurir)}
+                        {kurir.estimasi_hari
+                          ? ` · ±${kurir.estimasi_hari} hari`
+                          : ""}
                       </span>
+                      {kurir.destinasi ? (
+                        <span className="font-parkinsans text-[12px] text-[#99A1AF] truncate">
+                          {kurir.destinasi}
+                        </span>
+                      ) : null}
                     </div>
                     <span
                       className="font-parkinsans font-bold text-[16px]"

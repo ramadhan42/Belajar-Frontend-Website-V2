@@ -12,8 +12,10 @@ import {
   Clock,
   Phone,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import AdminModal from "@/components/admin/AdminModal";
+import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 interface UserProfile {
   id: number;
@@ -29,6 +31,7 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
+  const { t, common } = useAdminI18n();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -75,7 +78,14 @@ export default function ProfilePage() {
         fetchProfile();
       }
     } catch (error) {
-      alert("Gagal memperbarui profil");
+      alert(
+        t(
+          "profile",
+          "update_error",
+          "Gagal memperbarui profil",
+          "Failed to update profile",
+        ),
+      );
     }
   };
 
@@ -87,12 +97,12 @@ export default function ProfilePage() {
     );
   }
   if (!profile)
-    return <div className="text-red-500">Data tidak ditemukan.</div>;
+    return <div className="text-red-500">{common.empty}</div>;
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-8">
       <h1 className="text-2xl font-extrabold text-gray-800 tracking-tight">
-        Profil Saya
+        {t("profile", "title", "Profil Saya", "My Profile")}
       </h1>
       {/* Profile Card */}
       <motion.div
@@ -126,32 +136,50 @@ export default function ProfilePage() {
               onClick={() => setIsEditModalOpen(true)}
               className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-gray-50 transition-all shadow-sm"
             >
-              <Edit2 size={16} /> Edit Profile
+              <Edit2 size={16} /> {t("profile", "edit_button", "Edit Profil", "Edit Profile")}
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 pt-8 border-t">
-            <InfoItem icon={Mail} label="Email Address" value={profile.email} />
+            <InfoItem
+              icon={Mail}
+              label={t("profile", "email_label", "Alamat Email", "Email Address")}
+              value={profile.email}
+            />
             <InfoItem
               icon={User}
-              label="Nama Lengkap"
-              value={profile.nama_lengkap || "Belum diatur"}
+              label={t("profile", "fullname_label", "Nama Lengkap", "Full Name")}
+              value={
+                profile.nama_lengkap ||
+                t("profile", "not_set", "Belum diatur", "Not set")
+              }
             />
             <InfoItem
               icon={Phone}
-              label="Nomor Telepon"
-              value={profile.phone || "Belum diatur"}
+              label={t("profile", "phone_label", "Nomor Telepon", "Phone Number")}
+              value={
+                profile.phone || t("profile", "not_set", "Belum diatur", "Not set")
+              }
             />
-            {/* Bagian Status Verifikasi yang Diperbarui */}
             <InfoItem
               icon={profile.id === 1 ? CheckCircle : ShieldCheck}
-              label="Status Verifikasi"
+              label={t(
+                "profile",
+                "verify_label",
+                "Status Verifikasi",
+                "Verification Status",
+              )}
               value={
                 profile.id === 1
-                  ? "Admin User"
+                  ? t("profile", "admin_user", "Admin User", "Admin User")
                   : profile.email_verified_at
-                    ? "Terverifikasi"
-                    : "Belum Verifikasi"
+                    ? t("profile", "verified", "Terverifikasi", "Verified")
+                    : t(
+                        "profile",
+                        "unverified",
+                        "Belum Verifikasi",
+                        "Not Verified",
+                      )
               }
               status={profile.id === 1 ? true : !!profile.email_verified_at}
             />
@@ -159,25 +187,19 @@ export default function ProfilePage() {
         </div>
       </motion.div>
       {/* Modal Edit */}
-      <AnimatePresence>
-        {isEditModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsEditModalOpen(false)}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            />
-            <motion.form
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
+      <AdminModal
+        open={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        panelClassName="max-w-md"
+      >
+            <form
               onSubmit={handleUpdate}
-              className="bg-white p-8 rounded-3xl w-full max-w-md shadow-2xl relative z-10 space-y-6"
+              className="bg-white p-8 rounded-3xl w-full shadow-2xl relative space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-gray-900">Edit Profil</h2>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {t("profile", "modal_edit", "Edit Profil", "Edit Profile")}
+                </h2>
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
@@ -232,29 +254,34 @@ export default function ProfilePage() {
                   </label>
                 </div>
                 <span className="text-xs text-gray-400 font-medium">
-                  Klik icon pensil untuk ganti foto
+                  {t(
+                    "profile",
+                    "avatar_hint",
+                    "Klik icon pensil untuk ganti foto",
+                    "Click the pencil icon to change photo",
+                  )}
                 </span>
               </div>
 
               <div className="space-y-4">
                 <InputField
-                  label="Username"
+                  label={t("profile", "username_label", "Username", "Username")}
                   name="name"
                   defaultValue={profile.name}
                 />
                 <InputField
-                  label="Nama Lengkap"
+                  label={t("profile", "fullname_label", "Nama Lengkap", "Full Name")}
                   name="nama_lengkap"
                   defaultValue={profile.nama_lengkap || ""}
                 />
                 <InputField
-                  label="Email"
+                  label={common.email}
                   name="email"
                   type="email"
                   defaultValue={profile.email}
                 />
                 <InputField
-                  label="Nomor Telepon"
+                  label={t("profile", "phone_label", "Nomor Telepon", "Phone Number")}
                   name="phone"
                   defaultValue={profile.phone || ""}
                 />
@@ -266,19 +293,17 @@ export default function ProfilePage() {
                   onClick={() => setIsEditModalOpen(false)}
                   className="flex-1 py-3 rounded-xl font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all"
                 >
-                  Batal
+                  {common.cancel}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-black transition-all"
                 >
-                  Simpan Perubahan
+                  {common.save_changes}
                 </button>
               </div>
-            </motion.form>
-          </div>
-        )}
-      </AnimatePresence>
+            </form>
+      </AdminModal>
     </div>
   );
 }

@@ -19,7 +19,9 @@ import {
   Trash2,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import AdminModal from "@/components/admin/AdminModal";
 import { getAdminHeaders } from "@/lib/api";
+import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 interface TimelineItem {
   status: string;
@@ -41,6 +43,7 @@ interface Tracking {
 }
 
 export default function TrackingsPage() {
+  const { t, common } = useAdminI18n();
   const [trackings, setTrackings] = useState<Tracking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,7 +72,7 @@ export default function TrackingsPage() {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const COURIER_LIST = [
+  const [courierOptions, setCourierOptions] = useState<string[]>([
     "JNE",
     "JNE Express",
     "J&T",
@@ -79,7 +82,7 @@ export default function TrackingsPage() {
     "TIKI",
     "Anteraja",
     "Ninja Express",
-  ];
+  ]);
 
   const baseUrl = SITE_STRINGS.base_url.url_backend;
 
@@ -100,6 +103,19 @@ export default function TrackingsPage() {
 
   useEffect(() => {
     fetchTrackings();
+    fetch(`${baseUrl}/api/kurirs`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && Array.isArray(data.data) && data.data.length > 0) {
+          const names = Array.from(
+            new Set(
+              data.data.map((k: { nama?: string }) => String(k.nama || "").trim()).filter(Boolean),
+            ),
+          ) as string[];
+          if (names.length) setCourierOptions(names);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Reset halaman ke 1 setiap kali mencari data
@@ -108,11 +124,15 @@ export default function TrackingsPage() {
   }, [searchTerm]);
 
   // LOGIKA FILTER & PAGINATION
-  const filteredTrackings = trackings.filter(
-    (t) =>
-      t.order_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.recipient_name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredTrackings = trackings.filter((trk) => {
+    const q = searchTerm.toLowerCase();
+    return (
+      trk.order_id.toLowerCase().includes(q) ||
+      trk.recipient_name.toLowerCase().includes(q) ||
+      (trk.tracking_number || "").toLowerCase().includes(q) ||
+      (trk.courier || "").toLowerCase().includes(q)
+    );
+  });
 
   const totalPages = Math.ceil(filteredTrackings.length / itemsPerPage) || 1;
   const paginatedTrackings = filteredTrackings.slice(
@@ -187,18 +207,31 @@ export default function TrackingsPage() {
       if (!res.ok) throw new Error("Gagal memperbarui data");
 
       setTrackings((prevTrackings) =>
-        prevTrackings.map((t) =>
-          t.order_id === selectedTracking.order_id
-            ? ({ ...t, ...jsonPayload } as Tracking)
-            : t,
+        prevTrackings.map((trk) =>
+          trk.order_id === selectedTracking.order_id
+            ? ({ ...trk, ...jsonPayload } as Tracking)
+            : trk,
         ),
       );
 
       setIsEditModalOpen(false);
-      showNotification("Data tracking berhasil diperbarui!", "success");
+      showNotification(
+        t(
+          "trackings",
+          "updated_success",
+          "Data tracking berhasil diperbarui!",
+          "Tracking data updated successfully!",
+        ),
+        "success",
+      );
     } catch (error) {
       showNotification(
-        "Gagal memperbarui data. Periksa koneksi Anda.",
+        t(
+          "trackings",
+          "update_error",
+          "Gagal memperbarui data. Periksa koneksi Anda.",
+          "Failed to update data. Please check your connection.",
+        ),
         "error",
       );
     }
@@ -251,10 +284,15 @@ export default function TrackingsPage() {
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-          Trackings Order
+          {t("trackings", "title", "Trackings Order", "Order Tracking")}
         </h1>
         <p className="text-gray-500 mt-1.5 text-sm">
-          Pantau dan kelola status pengiriman pesanan pelanggan.
+          {t(
+            "trackings",
+            "subtitle",
+            "Pantau dan kelola status pengiriman pesanan pelanggan.",
+            "Monitor and manage the shipping status of customer orders.",
+          )}
         </p>
       </div>
 
@@ -266,7 +304,12 @@ export default function TrackingsPage() {
             <Search className="absolute left-3.5 top-2.5 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Cari ID pesanan atau nama penerima..."
+              placeholder={t(
+                "trackings",
+                "search_ph",
+                "Cari ID pesanan, no resi, atau nama penerima...",
+                "Search order ID, tracking no., or recipient...",
+              )}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900 outline-none transition-all shadow-sm"
@@ -276,82 +319,101 @@ export default function TrackingsPage() {
 
         {/* Table Wrapper (Responsive) */}
         <div className="overflow-x-auto w-full">
-          <table className="w-full border-collapse min-w-[900px]">
+          <table className="w-full border-collapse min-w-[1000px]">
             <thead>
               <tr className="bg-gray-50/80 border-b border-gray-100">
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[160px]">
-                  Order ID
+                  {t("trackings", "col_order_id", "Order ID", "Order ID")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-left">
-                  Penerima
+                  {t("trackings", "col_recipient", "Penerima", "Recipient")}
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-left w-[240px]">
-                  Kurir / No Resi
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-left w-[140px]">
+                  {t("trackings", "col_courier", "Kurir", "Courier")}
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-left w-[180px]">
+                  {t("trackings", "col_resi", "No Resi", "Tracking No.")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Status
+                  {common.status}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[100px]">
-                  Aksi
+                  {common.actions}
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {paginatedTrackings.map((t) => {
-                const statusConfig = getStatusConfig(t.status);
+              {paginatedTrackings.map((trk) => {
+                const statusConfig = getStatusConfig(trk.status);
                 return (
                   <tr
-                    key={t.id}
+                    key={trk.id}
                     className="hover:bg-gray-50/60 transition-colors group"
                   >
                     <td className="px-6 py-4 text-center">
                       <span className="text-xs font-bold font-mono text-gray-900 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg shadow-sm">
-                        #{t.order_id}
+                        #{trk.order_id}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm font-bold text-gray-900">
-                        {t.recipient_name}
+                        {trk.recipient_name}
                       </div>
                       <div
                         className="text-xs text-gray-500 mt-1 max-w-[280px] truncate"
-                        title={t.recipient_address}
+                        title={trk.recipient_address}
                       >
-                        {t.recipient_address}
+                        {trk.recipient_address}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-500 shrink-0 shadow-sm">
-                          <Globe size={16} />
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-500 shrink-0 shadow-sm">
+                          <Globe size={14} />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-sm font-bold text-gray-900 capitalize">
-                            {t.courier || "-"}
-                          </div>
-                          <div className="text-xs font-mono font-medium text-gray-500 mt-0.5 truncate">
-                            {t.tracking_number || "Resi belum diinput"}
-                          </div>
-                        </div>
+                        <span className="text-sm font-bold text-gray-900 capitalize">
+                          {trk.courier || "-"}
+                        </span>
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {trk.tracking_number ? (
+                        <span className="inline-flex items-center text-xs font-mono font-semibold text-gray-900 bg-blue-50 border border-blue-100 px-2.5 py-1.5 rounded-lg">
+                          {trk.tracking_number}
+                        </span>
+                      ) : (
+                        <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1.5 rounded-lg">
+                          {t(
+                            "trackings",
+                            "no_tracking_number",
+                            "Belum ada no resi",
+                            "No tracking number yet",
+                          )}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider shadow-sm border ${statusConfig.color}`}
                       >
                         {statusConfig.icon}
-                        {t.status || "-"}
+                        {trk.status || "-"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => {
-                          setSelectedTracking(t);
-                          setEditTimeline(t.timeline || []);
+                          setSelectedTracking(trk);
+                          setEditTimeline(trk.timeline || []);
                           setIsEditModalOpen(true);
                         }}
                         className="p-2.5 rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 border border-gray-200 bg-white shadow-sm transition-all duration-200"
-                        title="Edit data tracking"
+                        title={t(
+                          "trackings",
+                          "edit_title",
+                          "Edit data tracking",
+                          "Edit tracking data",
+                        )}
                       >
                         <Edit2 size={16} />
                       </button>
@@ -363,11 +425,16 @@ export default function TrackingsPage() {
               {/* Empty State */}
               {paginatedTrackings.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="text-center py-16">
+                  <td colSpan={6} className="text-center py-16">
                     <div className="flex flex-col items-center justify-center text-gray-400">
                       <Package size={40} className="mb-3 text-gray-300" />
                       <p className="text-sm font-medium text-gray-500">
-                        Tidak ada data tracking yang ditemukan.
+                        {t(
+                          "trackings",
+                          "empty",
+                          "Tidak ada data tracking yang ditemukan.",
+                          "No tracking data found.",
+                        )}
                       </p>
                     </div>
                   </td>
@@ -404,20 +471,33 @@ export default function TrackingsPage() {
       </div>
 
       {/* Modal Edit (Tetap Sama dengan sedikit penyesuaian padding) */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-all py-10">
+      <AdminModal
+        open={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        panelClassName="max-w-2xl"
+      >
           <form
             onSubmit={handleUpdate}
-            className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] border border-gray-100 animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white rounded-3xl w-full shadow-2xl flex flex-col max-h-[90vh] border border-gray-100 animate-in fade-in zoom-in-95 duration-200"
           >
             {/* Modal Header */}
             <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 shrink-0 rounded-t-3xl">
               <div>
                 <h2 className="text-xl font-bold text-gray-900 tracking-tight">
-                  Edit Data Tracking
+                  {t(
+                    "trackings",
+                    "modal_title",
+                    "Edit Data Tracking",
+                    "Edit Tracking Data",
+                  )}
                 </h2>
                 <p className="text-xs font-medium text-gray-500 mt-1">
-                  Update informasi logistik pengiriman pesanan
+                  {t(
+                    "trackings",
+                    "modal_subtitle",
+                    "Update informasi logistik pengiriman pesanan",
+                    "Update the order's shipping logistics information",
+                  )}
                 </p>
               </div>
               <button
@@ -434,8 +514,8 @@ export default function TrackingsPage() {
               {/* SECTION: INFO PENGIRIMAN */}
               <div className="space-y-4 bg-white">
                 <h3 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
-                  <Package size={16} className="text-gray-400" /> Informasi
-                  Utama
+                  <Package size={16} className="text-gray-400" />{" "}
+                  {t("trackings", "section_main_info", "Informasi Utama", "Main Information")}
                 </h3>
 
                 {/* Row 1: Order ID & No Resi */}
@@ -502,7 +582,7 @@ export default function TrackingsPage() {
                       defaultValue={selectedTracking?.courier}
                       className="w-full border border-gray-200 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none shadow-sm cursor-pointer"
                     >
-                      {COURIER_LIST.map((kurir) => (
+                      {courierOptions.map((kurir) => (
                         <option key={kurir} value={kurir}>
                           {kurir}
                         </option>
@@ -535,8 +615,13 @@ export default function TrackingsPage() {
               {/* SECTION: INFO PENERIMA */}
               <div className="space-y-4">
                 <h3 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
-                  <User size={16} className="text-gray-400" /> Informasi
-                  Penerima
+                  <User size={16} className="text-gray-400" />{" "}
+                  {t(
+                    "trackings",
+                    "section_recipient_info",
+                    "Informasi Penerima",
+                    "Recipient Information",
+                  )}
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -592,22 +677,33 @@ export default function TrackingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                   <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                    <Clock size={16} className="text-gray-400" /> Timeline
-                    Perjalanan
+                    <Clock size={16} className="text-gray-400" />{" "}
+                    {t(
+                      "trackings",
+                      "section_timeline",
+                      "Timeline Perjalanan",
+                      "Shipping Timeline",
+                    )}
                   </h3>
                   <button
                     type="button"
                     onClick={addTimelineItem}
                     className="text-xs flex items-center gap-1.5 font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors border border-blue-100 shadow-sm"
                   >
-                    <Plus size={14} /> Tambah Log
+                    <Plus size={14} />{" "}
+                    {t("trackings", "add_log", "Tambah Log", "Add Log")}
                   </button>
                 </div>
 
                 {editTimeline.length === 0 ? (
                   <div className="bg-gray-50/50 border border-dashed border-gray-200 rounded-xl py-6 flex flex-col items-center justify-center">
                     <p className="text-sm font-medium text-gray-400">
-                      Belum ada riwayat timeline.
+                      {t(
+                        "trackings",
+                        "no_timeline",
+                        "Belum ada riwayat timeline.",
+                        "No timeline history yet.",
+                      )}
                     </p>
                   </div>
                 ) : (
@@ -621,7 +717,12 @@ export default function TrackingsPage() {
                           type="button"
                           onClick={() => removeTimelineItem(index)}
                           className="absolute right-3 top-3 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100 bg-white shadow-sm"
-                          title="Hapus Log"
+                          title={t(
+                            "trackings",
+                            "delete_log",
+                            "Hapus Log",
+                            "Delete Log",
+                          )}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -699,18 +800,17 @@ export default function TrackingsPage() {
                 onClick={() => setIsEditModalOpen(false)}
                 className="px-5 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-100 text-sm font-bold text-gray-700 shadow-sm transition-all"
               >
-                Batal
+                {common.cancel}
               </button>
               <button
                 type="submit"
                 className="px-6 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 shadow-sm transition-all"
               >
-                Simpan Perubahan
+                {common.save_changes}
               </button>
             </div>
           </form>
-        </div>
-      )}
+      </AdminModal>
 
       {/* NOTIFIKASI MODAL */}
       {notification?.isOpen && (
@@ -732,7 +832,9 @@ export default function TrackingsPage() {
           </div>
           <div>
             <h4 className="text-sm font-bold text-gray-900">
-              {notification.type === "success" ? "Berhasil!" : "Gagal!"}
+              {notification.type === "success"
+                ? t("common", "success_title", "Berhasil!", "Success!")
+                : t("common", "error_title", "Gagal!", "Failed!")}
             </h4>
             <p className="text-xs font-medium text-gray-500 mt-0.5">
               {notification.message}

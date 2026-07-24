@@ -440,7 +440,7 @@ function CheckoutContent() {
             recipient_phone: formData.phone,
             recipient_address: formData.address,
             timeline: [
-              { status: "Pesanan dibuat", date: new Date().toISOString() },
+              { status: "Pesanan dibuat", time: new Date().toISOString() },
             ],
           }),
         });
@@ -989,8 +989,8 @@ function CheckoutContent() {
         onClose={() => {
           setModal({ ...modal, isOpen: false });
           if (modal.type === "success") {
-            if (isGuestBuyNow && completedOrderId) {
-              router.push(`/pengiriman/${completedOrderId}`);
+            if (isGuestBuyNow) {
+              router.push("/pengiriman");
             } else {
               router.push("/profile/history");
             }

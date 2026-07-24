@@ -11,6 +11,8 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import AdminModal from "@/components/admin/AdminModal";
+import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 interface CartItem {
   id: number;
@@ -26,6 +28,7 @@ interface CartItem {
 }
 
 export default function CartPage() {
+  const { t, common } = useAdminI18n();
   const [carts, setCarts] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -86,7 +89,14 @@ export default function CartPage() {
 
       setCarts(carts.filter((c) => c.id !== deleteId));
       setIsDeleteModalOpen(false);
-      showNotification("Item berhasil dihapus dari keranjang.");
+      showNotification(
+        t(
+          "cart",
+          "deleted_success",
+          "Item berhasil dihapus dari keranjang.",
+          "Item removed from the cart successfully.",
+        ),
+      );
 
       // Cek apakah halaman yang sedang aktif kosong setelah dihapus
       const remainingOnPage = paginatedCarts.length - 1;
@@ -136,7 +146,9 @@ export default function CartPage() {
             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-gray-900">Berhasil!</h4>
+            <h4 className="text-sm font-bold text-gray-900">
+              {t("common", "success_title", "Berhasil!", "Success!")}
+            </h4>
             <p className="text-xs font-medium text-gray-500 mt-0.5">{notification.message}</p>
           </div>
         </div>
@@ -144,9 +156,16 @@ export default function CartPage() {
 
       {/* Header Page */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Cart / Keranjang</h1>
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+          {t("cart", "title", "Keranjang", "Cart")}
+        </h1>
         <p className="text-gray-500 mt-1.5 text-sm">
-          Daftar item produk parfum yang sedang tersimpan di keranjang belanja pelanggan.
+          {t(
+            "cart",
+            "subtitle",
+            "Daftar item produk parfum yang sedang tersimpan di keranjang belanja pelanggan.",
+            "Perfume items currently saved in customer shopping carts.",
+          )}
         </p>
       </div>
 
@@ -159,7 +178,12 @@ export default function CartPage() {
             <Search className="absolute left-3.5 top-2.5 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Cari user atau nama produk..."
+              placeholder={t(
+                "cart",
+                "search_ph",
+                "Cari user atau nama produk...",
+                "Search user or product name...",
+              )}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900 outline-none transition-all shadow-sm"
@@ -173,19 +197,19 @@ export default function CartPage() {
             <thead>
               <tr className="bg-gray-50/80 border-b border-gray-100">
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[320px]">
-                  Produk
+                  {common.product}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Pelanggan
+                  {t("cart", "col_customer", "Pelanggan", "Customer")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Kuantitas
+                  {common.quantity}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Harga Satuan
+                  {t("cart", "unit_price", "Harga Satuan", "Unit Price")}
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                  Aksi
+                  {common.actions}
                 </th>
               </tr>
             </thead>
@@ -212,7 +236,8 @@ export default function CartPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-bold text-gray-900 truncate">
-                            {c.product.title || "Tanpa Nama"}
+                            {c.product.title ||
+                              t("cart", "no_name", "Tanpa Nama", "No Name")}
                           </p>
                           <p className="text-xs font-medium text-gray-500 mt-0.5 capitalize truncate">
                             {c.product.personality_type?.replace(/_/g, " ")}
@@ -244,7 +269,7 @@ export default function CartPage() {
                             setIsDeleteModalOpen(true);
                           }}
                           className="p-2.5 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 border border-gray-200 bg-white shadow-sm transition-all duration-200"
-                          title="Hapus item dari keranjang"
+                          title={common.delete}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -257,8 +282,17 @@ export default function CartPage() {
                   <td colSpan={5} className="py-16 text-center">
                     <div className="flex flex-col items-center justify-center text-gray-400">
                       <ShoppingCart size={48} className="mb-4 text-gray-300" />
-                      <p className="text-sm font-bold text-gray-900">Keranjang Kosong</p>
-                      <p className="text-sm font-medium text-gray-500 mt-1">Tidak ada item yang sesuai dengan pencarian Anda.</p>
+                      <p className="text-sm font-bold text-gray-900">
+                        {t("cart", "empty_title", "Keranjang Kosong", "Cart Empty")}
+                      </p>
+                      <p className="text-sm font-medium text-gray-500 mt-1">
+                        {t(
+                          "cart",
+                          "empty",
+                          "Tidak ada item yang sesuai dengan pencarian Anda.",
+                          "No items match your search.",
+                        )}
+                      </p>
                     </div>
                   </td>
                 </tr>
@@ -292,16 +326,26 @@ export default function CartPage() {
       </div>
 
       {/* Modal Delete yang Diperbagus */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-all">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+      <AdminModal
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        panelClassName="max-w-sm"
+      >
+          <div className="bg-white rounded-3xl p-6 w-full shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex flex-col items-center text-center">
               <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
                 <Trash2 size={24} className="text-red-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Hapus Item?</h3>
+              <h3 className="text-xl font-bold text-gray-900">
+                {common.confirm_delete}
+              </h3>
               <p className="text-sm font-medium text-gray-500 mt-2 leading-relaxed">
-                Item ini akan dikeluarkan secara permanen dari daftar keranjang belanja pengguna.
+                {t(
+                  "cart",
+                  "delete_desc",
+                  "Item ini akan dikeluarkan secara permanen dari daftar keranjang belanja pengguna.",
+                  "This item will be permanently removed from the user's shopping cart.",
+                )}
               </p>
             </div>
             
@@ -310,18 +354,17 @@ export default function CartPage() {
                 onClick={() => setIsDeleteModalOpen(false)}
                 className="flex-1 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-100 bg-white text-sm font-bold text-gray-700 transition-colors shadow-sm"
               >
-                Batal
+                {common.cancel}
               </button>
               <button
                 onClick={handleDelete}
                 className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 shadow-sm transition-colors"
               >
-                Ya, Hapus
+                {common.yes_delete}
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </AdminModal>
     </div>
   );
 }
