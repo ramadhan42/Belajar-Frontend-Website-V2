@@ -1,0 +1,5 @@
+Source: https://evomi.id/
+Scraped: 2026-07-24
+Type: Waitlist landing (SPA)
+Assets: public/sample-evomi/ (from https://evomi.id/uploads/*)
+Route: /sample-evomi

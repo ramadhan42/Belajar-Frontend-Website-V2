@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import { useNavbarColor } from "@/context/NavbarColorContext";
 import {
@@ -13,6 +13,9 @@ import {
 } from "@/lib/api";
 
 import { useParams, useRouter } from "next/navigation";
+import { useLocale } from "@/context/LocaleContext";
+import { L } from "@/lib/localeText";
+import { useTrackLocaleLoad } from "@/hooks/useTrackLocaleLoad";
 import {
   MessageCircle, // Kita pakai ini untuk WhatsApp
   Minus,
@@ -117,33 +120,33 @@ const VISUAL_BY_PERSONALITY: Record<
   string,
   {
     navbarColor: string;
-    badge: string;
+    badge: { id: string; en: string };
     characterPath: string;
   }
 > = {
   purpose_prestige: {
     navbarColor: "#1172BA",
-    badge: "Optimis",
+    badge: { id: "Optimis", en: "Optimistic" },
     characterPath: "/src/images/belanja/detail/purpose-character.svg",
   },
   prestige: {
     navbarColor: "#1172BA",
-    badge: "Optimis",
+    badge: { id: "Optimis", en: "Optimistic" },
     characterPath: "/src/images/belanja/detail/purpose-character.svg",
   },
   peaceful_calm: {
     navbarColor: "#5EA14A",
-    badge: "Damai",
+    badge: { id: "Damai", en: "Peaceful" },
     characterPath: "/src/images/belanja/detail/peaceful-character.svg",
   },
   rebel_brave: {
     navbarColor: "#E33D35",
-    badge: "Berani",
+    badge: { id: "Berani", en: "Bold" },
     characterPath: "/src/images/belanja/detail/rebel-character.svg",
   },
   sweet_shy: {
     navbarColor: "#DD74A5",
-    badge: "Manis",
+    badge: { id: "Manis", en: "Sweet" },
     characterPath: "/src/images/belanja/detail/sweet-character.svg",
   },
 };
@@ -169,11 +172,13 @@ export default function ProductDetailSection({
   const router = useRouter();
   const params = useParams();
   const id = forcedId || (params?.id as string) || "1";
+  const { locale } = useLocale();
 
   const { setNavbarAndFooterColor } = useNavbarColor();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  useTrackLocaleLoad(isLoading);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Dummy Data State for Right Column Cart Box
@@ -201,7 +206,11 @@ export default function ProductDetailSection({
   >([
     {
       sender: "admin",
-      text: "Halo! Ada yang bisa kami bantu terkait produk ini?",
+      text: L(
+        locale,
+        "Halo! Ada yang bisa kami bantu terkait produk ini?",
+        "Hi! Is there anything we can help you with about this product?",
+      ),
     },
   ]);
 
@@ -235,6 +244,41 @@ export default function ProductDetailSection({
 
   const [showShareModal, setShowShareModal] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const diskusiBoxRef = useRef<HTMLDivElement>(null);
+  const jaminanBoxRef = useRef<HTMLDivElement>(null);
+  const [detailScrollHeight, setDetailScrollHeight] = useState<number | null>(
+    null,
+  );
+
+  // Tinggi tengah = Diskusi Terbuka + Jaminan & Bebas Ongkir (+ gap antar box)
+  useEffect(() => {
+    const diskusiEl = diskusiBoxRef.current;
+    const jaminanEl = jaminanBoxRef.current;
+    if (!diskusiEl || !jaminanEl || typeof ResizeObserver === "undefined")
+      return;
+
+    const syncHeight = () => {
+      if (window.innerWidth < 1024) {
+        setDetailScrollHeight(null);
+        return;
+      }
+      const diskusiH = diskusiEl.getBoundingClientRect().height;
+      const jaminanH = jaminanEl.getBoundingClientRect().height;
+      // gap-4 = 16px antara kedua box di kolom kanan
+      const next = Math.round(diskusiH + jaminanH + 16);
+      setDetailScrollHeight(next > 0 ? next : null);
+    };
+
+    syncHeight();
+    const observer = new ResizeObserver(syncHeight);
+    observer.observe(diskusiEl);
+    observer.observe(jaminanEl);
+    window.addEventListener("resize", syncHeight);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", syncHeight);
+    };
+  }, [product, isLoading, quantity, cartMessage, wishlistMessage, locale]);
 
   // Dapatkan URL saat ini (Aman untuk Next.js SSR)
   const productUrl = typeof window !== "undefined" ? window.location.href : "";
@@ -248,7 +292,7 @@ export default function ProductDetailSection({
 
   // URL Encode untuk Social Media
   const textToShare = encodeURIComponent(
-    `Cek produk keren ini: ${product?.title || "Produk Evomi"}`,
+    `Cek produk keren ini: ${product?.title || L(locale, "Produk Evomi", "Evomi Product")}`,
   );
   const urlToShare = encodeURIComponent(productUrl);
 
@@ -260,13 +304,6 @@ export default function ProductDetailSection({
 
   // State untuk Modal Chat
   const [showChatModal, setShowChatModal] = useState(false);
-
-  // Template Pesan Cepat
-  const chatTemplates = [
-    "Hai, barang ini ready?",
-    "Bisa dikirim hari ini?",
-    "Terima kasih",
-  ];
 
   // Fungsi Kirim Chat via API Contact
   const handleSendChat = async (text: string) => {
@@ -280,14 +317,13 @@ export default function ProductDetailSection({
       setAlertInfo({
         show: true,
         type: "error", // Menggunakan tipe error
-        message:
-          "Anda harus login terlebih dahulu untuk mengirim pesan ke admin.",
+        message: copy.loginRequiredMsg,
       });
       return;
     }
 
     const user = JSON.parse(userDataStr);
-    const productName = product?.title || "Produk";
+    const productName = product?.title || copy.productFallback;
 
     // 2. Siapkan Data Form
     const formData = new FormData();
@@ -314,7 +350,7 @@ export default function ProductDetailSection({
         setAlertInfo({
           show: true,
           type: "success",
-          message: "Pesan berhasil dikirim ke Admin!",
+          message: copy.chatSentSuccess,
         });
         setShowChatModal(false);
         setCustomMessage("");
@@ -323,7 +359,7 @@ export default function ProductDetailSection({
         setAlertInfo({
           show: true,
           type: "error",
-          message: data.message || "Gagal mengirim pesan.",
+          message: data.message || copy.chatSendFailed,
         });
       }
     } catch (error) {
@@ -332,7 +368,7 @@ export default function ProductDetailSection({
       setAlertInfo({
         show: true,
         type: "error",
-        message: "Terjadi kesalahan sistem saat mengirim pesan.",
+        message: copy.chatSystemError,
       });
     } finally {
       setIsSendingChat(false);
@@ -398,14 +434,172 @@ export default function ProductDetailSection({
   useEffect(() => {
     setIsLoading(true);
     setCurrentIndex(0);
-    getProduct(id)
+    getProduct(id, locale)
       .then((data) => setProduct(data))
       .catch(() => setProduct(null))
       .finally(() => setIsLoading(false));
-  }, [id]);
+  }, [id, locale]);
 
   const visual =
     VISUAL_BY_PERSONALITY[product?.personality_type ?? ""] ?? VISUAL_FALLBACK;
+
+  const copy = useMemo(
+    () => ({
+      badge: L(locale, visual.badge.id, visual.badge.en),
+      productFallback: L(locale, "Produk", "Product"),
+      productEvomiFallback: L(locale, "Produk Evomi", "Evomi Product"),
+      gambar: L(locale, "gambar", "image"),
+      descriptionFallback: L(
+        locale,
+        "Menghadirkan aroma yang merefleksikan ketenangan, kepercayaan diri, dan kejelasan tujuan.",
+        "Presenting a scent that reflects calmness, confidence, and clarity of purpose.",
+      ),
+      detailProduk: L(locale, "Detail Produk", "Product Details"),
+      harga: L(locale, "Harga", "Price"),
+      kondisi: L(locale, "Kondisi", "Condition"),
+      kondisiValue: L(locale, "Baru", "New"),
+      beratSatuan: L(locale, "Berat Satuan", "Unit Weight"),
+      kategori: L(locale, "Kategori", "Category"),
+      minBeli: L(locale, "Min. Beli", "Min. Order"),
+      minBeliValue: L(locale, "1 Buah", "1 Piece"),
+      etalase: L(locale, "Etalase", "Showcase"),
+      etalaseValue: L(locale, "Semua Etalase", "All Showcases"),
+      disclaimerTitle: L(
+        locale,
+        "Disclaimer untuk Ketentuan COMPLAIN",
+        "Disclaimer for Complaint Terms",
+      ),
+      loadingPolicy: L(
+        locale,
+        "Memuat kebijakan toko...",
+        "Loading store policy...",
+      ),
+      pengiriman: L(locale, "Pengiriman", "Shipping"),
+      dikirimDari: L(locale, "Dikirim dari", "Shipped from"),
+      loadingLokasi: L(locale, "Memuat lokasi...", "Loading location..."),
+      ongkirMulai: L(locale, "Ongkir Mulai", "Shipping cost from"),
+      bisaCod: L(
+        locale,
+        "Bisa COD, estimasi tiba",
+        "COD available, arrives",
+      ),
+      lihatKurirLainnya: L(
+        locale,
+        "Lihat Kurir Lainnya",
+        "See Other Couriers",
+      ),
+      diskusiTerbuka: L(locale, "Diskusi Terbuka", "Open Discussion"),
+      aturJumlah: L(
+        locale,
+        "Atur jumlah dan catatan",
+        "Set quantity and notes",
+      ),
+      stok: L(locale, "Stok:", "Stock:"),
+      subtotal: L(locale, "Subtotal", "Subtotal"),
+      beliLangsung: L(locale, "Beli Langsung", "Buy Now"),
+      memproses: L(locale, "Memproses...", "Processing..."),
+      tambahKeranjang: L(locale, "+ Keranjang", "+ Cart"),
+      chat: L(locale, "Chat", "Chat"),
+      wishlist: L(locale, "Wishlist", "Wishlist"),
+      share: L(locale, "Share", "Share"),
+      promoBerlaku: L(
+        locale,
+        "Promo berlaku hari ini! Hemat hingga",
+        "Promo valid today! Save up to",
+      ),
+      jaminanProduk: L(locale, "Jaminan Produk", "Product Guarantee"),
+      uangKembali: L(
+        locale,
+        "Uang kembali bila produk tidak sesuai",
+        "Money back if the product doesn't match",
+      ),
+      bebasOngkir: L(locale, "Bebas Ongkir", "Free Shipping"),
+      syaratBerlaku: L(
+        locale,
+        "Syarat & ketentuan berlaku",
+        "Terms & conditions apply",
+      ),
+      biasanyaMembalas: L(
+        locale,
+        "Biasanya membalas dalam 5 menit",
+        "Usually replies within 5 minutes",
+      ),
+      ketikPesan: L(
+        locale,
+        "Ketik pesan Anda ke admin di sini...",
+        "Type your message to admin here...",
+      ),
+      mengirim: L(locale, "Mengirim...", "Sending..."),
+      kirimPesan: L(locale, "Kirim Pesan", "Send Message"),
+      atauPesanCepat: L(
+        locale,
+        "- Atau pilih pesan cepat -",
+        "- Or pick a quick message -",
+      ),
+      pilihPengiriman: L(locale, "Pilih Pengiriman", "Choose Shipping"),
+      estimasiTiba: L(locale, "Estimasi tiba", "Arrives"),
+      loadingKurir: L(
+        locale,
+        "Memuat data kurir...",
+        "Loading courier data...",
+      ),
+      bagikanProduk: L(locale, "Bagikan Produk", "Share Product"),
+      disalin: L(locale, "Disalin", "Copied"),
+      salin: L(locale, "Salin", "Copy"),
+      berhasil: L(locale, "Berhasil!", "Success!"),
+      perluLogin: L(locale, "Perlu Login", "Login Required"),
+      tutup: L(locale, "Tutup", "Close"),
+      loginSekarang: L(locale, "Login Sekarang", "Login Now"),
+      loginRequiredMsg: L(
+        locale,
+        "Anda harus login terlebih dahulu untuk mengirim pesan ke admin.",
+        "You must log in first to send a message to admin.",
+      ),
+      chatSentSuccess: L(
+        locale,
+        "Pesan berhasil dikirim ke Admin!",
+        "Message sent to Admin successfully!",
+      ),
+      chatSendFailed: L(
+        locale,
+        "Gagal mengirim pesan.",
+        "Failed to send message.",
+      ),
+      chatSystemError: L(
+        locale,
+        "Terjadi kesalahan sistem saat mengirim pesan.",
+        "A system error occurred while sending the message.",
+      ),
+      loginFirst: L(
+        locale,
+        "Silakan login terlebih dahulu.",
+        "Please log in first.",
+      ),
+      addedToCart: L(
+        locale,
+        "Produk berhasil ditambahkan!",
+        "Product added successfully!",
+      ),
+      addFailed: L(locale, "Gagal menambahkan.", "Failed to add."),
+      loginOnly: L(locale, "Silakan login.", "Please log in."),
+      addedToWishlist: L(
+        locale,
+        "Ditambahkan ke wishlist!",
+        "Added to wishlist!",
+      ),
+      adminAutoReply: L(
+        locale,
+        "Terima kasih atas pesannya! Saat ini admin sedang offline, namun kami akan segera membalas pertanyaan Anda.",
+        "Thank you for your message! Admin is currently offline, but we will reply to your question soon.",
+      ),
+      chatTemplates: [
+        L(locale, "Hai, barang ini ready?", "Hi, is this item in stock?"),
+        L(locale, "Bisa dikirim hari ini?", "Can it be shipped today?"),
+        L(locale, "Terima kasih", "Thank you"),
+      ],
+    }),
+    [locale, visual],
+  );
 
   useEffect(() => {
     setNavbarAndFooterColor(visual.navbarColor);
@@ -458,7 +652,7 @@ export default function ProductDetailSection({
     const token =
       typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
     if (!token) {
-      setCartMessage("Silakan login terlebih dahulu.");
+      setCartMessage(copy.loginFirst);
       setCartStatus("error");
       return;
     }
@@ -467,11 +661,11 @@ export default function ProductDetailSection({
     try {
       await addToCart(Number(id), quantity);
       setCartStatus("success");
-      setCartMessage("Produk berhasil ditambahkan!");
+      setCartMessage(copy.addedToCart);
       window.dispatchEvent(new Event("cart_updated"));
     } catch (err: unknown) {
       setCartStatus("error");
-      setCartMessage(err instanceof Error ? err.message : "Gagal menambahkan.");
+      setCartMessage(err instanceof Error ? err.message : copy.addFailed);
     }
   };
 
@@ -479,7 +673,7 @@ export default function ProductDetailSection({
     const token =
       typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
     if (!token) {
-      setWishlistMessage("Silakan login.");
+      setWishlistMessage(copy.loginOnly);
       setWishlistStatus("error");
       return;
     }
@@ -488,12 +682,12 @@ export default function ProductDetailSection({
     try {
       await addToWishlist(Number(id));
       setWishlistStatus("success");
-      setWishlistMessage("Ditambahkan ke wishlist!");
+      setWishlistMessage(copy.addedToWishlist);
       window.dispatchEvent(new Event("wishlist_updated"));
     } catch (err: unknown) {
       setWishlistStatus("error");
       setWishlistMessage(
-        err instanceof Error ? err.message : "Gagal menambahkan.",
+        err instanceof Error ? err.message : copy.addFailed,
       );
     }
   };
@@ -514,7 +708,7 @@ export default function ProductDetailSection({
         ...prev,
         {
           sender: "admin" as const,
-          text: "Terima kasih atas pesannya! Saat ini admin sedang offline, namun kami akan segera membalas pertanyaan Anda.",
+          text: copy.adminAutoReply,
         },
       ]);
     }, 1000);
@@ -548,7 +742,7 @@ export default function ProductDetailSection({
                   <div className="relative w-full h-full">
                     <Image
                       src={imgSrc}
-                      alt={`${product?.title ?? "Produk"} gambar ${index + 1}`}
+                      alt={`${product?.title ?? copy.productFallback} ${copy.gambar} ${index + 1}`}
                       fill
                       className="object-contain"
                       priority={index === 0}
@@ -634,7 +828,15 @@ export default function ProductDetailSection({
         {/* ================= TENGAH: DETAIL INFO (Col 5) ================= */}
         <div
           id="detail-info-scroll"
-          className="lg:col-span-5 flex flex-col text-left w-full relative lg:overflow-y-auto lg:max-h-[calc(100vh-8rem)] [scrollbar-width:none] [-ms-overflow-style:none]"
+          className="lg:col-span-5 flex flex-col text-left w-full relative lg:overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none]"
+          style={
+            detailScrollHeight
+              ? {
+                  height: detailScrollHeight,
+                  maxHeight: detailScrollHeight,
+                }
+              : undefined
+          }
         >
           {/* TITLE & DESC (Sesuai title desc.PNG) */}
           <h1
@@ -656,8 +858,7 @@ export default function ProductDetailSection({
             {isLoading ? (
               <Skeleton className="w-full h-20 block" />
             ) : (
-              product?.description ||
-              "Menghadirkan aroma yang merefleksikan ketenangan, kepercayaan diri, dan kejelasan tujuan."
+              product?.description || copy.descriptionFallback
             )}
           </p>
 
@@ -717,7 +918,7 @@ export default function ProductDetailSection({
               className="font-nohemi text-[18px] md:text-[20px] font-bold mb-1"
               style={{ color: visual.navbarColor }}
             >
-              Harga
+              {copy.harga}
             </h4>
             <span className="font-nohemi text-[26px] md:text-[32px] font-semibold text-[#1A1A1A]">
               {isLoading ? (
@@ -734,21 +935,21 @@ export default function ProductDetailSection({
               className="font-nohemi text-[20px] font-semibold mb-4"
               style={{ color: visual.navbarColor }}
             >
-              Detail Produk
+              {copy.detailProduk}
             </h4>
             <div className="grid grid-cols-2 gap-y-3.5 gap-x-4 text-[14px] font-parkinsans font-normal">
               {/* Kondisi */}
               <div className="flex">
-                <span className="w-28 text-[#99A1AF] shrink-0">Kondisi</span>
+                <span className="w-28 text-[#99A1AF] shrink-0">{copy.kondisi}</span>
                 <span className="text-[#364153]">
-                  {product?.kondisi || "Baru"}
+                  {product?.kondisi || copy.kondisiValue}
                 </span>
               </div>
 
               {/* Berat Satuan */}
               <div className="flex">
                 <span className="w-28 text-[#99A1AF] shrink-0">
-                  Berat Satuan
+                  {copy.beratSatuan}
                 </span>
                 <span className="text-[#364153]">
                   {product?.berat_satuan ? `${product.berat_satuan} g` : "-"}
@@ -757,7 +958,7 @@ export default function ProductDetailSection({
 
               {/* Kategori */}
               <div className="flex">
-                <span className="w-28 text-[#99A1AF] shrink-0">Kategori</span>
+                <span className="w-28 text-[#99A1AF] shrink-0">{copy.kategori}</span>
                 <span className="text-[#364153]">
                   {product?.kategori || "-"}
                 </span>
@@ -771,15 +972,15 @@ export default function ProductDetailSection({
 
               {/* Min. Beli */}
               <div className="flex">
-                <span className="w-28 text-[#99A1AF] shrink-0">Min. Beli</span>
-                <span className="text-[#364153]">1 Buah</span>
+                <span className="w-28 text-[#99A1AF] shrink-0">{copy.minBeli}</span>
+                <span className="text-[#364153]">{copy.minBeliValue}</span>
               </div>
 
               {/* Etalase */}
               <div className="flex">
-                <span className="w-28 text-[#99A1AF] shrink-0">Etalase</span>
+                <span className="w-28 text-[#99A1AF] shrink-0">{copy.etalase}</span>
                 <span className="text-[#364153]">
-                  {product?.etalase || "Semua Etalase"}
+                  {product?.etalase || copy.etalaseValue}
                 </span>
               </div>
             </div>
@@ -791,7 +992,7 @@ export default function ProductDetailSection({
               className="font-nohemi text-[20px] font-semibold mb-3"
               style={{ color: visual.navbarColor }}
             >
-              Disclaimer untuk Ketentuan COMPLAIN
+              {copy.disclaimerTitle}
             </h4>
             <div className="text-[14px] font-parkinsans font-normal text-[#4A5565] leading-relaxed flex flex-col gap-1.5">
               {disclaimers.length > 0 ? (
@@ -801,7 +1002,7 @@ export default function ProductDetailSection({
                   </p>
                 ))
               ) : (
-                <p>Memuat kebijakan toko...</p>
+                <p>{copy.loadingPolicy}</p>
               )}
             </div>
           </div>
@@ -810,7 +1011,7 @@ export default function ProductDetailSection({
           {/* PENGIRIMAN */}
           <div className="bg-white border border-gray-100 rounded-[16px] p-6 shadow-sm flex flex-col gap-5">
             <h4 className="font-nohemi text-[20px] font-semibold text-[#1E2939]">
-              Pengiriman
+              {copy.pengiriman}
             </h4>
 
             {/* Dikirim Dari */}
@@ -818,10 +1019,10 @@ export default function ProductDetailSection({
               <MapPin className="text-gray-400 mt-0.5 shrink-0" size={20} />
               <div>
                 <p className="text-[15px] text-[#6A7282] font-parkinsans font-normal">
-                  Dikirim dari
+                  {copy.dikirimDari}
                 </p>
                 <p className="text-[16px] font-semibold text-[#364153] font-parkinsans">
-                  {product?.alamat_awal_pengiriman || "Memuat lokasi..."}
+                  {product?.alamat_awal_pengiriman || copy.loadingLokasi}
                 </p>
               </div>
             </div>
@@ -833,7 +1034,7 @@ export default function ProductDetailSection({
                 <p className="text-[15px] text-[#6A7282] font-parkinsans font-normal">
                   {selectedKurir
                     ? `${selectedKurir.nama} - ${selectedKurir.jenis}`
-                    : "Ongkir Mulai"}
+                    : copy.ongkirMulai}
                 </p>
                 <p className="text-[16px] font-semibold text-[#364153] font-parkinsans">
                   {selectedKurir
@@ -841,7 +1042,7 @@ export default function ProductDetailSection({
                     : "-"}
                 </p>
                 <p className="text-[15px] text-[#99A1AF] font-parkinsans font-normal mt-0.5">
-                  Bisa COD, estimasi tiba{" "}
+                  {copy.bisaCod}{" "}
                   {selectedKurir ? getEstimasiTiba(selectedKurir.jenis) : "-"}
                 </p>
 
@@ -853,7 +1054,7 @@ export default function ProductDetailSection({
                     className="text-left font-parkinsans text-[15px] font-semibold underline-offset-4 hover:underline"
                     style={{ color: visual.navbarColor }}
                   >
-                    Lihat Kurir Lainnya
+                    {copy.lihatKurirLainnya}
                   </button>
                 </div>
               </div>
@@ -865,13 +1066,16 @@ export default function ProductDetailSection({
         <div className="lg:col-span-3 w-full relative">
           <div className="sticky top-24 flex flex-col gap-4">
             {/* MAIN CART BOX (Sesuai card kanan.PNG) */}
-            <div className="bg-white border border-gray-200 rounded-[16px] shadow-sm overflow-hidden w-[295px] h-[567.3px]">
+            <div
+              ref={diskusiBoxRef}
+              className="bg-white border border-gray-200 rounded-[16px] shadow-sm overflow-hidden w-full lg:w-[295px] flex flex-col"
+            >
               {/* Header Box */}
               <div
                 className="px-4 py-2 text-[#FFFFFF] flex items-center gap-2 font-parkinsans font-medium text-[14px]"
                 style={{ backgroundColor: visual.navbarColor }}
               >
-                <MessageCircle size={18} /> Diskusi Terbuka
+                <MessageCircle size={18} /> {copy.diskusiTerbuka}
               </div>
 
               {/* Box Content */}
@@ -886,7 +1090,7 @@ export default function ProductDetailSection({
                 {/* Quantity & Stock */}
                 <div>
                   <p className="font-parkinsans text-[14px] text-[#6A7282] font-normal mb-2">
-                    Atur jumlah dan catatan
+                    {copy.aturJumlah}
                   </p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center border border-gray-300 rounded-[8px] h-[38px]">
@@ -910,7 +1114,7 @@ export default function ProductDetailSection({
                       </button>
                     </div>
                     <span className="font-parkinsans text-[14px] text-[#6A7282] font-normal">
-                      Stok:{" "}
+                      {copy.stok}{" "}
                       <span className="font-normal text-[#6A7282]">
                         {product?.quantity}
                       </span>
@@ -921,7 +1125,7 @@ export default function ProductDetailSection({
                 {/* Subtotal */}
                 <div className="flex justify-between items-center mt-1">
                   <span className="text-[17px] font-parkinsans text-[#6A7282] font-normal">
-                    Subtotal
+                    {copy.subtotal}
                   </span>
                   <span className="text-[17px] font-nohemi font-bold text-[#101828]">
                     {formatProductPrice(dummySubtotalPrice)}
@@ -939,7 +1143,7 @@ export default function ProductDetailSection({
                     className="w-full text-white font-nohemi text-[16px] font-semibold py-3 rounded-full shadow-sm hover:opacity-90 active:scale-95 transition-all"
                     style={{ backgroundColor: visual.navbarColor }}
                   >
-                    Beli Langsung
+                    {copy.beliLangsung}
                   </button>
                   <button
                     onClick={handleAddToCart}
@@ -950,7 +1154,7 @@ export default function ProductDetailSection({
                       borderColor: visual.navbarColor,
                     }}
                   >
-                    {cartStatus === "loading" ? "Memproses..." : "+ Keranjang"}
+                    {cartStatus === "loading" ? copy.memproses : copy.tambahKeranjang}
                   </button>
                 </div>
 
@@ -967,7 +1171,7 @@ export default function ProductDetailSection({
                     onClick={() => setIsChatOpen(true)}
                     className="flex flex-col items-center gap-1.5 hover:text-[var(--hover-color)] transition"
                   >
-                    <MessageCircle size={20} strokeWidth={1.5} /> Chat
+                    <MessageCircle size={20} strokeWidth={1.5} /> {copy.chat}
                   </button>
                   <button
                     onClick={handleAddToWishlist}
@@ -980,13 +1184,13 @@ export default function ProductDetailSection({
                         wishlistStatus === "success" ? "fill-red-500" : ""
                       }
                     />{" "}
-                    Wishlist
+                    {copy.wishlist}
                   </button>
                   <button
                     onClick={() => setShowShareModal(true)}
                     className="flex flex-col items-center gap-1.5 hover:text-[var(--hover-color)] transition"
                   >
-                    <Share2 size={20} strokeWidth={1.5} /> Share
+                    <Share2 size={20} strokeWidth={1.5} /> {copy.share}
                   </button>
                 </div>
 
@@ -994,7 +1198,7 @@ export default function ProductDetailSection({
                 <div className="bg-[#FFF4E5] border border-[#FFE8CC] text-[#CA3500] rounded-[8px] p-3 flex gap-2.5 items-center mt-2 font-parkinsans">
                   <Clock size={18} className="shrink-0" />
                   <p className="text-[14px] font-normal leading-snug">
-                    Promo berlaku hari ini! Hemat hingga{" "}
+                    {copy.promoBerlaku}{" "}
                     {formatProductPrice(hargaPromo)}
                   </p>
                 </div>
@@ -1009,7 +1213,10 @@ export default function ProductDetailSection({
             </div>
 
             {/* JAMINAN & BEBAS ONGKIR BOX */}
-            <div className="bg-white border border-gray-100 rounded-[16px] p-5 shadow-sm flex flex-col gap-4">
+            <div
+              ref={jaminanBoxRef}
+              className="bg-white border border-gray-100 rounded-[16px] p-5 shadow-sm flex flex-col gap-4"
+            >
               <div className="flex gap-3 items-start">
                 <Shield
                   size={20}
@@ -1018,10 +1225,10 @@ export default function ProductDetailSection({
                 />
                 <div>
                   <h5 className="font-parkinsans font-semibold text-[14px] text-[#364153]">
-                    Jaminan Produk
+                    {copy.jaminanProduk}
                   </h5>
                   <p className="font-parkinsans font-normal text-[14px] text-[#99A1AF] mt-0.5">
-                    Uang kembali bila produk tidak sesuai
+                    {copy.uangKembali}
                   </p>
                 </div>
               </div>
@@ -1036,10 +1243,10 @@ export default function ProductDetailSection({
                 />
                 <div>
                   <h5 className="font-parkinsans font-semibold text-[14px] text-[#364153]">
-                    Bebas Ongkir
+                    {copy.bebasOngkir}
                   </h5>
                   <p className="font-parkinsans font-normal text-[14px] text-[#99A1AF] mt-0.5">
-                    Syarat & ketentuan berlaku
+                    {copy.syaratBerlaku}
                   </p>
                 </div>
               </div>
@@ -1065,7 +1272,7 @@ export default function ProductDetailSection({
                   Admin Evomi
                 </h3>
                 <p className="text-[12px] opacity-90 font-parkinsans">
-                  Biasanya membalas dalam 5 menit
+                  {copy.biasanyaMembalas}
                 </p>
               </div>
             </div>
@@ -1102,7 +1309,7 @@ export default function ProductDetailSection({
               <textarea
                 value={customMessage}
                 onChange={(e) => setCustomMessage(e.target.value)}
-                placeholder="Ketik pesan Anda ke admin di sini..."
+                placeholder={copy.ketikPesan}
                 className="w-full p-3 rounded-[16px] border border-[#E5E7EB] text-[14px] font-parkinsans outline-none focus:border-[#101828] resize-none"
                 rows={3}
               />
@@ -1112,16 +1319,16 @@ export default function ProductDetailSection({
                 className="w-full py-3 rounded-[12px] font-parkinsans font-bold text-white transition-opacity disabled:opacity-50"
                 style={{ backgroundColor: visual.navbarColor }}
               >
-                {isSendingChat ? "Mengirim..." : "Kirim Pesan"}
+                {isSendingChat ? copy.mengirim : copy.kirimPesan}
               </button>
             </div>
 
             {/* Template Cepat */}
             <div className="flex flex-col gap-2 mt-2">
               <p className="text-[12px] text-gray-500 font-parkinsans text-center mb-1">
-                - Atau pilih pesan cepat -
+                {copy.atauPesanCepat}
               </p>
-              {chatTemplates.map((template, index) => (
+              {copy.chatTemplates.map((template, index) => (
                 <button
                   key={index}
                   onClick={() => handleSendChat(template)}
@@ -1148,7 +1355,7 @@ export default function ProductDetailSection({
             {/* Header Modal */}
             <div className="flex justify-between items-center p-5 border-b border-gray-100">
               <h3 className="font-nohemi text-[18px] font-bold text-[#1E2939]">
-                Pilih Pengiriman
+                {copy.pilihPengiriman}
               </h3>
               <button
                 onClick={() => setShowKurirList(false)}
@@ -1188,7 +1395,7 @@ export default function ProductDetailSection({
                         </span>
                       </span>
                       <span className="font-parkinsans text-[13px] text-[#6A7282]">
-                        Estimasi tiba {getEstimasiTiba(kurir.jenis)}
+                        {copy.estimasiTiba} {getEstimasiTiba(kurir.jenis)}
                       </span>
                     </div>
                     <span
@@ -1201,7 +1408,7 @@ export default function ProductDetailSection({
                 ))
               ) : (
                 <div className="p-4 text-center text-[14px] text-gray-500 font-parkinsans">
-                  Memuat data kurir...
+                  {copy.loadingKurir}
                 </div>
               )}
             </div>
@@ -1216,7 +1423,7 @@ export default function ProductDetailSection({
             {/* Header Modal */}
             <div className="flex justify-between items-center p-5 border-b border-gray-100">
               <h3 className="font-nohemi text-[18px] font-bold text-[#1E2939]">
-                Bagikan Produk
+                {copy.bagikanProduk}
               </h3>
               <button
                 onClick={() => setShowShareModal(false)}
@@ -1305,7 +1512,7 @@ export default function ProductDetailSection({
                   style={{ color: isCopied ? visual.navbarColor : undefined }}
                 >
                   {isCopied ? <CheckCircle size={14} /> : <Copy size={14} />}
-                  {isCopied ? "Disalin" : "Salin"}
+                  {isCopied ? copy.disalin : copy.salin}
                 </button>
               </div>
             </div>
@@ -1335,7 +1542,7 @@ export default function ProductDetailSection({
 
             {/* Judul & Pesan */}
             <h3 className="font-nohemi text-[18px] font-bold text-[#1E2939] mb-2">
-              {alertInfo.type === "success" ? "Berhasil!" : "Perlu Login"}
+              {alertInfo.type === "success" ? copy.berhasil : copy.perluLogin}
             </h3>
             <p className="font-parkinsans text-[14px] text-[#6A7282] mb-6">
               {alertInfo.message}
@@ -1351,7 +1558,7 @@ export default function ProductDetailSection({
                     }
                     className="flex-1 py-3 rounded-[12px] font-parkinsans font-semibold text-[14px] bg-gray-100 hover:bg-gray-200 transition-colors"
                   >
-                    Tutup
+                    {copy.tutup}
                   </button>
                   <button
                     onClick={() => {
@@ -1361,7 +1568,7 @@ export default function ProductDetailSection({
                     className="flex-1 py-3 rounded-[12px] font-parkinsans font-semibold text-[14px] text-white transition-opacity hover:opacity-90"
                     style={{ backgroundColor: visual.navbarColor }}
                   >
-                    Login Sekarang
+                    {copy.loginSekarang}
                   </button>
                 </>
               ) : (
@@ -1372,7 +1579,7 @@ export default function ProductDetailSection({
                   className="w-full py-3 rounded-[12px] font-parkinsans font-semibold text-[14px] text-white transition-opacity hover:opacity-90"
                   style={{ backgroundColor: visual.navbarColor }}
                 >
-                  Tutup
+                  {copy.tutup}
                 </button>
               )}
             </div>
