@@ -10,12 +10,12 @@ import {
   formatProductPrice,
   Product,
 } from "@/lib/api";
-import { Loader2 } from "lucide-react";
 import { useLocale } from "@/context/LocaleContext";
+import { useCms } from "@/context/CmsContext";
 import { useTrackLocaleLoad } from "@/hooks/useTrackLocaleLoad";
 
 // ---------------------------------------------------------------------------
-// Data visual statis — hanya warna & badge, dipetakan dari personality_type
+// Data visual statis — hanya warna, dipetakan dari personality_type
 // ---------------------------------------------------------------------------
 const VISUAL_BY_PERSONALITY: Record<
   string,
@@ -25,8 +25,7 @@ const VISUAL_BY_PERSONALITY: Record<
     textColor: string;
     descColor: string;
     btnBg: string;
-    badge: string;
-    badgeEn: string;
+    badgeKey: "purpose" | "peaceful" | "rebel" | "sweet";
   }
 > = {
   purpose_prestige: {
@@ -35,8 +34,7 @@ const VISUAL_BY_PERSONALITY: Record<
     textColor: "text-[#1172BA]",
     descColor: "text-[#1172BAB2]",
     btnBg: "bg-[#1172BA]",
-    badge: "Optimis",
-    badgeEn: "Optimistic",
+    badgeKey: "purpose",
   },
   peaceful_calm: {
     imgBg: "bg-[#5EA14A]",
@@ -44,8 +42,7 @@ const VISUAL_BY_PERSONALITY: Record<
     textColor: "text-[#5EA14A]",
     descColor: "text-[#5EA14A]",
     btnBg: "bg-[#5EA14A]",
-    badge: "Damai",
-    badgeEn: "Peaceful",
+    badgeKey: "peaceful",
   },
   rebel_brave: {
     imgBg: "bg-[#E33D35]",
@@ -53,8 +50,7 @@ const VISUAL_BY_PERSONALITY: Record<
     textColor: "text-[#E33D35]",
     descColor: "text-[#E33D35]",
     btnBg: "bg-[#E33D35]",
-    badge: "Berani",
-    badgeEn: "Brave",
+    badgeKey: "rebel",
   },
   sweet_shy: {
     imgBg: "bg-[#DD74A5]",
@@ -62,15 +58,19 @@ const VISUAL_BY_PERSONALITY: Record<
     textColor: "text-[#DD74A5]",
     descColor: "text-[#DD74A5]",
     btnBg: "bg-[#DD74A5]",
-    badge: "Manis",
-    badgeEn: "Sweet",
+    badgeKey: "sweet",
   },
 };
 
-// Fallback jika personality_type tidak dikenali
 const VISUAL_FALLBACK = VISUAL_BY_PERSONALITY["purpose_prestige"];
 
-// Skeleton card saat loading
+const BADGE_FALLBACK: Record<string, string> = {
+  purpose: "Optimis",
+  peaceful: "Damai",
+  rebel: "Berani",
+  sweet: "Manis",
+};
+
 function ProductSkeleton() {
   return (
     <div className="rounded-[16px] md:rounded-[24px] overflow-hidden border border-gray-100 flex flex-col animate-pulse">
@@ -89,6 +89,7 @@ export default function SecondSectionBelanja() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { locale } = useLocale();
+  const { tBelanja } = useCms();
   useTrackLocaleLoad(isLoading);
 
   useEffect(() => {
@@ -116,9 +117,16 @@ export default function SecondSectionBelanja() {
     },
   };
 
+  const noImage = tBelanja("list", "no_image", "Tidak ada gambar");
+  const emptyTitle = tBelanja("list", "empty_title", "Belum ada produk");
+  const emptyHint = tBelanja(
+    "list",
+    "empty_hint",
+    "Produk akan muncul di sini setelah tersedia.",
+  );
+
   return (
     <section className="bg-white flex flex-col items-center text-center w-full pt-10 md:pt-10 pb-10 md:pb-10 px-2 md:px-4 relative overflow-hidden">
-      {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
       <div className="absolute top-0 left-0 w-full overflow-hidden h-[12px] md:h-[23px] pointer-events-none z-10">
         <style>{`
     @keyframes slideRightSeamless {
@@ -130,28 +138,30 @@ export default function SecondSectionBelanja() {
     }
   `}</style>
 
-        {/* Mengubah gap-[10px] menjadi gap-[6px] di mobile, dan md:gap-[10px] di desktop */}
         <div className="flex w-max gap-[6px] md:gap-[10px] animate-slide-right-40s">
           {Array.from({ length: 80 }).map((_, i) => (
             <div
               key={i}
-              // {/*
-              //   Perubahan Ukuran:
-              //   - Mobile: lebar/tinggi 24px dengan margin-top minus 12px (setengah dari 24px)
-              //   - Desktop (md): kembali ke ukuran semula (46px dengan -mt 23px)
-              // */}
               className="w-[24px] h-[24px] md:w-[46px] md:h-[46px] bg-[#1172BA] rounded-full flex-shrink-0 -mt-[12px] md:-mt-[23px]"
             />
           ))}
         </div>
       </div>
 
-      {/* ================= GRID CARD PRODUK ================= */}
       {isLoading ? (
         <div className="relative z-10 w-full max-w-5xl grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 md:gap-6 px-3 sm:px-4 py-5 mt-1">
           {[1, 2, 3, 4].map((i) => (
             <ProductSkeleton key={i} />
           ))}
+        </div>
+      ) : products.length === 0 ? (
+        <div className="relative z-10 w-full max-w-lg px-4 py-16 text-center">
+          <p className="font-nohemi text-lg font-semibold text-gray-800">
+            {emptyTitle}
+          </p>
+          <p className="mt-2 text-sm text-gray-500 font-parkinsans">
+            {emptyHint}
+          </p>
         </div>
       ) : (
         <motion.div
@@ -166,6 +176,11 @@ export default function SecondSectionBelanja() {
               VISUAL_BY_PERSONALITY[product.personality_type ?? ""] ??
               VISUAL_FALLBACK;
             const imageUrl = getProductImageUrl(product.image_produk_belanja);
+            const badge = tBelanja(
+              "badges",
+              visual.badgeKey,
+              BADGE_FALLBACK[visual.badgeKey],
+            );
 
             return (
               <motion.div
@@ -175,14 +190,13 @@ export default function SecondSectionBelanja() {
                 onClick={() => router.push(`/belanja/${product.id}`)}
                 className="font-nohemi relative rounded-[16px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-gray-100 cursor-pointer"
               >
-                {/* Bagian Atas: Gambar & Badge */}
                 <div
                   className={`relative w-full md:h-[240px] aspect-square overflow-hidden ${visual.imgBg}`}
                 >
                   <span
                     className={`absolute top-2 left-2 md:top-5 md:left-5 bg-white px-2 py-1 md:px-2 md:py-1 rounded-full text-[10px] md:text-[10px] font-bold z-20 ${visual.textColor}`}
                   >
-                    {locale === "en" ? visual.badgeEn : visual.badge}
+                    {badge}
                   </span>
 
                   {imageUrl ? (
@@ -196,12 +210,11 @@ export default function SecondSectionBelanja() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white/40 text-sm">
-                      No image
+                      {noImage}
                     </div>
                   )}
                 </div>
 
-                {/* Bagian Bawah: Teks & Info */}
                 <div
                   className={`p-2.5 sm:p-3 md:p-4 flex flex-col flex-grow text-left ${visual.cardBg}`}
                 >
@@ -226,7 +239,7 @@ export default function SecondSectionBelanja() {
 
                     <button
                       className={`w-7 h-7 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 ${visual.btnBg}`}
-                      aria-label={`Lihat detail ${product.title}`}
+                      aria-label={`${tBelanja("list", "see_detail", "Lihat Detail")} ${product.title}`}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"

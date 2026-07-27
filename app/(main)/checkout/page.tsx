@@ -28,6 +28,7 @@ import {
 import { useLocale } from "@/context/LocaleContext";
 import { L } from "@/lib/localeText";
 import { useCms } from "@/context/CmsContext";
+import { resolveCmsImage } from "@/lib/cms";
 import { useTrackLocaleLoad } from "@/hooks/useTrackLocaleLoad";
 import { useProductThemeTransition } from "@/hooks/useProductThemeTransition";
 import StatusModal from "@/components/StatusModal";
@@ -39,6 +40,7 @@ interface CheckoutItemType {
   title: string;
   price: number;
   quantity: number;
+  stock: number;
   image: string;
   personality_type: string;
 }
@@ -86,7 +88,7 @@ const XENDIT_AUTH =
 function CheckoutContent() {
   const BASE_URL = SITE_STRINGS.base_url.url_backend;
   const { locale } = useLocale();
-  const { tUi } = useCms();
+  const { tCheckout, checkout: checkoutCms } = useCms();
 
   const router = useRouter();
   const [modal, setModal] = useState<{
@@ -202,7 +204,11 @@ function CheckoutContent() {
   const copy = useMemo(
     () => ({
       badge: L(locale, visual.badge.id, visual.badge.en),
-      emptyCart: L(locale, "Keranjang Anda kosong.", "Your cart is empty."),
+      emptyCart: tCheckout(
+        "messages",
+        "empty_cart",
+        L(locale, "Keranjang Anda kosong.", "Your cart is empty."),
+      ),
       productFallback: L(locale, "Produk", "Product"),
       invalidOrder: L(
         locale,
@@ -219,13 +225,25 @@ function CheckoutContent() {
         "Gagal memproses pembuatan pesanan",
         "Failed to process order creation",
       ),
-      successTitle: L(locale, "Berhasil!", "Success!"),
-      successMessage: L(
-        locale,
-        "Pesanan Anda berhasil dibuat dan sedang diproses. Notifikasi dikirim ke email Anda.",
-        "Your order has been created and is being processed. A notification was sent to your email.",
+      successTitle: tCheckout(
+        "messages",
+        "success_title",
+        L(locale, "Berhasil!", "Success!"),
       ),
-      failedTitle: L(locale, "Gagal", "Failed"),
+      successMessage: tCheckout(
+        "messages",
+        "success_message",
+        L(
+          locale,
+          "Pesanan Anda berhasil dibuat dan sedang diproses. Notifikasi dikirim ke email Anda.",
+          "Your order has been created and is being processed. A notification was sent to your email.",
+        ),
+      ),
+      failedTitle: tCheckout(
+        "messages",
+        "failed_title",
+        L(locale, "Gagal", "Failed"),
+      ),
       systemErrorMessage: L(
         locale,
         "Terjadi kesalahan sistem.",
@@ -241,20 +259,48 @@ function CheckoutContent() {
         "Gagal membuat QR Code",
         "Failed to create QR Code",
       ),
-      preparingOrder: L(
-        locale,
-        "Mempersiapkan pesanan...",
-        "Preparing your order...",
+      preparingOrder: tCheckout(
+        "header",
+        "preparing",
+        L(locale, "Mempersiapkan pesanan...", "Preparing your order..."),
       ),
       back: L(locale, "Kembali", "Back"),
-      shippingAddress: L(locale, "Alamat Pengiriman", "Shipping Address"),
-      changeAddress: L(locale, "Ganti", "Change"),
-      saveAddress: L(locale, "Simpan Alamat", "Save Address"),
+      shippingAddress: tCheckout(
+        "sections",
+        "shipping_address",
+        L(locale, "Alamat Pengiriman", "Shipping Address"),
+      ),
+      changeAddress: tCheckout(
+        "labels",
+        "change_address",
+        L(locale, "Ganti", "Change"),
+      ),
+      saveAddress: tCheckout(
+        "labels",
+        "save_address",
+        L(locale, "Simpan Alamat", "Save Address"),
+      ),
       cancelEdit: L(locale, "Batal", "Cancel"),
-      orderDetails: L(locale, "Detail Pesanan", "Order Details"),
-      storeName: L(locale, "Evomi Official", "Evomi Official"),
-      shippingMethod: L(locale, "Pengiriman", "Shipping"),
-      addNote: L(locale, "Kasih Catatan", "Add a note"),
+      orderDetails: tCheckout(
+        "sections",
+        "order_details",
+        L(locale, "Detail Pesanan", "Order Details"),
+      ),
+      storeName: tCheckout(
+        "labels",
+        "store_name",
+        L(locale, "Evomi Official", "Evomi Official"),
+      ),
+      shippingMethod: tCheckout(
+        "labels",
+        "shipping_method",
+        L(locale, "Pengiriman", "Shipping"),
+      ),
+      addNote: tCheckout(
+        "labels",
+        "add_note",
+        L(locale, "Kasih Catatan", "Add a note"),
+      ),
       notePlaceholder: L(
         locale,
         "Contoh: titip di satpam, warna, dll.",
@@ -272,7 +318,11 @@ function CheckoutContent() {
           `Product Total (${n} item${n === 1 ? "" : "s"})`,
         ),
       totalShipping: L(locale, "Total Ongkos Kirim", "Total Shipping"),
-      totalBill: L(locale, "Total Tagihan", "Total Bill"),
+      totalBill: tCheckout(
+        "labels",
+        "total_bill",
+        L(locale, "Total Tagihan", "Total Bill"),
+      ),
       termsHint: L(
         locale,
         "Dengan lanjut bayar, kamu menyetujui Syarat & Ketentuan Evomi.",
@@ -283,7 +333,11 @@ function CheckoutContent() {
         "Lengkapi alamat pengiriman terlebih dahulu",
         "Please complete your shipping address first",
       ),
-      homeLabel: L(locale, "Rumah", "Home"),
+      homeLabel: tCheckout(
+        "labels",
+        "home",
+        L(locale, "Rumah", "Home"),
+      ),
       qty: L(locale, "Jumlah", "Qty"),
       seeAll: L(locale, "Lihat Semua", "See all"),
       emptyAddressHint: L(
@@ -291,14 +345,14 @@ function CheckoutContent() {
         "Belum ada alamat. Isi data penerima di bawah.",
         "No address yet. Fill in recipient details below.",
       ),
-      pageTitle: tUi(
-        "checkout",
+      pageTitle: tCheckout(
+        "header",
         "page_title",
         L(locale, "Checkout", "Checkout"),
       ),
-      shippingInfo: tUi(
-        "checkout",
-        "shipping_info",
+      shippingInfo: tCheckout(
+        "sections",
+        "shipping_address",
         L(locale, "Informasi Pengiriman", "Shipping Information"),
       ),
       recipientName: L(locale, "Nama Penerima", "Recipient Name"),
@@ -325,9 +379,9 @@ function CheckoutContent() {
         "Sesi login tidak valid. Harap login kembali.",
         "Your session expired. Please log in again.",
       ),
-      paymentMethod: tUi(
-        "checkout",
-        "payment_method",
+      paymentMethod: tCheckout(
+        "sections",
+        "payment",
         L(locale, "Metode Pembayaran", "Payment Method"),
       ),
       qrisDesc: L(
@@ -341,17 +395,17 @@ function CheckoutContent() {
         "Bayar saat barang sampai",
         "Pay when the item arrives",
       ),
-      orderSummary: tUi(
-        "checkout",
-        "order_summary",
+      orderSummary: tCheckout(
+        "sections",
+        "summary",
         L(locale, "Ringkasan Pesanan", "Order Summary"),
       ),
       subtotal: L(locale, "Subtotal", "Subtotal"),
       shippingCost: L(locale, "Ongkir", "Shipping"),
       total: L(locale, "Total", "Total"),
       processing: L(locale, "Memproses...", "Processing..."),
-      payNow: tUi(
-        "checkout",
+      payNow: tCheckout(
+        "labels",
         "pay_now",
         L(locale, "Bayar Sekarang", "Pay Now"),
       ),
@@ -371,8 +425,10 @@ function CheckoutContent() {
         "Waiting for payment...",
       ),
     }),
-    [locale, visual, tUi],
+    [locale, visual, tCheckout],
   );
+
+  const checkoutBanner = resolveCmsImage(checkoutCms?.images?.banner);
 
   const brand = visual.navbarColor;
   const themeReady = !isLoading;
@@ -590,18 +646,23 @@ function CheckoutContent() {
             return;
           }
 
-          const formattedItems = cartData.map((item) => ({
-            id: item.id,
-            product_id: item.product_id,
-            title: item.product?.title || copy.productFallback,
-            price: parseFloat(item.product?.price || "0"),
-            quantity: item.quantity,
-            image:
-              getProductImageUrl(
-                item.product?.image_produk_belanja || item.product?.image_1,
-              ) || "/placeholder.jpg",
-            personality_type: item.product?.personality_type || "prestige",
-          }));
+          const formattedItems = cartData.map((item) => {
+            const stock = Math.max(0, Number(item.product?.quantity ?? 0));
+            const qty = Math.max(1, Number(item.quantity) || 1);
+            return {
+              id: item.id,
+              product_id: item.product_id,
+              title: item.product?.title || copy.productFallback,
+              price: parseFloat(item.product?.price || "0"),
+              quantity: stock > 0 ? Math.min(qty, stock) : qty,
+              stock,
+              image:
+                getProductImageUrl(
+                  item.product?.image_produk_belanja || item.product?.image_1,
+                ) || "/placeholder.jpg",
+              personality_type: item.product?.personality_type || "prestige",
+            };
+          });
           setItems(formattedItems);
           setProductDiscount(0);
         } else if (type === "buynow" && productId) {
@@ -628,13 +689,22 @@ function CheckoutContent() {
           }
 
           setProductDiscount(discount);
+          const available = Math.max(0, Number(productData.quantity ?? 0));
+          const safeQty =
+            available > 0 ? Math.min(qty, available) : Math.max(1, qty);
+          if (available <= 0) {
+            setError(
+              L(locale, "Stok produk habis.", "Product is out of stock."),
+            );
+          }
           setItems([
             {
               id: `buy-${productData.id}`,
               product_id: productData.id,
               title: productData.title,
               price: catalogPrice,
-              quantity: qty,
+              quantity: safeQty,
+              stock: available,
               image:
                 getProductImageUrl(
                   productData.image_produk_belanja || productData.image_1,
@@ -963,7 +1033,8 @@ function CheckoutContent() {
     setItems((prev) =>
       prev.map((item) => {
         if (item.id !== id) return item;
-        const next = Math.max(1, item.quantity + delta);
+        const max = Math.max(1, Number(item.stock) || 1);
+        const next = Math.min(max, Math.max(1, item.quantity + delta));
         return { ...item, quantity: next };
       }),
     );
@@ -1005,6 +1076,17 @@ function CheckoutContent() {
             {copy.pageTitle}
           </h1>
         </div>
+
+        {checkoutBanner ? (
+          <div className="relative w-full h-28 md:h-36 rounded-xl overflow-hidden mb-4 border border-gray-100">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={checkoutBanner}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 items-start">
           {/* ===== LEFT ===== */}
@@ -1229,7 +1311,8 @@ function CheckoutContent() {
                             type="button"
                             aria-label="-"
                             onClick={() => updateQty(item.id, -1)}
-                            className="w-7 h-7 rounded-md text-gray-600 hover:bg-white text-sm font-bold"
+                            disabled={item.quantity <= 1}
+                            className="w-7 h-7 rounded-md text-gray-600 hover:bg-white text-sm font-bold disabled:opacity-40"
                           >
                             −
                           </button>
@@ -1240,7 +1323,8 @@ function CheckoutContent() {
                             type="button"
                             aria-label="+"
                             onClick={() => updateQty(item.id, 1)}
-                            className="w-7 h-7 rounded-md text-gray-600 hover:bg-white text-sm font-bold"
+                            disabled={item.quantity >= Math.max(1, item.stock || 1)}
+                            className="w-7 h-7 rounded-md text-gray-600 hover:bg-white text-sm font-bold disabled:opacity-40"
                           >
                             +
                           </button>

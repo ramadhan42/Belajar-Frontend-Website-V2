@@ -310,18 +310,18 @@ export default function Navbar() {
     return pathname.startsWith(path);
   };
 
-  // Class menu: aktif = bg-white teks warna navbar, tidak aktif = teks putih + hover soft
-  // Desktop: lebar pill disamakan (grid 4 kolom) agar bg putih tidak pendek/panjang beda-beda
+  // Class menu: aktif = teks warna navbar (bg diganti indikator sliding), tidak aktif = teks putih
+  // Desktop: lebar pill disamakan (grid 4 kolom)
   const navItemClass = (path: string) =>
-    `nav-pill flex justify-center items-center w-full md:min-w-[7.25rem] md:px-5 text-[12px] md:text-[18px] py-2.5 font-normal rounded-full text-center whitespace-nowrap ${
+    `nav-pill relative z-[1] flex justify-center items-center w-full md:min-w-[7.25rem] md:px-5 text-[12px] md:text-[18px] py-2.5 font-normal rounded-full text-center whitespace-nowrap ${
       isActive(path)
-        ? "is-active bg-white text-[var(--nav-color)] shadow-sm"
-        : "text-white hover:bg-white/95 hover:text-[var(--nav-color)] hover:shadow-sm"
+        ? "is-active text-[var(--nav-color)]"
+        : "text-white"
     }`;
 
   // Detect apakah navbar dalam view
   const navRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(navRef, { margin: "0px 0px -20px 0px" });
+  const isInView = useInView(navRef, { margin: "0px 0px -20px 0px", once: false });
 
   // Warna navbar selalu dari context (default #1172BA)
   const finalBg = navbarColor;
@@ -337,39 +337,58 @@ export default function Navbar() {
     ? finalBg || "#1172BA"
     : "transparent";
 
+  const navEase = [0.22, 1, 0.36, 1] as const;
+
   // Stagger variants — re-trigger tiap isInView berubah
   const containerVariants = {
     hidden: {},
     visible: {
       transition: {
-        staggerChildren: 0.06,
-        delayChildren: 0.04,
+        staggerChildren: 0.07,
+        delayChildren: 0.06,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: -8 },
+    hidden: { opacity: 0, y: -10, filter: "blur(4px)" },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+      filter: "blur(0px)",
+      transition: { duration: 0.55, ease: navEase },
     },
   };
 
   const mobileMenuVariants = {
-    hidden: { opacity: 0, y: -8, scale: 0.98 },
+    hidden: { opacity: 0, y: -12, scale: 0.97, filter: "blur(6px)" },
     visible: {
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
+      filter: "blur(0px)",
+      transition: {
+        duration: 0.38,
+        ease: navEase,
+        when: "beforeChildren",
+        staggerChildren: 0.045,
+      },
     },
     exit: {
       opacity: 0,
-      y: -6,
+      y: -8,
       scale: 0.98,
-      transition: { duration: 0.2, ease: [0.4, 0, 1, 1] },
+      filter: "blur(4px)",
+      transition: { duration: 0.24, ease: [0.4, 0, 1, 1] },
+    },
+  };
+
+  const mobileItemVariants = {
+    hidden: { opacity: 0, x: -8 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.32, ease: navEase },
     },
   };
 
@@ -444,7 +463,7 @@ export default function Navbar() {
     setTimeout(() => {
       setNavModal((prev) => ({ ...prev, isOpen: false }));
       router.push(path);
-    }, 800);
+    }, 620);
   };
 
   const confirmLogout = () => {
@@ -496,9 +515,43 @@ export default function Navbar() {
   };
 
   const navLinkClass =
-    "nav-pill flex justify-center items-center w-full md:w-auto md:px-6 text-[12px] md:text-[18px] py-2.5 font-normal rounded-full text-center text-white hover:bg-white/95 hover:text-[var(--nav-color)] hover:shadow-sm";
+    "nav-pill relative z-[1] flex justify-center items-center w-full md:w-auto md:px-6 text-[12px] md:text-[18px] py-2.5 font-normal rounded-full text-center text-white";
 
   const userInitial = (userName || userEmail || "?").charAt(0).toUpperCase();
+
+  const desktopLinks = [
+    {
+      path: "/",
+      href: "/",
+      label: tNav("beranda", "Beranda"),
+      action: navAction.beranda,
+      match: "/",
+    },
+    {
+      path: "/#about",
+      href: "/#about",
+      label: tNav("tentang", "Tentang"),
+      action: navAction.tentang,
+      match: "/#about",
+    },
+    {
+      path: "/belanja",
+      href: "/belanja",
+      label: tNav("belanja", "Belanja"),
+      action: navAction.belanja,
+      match: "/belanja",
+    },
+    {
+      path: "/kuis",
+      href: "/kuis",
+      label: tNav("kuis", "Kuis"),
+      action: navAction.kuis,
+      match: "/kuis",
+    },
+  ] as const;
+
+  const activeDesktopPath =
+    desktopLinks.find((link) => isActive(link.match))?.match ?? null;
 
   return (
     <>
@@ -526,57 +579,86 @@ export default function Navbar() {
         >
           <style>{`
             .nav-pill {
+              isolation: isolate;
               transition:
-                background-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-                color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-                opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-              will-change: transform;
+                color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+              will-change: transform, color;
             }
-            .nav-pill:hover {
-              transform: translateY(-1px);
+            .nav-pill::before {
+              content: "";
+              position: absolute;
+              inset: 0;
+              border-radius: 9999px;
+              background: rgba(255, 255, 255, 0.96);
+              box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+              opacity: 0;
+              transform: scale(0.88);
+              transition:
+                opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+              z-index: -1;
+              pointer-events: none;
             }
-            .nav-pill:active {
-              transform: translateY(0) scale(0.98);
-              transition-duration: 0.15s;
+            .nav-pill:hover:not(.is-active) {
+              color: var(--nav-color);
+              transform: translateY(-1.5px);
             }
-            .nav-pill.is-active:hover {
+            .nav-pill:hover:not(.is-active)::before {
+              opacity: 1;
+              transform: scale(1);
+            }
+            .nav-pill:active:not(.is-active) {
+              transform: translateY(0) scale(0.97);
+              transition-duration: 0.16s;
+            }
+            .nav-pill.is-active {
               transform: none;
+            }
+            .nav-pill-indicator {
+              position: absolute;
+              inset: 0;
+              border-radius: 9999px;
+              background: #ffffff;
+              box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+              z-index: 0;
+              pointer-events: none;
             }
             .nav-avatar {
               transition:
-                transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                background-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                border-color 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+                transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                background-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 0.5s cubic-bezier(0.22, 1, 0.36, 1);
               will-change: transform;
             }
             .nav-avatar:hover {
-              transform: translateY(-2px) scale(1.06);
-              box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+              transform: translateY(-2px) scale(1.05);
+              box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
               background-color: #ffffff;
               color: var(--nav-color);
               border-color: rgba(255, 255, 255, 0.95);
             }
             .nav-avatar:active {
               transform: translateY(0) scale(0.97);
-              transition-duration: 0.15s;
+              transition-duration: 0.16s;
             }
             .nav-avatar-ring {
               position: absolute;
               inset: -3px;
               border-radius: 9999px;
-              border: 1.5px solid rgba(255, 255, 255, 0.35);
+              border: 1.5px solid rgba(255, 255, 255, 0.4);
               opacity: 0;
-              transform: scale(0.92);
+              transform: scale(0.88);
               transition:
-                opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+                opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
               pointer-events: none;
             }
-            .nav-avatar:hover .nav-avatar-ring {
+            .nav-avatar:hover .nav-avatar-ring,
+            .nav-avatar-wrap.is-open .nav-avatar-ring {
               opacity: 1;
               transform: scale(1);
             }
@@ -594,17 +676,17 @@ export default function Navbar() {
               background: #ffffff;
               color: #111827;
               box-shadow:
-                0 12px 28px rgba(0, 0, 0, 0.16),
+                0 16px 36px rgba(0, 0, 0, 0.14),
                 0 0 0 1px rgba(17, 24, 39, 0.06);
               opacity: 0;
               visibility: hidden;
               pointer-events: none;
-              transform: translateY(-8px) scale(0.96);
+              transform: translateY(-10px) scale(0.96);
               transform-origin: top right;
               transition:
-                opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-                visibility 0.28s;
+                opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0.38s;
               z-index: 80;
             }
             .nav-avatar-tooltip::before {
@@ -633,10 +715,13 @@ export default function Navbar() {
               padding: 8px 10px;
               border-radius: 12px;
               text-align: left;
-              transition: background-color 0.2s ease;
+              transition:
+                background-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
             }
             .nav-account-item:hover {
               background-color: #f3f4f6;
+              transform: translateX(2px);
             }
             .nav-unread-badge {
               position: absolute;
@@ -648,7 +733,7 @@ export default function Navbar() {
               position: absolute;
               bottom: calc(100% + 10px);
               left: 50%;
-              transform: translateX(-50%) translateY(4px) scale(0.96);
+              transform: translateX(-50%) translateY(6px) scale(0.94);
               white-space: nowrap;
               padding: 7px 10px;
               border-radius: 10px;
@@ -662,9 +747,9 @@ export default function Navbar() {
               visibility: hidden;
               pointer-events: none;
               transition:
-                opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-                visibility 0.25s;
+                opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0.32s;
               z-index: 80;
             }
             .nav-unread-tip::after {
@@ -682,14 +767,18 @@ export default function Navbar() {
               transform: translateX(-50%) translateY(0) scale(1);
             }
             .nav-mobile-link {
+              position: relative;
+              overflow: hidden;
               transition:
-                background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-                color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-                padding-left 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+                background-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                padding-left 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
             }
             .nav-mobile-link:hover {
-              transform: translateX(2px);
+              transform: translateX(3px);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             }
             .nav-logout {
               position: relative;
@@ -699,11 +788,11 @@ export default function Navbar() {
               border: 1.5px solid rgba(255, 255, 255, 0.28);
               box-shadow: none;
               transition:
-                background-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                border-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+                background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
               will-change: transform;
             }
             .nav-logout span,
@@ -711,15 +800,15 @@ export default function Navbar() {
               color: inherit !important;
               stroke: currentColor;
               transition:
-                color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                stroke 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+                color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                stroke 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
             }
             .nav-logout:hover {
               background-color: #ffffff !important;
               color: var(--nav-color, #1172BA) !important;
               border-color: #ffffff;
-              box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+              box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
               transform: translateY(-2px);
             }
             .nav-logout:hover span,
@@ -729,7 +818,7 @@ export default function Navbar() {
             }
             .nav-logout:active {
               transform: translateY(0) scale(0.97);
-              transition-duration: 0.15s;
+              transition-duration: 0.16s;
             }
             .nav-logout:disabled {
               opacity: 0.6;
@@ -738,7 +827,29 @@ export default function Navbar() {
               box-shadow: none;
             }
             .nav-logout:hover .nav-logout-icon {
-              transform: translateX(2px);
+              transform: translateX(3px);
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .nav-pill,
+              .nav-pill::before,
+              .nav-avatar,
+              .nav-avatar-ring,
+              .nav-avatar-tooltip,
+              .nav-account-item,
+              .nav-mobile-link,
+              .nav-logout,
+              .nav-logout span,
+              .nav-logout .nav-logout-icon,
+              .nav-unread-tip {
+                transition-duration: 0.01ms !important;
+              }
+              .nav-pill:hover:not(.is-active),
+              .nav-avatar:hover,
+              .nav-logout:hover,
+              .nav-mobile-link:hover,
+              .nav-account-item:hover {
+                transform: none;
+              }
             }
           `}</style>
 
@@ -747,9 +858,9 @@ export default function Navbar() {
             <motion.div
               variants={itemVariants}
               className="md:ml-2 flex-shrink-0"
-              whileHover={{ scale: 1.03 }}
+              whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.4, ease: navEase }}
             >
               <Link
                 href="/"
@@ -767,7 +878,7 @@ export default function Navbar() {
                   alt="Logo Evomi"
                   width={110}
                   height={30}
-                  className="object-contain brightness-0 invert w-auto h-5 md:h-10 -translate-y-1"
+                  className="object-contain brightness-0 invert w-auto h-5 md:h-10 -translate-y-1 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
                   priority
                 />
               </Link>
@@ -775,70 +886,43 @@ export default function Navbar() {
 
             {/* DESKTOP: MENU TENGAH — lebar pill disamakan (4 kolom) */}
             <div className="hidden md:grid grid-cols-4 gap-1 items-center">
-              <motion.div variants={itemVariants} className="w-full">
-                <Link
-                  href="/"
-                  onClick={(e) =>
-                    handleNavAction(
-                      e,
-                      "/",
-                      navAction.beranda.title,
-                      navAction.beranda.message,
-                    )
-                  }
-                  className={navItemClass("/")}
-                >
-                  {tNav("beranda", "Beranda")}
-                </Link>
-              </motion.div>
-              <motion.div variants={itemVariants} className="w-full">
-                <Link
-                  href="/#about"
-                  onClick={(e) =>
-                    handleNavAction(
-                      e,
-                      "/#about",
-                      navAction.tentang.title,
-                      navAction.tentang.message,
-                    )
-                  }
-                  className={navItemClass("/#about")}
-                >
-                  {tNav("tentang", "Tentang")}
-                </Link>
-              </motion.div>
-              <motion.div variants={itemVariants} className="w-full">
-                <Link
-                  href="/belanja"
-                  onClick={(e) =>
-                    handleNavAction(
-                      e,
-                      "/belanja",
-                      navAction.belanja.title,
-                      navAction.belanja.message,
-                    )
-                  }
-                  className={navItemClass("/belanja")}
-                >
-                  {tNav("belanja", "Belanja")}
-                </Link>
-              </motion.div>
-              <motion.div variants={itemVariants} className="w-full">
-                <Link
-                  href="/kuis"
-                  onClick={(e) =>
-                    handleNavAction(
-                      e,
-                      "/kuis",
-                      navAction.kuis.title,
-                      navAction.kuis.message,
-                    )
-                  }
-                  className={navItemClass("/kuis")}
-                >
-                  {tNav("kuis", "Kuis")}
-                </Link>
-              </motion.div>
+              {desktopLinks.map((link) => {
+                const active = isActive(link.match);
+                return (
+                  <motion.div
+                    key={link.match}
+                    variants={itemVariants}
+                    className="relative w-full"
+                  >
+                    {active && activeDesktopPath === link.match ? (
+                      <motion.span
+                        layoutId="nav-active-pill"
+                        className="nav-pill-indicator"
+                        transition={{
+                          type: "spring",
+                          stiffness: 380,
+                          damping: 34,
+                          mass: 0.75,
+                        }}
+                      />
+                    ) : null}
+                    <Link
+                      href={link.href}
+                      onClick={(e) =>
+                        handleNavAction(
+                          e,
+                          link.path,
+                          link.action.title,
+                          link.action.message,
+                        )
+                      }
+                      className={navItemClass(link.match)}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </div>
 
             {/* DESKTOP: MENU KANAN */}
@@ -1175,12 +1259,12 @@ export default function Navbar() {
                   setIsAccountMenuOpen(false);
                   setIsOpen(!isOpen);
                 }}
-                className="text-white focus:outline-none p-1.5 rounded-full transition-transform duration-300 ease-out hover:bg-white/10 active:scale-95"
+                className="text-white focus:outline-none p-1.5 rounded-full transition-[transform,background-color] duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/15 active:scale-95"
                 aria-label={isOpen ? menuLabel.close : menuLabel.open}
               >
                 <motion.div
                   animate={{ rotate: isOpen ? 90 : 0 }}
-                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 0.4, ease: navEase }}
                 >
                   {isOpen ? (
                     <svg
@@ -1233,63 +1317,53 @@ export default function Navbar() {
                     "background-color var(--theme-bg-duration, 0ms) cubic-bezier(0.22, 1, 0.36, 1), border-color var(--theme-bg-duration, 0ms) cubic-bezier(0.22, 1, 0.36, 1)",
                 }}
               >
-                <Link
-                  href="/"
-                  onClick={(e) =>
-                    handleNavAction(
-                      e,
-                      "/",
-                      navAction.beranda.title,
-                      navAction.beranda.message,
-                    )
-                  }
-                  className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
-                >
-                  {tNav("beranda", "Beranda")}
-                </Link>
-                <Link
-                  href="/#about"
-                  onClick={(e) =>
-                    handleNavAction(
-                      e,
-                      "/#about",
-                      navAction.tentang.title,
-                      navAction.tentang.message,
-                    )
-                  }
-                  className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
-                >
-                  {tNav("tentang", "Tentang")}
-                </Link>
-                <Link
-                  href="/belanja"
-                  onClick={(e) =>
-                    handleNavAction(
-                      e,
-                      "/belanja",
-                      navAction.belanja.title,
-                      navAction.belanja.message,
-                    )
-                  }
-                  className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
-                >
-                  {tNav("belanja", "Belanja")}
-                </Link>
-                <Link
-                  href="/kuis"
-                  onClick={(e) =>
-                    handleNavAction(
-                      e,
-                      "/kuis",
-                      navAction.kuis.title,
-                      navAction.kuis.message,
-                    )
-                  }
-                  className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
-                >
-                  {tNav("kuis", "Kuis")}
-                </Link>
-                <div
+                {(
+                  [
+                    {
+                      href: "/",
+                      path: "/",
+                      label: tNav("beranda", "Beranda"),
+                      action: navAction.beranda,
+                    },
+                    {
+                      href: "/#about",
+                      path: "/#about",
+                      label: tNav("tentang", "Tentang"),
+                      action: navAction.tentang,
+                    },
+                    {
+                      href: "/belanja",
+                      path: "/belanja",
+                      label: tNav("belanja", "Belanja"),
+                      action: navAction.belanja,
+                    },
+                    {
+                      href: "/kuis",
+                      path: "/kuis",
+                      label: tNav("kuis", "Kuis"),
+                      action: navAction.kuis,
+                    },
+                  ] as const
+                ).map((link) => (
+                  <motion.div key={link.path} variants={mobileItemVariants}>
+                    <Link
+                      href={link.href}
+                      onClick={(e) =>
+                        handleNavAction(
+                          e,
+                          link.path,
+                          link.action.title,
+                          link.action.message,
+                        )
+                      }
+                      className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                ))}
+                <motion.div
+                  variants={mobileItemVariants}
                   className="my-1.5"
                   style={{
                     borderTopColor: `${finalBg}99`,
@@ -1297,7 +1371,10 @@ export default function Navbar() {
                   }}
                 />
                 {userEmail ? (
-                  <div className="flex flex-col items-stretch gap-2 w-full pt-1">
+                  <motion.div
+                    variants={mobileItemVariants}
+                    className="flex flex-col items-stretch gap-2 w-full pt-1"
+                  >
                     <div className="flex items-center gap-3 w-full rounded-2xl px-2 py-2">
                       <span className="relative flex items-center justify-center w-[40px] h-[40px] shrink-0 rounded-full bg-white text-[var(--nav-color)] font-bold text-[14px] border-2 border-white/90 shadow-sm overflow-hidden">
                         {userAvatar ? (
@@ -1464,37 +1541,41 @@ export default function Navbar() {
                         />
                       </svg>
                     </button>
-                  </div>
+                  </motion.div>
                 ) : (
                   <>
-                    <Link
-                      href="/login"
-                      onClick={(e) =>
-                        handleNavAction(
-                          e,
-                          "/login",
-                          navAction.login.title,
-                          navAction.login.message,
-                        )
-                      }
-                      className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
-                    >
-                      {tNav("login", "Login")}
-                    </Link>
-                    <Link
-                      href="/register"
-                      onClick={(e) =>
-                        handleNavAction(
-                          e,
-                          "/register",
-                          navAction.register.title,
-                          navAction.register.message,
-                        )
-                      }
-                      className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
-                    >
-                      {tNav("register", "Daftar")}
-                    </Link>
+                    <motion.div variants={mobileItemVariants}>
+                      <Link
+                        href="/login"
+                        onClick={(e) =>
+                          handleNavAction(
+                            e,
+                            "/login",
+                            navAction.login.title,
+                            navAction.login.message,
+                          )
+                        }
+                        className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
+                      >
+                        {tNav("login", "Login")}
+                      </Link>
+                    </motion.div>
+                    <motion.div variants={mobileItemVariants}>
+                      <Link
+                        href="/register"
+                        onClick={(e) =>
+                          handleNavAction(
+                            e,
+                            "/register",
+                            navAction.register.title,
+                            navAction.register.message,
+                          )
+                        }
+                        className="nav-mobile-link flex items-center w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
+                      >
+                        {tNav("register", "Daftar")}
+                      </Link>
+                    </motion.div>
                   </>
                 )}
               </motion.div>
@@ -1517,10 +1598,10 @@ export default function Navbar() {
             }}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.8, y: 20 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              initial={{ opacity: 0, scale: 0.92, y: 16, filter: "blur(6px)" }}
+              animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 0.94, y: 10, filter: "blur(4px)" }}
+              transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
               onClick={(e) => e.stopPropagation()}
               className="relative bg-white rounded-[20px] md:rounded-[24px] p-5 md:p-8 max-w-[280px] md:max-w-[340px] w-full text-center shadow-2xl overflow-hidden"
             >

@@ -463,10 +463,16 @@ export async function removeFromCart(cartItemId: number): Promise<void> {
 export async function getWishlistItems(
   locale: "id" | "en" = "id",
 ): Promise<WishlistItem[]> {
-  return request<WishlistItem[]>(`/api/wishlists?locale=${locale}`, {
-    method: "GET",
-    headers: buildHeaders(true),
-  });
+  const res = await request<WishlistItem[] | { data?: WishlistItem[] }>(
+    `/api/wishlists?locale=${locale}`,
+    {
+      method: "GET",
+      headers: buildHeaders(true),
+    },
+  );
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res?.data)) return res.data;
+  return [];
 }
 
 /** POST /api/wishlists */
@@ -681,7 +687,8 @@ export const cartApi = {
     });
 
     if (!response.ok) {
-      throw new Error("Gagal menambah ke keranjang");
+      const err = await response.json().catch(() => null);
+      throw new Error(err?.message || "Gagal menambah ke keranjang");
     }
     return response.json();
   },
@@ -698,7 +705,10 @@ export const cartApi = {
       body: JSON.stringify({ quantity }),
     });
 
-    if (!response.ok) throw new Error("Gagal memperbarui jumlah item");
+    if (!response.ok) {
+      const err = await response.json().catch(() => null);
+      throw new Error(err?.message || "Gagal memperbarui jumlah item");
+    }
     return response.json();
   },
 

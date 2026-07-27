@@ -36,10 +36,22 @@ import {
   withFontFieldOrder,
 } from "@/lib/cmsFonts";
 
-type TabKey = "beranda" | "faq" | "kontak" | "navfooter" | "ui" | "admin";
+type TabKey =
+  | "beranda"
+  | "faq"
+  | "kontak"
+  | "navfooter"
+  | "ui"
+  | "admin"
+  | "belanja"
+  | "belanja_details"
+  | "checkout";
 
 const TAB_DEFS: { key: TabKey; id: string; en: string }[] = [
   { key: "beranda", id: "Beranda", en: "Home" },
+  { key: "belanja", id: "Belanja", en: "Shop" },
+  { key: "belanja_details", id: "Belanja Details", en: "Shop Details" },
+  { key: "checkout", id: "Checkout", en: "Checkout" },
   { key: "faq", id: "FAQ", en: "FAQ" },
   { key: "kontak", id: "Kontak", en: "Contact" },
   { key: "navfooter", id: "Navbar / Footer", en: "Navbar / Footer" },
@@ -75,6 +87,16 @@ const SECTION_LABELS: Record<string, string> = {
   sidebar: "Sidebar",
   products: "Products",
   cms: "CMS",
+  list: "Daftar Produk",
+  badges: "Badge Karakter",
+  labels: "Label UI",
+  guarantee: "Jaminan Produk",
+  chat: "Chat",
+  content: "Konten",
+  disclaimer: "Disclaimer COMPLAIN",
+  images: "Gambar",
+  sections: "Section",
+  messages: "Pesan",
 };
 
 /** Urutan section di tab Beranda: Hero → 2 → 3 → 4 → 5 → 6 → 7 */
@@ -88,7 +110,31 @@ const BERANDA_SECTION_ORDER = [
   "seventh",
 ];
 
-const PAGE_ORDER = ["beranda", "kontak", "navbar", "footer", "ui", "admin"];
+const PAGE_ORDER = [
+  "beranda",
+  "belanja",
+  "belanja_details",
+  "checkout",
+  "kontak",
+  "navbar",
+  "footer",
+  "ui",
+  "admin",
+];
+
+const SHOP_SECTION_ORDER: Record<string, string[]> = {
+  belanja: ["hero", "list", "badges"],
+  belanja_details: [
+    "labels",
+    "disclaimer",
+    "guarantee",
+    "chat",
+    "content",
+    "images",
+    "badges",
+  ],
+  checkout: ["header", "sections", "labels", "messages", "images"],
+};
 
 /** Prefer Browser Tab settings first inside Nav & Footer */
 const NAVFOOTER_SECTION_ORDER = ["site", "menu", "bulletin", "help", "social", "legal"];
@@ -866,6 +912,9 @@ export default function CmsDashboardPage() {
     if (t === "kontak") return "kontak";
     if (t === "ui") return "ui";
     if (t === "admin") return "admin";
+    if (t === "belanja") return "belanja";
+    if (t === "belanja_details") return "belanja_details";
+    if (t === "checkout") return "checkout";
     if (t === "navfooter") return null;
     return null;
   };
@@ -920,6 +969,11 @@ export default function CmsDashboardPage() {
       }
       if (page === "navbar" || page === "footer") {
         const idx = NAVFOOTER_SECTION_ORDER.indexOf(section);
+        return idx === -1 ? 999 : idx;
+      }
+      const shopOrder = SHOP_SECTION_ORDER[page];
+      if (shopOrder) {
+        const idx = shopOrder.indexOf(section);
         return idx === -1 ? 999 : idx;
       }
       return 0;
@@ -1328,7 +1382,11 @@ export default function CmsDashboardPage() {
                 className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm"
               >
                 <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wide">
-                  {page !== "beranda" && page !== "kontak"
+                  {page !== "beranda" &&
+                  page !== "kontak" &&
+                  page !== "belanja" &&
+                  page !== "belanja_details" &&
+                  page !== "checkout"
                     ? `${page} · `
                     : ""}
                   {SECTION_LABELS[section] || section}

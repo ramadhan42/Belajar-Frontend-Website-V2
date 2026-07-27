@@ -14,7 +14,10 @@ export type CmsPageKey =
   | "navbar"
   | "footer"
   | "ui"
-  | "admin";
+  | "admin"
+  | "belanja"
+  | "belanja_details"
+  | "checkout";
 
 export type CmsGrouped = Record<string, Record<string, string | null>>;
 

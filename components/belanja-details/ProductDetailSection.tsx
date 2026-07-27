@@ -8,13 +8,17 @@ import {
   formatProductPrice,
   addToCart,
   addToWishlist,
+  removeFromWishlist,
+  getWishlistItems,
   getActivePromo,
   Product,
 } from "@/lib/api";
 
 import { useParams, useRouter } from "next/navigation";
 import { useLocale } from "@/context/LocaleContext";
+import { useCms } from "@/context/CmsContext";
 import { L } from "@/lib/localeText";
+import { resolveCmsImage } from "@/lib/cms";
 import { useTrackLocaleLoad } from "@/hooks/useTrackLocaleLoad";
 import { useProductThemeTransition } from "@/hooks/useProductThemeTransition";
 import { BELANJA_EASE } from "@/lib/belanjaEnter";
@@ -34,6 +38,8 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { SITE_STRINGS } from "../constans/strings";
+import ProductChatPanel from "./ProductChatPanel";
+import { useBadgeCounts } from "@/context/BadgeCountsContext";
 
 // Tambahkan di area interface
 interface ContactReply {
@@ -122,35 +128,52 @@ const VISUAL_BY_PERSONALITY: Record<
   string,
   {
     navbarColor: string;
-    badge: { id: string; en: string };
-    characterPath: string;
+    badgeKey: "purpose" | "peaceful" | "rebel" | "sweet";
+    characterKey:
+      | "character_purpose"
+      | "character_peaceful"
+      | "character_rebel"
+      | "character_sweet";
+    characterFallback: string;
   }
 > = {
   purpose_prestige: {
     navbarColor: "#1172BA",
-    badge: { id: "Optimis", en: "Optimistic" },
-    characterPath: "/src/images/belanja/detail/purpose-character.svg",
+    badgeKey: "purpose",
+    characterKey: "character_purpose",
+    characterFallback: "/src/images/belanja/detail/purpose-character.svg",
   },
   prestige: {
     navbarColor: "#1172BA",
-    badge: { id: "Optimis", en: "Optimistic" },
-    characterPath: "/src/images/belanja/detail/purpose-character.svg",
+    badgeKey: "purpose",
+    characterKey: "character_purpose",
+    characterFallback: "/src/images/belanja/detail/purpose-character.svg",
   },
   peaceful_calm: {
     navbarColor: "#5EA14A",
-    badge: { id: "Damai", en: "Peaceful" },
-    characterPath: "/src/images/belanja/detail/peaceful-character.svg",
+    badgeKey: "peaceful",
+    characterKey: "character_peaceful",
+    characterFallback: "/src/images/belanja/detail/peaceful-character.svg",
   },
   rebel_brave: {
     navbarColor: "#E33D35",
-    badge: { id: "Berani", en: "Bold" },
-    characterPath: "/src/images/belanja/detail/rebel-character.svg",
+    badgeKey: "rebel",
+    characterKey: "character_rebel",
+    characterFallback: "/src/images/belanja/detail/rebel-character.svg",
   },
   sweet_shy: {
     navbarColor: "#DD74A5",
-    badge: { id: "Manis", en: "Sweet" },
-    characterPath: "/src/images/belanja/detail/sweet-character.svg",
+    badgeKey: "sweet",
+    characterKey: "character_sweet",
+    characterFallback: "/src/images/belanja/detail/sweet-character.svg",
   },
+};
+
+const BADGE_FALLBACK: Record<string, { id: string; en: string }> = {
+  purpose: { id: "Optimis", en: "Optimistic" },
+  peaceful: { id: "Damai", en: "Peaceful" },
+  rebel: { id: "Berani", en: "Bold" },
+  sweet: { id: "Manis", en: "Sweet" },
 };
 
 const VISUAL_FALLBACK = VISUAL_BY_PERSONALITY["purpose_prestige"];
@@ -175,13 +198,22 @@ export default function ProductDetailSection({
   const params = useParams();
   const id = forcedId || (params?.id as string) || "1";
   const { locale } = useLocale();
+  const { tBelanjaDetails, belanjaDetails } = useCms();
+  const { unread: unreadChatCount, refresh: refreshBadgeCounts } =
+    useBadgeCounts();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   useTrackLocaleLoad(isLoading);
 
-  const visual =
+  const visualBase =
     VISUAL_BY_PERSONALITY[product?.personality_type ?? ""] ?? VISUAL_FALLBACK;
+  const characterPath =
+    resolveCmsImage(
+      belanjaDetails?.images?.[visualBase.characterKey] ||
+        visualBase.characterFallback,
+    ) || visualBase.characterFallback;
+  const visual = { ...visualBase, characterPath };
 
   const themeReady = !isLoading;
   const { contentVisible } = useProductThemeTransition(
@@ -211,7 +243,8 @@ export default function ProductDetailSection({
 
   // Dummy Data State for Right Column Cart Box
   const [quantity, setQuantity] = useState(1);
-  const dummyStock = 968;
+  const stockLeft = Math.max(0, Number(product?.quantity ?? 0));
+  const isOutOfStock = !isLoading && stockLeft <= 0;
 
   const [hargaPromo, setHargaPromo] = useState<number>(0);
   const [promoEndDate, setPromoEndDate] = useState<string | null>(null);
@@ -225,23 +258,11 @@ export default function ProductDetailSection({
   >("idle");
   const [cartMessage, setCartMessage] = useState("");
   const [wishlistMessage, setWishlistMessage] = useState("");
+  const [wishlistItemId, setWishlistItemId] = useState<number | null>(null);
+  const isWishlisted = wishlistItemId != null;
 
   // Chat state
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [currentMessage, setCurrentMessage] = useState("");
-  const [chatMessages, setChatMessages] = useState<
-    { sender: "user" | "admin"; text: string }[]
-  >([
-    {
-      sender: "admin",
-      text: L(
-        locale,
-        "Halo! Ada yang bisa kami bantu terkait produk ini?",
-        "Hi! Is there anything we can help you with about this product?",
-      ),
-    },
-  ]);
-
   // State untuk menyimpan data API
   const [kurirs, setKurirs] = useState<any[]>([]);
   const [selectedKurir, setSelectedKurir] = useState<any>(null);
@@ -350,82 +371,8 @@ export default function ProductDetailSection({
   };
 
   // State untuk Modal Chat
-  const [showChatModal, setShowChatModal] = useState(false);
+  // Fungsi Kirim Chat digantikan ProductChatPanel (thread + recent + balasan admin)
 
-  // Fungsi Kirim Chat via API Contact
-  const handleSendChat = async (text: string) => {
-    if (!text || text.trim() === "") return;
-
-    // 1. CEK LOGIN
-    const userDataStr =
-      typeof window !== "undefined" ? localStorage.getItem("auth_user") : null;
-
-    if (!userDataStr) {
-      setAlertInfo({
-        show: true,
-        type: "error", // Menggunakan tipe error
-        message: copy.loginRequiredMsg,
-      });
-      return;
-    }
-
-    const user = JSON.parse(userDataStr);
-    const productName = product?.title || copy.productFallback;
-
-    // 2. Siapkan Data Form
-    const formData = new FormData();
-    formData.append("name", user.name || "User Evomi");
-    formData.append("email", user.email || "user@evomi.com");
-    formData.append("subject", `Chat Produk, ${productName}`);
-    formData.append("message", `${text}\n\nLink Produk: ${productUrl}`);
-
-    // 3. Kirim Data ke API Laravel
-    setIsSendingChat(true);
-    try {
-      const response = await fetch(`${BASE_URL}/api/contact`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (response.ok || data.success) {
-        // MODAL SUKSES
-        setAlertInfo({
-          show: true,
-          type: "success",
-          message: copy.chatSentSuccess,
-        });
-        setShowChatModal(false);
-        setCustomMessage("");
-      } else {
-        // MODAL ERROR (RESPON API)
-        setAlertInfo({
-          show: true,
-          type: "error",
-          message: data.message || copy.chatSendFailed,
-        });
-      }
-    } catch (error) {
-      console.error("Error sending chat:", error);
-      // MODAL ERROR (SISTEM)
-      setAlertInfo({
-        show: true,
-        type: "error",
-        message: copy.chatSystemError,
-      });
-    } finally {
-      setIsSendingChat(false);
-    }
-  };
-
-  const [customMessage, setCustomMessage] = useState("");
-  const [isSendingChat, setIsSendingChat] = useState(false);
-
-  // State untuk Custom Alert
   const [alertInfo, setAlertInfo] = useState<{
     show: boolean;
     message: string;
@@ -435,7 +382,7 @@ export default function ProductDetailSection({
     message: "",
     type: "error",
   });
-  
+ 
 
   useEffect(() => {
     fetch(`${BASE_URL}/api/kurirs`)
@@ -491,36 +438,126 @@ export default function ProductDetailSection({
       .finally(() => setIsLoading(false));
   }, [id, locale]);
 
+  useEffect(() => {
+    const productId = Number(id);
+    if (!Number.isFinite(productId) || productId <= 0) {
+      setWishlistItemId(null);
+      return;
+    }
+
+    const syncWishlistState = () => {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("auth_token")
+          : null;
+      if (!token) {
+        setWishlistItemId(null);
+        return;
+      }
+
+      getWishlistItems(locale)
+        .then((items) => {
+          const list = Array.isArray(items) ? items : [];
+          const match = list.find(
+            (item) =>
+              Number(item.product_id) === productId ||
+              Number(item.product?.id) === productId,
+          );
+          setWishlistItemId(match?.id ?? null);
+          if (match) setWishlistStatus("success");
+        })
+        .catch(() => {
+          setWishlistItemId(null);
+        });
+    };
+
+    syncWishlistState();
+    window.addEventListener("wishlist_updated", syncWishlistState);
+    return () => {
+      window.removeEventListener("wishlist_updated", syncWishlistState);
+    };
+  }, [id, locale]);
+
   const copy = useMemo(
-    () => ({
-      badge: L(locale, visual.badge.id, visual.badge.en),
+    () => {
+      const badgeFb = BADGE_FALLBACK[visual.badgeKey] ?? BADGE_FALLBACK.purpose;
+      return {
+      badge: tBelanjaDetails(
+        "badges",
+        visual.badgeKey,
+        L(locale, badgeFb.id, badgeFb.en),
+      ),
       productFallback: L(locale, "Produk", "Product"),
       productEvomiFallback: L(locale, "Produk Evomi", "Evomi Product"),
       gambar: L(locale, "gambar", "image"),
-      descriptionFallback: L(
-        locale,
-        "Menghadirkan aroma yang merefleksikan ketenangan, kepercayaan diri, dan kejelasan tujuan.",
-        "Presenting a scent that reflects calmness, confidence, and clarity of purpose.",
+      descriptionFallback: tBelanjaDetails(
+        "content",
+        "fallback_description",
+        L(
+          locale,
+          "Menghadirkan aroma yang merefleksikan ketenangan, kepercayaan diri, dan kejelasan tujuan.",
+          "Presenting a scent that reflects calmness, confidence, and clarity of purpose.",
+        ),
       ),
-      detailProduk: L(locale, "Detail Produk", "Product Details"),
-      harga: L(locale, "Harga", "Price"),
-      kondisi: L(locale, "Kondisi", "Condition"),
-      kondisiValue: L(locale, "Baru", "New"),
-      beratSatuan: L(locale, "Berat Satuan", "Unit Weight"),
-      kategori: L(locale, "Kategori", "Category"),
-      minBeli: L(locale, "Min. Beli", "Min. Order"),
-      minBeliValue: L(locale, "1 Buah", "1 Piece"),
-      etalase: L(locale, "Etalase", "Showcase"),
-      etalaseValue: L(locale, "Semua Etalase", "All Showcases"),
-      disclaimerTitle: L(
-        locale,
-        "Disclaimer untuk Ketentuan COMPLAIN",
-        "Disclaimer for Complaint Terms",
+      detailProduk: tBelanjaDetails(
+        "labels",
+        "detail_title",
+        L(locale, "Detail Produk", "Product Details"),
       ),
-      loadingPolicy: L(
-        locale,
-        "Memuat kebijakan toko...",
-        "Loading store policy...",
+      harga: tBelanjaDetails("labels", "price", L(locale, "Harga", "Price")),
+      kondisi: tBelanjaDetails(
+        "labels",
+        "condition",
+        L(locale, "Kondisi", "Condition"),
+      ),
+      kondisiValue: tBelanjaDetails(
+        "labels",
+        "condition_value",
+        L(locale, "Baru", "New"),
+      ),
+      beratSatuan: tBelanjaDetails(
+        "labels",
+        "weight",
+        L(locale, "Berat Satuan", "Unit Weight"),
+      ),
+      kategori: tBelanjaDetails(
+        "labels",
+        "category",
+        L(locale, "Kategori", "Category"),
+      ),
+      minBeli: tBelanjaDetails(
+        "labels",
+        "min_buy",
+        L(locale, "Min. Beli", "Min. Order"),
+      ),
+      minBeliValue: tBelanjaDetails(
+        "labels",
+        "min_buy_value",
+        L(locale, "1 Buah", "1 Piece"),
+      ),
+      etalase: tBelanjaDetails(
+        "labels",
+        "showcase",
+        L(locale, "Etalase", "Showcase"),
+      ),
+      etalaseValue: tBelanjaDetails(
+        "labels",
+        "showcase_value",
+        L(locale, "Semua Etalase", "All Showcases"),
+      ),
+      disclaimerTitle: tBelanjaDetails(
+        "disclaimer",
+        "title",
+        L(
+          locale,
+          "Disclaimer untuk Ketentuan COMPLAIN",
+          "Disclaimer for Complaint Terms",
+        ),
+      ),
+      loadingPolicy: tBelanjaDetails(
+        "disclaimer",
+        "empty_hint",
+        L(locale, "Memuat kebijakan toko...", "Loading store policy..."),
       ),
       pengiriman: L(locale, "Pengiriman", "Shipping"),
       dikirimDari: L(locale, "Dikirim dari", "Shipped from"),
@@ -531,50 +568,95 @@ export default function ProductDetailSection({
         "Bisa COD, estimasi tiba",
         "COD available, arrives",
       ),
-      lihatKurirLainnya: L(
-        locale,
-        "Lihat Kurir Lainnya",
-        "See Other Couriers",
+      lihatKurirLainnya: tBelanjaDetails(
+        "labels",
+        "other_couriers",
+        L(locale, "Lihat Kurir Lainnya", "See Other Couriers"),
       ),
-      diskusiTerbuka: L(locale, "Diskusi Terbuka", "Open Discussion"),
-      aturJumlah: L(
-        locale,
-        "Atur jumlah dan catatan",
-        "Set quantity and notes",
+      diskusiTerbuka: tBelanjaDetails(
+        "labels",
+        "discussion",
+        L(locale, "Diskusi Terbuka", "Open Discussion"),
       ),
-      stok: L(locale, "Stok:", "Stock:"),
-      subtotal: L(locale, "Subtotal", "Subtotal"),
-      ongkir: L(locale, "Ongkir", "Shipping"),
-      promo: L(locale, "Promo", "Promo"),
-      totalBayar: L(locale, "Total", "Total"),
-      beliLangsung: L(locale, "Beli Langsung", "Buy Now"),
+      aturJumlah: tBelanjaDetails(
+        "labels",
+        "qty_hint",
+        L(locale, "Atur jumlah dan catatan", "Set quantity and notes"),
+      ),
+      stok: tBelanjaDetails("labels", "stock", L(locale, "Stok:", "Stock:")),
+      subtotal: tBelanjaDetails(
+        "labels",
+        "subtotal",
+        L(locale, "Subtotal", "Subtotal"),
+      ),
+      ongkir: tBelanjaDetails(
+        "labels",
+        "shipping",
+        L(locale, "Ongkir", "Shipping"),
+      ),
+      promo: tBelanjaDetails("labels", "promo", L(locale, "Promo", "Promo")),
+      totalBayar: tBelanjaDetails(
+        "labels",
+        "total",
+        L(locale, "Total", "Total"),
+      ),
+      beliLangsung: tBelanjaDetails(
+        "labels",
+        "buy_now",
+        L(locale, "Beli Langsung", "Buy Now"),
+      ),
+      outOfStock: L(locale, "Stok habis", "Out of stock"),
       memproses: L(locale, "Memproses...", "Processing..."),
-      tambahKeranjang: L(locale, "+ Keranjang", "+ Cart"),
-      chat: L(locale, "Chat", "Chat"),
-      wishlist: L(locale, "Wishlist", "Wishlist"),
-      share: L(locale, "Share", "Share"),
+      tambahKeranjang: tBelanjaDetails(
+        "labels",
+        "add_cart",
+        L(locale, "+ Keranjang", "+ Cart"),
+      ),
+      chat: tBelanjaDetails("labels", "chat", L(locale, "Chat", "Chat")),
+      wishlist: tBelanjaDetails(
+        "labels",
+        "wishlist",
+        L(locale, "Wishlist", "Wishlist"),
+      ),
+      share: tBelanjaDetails("labels", "share", L(locale, "Share", "Share")),
       promoBerlaku: L(
         locale,
         "Promo aktif! Hemat",
         "Promo active! Save",
       ),
       promoHingga: L(locale, "berlaku hingga", "valid until"),
-      jaminanProduk: L(locale, "Jaminan Produk", "Product Guarantee"),
-      uangKembali: L(
-        locale,
-        "Uang kembali bila produk tidak sesuai",
-        "Money back if the product doesn't match",
+      jaminanProduk: tBelanjaDetails(
+        "guarantee",
+        "title",
+        L(locale, "Jaminan Produk", "Product Guarantee"),
       ),
-      bebasOngkir: L(locale, "Bebas Ongkir", "Free Shipping"),
-      syaratBerlaku: L(
-        locale,
-        "Syarat & ketentuan berlaku",
-        "Terms & conditions apply",
+      uangKembali: tBelanjaDetails(
+        "guarantee",
+        "money_back",
+        L(
+          locale,
+          "Uang kembali bila produk tidak sesuai",
+          "Money back if the product doesn't match",
+        ),
       ),
-      biasanyaMembalas: L(
-        locale,
-        "Biasanya membalas dalam 5 menit",
-        "Usually replies within 5 minutes",
+      bebasOngkir: tBelanjaDetails(
+        "guarantee",
+        "free_shipping",
+        L(locale, "Bebas Ongkir", "Free Shipping"),
+      ),
+      syaratBerlaku: tBelanjaDetails(
+        "guarantee",
+        "terms",
+        L(locale, "Syarat & ketentuan berlaku", "Terms & conditions apply"),
+      ),
+      biasanyaMembalas: tBelanjaDetails(
+        "chat",
+        "reply_hint",
+        L(
+          locale,
+          "Biasanya membalas dalam beberapa menit",
+          "Usually replies within a few minutes",
+        ),
       ),
       ketikPesan: L(
         locale,
@@ -639,6 +721,11 @@ export default function ProductDetailSection({
         "Ditambahkan ke wishlist!",
         "Added to wishlist!",
       ),
+      removedFromWishlist: L(
+        locale,
+        "Dihapus dari wishlist.",
+        "Removed from wishlist.",
+      ),
       adminAutoReply: L(
         locale,
         "Terima kasih atas pesannya! Saat ini admin sedang offline, namun kami akan segera membalas pertanyaan Anda.",
@@ -649,8 +736,14 @@ export default function ProductDetailSection({
         L(locale, "Bisa dikirim hari ini?", "Can it be shipped today?"),
         L(locale, "Terima kasih", "Thank you"),
       ],
-    }),
-    [locale, visual],
+      chatAdminName: tBelanjaDetails(
+        "chat",
+        "admin_name",
+        L(locale, "Chat Admin Evomi", "Chat Evomi Admin"),
+      ),
+    };
+    },
+    [locale, visual.badgeKey, tBelanjaDetails],
   );
 
   // Slider belanja details: hanya image_1 … image_3
@@ -661,11 +754,24 @@ export default function ProductDetailSection({
         .filter((url): url is string => url !== null)
     : [];
 
+  const disclaimerItems = useMemo(() => {
+    const keys = ["item_1", "item_2", "item_3", "item_4", "item_5", "item_6"];
+    return keys
+      .map((key) => tBelanjaDetails("disclaimer", key, "").trim())
+      .filter(Boolean);
+  }, [tBelanjaDetails, locale]);
+
   // Ganti dengan ini:
-  const [disclaimers, setDisclaimers] = useState<any[]>([]);
+  const [disclaimers, setDisclaimers] = useState<
+    { id: number; deskripsi: string }[]
+  >([]);
 
   useEffect(() => {
-    // Fetch Disclaimer
+    // Fallback API lama jika CMS belum diisi
+    if (disclaimerItems.length > 0) {
+      setDisclaimers([]);
+      return;
+    }
     fetch(`${BASE_URL}/api/disclaimers`)
       .then((res) => {
         if (!res.ok) throw new Error("Gagal mengambil disclaimer");
@@ -673,13 +779,13 @@ export default function ProductDetailSection({
       })
       .then((data) => {
         if (data.success && data.data) {
-          setDisclaimers(data.data); // Simpan semua data array ke state
+          setDisclaimers(data.data);
         }
       })
       .catch((err) => {
         console.error(err);
       });
-  }, []); // <-- KUNCI PENTING: Array kosong ini memastikan fetch hanya dijalankan 1x saat render pertama
+  }, [disclaimerItems.length]);
 
   useEffect(() => {
     if (currentImages.length > 1) {
@@ -690,13 +796,26 @@ export default function ProductDetailSection({
     }
   }, [currentImages.length]);
 
+  useEffect(() => {
+    if (stockLeft <= 0) {
+      setQuantity(1);
+      return;
+    }
+    setQuantity((prev) => Math.min(Math.max(1, prev), stockLeft));
+  }, [stockLeft, product?.id]);
+
   // Handlers
   const handleQuantityChange = (type: "inc" | "dec") => {
     if (type === "dec" && quantity > 1) setQuantity(quantity - 1);
-    if (type === "inc" && quantity < dummyStock) setQuantity(quantity + 1);
+    if (type === "inc" && quantity < stockLeft) setQuantity(quantity + 1);
   };
 
   const handleAddToCart = async () => {
+    if (isOutOfStock) {
+      setCartMessage(copy.outOfStock);
+      setCartStatus("error");
+      return;
+    }
     const token =
       typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
     if (!token) {
@@ -728,38 +847,49 @@ export default function ProductDetailSection({
     setWishlistStatus("loading");
     setWishlistMessage("");
     try {
-      await addToWishlist(Number(id));
+      if (wishlistItemId != null) {
+        await removeFromWishlist(wishlistItemId);
+        setWishlistItemId(null);
+        setWishlistStatus("idle");
+        setWishlistMessage(copy.removedFromWishlist);
+        window.dispatchEvent(new Event("wishlist_updated"));
+        return;
+      }
+
+      const result = await addToWishlist(Number(id));
+      const createdId =
+        (result as { id?: number; data?: { id?: number } })?.id ??
+        (result as { data?: { id?: number } })?.data?.id ??
+        null;
+      setWishlistItemId(createdId);
       setWishlistStatus("success");
       setWishlistMessage(copy.addedToWishlist);
       window.dispatchEvent(new Event("wishlist_updated"));
     } catch (err: unknown) {
+      // Sudah ada di wishlist — sync ulang status
+      const message = err instanceof Error ? err.message : copy.addFailed;
+      if (/sudah ada|already/i.test(message)) {
+        try {
+          const items = await getWishlistItems(locale);
+          const list = Array.isArray(items) ? items : [];
+          const match = list.find(
+            (item) =>
+              Number(item.product_id) === Number(id) ||
+              Number(item.product?.id) === Number(id),
+          );
+          if (match) {
+            setWishlistItemId(match.id);
+            setWishlistStatus("success");
+            setWishlistMessage(copy.addedToWishlist);
+            return;
+          }
+        } catch {
+          /* ignore */
+        }
+      }
       setWishlistStatus("error");
-      setWishlistMessage(
-        err instanceof Error ? err.message : copy.addFailed,
-      );
+      setWishlistMessage(message);
     }
-  };
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentMessage.trim()) return;
-
-    const newMessages = [
-      ...chatMessages,
-      { sender: "user" as const, text: currentMessage },
-    ];
-    setChatMessages(newMessages);
-    setCurrentMessage("");
-
-    setTimeout(() => {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          sender: "admin" as const,
-          text: copy.adminAutoReply,
-        },
-      ]);
-    }, 1000);
   };
 
   const subtitle = product
@@ -807,9 +937,30 @@ export default function ProductDetailSection({
                   </div>
                 </div>
               ))
+            ) : visual.characterPath ? (
+              <div className="relative w-[70%] h-[70%]">
+                <Image
+                  src={visual.characterPath}
+                  alt={copy.badge}
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
+              </div>
             ) : (
               <div className="text-white/40 text-[19px]">No image</div>
             )}
+            {currentImages.length > 0 && visual.characterPath ? (
+              <div className="absolute bottom-2 right-2 w-16 h-16 md:w-20 md:h-20 z-20 pointer-events-none opacity-90">
+                <Image
+                  src={visual.characterPath}
+                  alt=""
+                  fill
+                  className="object-contain drop-shadow-md"
+                  unoptimized
+                />
+              </div>
+            ) : null}
           </div>
 
           {/* Dots Indicator */}
@@ -1059,7 +1210,13 @@ export default function ProductDetailSection({
               {copy.disclaimerTitle}
             </h4>
             <div className="text-[14px] font-parkinsans font-normal text-[#4A5565] leading-relaxed flex flex-col gap-1.5">
-              {disclaimers.length > 0 ? (
+              {disclaimerItems.length > 0 ? (
+                disclaimerItems.map((text, index) => (
+                  <p key={`cms-disclaimer-${index}`}>
+                    {index + 1}. {text}
+                  </p>
+                ))
+              ) : disclaimers.length > 0 ? (
                 disclaimers.map((item, index) => (
                   <p key={item.id}>
                     {index + 1}. {item.deskripsi}
@@ -1172,19 +1329,21 @@ export default function ProductDetailSection({
                     <div className="flex items-center border border-gray-300 rounded-[8px] h-[38px]">
                       <button
                         onClick={() => handleQuantityChange("dec")}
-                        className="px-3 text-gray-500 hover:text-black transition flex h-full items-center justify-center"
+                        disabled={quantity <= 1 || isOutOfStock}
+                        className="px-3 text-gray-500 hover:text-black transition flex h-full items-center justify-center disabled:opacity-40"
                       >
                         <Minus size={16} />
                       </button>
                       <input
                         type="text"
                         readOnly
-                        value={quantity}
+                        value={isOutOfStock ? 0 : quantity}
                         className="w-12 text-center text-[15px] font-bold border-x border-gray-300 h-full focus:outline-none text-[#1A1A1A]"
                       />
                       <button
                         onClick={() => handleQuantityChange("inc")}
-                        className="px-3 text-gray-500 hover:text-black transition flex h-full items-center justify-center"
+                        disabled={isOutOfStock || quantity >= stockLeft}
+                        className="px-3 text-gray-500 hover:text-black transition flex h-full items-center justify-center disabled:opacity-40"
                       >
                         <Plus size={16} />
                       </button>
@@ -1192,7 +1351,7 @@ export default function ProductDetailSection({
                     <span className="font-parkinsans text-[14px] text-[#6A7282] font-normal">
                       {copy.stok}{" "}
                       <span className="font-normal text-[#6A7282]">
-                        {product?.quantity}
+                        {isOutOfStock ? copy.outOfStock : stockLeft}
                       </span>
                     </span>
                   </div>
@@ -1250,6 +1409,7 @@ export default function ProductDetailSection({
                 <div className="flex flex-col gap-3 mt-1">
                   <button
                     onClick={() => {
+                      if (isOutOfStock) return;
                       const params = new URLSearchParams({
                         type: "buynow",
                         productId: String(id),
@@ -1264,24 +1424,29 @@ export default function ProductDetailSection({
                       }
                       router.push(`/checkout?${params.toString()}`);
                     }}
-                    className="w-full text-white font-nohemi text-[16px] font-semibold py-3 rounded-full shadow-sm hover:opacity-90 active:scale-95 transition-all"
+                    disabled={isOutOfStock}
+                    className="w-full text-white font-nohemi text-[16px] font-semibold py-3 rounded-full shadow-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
                     data-theme-color-shimmer
                     style={accentSurfaceStyle}
                   >
-                    {copy.beliLangsung}
+                    {isOutOfStock ? copy.outOfStock : copy.beliLangsung}
                   </button>
                   <button
                     onClick={handleAddToCart}
-                    disabled={cartStatus === "loading"}
+                    disabled={cartStatus === "loading" || isOutOfStock}
                     data-theme-text-shimmer
-                    className="w-full bg-white font-nohemi text-[16px] font-semibold py-3 rounded-full border shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
+                    className="w-full bg-white font-nohemi text-[16px] font-semibold py-3 rounded-full border shadow-sm hover:bg-gray-50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
                     style={{
                       ...accentTextStyle,
                       borderColor: accentColor,
                       transition: `color var(--theme-bg-duration, 360ms) ${BELANJA_EASE}, border-color var(--theme-bg-duration, 360ms) ${BELANJA_EASE}`,
                     }}
                   >
-                    {cartStatus === "loading" ? copy.memproses : copy.tambahKeranjang}
+                    {cartStatus === "loading"
+                      ? copy.memproses
+                      : isOutOfStock
+                        ? copy.outOfStock
+                        : copy.tambahKeranjang}
                   </button>
                 </div>
 
@@ -1296,19 +1461,42 @@ export default function ProductDetailSection({
                 >
                   <button
                     onClick={() => setIsChatOpen(true)}
-                    className="flex flex-col items-center gap-1.5 hover:text-[var(--hover-color)] transition"
+                    className="relative flex flex-col items-center gap-1.5 hover:text-[var(--hover-color)] transition"
+                    aria-label={
+                      unreadChatCount > 0
+                        ? `${copy.chat} (${unreadChatCount > 99 ? "99+" : unreadChatCount})`
+                        : copy.chat
+                    }
                   >
-                    <MessageCircle size={20} strokeWidth={1.5} /> {copy.chat}
+                    <span className="relative inline-flex">
+                      <MessageCircle size={20} strokeWidth={1.5} />
+                      {unreadChatCount > 0 ? (
+                        <span
+                          className="absolute -top-1.5 -right-2.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white leading-none"
+                          style={{ backgroundColor: accentColor }}
+                          aria-hidden
+                        >
+                          {unreadChatCount > 99 ? "99+" : unreadChatCount}
+                        </span>
+                      ) : null}
+                    </span>
+                    {copy.chat}
                   </button>
                   <button
                     onClick={handleAddToWishlist}
-                    className={`flex flex-col items-center gap-1.5 transition ${wishlistStatus === "success" ? "text-red-500" : "hover:text-[var(--hover-color)]"}`}
+                    disabled={wishlistStatus === "loading"}
+                    aria-pressed={isWishlisted}
+                    className={`flex flex-col items-center gap-1.5 transition disabled:opacity-60 ${
+                      isWishlisted
+                        ? "text-pink-500"
+                        : "hover:text-[var(--hover-color)]"
+                    }`}
                   >
                     <Heart
                       size={20}
                       strokeWidth={1.5}
                       className={
-                        wishlistStatus === "success" ? "fill-red-500" : ""
+                        isWishlisted ? "fill-pink-500 text-pink-500" : ""
                       }
                     />{" "}
                     {copy.wishlist}
@@ -1398,99 +1586,28 @@ export default function ProductDetailSection({
         </div>
       </div>
 
-      {/* ================= CHAT POPUP MODAL ================= */}
-      {isChatOpen && (
-        <div className="fixed bottom-0 right-0 md:bottom-6 md:right-6 w-full md:w-[350px] h-[500px] md:h-[550px] bg-white md:rounded-2xl shadow-2xl flex flex-col z-[100] border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5">
-          {/* Header */}
-          <div
-            data-theme-color-shimmer
-            className="p-4 flex items-center justify-between text-white shadow-sm"
-            style={accentSurfaceStyle}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                <MessageCircle size={20} className="text-white" />
-              </div>
-              <div>
-                <h3 className="font-bold text-[15px] font-nohemi">
-                  Admin Evomi
-                </h3>
-                <p className="text-[12px] opacity-90 font-parkinsans">
-                  {copy.biasanyaMembalas}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsChatOpen(false)}
-              className="p-2 hover:bg-white/20 rounded-full transition"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 p-4 bg-gray-50 overflow-y-auto flex flex-col gap-3 font-parkinsans custom-scrollbar">
-            {chatMessages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`max-w-[85%] p-3 rounded-2xl text-[14px] ${msg.sender === "user" ? "self-end text-white rounded-tr-sm" : "self-start bg-white border border-gray-100 text-gray-800 rounded-tl-sm shadow-sm"}`}
-                style={
-                  msg.sender === "user"
-                    ? { backgroundColor: visual.navbarColor }
-                    : {}
-                }
-              >
-                {msg.text}
-              </div>
-            ))}
-          </div>
-
-          {/* Input Area */}
-          {/* Body Modal - Chat */}
-          <div className="p-5 flex flex-col gap-4 bg-[#F8F9FA]">
-            {/* Text Area Custom Pesan */}
-            <div className="flex flex-col gap-2">
-              <textarea
-                value={customMessage}
-                onChange={(e) => setCustomMessage(e.target.value)}
-                placeholder={copy.ketikPesan}
-                className="w-full p-3 rounded-[16px] border border-[#E5E7EB] text-[14px] font-parkinsans outline-none focus:border-[#101828] resize-none"
-                rows={3}
-              />
-              <button
-                onClick={() => handleSendChat(customMessage)}
-                disabled={!customMessage.trim() || isSendingChat}
-                className="w-full py-3 rounded-[12px] font-parkinsans font-bold text-white transition-opacity disabled:opacity-50"
-                data-theme-color-shimmer
-                style={accentSurfaceStyle}
-              >
-                {isSendingChat ? copy.mengirim : copy.kirimPesan}
-              </button>
-            </div>
-
-            {/* Template Cepat */}
-            <div className="flex flex-col gap-2 mt-2">
-              <p className="text-[12px] text-gray-500 font-parkinsans text-center mb-1">
-                {copy.atauPesanCepat}
-              </p>
-              {copy.chatTemplates.map((template, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleSendChat(template)}
-                  disabled={isSendingChat}
-                  className="w-full text-left p-3.5 bg-white rounded-[16px] border border-[#E5E7EB] hover:border-gray-300 hover:shadow-sm transition-all font-parkinsans text-[14px] text-[#364153] flex justify-between items-center group disabled:opacity-50"
-                >
-                  <span className="line-clamp-1">"{template}"</span>
-                  <MessageCircle
-                    size={16}
-                    className="text-gray-300 group-hover:text-gray-700 transition-colors shrink-0"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ================= CHAT PANEL ================= */}
+      <ProductChatPanel
+        open={isChatOpen}
+        onClose={() => {
+          setIsChatOpen(false);
+          void refreshBadgeCounts(true);
+        }}
+        accentColor={visual.navbarColor}
+        productTitle={product?.title || copy.productEvomiFallback}
+        productUrl={productUrl}
+        locale={locale}
+        adminTitle={copy.chatAdminName}
+        replyHint={copy.biasanyaMembalas}
+        onRequireLogin={() => {
+          setIsChatOpen(false);
+          setAlertInfo({
+            show: true,
+            type: "error",
+            message: copy.loginRequiredMsg,
+          });
+        }}
+      />
 
       {/* ================= MODAL PILIH KURIR ================= */}
       {showKurirList && (

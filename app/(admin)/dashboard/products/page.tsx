@@ -557,10 +557,13 @@ export default function ProductsPage() {
                     <td className="px-6 py-4 text-center">
                       <span
                         className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider border shadow-sm ${
-                          product.stock_status === "tersedia" &&
-                          product.quantity > 0
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            : "bg-red-50 text-red-700 border-red-200"
+                          product.stock_status === "habis" ||
+                          product.quantity <= 0
+                            ? "bg-red-50 text-red-700 border-red-200"
+                            : product.stock_status === "minim" ||
+                                product.quantity <= 10
+                              ? "bg-amber-50 text-amber-700 border-amber-200"
+                              : "bg-emerald-50 text-emerald-700 border-emerald-200"
                         }`}
                       >
                         {product.stock_status}
@@ -724,6 +727,7 @@ export default function ProductsPage() {
                           className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
                         >
                           <option value="tersedia">Tersedia</option>
+                          <option value="minim">Minim</option>
                           <option value="habis">Habis</option>
                         </select>
                       </div>
