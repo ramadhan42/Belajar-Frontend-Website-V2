@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -19,9 +19,12 @@ import {
   getProductImageUrl,
   ShoppingHistoryItem,
   removeHistoryItem,
+  orderGrandTotal,
 } from "@/lib/api";
 import { useNavbarColor } from "@/context/NavbarColorContext";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import { useLocale } from "@/context/LocaleContext";
+import { L, productLocaleText } from "@/lib/localeText";
 
 const BASE_URL = SITE_STRINGS.base_url.url_backend_local;
 
@@ -36,6 +39,7 @@ const VISUAL_BY_PERSONALITY: Record<string, { navbarColor: string }> = {
 interface ModalState {
   isOpen: boolean;
   type: "confirm" | "loading" | "success" | "error";
+  variant?: "delete" | "confirm";
   title: string;
   message: string;
   onConfirm?: () => void;
@@ -43,10 +47,10 @@ interface ModalState {
 }
 
 export default function HistoryDetailPage() {
+  const { locale } = useLocale();
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
-  const shippingCost = 2000;
 
   const { setNavbarAndFooterColor } = useNavbarColor();
 
@@ -61,43 +65,152 @@ export default function HistoryDetailPage() {
     message: "",
   });
 
+  const copy = useMemo(
+    () => ({
+      loading: L(locale, "Memuat detail pesanan...", "Loading order details..."),
+      orderNotFound: L(locale, "Pesanan tidak ditemukan", "Order not found"),
+      notFoundInHistory: L(
+        locale,
+        "Pesanan tidak ditemukan di dalam riwayat belanja Anda.",
+        "Order not found in your shopping history.",
+      ),
+      fetchFailed: L(
+        locale,
+        "Gagal mengambil data riwayat belanja.",
+        "Failed to fetch shopping history data.",
+      ),
+      backToHistory: L(locale, "Kembali ke Riwayat", "Back to History"),
+      detailTitle: L(locale, "Detail Pesanan", "Order Details"),
+      statusWaiting: L(locale, "Menunggu Konfirmasi", "Awaiting Confirmation"),
+      statusPacking: L(locale, "Dikemas", "Packing"),
+      statusShipping: L(locale, "Dalam Perjalanan", "In Transit"),
+      statusReceived: L(locale, "Diterima", "Received"),
+      statusDone: L(locale, "Selesai", "Completed"),
+      orderStatus: L(locale, "Status Pesanan", "Order Status"),
+      confirmOrderButton: L(locale, "Konfirmasi Pesanan", "Confirm Order"),
+      invoiceNo: L(locale, "No. Invoice", "Invoice No."),
+      productInfo: L(locale, "Informasi Produk", "Product Information"),
+      unknownProduct: L(locale, "Produk Tidak Dikenal", "Unknown Product"),
+      noDescription: L(
+        locale,
+        "Tidak ada deskripsi produk.",
+        "No product description available.",
+      ),
+      noImage: L(locale, "Tidak Ada Gambar", "No Image"),
+      unitPrice: L(locale, "Harga Satuan", "Unit Price"),
+      quantity: L(locale, "Kuantitas", "Quantity"),
+      itemUnit: L(locale, "Item", "Item"),
+      deleteItemTitleAttr: L(locale, "Hapus Item", "Delete Item"),
+      paymentDetails: L(locale, "Rincian Pembayaran", "Payment Details"),
+      paymentMethod: L(locale, "Metode Pembayaran", "Payment Method"),
+      unknown: L(locale, "Tidak diketahui", "Unknown"),
+      purchaseDate: L(locale, "Tanggal Pembelian", "Purchase Date"),
+      productSubtotal: L(locale, "Total Subtotal Produk", "Product Subtotal"),
+      shippingFee: L(locale, "Ongkos Kirim", "Shipping Fee"),
+      promo: L(locale, "Promo", "Promo"),
+      totalPurchase: L(locale, "Total Belanja", "Total Purchase"),
+      vatIncluded: L(
+        locale,
+        "Sudah termasuk PPN jika ada",
+        "VAT included if applicable",
+      ),
+      confirmOrderTitle: L(locale, "Konfirmasi Pesanan", "Confirm Order"),
+      confirmOrderMessage: L(
+        locale,
+        "Apakah Anda yakin telah menerima seluruh paket pesanan ini dengan baik? Status pesanan akan diubah menjadi Selesai.",
+        "Are you sure you have received this entire order package in good condition? The order status will be changed to Completed.",
+      ),
+      confirmOrderButtonText: L(locale, "Ya, Sudah Diterima", "Yes, Received"),
+      processingTitle: L(locale, "Memproses...", "Processing..."),
+      completingOrderMessage: L(
+        locale,
+        "Sedang menyelesaikan pesanan Anda...",
+        "Completing your order...",
+      ),
+      successTitle: L(locale, "Berhasil!", "Success!"),
+      allOrdersCompletedMessage: L(
+        locale,
+        "Semua pesanan Anda telah berhasil diselesaikan.",
+        "All your orders have been completed successfully.",
+      ),
+      failedTitle: L(locale, "Gagal", "Failed"),
+      confirmErrorMessage: L(
+        locale,
+        "Terjadi kesalahan saat mengonfirmasi pesanan. Coba lagi.",
+        "An error occurred while confirming the order. Please try again.",
+      ),
+      deleteItemTitle: L(locale, "Hapus Item", "Delete Item"),
+      deleteItemMessage: L(
+        locale,
+        "Apakah Anda yakin ingin menghapus item ini dari riwayat belanja?",
+        "Are you sure you want to remove this item from your shopping history?",
+      ),
+      delete: L(locale, "Hapus", "Delete"),
+      deletingItemMessage: L(
+        locale,
+        "Menghapus item dari riwayat...",
+        "Removing item from history...",
+      ),
+      deletedTitle: L(locale, "Dihapus", "Deleted"),
+      allItemsDeletedMessage: L(
+        locale,
+        "Seluruh item pesanan ini telah terhapus.",
+        "All items in this order have been removed.",
+      ),
+      itemDeletedMessage: L(
+        locale,
+        "Item pesanan telah dihapus.",
+        "The order item has been removed.",
+      ),
+      deleteErrorMessage: L(
+        locale,
+        "Terjadi kesalahan saat menghapus item.",
+        "An error occurred while removing the item.",
+      ),
+      cancel: L(locale, "Batal", "Cancel"),
+      close: L(locale, "Tutup", "Close"),
+      dateLocale: locale === "en" ? "en-US" : "id-ID",
+    }),
+    [locale],
+  );
+
   const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
 
   const getStatusConfig = (status?: string) => {
     switch (status) {
       case "menunggu_konfirmasi":
         return {
-          label: "Menunggu Konfirmasi",
+          label: copy.statusWaiting,
           color: "bg-yellow-100 text-yellow-800 border-yellow-200",
           icon: <Clock className="w-5 h-5 text-yellow-600" />,
         };
       case "pengemasan":
         return {
-          label: "Dikemas",
+          label: copy.statusPacking,
           color: "bg-blue-100 text-blue-800 border-blue-200",
           icon: <Box className="w-5 h-5 text-blue-600" />,
         };
       case "dalam_perjalanan":
         return {
-          label: "Dalam Perjalanan",
+          label: copy.statusShipping,
           color: "bg-purple-100 text-purple-800 border-purple-200",
           icon: <Truck className="w-5 h-5 text-purple-600" />,
         };
       case "diterima":
         return {
-          label: "Diterima",
+          label: copy.statusReceived,
           color: "bg-teal-100 text-teal-800 border-teal-200",
           icon: <CheckCircle2 className="w-5 h-5 text-teal-600" />,
         };
       case "selesai":
         return {
-          label: "Selesai",
+          label: copy.statusDone,
           color: "bg-green-100 text-green-800 border-green-200",
           icon: <CheckCircle2 className="w-5 h-5 text-green-600" />,
         };
       default:
         return {
-          label: status || "Selesai",
+          label: status || copy.statusDone,
           color: "bg-gray-100 text-gray-800 border-gray-200",
           icon: <CheckCircle2 className="w-5 h-5 text-gray-600" />,
         };
@@ -110,7 +223,7 @@ export default function HistoryDetailPage() {
         setLoading(true);
         setError(null);
 
-        const allHistory = await getShoppingHistory();
+        const allHistory = await getShoppingHistory(locale);
         // const targetItem = allHistory.find((item) => String(item.id) === String(id));
         // PERBAIKAN: Jadikan string agar cocok dengan ObjectId / UUID / Numerik
         const targetItem = allHistory.find(
@@ -123,18 +236,18 @@ export default function HistoryDetailPage() {
           );
           setHistoryGroup(group);
         } else {
-          setError("Pesanan tidak ditemukan di dalam riwayat belanja Anda.");
+          setError(copy.notFoundInHistory);
         }
       } catch (err: any) {
         console.error("Gagal memuat detail riwayat:", err);
-        setError(err.message || "Gagal mengambil data riwayat belanja.");
+        setError(err.message || copy.fetchFailed);
       } finally {
         setLoading(false);
       }
     };
 
     if (id) fetchDetail();
-  }, [id]);
+  }, [id, locale]);
 
   useEffect(() => {
     if (historyGroup.length > 0 && historyGroup[0].product) {
@@ -150,16 +263,17 @@ export default function HistoryDetailPage() {
     setModal({
       isOpen: true,
       type: "confirm",
-      title: "Konfirmasi Pesanan",
-      message:
-        "Apakah Anda yakin telah menerima seluruh paket pesanan ini dengan baik? Status pesanan akan diubah menjadi Selesai.",
-      confirmText: "Ya, Sudah Diterima",
+      variant: "confirm",
+      title: copy.confirmOrderTitle,
+      message: copy.confirmOrderMessage,
+      confirmText: copy.confirmOrderButtonText,
       onConfirm: async () => {
         setModal({
           isOpen: true,
           type: "loading",
-          title: "Memproses...",
-          message: "Sedang menyelesaikan pesanan Anda...",
+          variant: "confirm",
+          title: copy.processingTitle,
+          message: copy.completingOrderMessage,
         });
 
         try {
@@ -192,8 +306,9 @@ export default function HistoryDetailPage() {
           setModal({
             isOpen: true,
             type: "success",
-            title: "Berhasil!",
-            message: "Semua pesanan Anda telah berhasil diselesaikan.",
+            variant: "confirm",
+            title: copy.successTitle,
+            message: copy.allOrdersCompletedMessage,
           });
 
           setTimeout(() => {
@@ -204,8 +319,9 @@ export default function HistoryDetailPage() {
           setModal({
             isOpen: true,
             type: "error",
-            title: "Gagal",
-            message: "Terjadi kesalahan saat mengonfirmasi pesanan. Coba lagi.",
+            variant: "confirm",
+            title: copy.failedTitle,
+            message: copy.confirmErrorMessage,
           });
         }
       },
@@ -216,16 +332,17 @@ export default function HistoryDetailPage() {
     setModal({
       isOpen: true,
       type: "confirm",
-      title: "Hapus Item",
-      message:
-        "Apakah Anda yakin ingin menghapus item ini dari riwayat belanja?",
-      confirmText: "Hapus",
+      variant: "delete",
+      title: copy.deleteItemTitle,
+      message: copy.deleteItemMessage,
+      confirmText: copy.delete,
       onConfirm: async () => {
         setModal({
           isOpen: true,
           type: "loading",
-          title: "Memproses...",
-          message: "Menghapus item dari riwayat...",
+          variant: "delete",
+          title: copy.processingTitle,
+          message: copy.deletingItemMessage,
         });
 
         try {
@@ -236,8 +353,9 @@ export default function HistoryDetailPage() {
             setModal({
               isOpen: true,
               type: "success",
-              title: "Dihapus",
-              message: "Seluruh item pesanan ini telah terhapus.",
+              variant: "delete",
+              title: copy.deletedTitle,
+              message: copy.allItemsDeletedMessage,
             });
             setTimeout(() => {
               closeModal();
@@ -248,8 +366,9 @@ export default function HistoryDetailPage() {
             setModal({
               isOpen: true,
               type: "success",
-              title: "Berhasil",
-              message: "Item pesanan telah dihapus.",
+              variant: "delete",
+              title: copy.successTitle,
+              message: copy.itemDeletedMessage,
             });
             setTimeout(() => closeModal(), 1500);
           }
@@ -257,8 +376,9 @@ export default function HistoryDetailPage() {
           setModal({
             isOpen: true,
             type: "error",
-            title: "Gagal",
-            message: "Terjadi kesalahan saat menghapus item.",
+            variant: "delete",
+            title: copy.failedTitle,
+            message: copy.deleteErrorMessage,
           });
         }
       },
@@ -269,7 +389,7 @@ export default function HistoryDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] bg-gray-50">
         <Loader2 className="animate-spin w-10 h-10 text-gray-400 mb-4" />
-        <p className="text-gray-500 font-medium">Memuat detail pesanan...</p>
+        <p className="text-gray-500 font-medium">{copy.loading}</p>
       </div>
     );
 
@@ -278,13 +398,13 @@ export default function HistoryDetailPage() {
       <div className="flex flex-col items-center justify-center min-h-[70vh] bg-gray-50 p-4 text-center">
         <Package className="w-10 h-10 text-gray-400 mb-4" />
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          {error || "Pesanan tidak ditemukan"}
+          {error || copy.orderNotFound}
         </h2>
         <button
           onClick={() => router.push("/profile/history")}
           className="px-6 py-2.5 bg-black text-white rounded-xl font-medium shadow-sm transition-transform active:scale-95"
         >
-          Kembali ke Riwayat
+          {copy.backToHistory}
         </button>
       </div>
     );
@@ -294,7 +414,7 @@ export default function HistoryDetailPage() {
   const themeColor =
     VISUAL_BY_PERSONALITY[personality]?.navbarColor || "#000000";
   const date = representativeItem.created_at
-    ? new Date(representativeItem.created_at).toLocaleDateString("id-ID", {
+    ? new Date(representativeItem.created_at).toLocaleDateString(copy.dateLocale, {
         day: "numeric",
         month: "long",
         year: "numeric",
@@ -311,8 +431,19 @@ export default function HistoryDetailPage() {
       : parseFloat(curr.product?.price || "0") * (curr.quantity || 1);
     return acc + itemTotal;
   }, 0);
-
-  const finalTotalPrice = subtotalProducts + shippingCost;
+  const shippingCost = historyGroup.reduce(
+    (acc, curr) =>
+      acc + (Number(curr.shipping_cost ?? curr.ongkir_price ?? 0) || 0),
+    0,
+  );
+  const promoDiscount = historyGroup.reduce(
+    (acc, curr) => acc + (Number(curr.promo_discount || 0) || 0),
+    0,
+  );
+  const finalTotalPrice = historyGroup.reduce(
+    (acc, curr) => acc + orderGrandTotal(curr),
+    0,
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 relative">
@@ -321,10 +452,10 @@ export default function HistoryDetailPage() {
           onClick={() => router.push("/profile/history")}
           className="flex items-center gap-2 text-gray-600 hover:text-black font-medium mb-6 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" /> Kembali ke Riwayat
+          <ArrowLeft className="w-5 h-5" /> {copy.backToHistory}
         </button>
         <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
-          Detail Pesanan
+          {copy.detailTitle}
         </h1>
       </div>
 
@@ -335,7 +466,7 @@ export default function HistoryDetailPage() {
               {statusConfig.icon}
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-0.5">Status Pesanan</p>
+              <p className="text-sm text-gray-500 mb-0.5">{copy.orderStatus}</p>
               <span
                 className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${statusConfig.color}`}
               >
@@ -354,12 +485,12 @@ export default function HistoryDetailPage() {
                   className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5 active:scale-95"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  Konfirmasi Pesanan
+                  {copy.confirmOrderButton}
                 </button>
               )}
 
             <div className="sm:text-right">
-              <p className="text-xs text-gray-400 mb-0.5">No. Invoice</p>
+              <p className="text-xs text-gray-400 mb-0.5">{copy.invoiceNo}</p>
               <p className="font-bold text-gray-900 bg-gray-50 px-3 py-1 rounded-lg inline-block border border-gray-100 text-sm">
                 #{invoiceId}
               </p>
@@ -371,7 +502,7 @@ export default function HistoryDetailPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
           <div className="p-6 border-b border-gray-100">
             <h2 className="font-bold text-gray-900 text-lg mb-6">
-              Informasi Produk
+              {copy.productInfo}
             </h2>
 
             <div className="space-y-6">
@@ -386,12 +517,17 @@ export default function HistoryDetailPage() {
                         src={
                           getProductImageUrl(item.product.image_1) ?? ""
                         }
-                        alt={item.product.title}
+                        alt={productLocaleText(
+                          item.product,
+                          "title",
+                          locale,
+                          copy.unknownProduct,
+                        )}
                         className="max-h-full max-w-full w-auto h-auto object-contain drop-shadow-sm"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-                        No Image
+                        {copy.noImage}
                       </div>
                     )}
                   </div>
@@ -400,11 +536,20 @@ export default function HistoryDetailPage() {
                     <div className="flex justify-between items-start gap-4">
                       <div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">
-                          {item.product?.title || "Produk Tidak Dikenal"}
+                          {productLocaleText(
+                            item.product,
+                            "title",
+                            locale,
+                            copy.unknownProduct,
+                          )}
                         </h3>
                         <p className="text-gray-500 text-sm mb-4 line-clamp-2">
-                          {item.product?.description ||
-                            "Tidak ada deskripsi produk."}
+                          {productLocaleText(
+                            item.product,
+                            "description",
+                            locale,
+                            copy.noDescription,
+                          )}
                         </p>
                       </div>
 
@@ -415,7 +560,7 @@ export default function HistoryDetailPage() {
                         <button
                           onClick={() => confirmDeleteItem(item)}
                           className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
-                          title="Hapus Item"
+                          title={copy.deleteItemTitleAttr}
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
@@ -424,15 +569,15 @@ export default function HistoryDetailPage() {
 
                     <div className="grid grid-cols-2 gap-4 text-sm mt-auto bg-gray-50 p-4 rounded-xl border border-gray-100">
                       <div>
-                        <p className="text-gray-500 mb-1">Harga Satuan</p>
+                        <p className="text-gray-500 mb-1">{copy.unitPrice}</p>
                         <p className="font-bold text-gray-900">
                           {formatProductPrice(item.product?.price || "0")}
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-500 mb-1">Kuantitas</p>
+                        <p className="text-gray-500 mb-1">{copy.quantity}</p>
                         <p className="font-bold text-gray-900">
-                          {item.quantity || 1} Item
+                          {item.quantity || 1} {copy.itemUnit}
                         </p>
                       </div>
                     </div>
@@ -444,42 +589,50 @@ export default function HistoryDetailPage() {
 
           <div className="p-6 bg-white">
             <h2 className="font-bold text-gray-900 text-lg mb-4">
-              Rincian Pembayaran
+              {copy.paymentDetails}
             </h2>
             <div className="space-y-4 text-sm">
               <div className="flex justify-between items-center text-gray-600">
-                <span>Metode Pembayaran</span>
+                <span>{copy.paymentMethod}</span>
                 <span className="font-medium text-gray-900 bg-gray-100 px-3 py-1 rounded-md">
                   {/* Mengambil data payment_method dari API */}
                   {(representativeItem as any).metode_pembayaran ||
-                    "Tidak diketahui"}
+                    copy.unknown}
                 </span>
               </div>
               <div className="flex justify-between items-center text-gray-600">
-                <span>Tanggal Pembelian</span>
+                <span>{copy.purchaseDate}</span>
                 <span className="font-medium text-gray-900">{date}</span>
               </div>
 
               <div className="flex justify-between items-center text-gray-600 mt-2">
-                <span>Total Subtotal Produk</span>
+                <span>{copy.productSubtotal}</span>
                 <span className="font-medium text-gray-900">
                   {formatProductPrice(subtotalProducts.toString())}
                 </span>
               </div>
               <div className="flex justify-between items-center text-gray-600">
-                <span>Ongkos Kirim</span>
+                <span>{copy.shippingFee}</span>
                 <span className="font-medium text-gray-900">
                   {formatProductPrice(shippingCost.toString())}
                 </span>
               </div>
+              {promoDiscount > 0 ? (
+                <div className="flex justify-between items-center text-gray-600">
+                  <span>{copy.promo}</span>
+                  <span className="font-medium text-orange-600">
+                    −{formatProductPrice(promoDiscount.toString())}
+                  </span>
+                </div>
+              ) : null}
 
               <div className="pt-6 mt-4 border-t border-dashed border-gray-200 flex justify-between items-end">
                 <div>
                   <span className="font-bold text-gray-900 text-base">
-                    Total Belanja
+                    {copy.totalPurchase}
                   </span>
                   <p className="text-xs text-gray-400 mt-1">
-                    Sudah termasuk PPN jika ada
+                    {copy.vatIncluded}
                   </p>
                 </div>
                 <span
@@ -500,11 +653,11 @@ export default function HistoryDetailPage() {
               <div
                 className="mx-auto flex items-center justify-center h-16 w-16 rounded-full transition-colors"
                 style={{
-                  backgroundColor: `${modal.title.includes("Hapus") ? "#FEF2F2" : `${themeColor}15`}`,
+                  backgroundColor: `${modal.variant === "delete" ? "#FEF2F2" : `${themeColor}15`}`,
                 }}
               >
                 {modal.type === "confirm" &&
-                  (modal.title.includes("Hapus") ? (
+                  (modal.variant === "delete" ? (
                     <Trash2 className="w-8 h-8 text-red-500" />
                   ) : (
                     <CheckCircle2
@@ -553,15 +706,14 @@ export default function HistoryDetailPage() {
                     onClick={closeModal}
                     className="w-full font-semibold py-3 rounded-xl transition-all text-sm shadow-sm bg-gray-100 text-gray-700 hover:bg-gray-200"
                   >
-                    Batal
+                    {copy.cancel}
                   </button>
                   <button
                     onClick={modal.onConfirm}
                     className="w-full font-semibold py-3 rounded-xl transition-all text-sm shadow-sm text-white hover:opacity-90 active:scale-95"
                     style={{
-                      backgroundColor: modal.title.includes("Hapus")
-                        ? "#EF4444"
-                        : themeColor,
+                      backgroundColor:
+                        modal.variant === "delete" ? "#EF4444" : themeColor,
                     }}
                   >
                     {modal.confirmText}
@@ -574,7 +726,7 @@ export default function HistoryDetailPage() {
                   className="w-full mt-4 text-white font-semibold py-3 rounded-xl transition-all text-sm shadow-sm hover:opacity-90 active:scale-95"
                   style={{ backgroundColor: themeColor }}
                 >
-                  Tutup
+                  {copy.close}
                 </button>
               )}
             </div>

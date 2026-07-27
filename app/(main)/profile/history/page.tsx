@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Package,
   ChevronRight,
-  Loader2,
   ChevronLeft,
   Trash2,
   CheckCircle,
+  History,
+  ShoppingBag,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -16,14 +18,20 @@ import {
   formatProductPrice,
   getProductImageUrl,
   removeHistoryItem,
+  orderGrandTotal,
 } from "@/lib/api";
-import { useNavbarColor } from "@/context/NavbarColorContext";
 import { SITE_STRINGS } from "@/components/constans/strings";
+import { useLocale } from "@/context/LocaleContext";
+import { L, productLocaleText } from "@/lib/localeText";
+import ProfileBrandShell, {
+  useProfileBrand,
+} from "@/components/profile/ProfileBrandShell";
+import { profileBrandGradient } from "@/components/profile/brand";
 
 const BASE_URL = SITE_STRINGS.base_url.url_backend;
 
 interface GroupedHistory {
-  groupId: string; // PERBAIKAN: Diubah dari number menjadi string untuk mendukung UUID/MongoDB ObjectId
+  groupId: string;
   created_at: string;
   items: ShoppingHistoryItem[];
   totalGroupPrice: number;
@@ -33,6 +41,7 @@ interface GroupedHistory {
 interface ModalState {
   isOpen: boolean;
   type: "confirm" | "loading" | "success" | "error";
+  variant?: "delete" | "confirm";
   title: string;
   message: string;
   onConfirm?: () => void;
@@ -40,15 +49,121 @@ interface ModalState {
 }
 
 export default function HistoryPage() {
-  const { setNavbarColor, setFooterColor } = useNavbarColor();
-  const shippingCost = 2000;
+  const { locale } = useLocale();
+  const brand = useProfileBrand();
+
+  const copy = useMemo(
+    () => ({
+      loading: L(locale, "Memuat riwayat belanja...", "Loading order history..."),
+      loadFailed: L(
+        locale,
+        "Gagal memuat riwayat belanja. Pastikan Anda sudah login.",
+        "Failed to load order history. Make sure you are logged in.",
+      ),
+      retry: L(locale, "Coba Lagi", "Try Again"),
+      title: L(locale, "Riwayat Belanja", "Order History"),
+      subtitle: L(
+        locale,
+        "Pantau status pesanan dan konfirmasi penerimaan paket.",
+        "Track order status and confirm when your package arrives.",
+      ),
+      unknownDate: L(locale, "Tanggal tidak diketahui", "Unknown date"),
+      itemsUnit: L(locale, "Barang", "Items"),
+      otherProducts: L(locale, "Produk Lain", "Other Products"),
+      product: L(locale, "Produk", "Product"),
+      receivedConfirmTitle: L(locale, "Pesanan Diterima", "Order Received"),
+      receivedConfirmMessage: L(
+        locale,
+        "Apakah Anda yakin telah menerima paket pesanan ini dengan baik? Jika ya, pesanan akan diselesaikan.",
+        "Are you sure you have received this order package in good condition? If so, the order will be marked as completed.",
+      ),
+      receivedConfirmButton: L(locale, "Ya, Terima Pesanan", "Yes, Order Received"),
+      processingTitle: L(locale, "Memproses...", "Processing..."),
+      completingOrderMessage: L(
+        locale,
+        "Sedang menyelesaikan pesanan Anda...",
+        "Completing your order...",
+      ),
+      successTitle: L(locale, "Berhasil!", "Success!"),
+      orderCompletedMessage: L(
+        locale,
+        "Pesanan telah berhasil diselesaikan.",
+        "The order has been completed successfully.",
+      ),
+      failedTitle: L(locale, "Gagal", "Failed"),
+      confirmErrorMessage: L(
+        locale,
+        "Terjadi kesalahan saat mengonfirmasi pesanan. Coba lagi.",
+        "An error occurred while confirming the order. Please try again.",
+      ),
+      deleteHistoryTitle: L(locale, "Hapus Riwayat", "Delete History"),
+      deleteHistoryMessage: L(
+        locale,
+        "Apakah Anda yakin ingin menghapus seluruh pesanan ini dari riwayat belanja?",
+        "Are you sure you want to remove this entire order from your shopping history?",
+      ),
+      confirmDeleteButton: L(locale, "Ya, Hapus", "Yes, Delete"),
+      deletingHistoryMessage: L(
+        locale,
+        "Sedang menghapus riwayat pesanan Anda...",
+        "Removing your order history...",
+      ),
+      historyDeletedMessage: L(
+        locale,
+        "Riwayat pesanan telah dihapus.",
+        "Order history has been removed.",
+      ),
+      deleteErrorMessage: L(
+        locale,
+        "Terjadi kesalahan saat menghapus riwayat. Coba lagi.",
+        "An error occurred while removing the history. Please try again.",
+      ),
+      statusWaiting: L(locale, "Menunggu Konfirmasi", "Awaiting Confirmation"),
+      statusPacking: L(locale, "Dikemas", "Packing"),
+      statusShipping: L(locale, "Dalam Perjalanan", "In Transit"),
+      statusArrived: L(locale, "Sampai Tujuan", "Arrived"),
+      statusDone: L(locale, "Selesai", "Completed"),
+      confirmReceivedTitleAttr: L(
+        locale,
+        "Konfirmasi Pesanan Diterima",
+        "Confirm Order Received",
+      ),
+      receivedLabel: L(locale, "Diterima", "Received"),
+      deleteHistoryTitleAttr: L(
+        locale,
+        "Hapus Riwayat Pesanan",
+        "Delete Order History",
+      ),
+      pagePrefix: L(locale, "Halaman", "Page"),
+      pageOf: L(locale, "dari", "of"),
+      emptyTitle: L(locale, "Riwayat belanja kosong", "Order history is empty"),
+      emptySubtitle: L(
+        locale,
+        "Belum ada pembelian. Mulai jelajahi koleksi aroma Evomi.",
+        "No purchases yet. Start exploring Evomi scents.",
+      ),
+      startShopping: L(locale, "Mulai Belanja", "Start Shopping"),
+      cancel: L(locale, "Batal", "Cancel"),
+      close: L(locale, "Tutup", "Close"),
+      dateLocale: locale === "en" ? "en-US" : "id-ID",
+      confirmFailedApi: L(
+        locale,
+        "Gagal konfirmasi pesanan",
+        "Failed to confirm order",
+      ),
+      ordersCount: (n: number) =>
+        L(locale, `${n} pesanan`, `${n} order${n === 1 ? "" : "s"}`),
+      viewDetail: L(locale, "Lihat detail", "View details"),
+    }),
+    [locale],
+  );
 
   const [history, setHistory] = useState<GroupedHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const [toast, setToast] = useState<string | null>(null);
 
   const [modal, setModal] = useState<ModalState>({
     isOpen: false,
@@ -59,16 +174,16 @@ export default function HistoryPage() {
 
   const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
 
-  useEffect(() => {
-    setNavbarColor("#0f62a2ff");
-    setFooterColor("#1172BA");
-  }, [setNavbarColor, setFooterColor]);
+  const showToast = (message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(null), 2200);
+  };
 
   const fetchHistory = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await getShoppingHistory();
+      const data = await getShoppingHistory(locale);
 
       const groupedObj = data.reduce(
         (acc: Record<string, GroupedHistory>, item: ShoppingHistoryItem) => {
@@ -76,7 +191,7 @@ export default function HistoryPage() {
 
           if (!acc[key]) {
             acc[key] = {
-              groupId: String(item.id), // PERBAIKAN: Pastikan ID disimpan sebagai string aman
+              groupId: String(item.id),
               created_at: key,
               items: [],
               totalGroupPrice: 0,
@@ -86,11 +201,8 @@ export default function HistoryPage() {
 
           acc[key].items.push(item);
 
-          const itemTotal = item.total_price
-            ? parseFloat(String(item.total_price))
-            : parseFloat(item.product?.price || "0") * (item.quantity || 1);
-
-          acc[key].totalGroupPrice += itemTotal;
+          // produk + ongkir − promo (sekali), bukan total_price + ongkir hardcode
+          acc[key].totalGroupPrice += orderGrandTotal(item);
           acc[key].totalQuantity += item.quantity || 1;
 
           return acc;
@@ -106,10 +218,7 @@ export default function HistoryPage() {
       setHistory(groupedArray);
       window.dispatchEvent(new Event("history_updated"));
     } catch (err: any) {
-      setError(
-        err.message ||
-          "Gagal memuat riwayat belanja. Pastikan Anda sudah login.",
-      );
+      setError(err.message || copy.loadFailed);
     } finally {
       setIsLoading(false);
     }
@@ -117,9 +226,15 @@ export default function HistoryPage() {
 
   useEffect(() => {
     fetchHistory();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
 
-  const totalPages = Math.ceil(history.length / itemsPerPage);
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(history.length / itemsPerPage));
+    if (currentPage > maxPage) setCurrentPage(maxPage);
+  }, [history.length, currentPage, itemsPerPage]);
+
+  const totalPages = Math.max(1, Math.ceil(history.length / itemsPerPage));
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = history.slice(indexOfFirstItem, indexOfLastItem);
@@ -128,52 +243,60 @@ export default function HistoryPage() {
     switch (status) {
       case "menunggu_konfirmasi":
         return {
-          label: "Menunggu Konfirmasi",
-          color: "bg-yellow-100 text-yellow-800 border-yellow-200",
+          label: copy.statusWaiting,
+          color: "bg-amber-50 text-amber-800 border-amber-200",
+          dot: "bg-amber-500",
         };
       case "pengemasan":
         return {
-          label: "Dikemas",
-          color: "bg-blue-100 text-blue-800 border-blue-200",
+          label: copy.statusPacking,
+          color: "bg-sky-50 text-sky-800 border-sky-200",
+          dot: "bg-sky-500",
         };
       case "dalam_perjalanan":
         return {
-          label: "Dalam Perjalanan",
-          color: "bg-purple-100 text-purple-800 border-purple-200",
+          label: copy.statusShipping,
+          color: "bg-indigo-50 text-indigo-800 border-indigo-200",
+          dot: "bg-indigo-500",
         };
       case "diterima":
         return {
-          label: "Sampai Tujuan",
-          color: "bg-green-100 text-green-800 border-green-200",
+          label: copy.statusArrived,
+          color: "bg-emerald-50 text-emerald-800 border-emerald-200",
+          dot: "bg-emerald-500",
         };
       case "selesai":
         return {
-          label: "Selesai",
-          color: "bg-green-100 text-green-800 border-green-200",
+          label: copy.statusDone,
+          color: "bg-emerald-50 text-emerald-800 border-emerald-200",
+          dot: "bg-emerald-500",
         };
       default:
         return {
-          label: status || "Selesai",
-          color: "bg-gray-100 text-gray-800 border-gray-200",
+          label: status || copy.statusDone,
+          color: "bg-slate-50 text-slate-700 border-slate-200",
+          dot: "bg-slate-400",
         };
     }
   };
 
   const confirmReceipt = (e: React.MouseEvent, group: GroupedHistory) => {
     e.preventDefault();
+    e.stopPropagation();
     setModal({
       isOpen: true,
       type: "confirm",
-      title: "Pesanan Diterima",
-      message:
-        "Apakah Anda yakin telah menerima paket pesanan ini dengan baik? Jika ya, pesanan akan diselesaikan.",
-      confirmText: "Ya, Terima Pesanan",
+      variant: "confirm",
+      title: copy.receivedConfirmTitle,
+      message: copy.receivedConfirmMessage,
+      confirmText: copy.receivedConfirmButton,
       onConfirm: async () => {
         setModal({
           isOpen: true,
           type: "loading",
-          title: "Memproses...",
-          message: "Sedang menyelesaikan pesanan Anda...",
+          variant: "confirm",
+          title: copy.processingTitle,
+          message: copy.completingOrderMessage,
         });
 
         try {
@@ -188,7 +311,7 @@ export default function HistoryPage() {
             },
           );
 
-          if (!response.ok) throw new Error("Gagal konfirmasi pesanan");
+          if (!response.ok) throw new Error(copy.confirmFailedApi);
 
           setHistory((prev) =>
             prev.map((g) => {
@@ -202,20 +325,15 @@ export default function HistoryPage() {
             }),
           );
 
-          setModal({
-            isOpen: true,
-            type: "success",
-            title: "Berhasil!",
-            message: "Pesanan telah berhasil diselesaikan.",
-          });
-
-          setTimeout(() => closeModal(), 1500);
-        } catch (err) {
+          closeModal();
+          showToast(copy.orderCompletedMessage);
+        } catch {
           setModal({
             isOpen: true,
             type: "error",
-            title: "Gagal",
-            message: "Terjadi kesalahan saat mengonfirmasi pesanan. Coba lagi.",
+            variant: "confirm",
+            title: copy.failedTitle,
+            message: copy.confirmErrorMessage,
           });
         }
       },
@@ -224,328 +342,327 @@ export default function HistoryPage() {
 
   const confirmDeleteGroup = (e: React.MouseEvent, group: GroupedHistory) => {
     e.preventDefault();
+    e.stopPropagation();
     setModal({
       isOpen: true,
       type: "confirm",
-      title: "Hapus Riwayat",
-      message:
-        "Apakah Anda yakin ingin menghapus seluruh pesanan ini dari riwayat belanja?",
-      confirmText: "Ya, Hapus",
+      variant: "delete",
+      title: copy.deleteHistoryTitle,
+      message: copy.deleteHistoryMessage,
+      confirmText: copy.confirmDeleteButton,
       onConfirm: async () => {
         setModal({
           isOpen: true,
           type: "loading",
-          title: "Memproses...",
-          message: "Sedang menghapus riwayat pesanan Anda...",
+          variant: "delete",
+          title: copy.processingTitle,
+          message: copy.deletingHistoryMessage,
         });
 
         try {
           await Promise.all(group.items.map((i) => removeHistoryItem(i.id)));
           setHistory((prev) => prev.filter((g) => g.groupId !== group.groupId));
           window.dispatchEvent(new Event("history_updated"));
-
-          setModal({
-            isOpen: true,
-            type: "success",
-            title: "Berhasil!",
-            message: "Riwayat pesanan telah dihapus.",
-          });
-
-          setTimeout(() => closeModal(), 1500);
-        } catch (err) {
+          closeModal();
+          showToast(copy.historyDeletedMessage);
+        } catch {
           setModal({
             isOpen: true,
             type: "error",
-            title: "Gagal",
-            message: "Terjadi kesalahan saat menghapus riwayat. Coba lagi.",
+            variant: "delete",
+            title: copy.failedTitle,
+            message: copy.deleteErrorMessage,
           });
         }
       },
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 flex flex-col items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 text-gray-400 animate-spin mb-4" />
-        <p className="text-gray-500 font-medium">Memuat riwayat belanja...</p>
-      </div>
-    );
-  }
-
   if (error) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center min-h-[400px] flex flex-col items-center justify-center">
-        <p className="text-red-500 mb-4">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-6 py-2 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition"
-        >
-          Coba Lagi
-        </button>
-      </div>
+      <ProfileBrandShell
+        title={copy.title}
+        subtitle={copy.subtitle}
+        icon={History}
+      >
+        <div className="bg-white rounded-2xl border border-rose-100 p-10 text-center">
+          <p className="text-rose-600 mb-4 font-medium text-sm">{error}</p>
+          <button
+            onClick={() => fetchHistory()}
+            className="px-6 py-2.5 text-white rounded-xl font-semibold text-sm transition hover:opacity-90"
+            style={{ backgroundColor: brand }}
+          >
+            {copy.retry}
+          </button>
+        </div>
+      </ProfileBrandShell>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 relative">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Riwayat Belanja</h1>
+    <>
+      <ProfileBrandShell
+        title={copy.title}
+        subtitle={copy.subtitle}
+        icon={History}
+        loading={isLoading}
+        loadingText={copy.loading}
+        headerRight={
+          history.length > 0 ? (
+            <span className="shrink-0 text-[11px] sm:text-xs font-semibold px-3 py-1.5 rounded-full bg-white/15 border border-white/25">
+              {copy.ordersCount(history.length)}
+            </span>
+          ) : null
+        }
+      >
+        {history.length > 0 ? (
+          <div className="space-y-3">
+            {currentItems.map((group) => {
+              const date = group.created_at
+                ? new Date(group.created_at).toLocaleDateString(copy.dateLocale, {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : copy.unknownDate;
 
-      {history.length > 0 ? (
-        <div className="space-y-4">
-          {currentItems.map((group) => {
-            const date = group.created_at
-              ? new Date(group.created_at).toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })
-              : "Tanggal tidak diketahui";
+              const firstItem = group.items[0];
+              const isNumericId = /^\d+$/.test(group.groupId);
+              const invoiceId = isNumericId
+                ? `#INV-${group.groupId}`
+                : `#${group.groupId.toUpperCase()}`;
 
-            const firstItem = group.items[0];
+              const currentStatus = (firstItem as any).status || "selesai";
+              const statusConfig = getStatusConfig(currentStatus);
+              const imageUrl = firstItem.product
+                ? getProductImageUrl(firstItem.product.image_1)
+                : null;
+              const extraItemsCount = group.items.length - 1;
 
-            // KODE BARU (MENAMPILKAN ID SECARA UTUH):
-            const isNumericId = /^\d+$/.test(group.groupId);
-            const invoiceId = isNumericId
-              ? `#INV-${group.groupId}` // Langsung tampilkan seluruh angka tanpa batasan pad
-              : `#${group.groupId.toUpperCase()}`; // Tampilkan seluruh hash alfanumerik utuh
+              return (
+                <Link
+                  href={`/profile/history/${group.groupId}`}
+                  key={group.groupId}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 md:p-5 rounded-2xl border border-gray-100 bg-white hover:border-slate-200 transition-all gap-4 cursor-pointer group"
+                >
+                  <div className="flex items-start gap-4 w-full sm:w-auto overflow-hidden">
+                    <div
+                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden relative p-1.5 border border-white/40"
+                      style={{ backgroundColor: `${brand}14` }}
+                    >
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={productLocaleText(
+                            firstItem.product,
+                            "title",
+                            locale,
+                            copy.product,
+                          )}
+                          className="max-h-full max-w-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <Package className="w-6 h-6 text-slate-400" />
+                      )}
 
-            const currentStatus = (firstItem as any).status || "Selesai";
-            const statusConfig = getStatusConfig(currentStatus);
+                      {extraItemsCount > 0 && (
+                        <span className="absolute bottom-1 right-1 bg-slate-900/75 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+                          +{extraItemsCount}
+                        </span>
+                      )}
+                    </div>
 
-            const imageUrl = firstItem.product
-              ? getProductImageUrl(firstItem.product.image_1)
-              : null;
-
-            const extraItemsCount = group.items.length - 1;
-
-            return (
-              <Link
-                href={`/profile/history/${group.groupId}`}
-                key={group.groupId}
-                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 md:p-5 border border-gray-100 rounded-xl hover:shadow-md hover:border-gray-200 transition-all gap-4 cursor-pointer group bg-white"
-              >
-                <div className="flex items-start gap-4 w-full sm:w-auto overflow-hidden">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-lg flex-shrink-0 flex items-center justify-center border border-gray-100 overflow-hidden group-hover:bg-gray-100 transition-colors relative p-1.5">
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={firstItem.product?.title || "Produk"}
-                        className="max-h-full max-w-full w-auto h-auto object-contain hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <Package className="w-6 h-6 text-gray-400" />
-                    )}
-
-                    {extraItemsCount > 0 && (
-                      <span className="absolute bottom-1 right-1 bg-black/70 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">
-                        +{extraItemsCount}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0 py-1">
-                    <p className="font-bold text-gray-900 text-sm mb-1">
-                      {invoiceId}
-                    </p>
-
-                    {firstItem.product && (
-                      <p className="font-semibold text-gray-800 text-base truncate mb-1">
-                        {firstItem.product.title}{" "}
-                        {extraItemsCount > 0 && (
-                          <span className="text-gray-500 font-normal text-sm">
-                            {" "}
-                            (+{extraItemsCount} Produk Lain)
-                          </span>
-                        )}
+                    <div className="flex-1 min-w-0 py-0.5">
+                      <p
+                        className="font-bold text-xs mb-1 tracking-wide"
+                        style={{ color: brand }}
+                      >
+                        {invoiceId}
                       </p>
-                    )}
 
-                    <div className="flex flex-wrap items-center gap-2 md:gap-3 text-sm text-gray-500">
-                      <span>{date}</span>
-                      <span className="w-1 h-1 bg-gray-300 rounded-full hidden sm:block"></span>
-                      <span className="text-gray-500">
-                        {group.totalQuantity} Barang
-                      </span>
-                      <span className="w-1 h-1 bg-gray-300 rounded-full hidden sm:block"></span>
-                      <span className="font-bold text-gray-900">
-                        {formatProductPrice(
-                          (group.totalGroupPrice + shippingCost).toString(),
-                        )}
-                      </span>
+                      {firstItem.product && (
+                        <p className="font-semibold text-slate-900 text-[15px] truncate mb-1.5">
+                          {productLocaleText(firstItem.product, "title", locale)}{" "}
+                          {extraItemsCount > 0 && (
+                            <span className="text-slate-500 font-normal text-sm">
+                              (+{extraItemsCount} {copy.otherProducts})
+                            </span>
+                          )}
+                        </p>
+                      )}
+
+                      <div className="flex flex-wrap items-center gap-2 md:gap-3 text-sm text-slate-500">
+                        <span>{date}</span>
+                        <span className="w-1 h-1 bg-slate-300 rounded-full hidden sm:block" />
+                        <span>
+                          {group.totalQuantity} {copy.itemsUnit}
+                        </span>
+                        <span className="w-1 h-1 bg-slate-300 rounded-full hidden sm:block" />
+                        <span className="font-bold text-slate-900">
+                          {formatProductPrice(group.totalGroupPrice.toString())}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-0 border-gray-50">
-                  <span
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold border ${statusConfig.color}`}
-                  >
-                    {statusConfig.label}
-                  </span>
-
-                  {currentStatus === "dalam_perjalanan" && (
-                    <button
-                      onClick={(e) => confirmReceipt(e, group)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white hover:bg-green-600 rounded-lg text-xs font-bold transition-colors z-10 shadow-sm"
-                      title="Konfirmasi Pesanan Diterima"
+                  <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-0 border-slate-100">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${statusConfig.color}`}
                     >
-                      <CheckCircle className="w-4 h-4" />
-                      <span className="hidden sm:inline">Diterima</span>
-                    </button>
-                  )}
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`}
+                      />
+                      {statusConfig.label}
+                    </span>
 
-                  {(currentStatus === "diterima" ||
-                    currentStatus === "selesai") && (
-                    <button
-                      onClick={(e) => confirmDeleteGroup(e, group)}
-                      className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-lg transition-colors z-10 shadow-sm bg-red-50 border border-red-100"
-                      title="Hapus Riwayat Pesanan"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  )}
+                    {currentStatus === "dalam_perjalanan" && (
+                      <button
+                        type="button"
+                        onClick={(e) => confirmReceipt(e, group)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white hover:bg-emerald-600 rounded-xl text-xs font-bold transition-colors z-10"
+                        title={copy.confirmReceivedTitleAttr}
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        <span className="hidden sm:inline">
+                          {copy.receivedLabel}
+                        </span>
+                      </button>
+                    )}
 
-                  <div className="p-2 text-gray-400 group-hover:text-black transition-colors rounded-lg group-hover:translate-x-1 duration-200">
-                    <ChevronRight className="w-5 h-5" />
+                    {(currentStatus === "diterima" ||
+                      currentStatus === "selesai") && (
+                      <button
+                        type="button"
+                        onClick={(e) => confirmDeleteGroup(e, group)}
+                        className="p-2 text-rose-500 hover:text-white hover:bg-rose-500 rounded-xl transition-colors z-10 bg-rose-50 border border-rose-100"
+                        title={copy.deleteHistoryTitleAttr}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+
+                    <span className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-slate-400 group-hover:text-slate-700 transition-colors">
+                      {copy.viewDetail}
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    </span>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
+                </Link>
+              );
+            })}
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 pt-6 border-t border-gray-100">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 transition-all"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <span className="text-sm font-medium text-gray-600">
-                Halaman <span className="font-bold">{currentPage}</span> dari{" "}
-                {totalPages}
-              </span>
-              <button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(p + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 transition-all"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="text-center py-16">
-          <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
-            <Package className="w-8 h-8 text-gray-300" />
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 pt-5">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-30 transition-all"
+                >
+                  <ChevronLeft className="w-5 h-5 text-slate-600" />
+                </button>
+                <span className="text-sm font-medium text-slate-600">
+                  {copy.pagePrefix}{" "}
+                  <span className="font-bold" style={{ color: brand }}>
+                    {currentPage}
+                  </span>{" "}
+                  {copy.pageOf} {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-30 transition-all"
+                >
+                  <ChevronRight className="w-5 h-5 text-slate-600" />
+                </button>
+              </div>
+            )}
           </div>
-          <h2 className="text-lg font-bold text-gray-900 mb-2">
-            Riwayat belanja kosong
-          </h2>
-          <p className="text-gray-500 mb-6">
-            Anda belum pernah melakukan pembelian produk.
-          </p>
-          <Link
-            href="/belanja"
-            className="inline-flex items-center px-6 py-2.5 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors shadow-sm"
-          >
-            Mulai Belanja
-          </Link>
+        ) : (
+          <div className="bg-white rounded-2xl border border-gray-100 px-6 py-14 text-center">
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              style={{ backgroundColor: `${brand}14` }}
+            >
+              <ShoppingBag className="w-7 h-7" style={{ color: brand }} />
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 mb-2">
+              {copy.emptyTitle}
+            </h2>
+            <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">
+              {copy.emptySubtitle}
+            </p>
+            <Link
+              href="/belanja"
+              className="inline-flex items-center gap-2 px-6 py-2.5 text-white rounded-xl font-semibold text-sm transition hover:opacity-90"
+              style={{ backgroundColor: brand }}
+            >
+              {copy.startShopping}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
+      </ProfileBrandShell>
+
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] px-4 py-2.5 rounded-full bg-slate-900 text-white text-sm font-medium shadow-lg">
+          {toast}
         </div>
       )}
 
-      {/* ================= CUSTOM MODAL COMPONENT ================= */}
       {modal.isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-          <div className="bg-[#1172ba] border border-white/20 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transition-all scale-100">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div
+            className="rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl border border-white/20"
+            style={{
+              background: profileBrandGradient(brand),
+            }}
+          >
+            <div className="mx-auto flex items-center justify-center h-14 w-14 rounded-2xl bg-white/15">
               {modal.type === "confirm" &&
-                (modal.title.includes("Hapus") ? (
-                  <Trash2 className="w-8 h-8 text-amber-400" />
+                (modal.variant === "delete" ? (
+                  <Trash2 className="w-7 h-7 text-amber-300" />
                 ) : (
-                  <CheckCircle className="w-8 h-8 text-green-400" />
+                  <CheckCircle className="w-7 h-7 text-emerald-300" />
                 ))}
               {modal.type === "success" && (
-                <svg
-                  className="h-8 w-8 text-green-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+                <CheckCircle className="w-7 h-7 text-emerald-300" />
               )}
               {modal.type === "error" && (
-                <svg
-                  className="h-8 w-8 text-red-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <Trash2 className="w-7 h-7 text-rose-300" />
               )}
               {modal.type === "loading" && (
-                <svg
-                  className="h-8 w-8 text-white animate-spin"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
+                <div className="w-7 h-7 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               )}
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-white uppercase tracking-wide">
+              <h3 className="text-lg font-bold text-white tracking-tight">
                 {modal.title}
               </h3>
-              <p className="text-sm text-blue-100/80 font-light leading-relaxed">
+              <p className="text-sm text-white/80 leading-relaxed">
                 {modal.message}
               </p>
             </div>
 
             {modal.type === "confirm" && (
-              <div className="flex space-x-3 mt-4 pt-2">
+              <div className="flex gap-3 pt-1">
                 <button
+                  type="button"
                   onClick={closeModal}
-                  className="w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] bg-white/20 text-white hover:bg-white/30"
+                  className="w-full font-semibold py-3 rounded-xl text-sm bg-white/15 text-white hover:bg-white/25 transition"
                 >
-                  Batal
+                  {copy.cancel}
                 </button>
                 <button
+                  type="button"
                   onClick={modal.onConfirm}
-                  className={`w-full font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md active:scale-[0.98] text-white ${
-                    modal.title.includes("Hapus")
-                      ? "bg-red-500 hover:bg-red-600"
-                      : "bg-green-500 hover:bg-green-600"
+                  className={`w-full font-semibold py-3 rounded-xl text-sm text-white transition ${
+                    modal.variant === "delete"
+                      ? "bg-rose-500 hover:bg-rose-600"
+                      : "bg-emerald-500 hover:bg-emerald-600"
                   }`}
                 >
                   {modal.confirmText}
@@ -554,15 +671,17 @@ export default function HistoryPage() {
             )}
             {(modal.type === "success" || modal.type === "error") && (
               <button
+                type="button"
                 onClick={closeModal}
-                className="w-full mt-4 bg-white text-[#1172ba] font-bold py-3 rounded-xl transition-all uppercase tracking-wider text-xs shadow-md hover:bg-blue-50"
+                className="w-full mt-1 bg-white font-bold py-3 rounded-xl text-sm transition hover:bg-blue-50"
+                style={{ color: brand }}
               >
-                Tutup
+                {copy.close}
               </button>
             )}
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

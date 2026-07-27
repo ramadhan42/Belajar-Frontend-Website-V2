@@ -124,9 +124,35 @@ export interface ShoppingHistoryItem {
   product?: Product;
   quantity?: number;
   status?: string;
+  /** Harga produk katalog × qty (sebelum promo) */
   total_price?: number;
+  shipping_cost?: number;
+  promo_discount?: number;
+  /** Backend append: total_price + shipping_cost − promo_discount */
+  grand_total?: number;
+  /** @deprecated legacy alias */
   ongkir_price?: number;
   created_at?: string;
+  metode_pembayaran?: string;
+}
+
+/** Total bayar order = produk + ongkir − promo (sekali). */
+export function orderGrandTotal(order: {
+  total_price?: number | string | null;
+  shipping_cost?: number | string | null;
+  promo_discount?: number | string | null;
+  grand_total?: number | string | null;
+  ongkir_price?: number | string | null;
+}): number {
+  if (order.grand_total != null && order.grand_total !== "") {
+    const g = Number(order.grand_total);
+    if (Number.isFinite(g)) return Math.max(0, g);
+  }
+  const product = Number(order.total_price || 0) || 0;
+  const shipping =
+    Number(order.shipping_cost ?? order.ongkir_price ?? 0) || 0;
+  const promo = Number(order.promo_discount || 0) || 0;
+  return Math.max(0, product + shipping - promo);
 }
 
 // ---------------------------------------------------------------------------
@@ -323,6 +349,8 @@ export type GuestCheckoutPayload = {
   invoice_id: string;
   payment_method: string;
   total: number;
+  shipping_cost?: number;
+  promo_discount?: number;
   items: Array<{
     product_id: number;
     quantity: number;
@@ -537,6 +565,38 @@ export function getAdminHeaders(json = true): Record<string, string> {
   };
   if (json) headers["Content-Type"] = "application/json";
   return headers;
+}
+
+export type Promo = {
+  id: number;
+  harga_promo: number | string;
+  persentase_promo?: number | string | null;
+  tanggal_berlaku_promo?: string | null;
+  tanggal_berakhir_promo?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+/** Promo publik (storefront). active=true → hanya yang berlaku hari ini. */
+export async function getPromos(active = false): Promise<Promo[]> {
+  const q = active ? "?active=1" : "";
+  const res = await fetch(`${BASE_URL}/api/promos${q}`, {
+    headers: { Accept: "application/json" },
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || "Gagal memuat promo");
+  }
+  return data.data || [];
+}
+
+/** Promo aktif terbesar (untuk belanja details). */
+export async function getActivePromo(): Promise<Promo | null> {
+  const list = await getPromos(true);
+  if (!list.length) return null;
+  return list.reduce((best, cur) =>
+    Number(cur.harga_promo) > Number(best.harga_promo) ? cur : best,
+  );
 }
 
 // 1. API UNTUK USER PROFILE

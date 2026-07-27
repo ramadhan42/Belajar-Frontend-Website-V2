@@ -17,6 +17,7 @@ import {
   ClipboardList,
   FilePenLine,
   Boxes,
+  Tag,
 } from "lucide-react";
 import { SITE_STRINGS } from "../constans/strings";
 import LanguageSwitcher from "@/components/global/LanguageSwitcher";
@@ -26,6 +27,7 @@ const menuItems = [
   { key: "dashboard", path: "/dashboard", icon: LayoutDashboard, id: "Dashboard", en: "Dashboard" },
   { key: "cms", path: "/dashboard/cms", icon: FilePenLine, id: "CMS", en: "CMS" },
   { key: "products", path: "/dashboard/products", icon: Package, id: "Produk", en: "Products" },
+  { key: "promos", path: "/dashboard/promos", icon: Tag, id: "Promo", en: "Promos" },
   { key: "kurirs", path: "/dashboard/kurirs", icon: Boxes, id: "Kurir", en: "Couriers" },
   { key: "quiz", path: "/dashboard/quiz", icon: ClipboardList, id: "Kuis", en: "Quiz" },
   { key: "orders", path: "/dashboard/orders", icon: ShoppingBag, id: "Pesanan", en: "Orders" },

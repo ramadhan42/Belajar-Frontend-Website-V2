@@ -19,7 +19,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { SITE_STRINGS } from "@/components/constans/strings";
-import { getAdminHeaders } from "@/lib/api";
+import { getAdminHeaders, orderGrandTotal } from "@/lib/api";
+import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 // Pembaruan Tipe Data sesuai JSON Response Anda
 interface Order {
@@ -28,6 +29,9 @@ interface Order {
   product_id: number;
   quantity: number;
   total_price: string | number;
+  shipping_cost?: string | number;
+  promo_discount?: string | number;
+  grand_total?: string | number;
   status: string;
   created_at: string;
   updated_at: string;
@@ -47,6 +51,7 @@ interface Order {
 }
 
 export default function HomeDashboard() {
+  const { t } = useAdminI18n();
   const router = useRouter(); // 2. Inisialisasi router
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState({
@@ -66,32 +71,42 @@ export default function HomeDashboard() {
     switch (normalizedStatus) {
       case "menunggu_konfirmasi":
         return {
-          label: "Menunggu Konfirmasi",
+          label: t(
+            "home",
+            "status_menunggu_konfirmasi",
+            "Menunggu Konfirmasi",
+            "Awaiting Confirmation",
+          ),
           class: "bg-orange-50 text-orange-600 border border-orange-100",
         };
       case "pengemasan":
         return {
-          label: "Pengemasan",
+          label: t("home", "status_pengemasan", "Pengemasan", "Packing"),
           class: "bg-purple-50 text-purple-600 border border-purple-100",
         };
       case "dalam_perjalanan":
         return {
-          label: "Dalam Perjalanan",
+          label: t(
+            "home",
+            "status_dalam_perjalanan",
+            "Dalam Perjalanan",
+            "In Transit",
+          ),
           class: "bg-blue-50 text-blue-600 border border-blue-100",
         };
       case "diterima":
         return {
-          label: "Diterima",
+          label: t("home", "status_diterima", "Diterima", "Received"),
           class: "bg-emerald-50 text-emerald-600 border border-emerald-100",
         };
       case "selesai":
         return {
-          label: "Selesai",
+          label: t("home", "status_selesai", "Selesai", "Completed"),
           class: "bg-emerald-50 text-emerald-600 border border-emerald-100",
         };
       default:
         return {
-          label: status || "Diproses",
+          label: status || t("home", "status_diproses", "Diproses", "Processing"),
           class: "bg-gray-50 text-gray-600 border border-gray-100",
         };
     }
@@ -134,7 +149,7 @@ export default function HomeDashboard() {
             acc[date] = 0;
           }
 
-          const amount = Number(order.total_price || 0);
+          const amount = orderGrandTotal(order);
           acc[date] += amount;
 
           return acc;
@@ -176,31 +191,31 @@ export default function HomeDashboard() {
   // 3. Tambahkan properti route untuk card yang bisa diklik
   const stats = [
     {
-      title: "Total Products",
+      title: t("home", "stat_products", "Total Produk", "Total Products"),
       value: dashboardData.totalProducts.toString(),
       icon: Package,
-      trend: "Aktif",
+      trend: t("home", "trend_active", "Aktif", "Active"),
       route: "/dashboard/products",
     },
     {
-      title: "Total Orders",
+      title: t("home", "stat_orders", "Total Pesanan", "Total Orders"),
       value: dashboardData.totalOrders.toString(),
       icon: ShoppingBag,
-      trend: "Bulan ini",
+      trend: t("home", "trend_month", "Bulan ini", "This month"),
       route: "/dashboard/orders",
     },
     {
-      title: "Active Users",
+      title: t("home", "stat_users", "Pengguna Aktif", "Active Users"),
       value: dashboardData.activeUsers.toString(),
       icon: Users,
-      trend: "Terdaftar",
+      trend: t("home", "trend_registered", "Terdaftar", "Registered"),
       route: "/dashboard/users",
     },
     {
-      title: "Total Revenue",
+      title: t("home", "stat_revenue", "Total Pendapatan", "Total Revenue"),
       value: formatRupiah(dashboardData.totalRevenue),
       icon: TrendingUp,
-      trend: "Pendapatan",
+      trend: t("home", "trend_revenue", "Pendapatan", "Revenue"),
       route: "/dashboard/orders",
     },
   ];
@@ -217,9 +232,16 @@ export default function HomeDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Overview</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          {t("home", "title", "Overview", "Overview")}
+        </h1>
         <p className="text-gray-500 mt-1">
-          Selamat datang kembali, lihat performa Evomi hari ini.
+          {t(
+            "home",
+            "subtitle",
+            "Selamat datang kembali, lihat performa Evomi hari ini.",
+            "Welcome back — here's Evomi's performance today.",
+          )}
         </p>
       </div>
 
@@ -263,7 +285,7 @@ export default function HomeDashboard() {
         {/* Chart Section */}
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-50/50 min-h-[400px] flex flex-col">
           <h2 className="text-lg font-semibold text-gray-900 mb-6">
-            Grafik Penjualan
+            {t("home", "sales_chart", "Grafik Penjualan", "Sales Chart")}
           </h2>
           <div className="flex-1 w-full h-full min-h-[300px]">
             {chartData.length > 0 ? (
@@ -304,7 +326,7 @@ export default function HomeDashboard() {
                     }}
                     formatter={(value: any) => [
                       formatRupiah(value),
-                      "Pendapatan",
+                      t("home", "trend_revenue", "Pendapatan", "Revenue"),
                     ]}
                   />
                   <Area
@@ -319,7 +341,7 @@ export default function HomeDashboard() {
               </ResponsiveContainer>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                Belum ada data penjualan.
+                {t("home", "empty_sales", "Belum ada data penjualan.", "No sales data yet.")}
               </div>
             )}
           </div>
@@ -328,7 +350,7 @@ export default function HomeDashboard() {
         {/* Versi Lengkap Recent Orders Section dengan Gambar & Status */}
         <div className="bg-white p-6 rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-50/50 min-h-[400px]">
           <h2 className="text-lg font-semibold text-gray-900 mb-6">
-            Pesanan Terbaru
+            {t("home", "recent_orders", "Pesanan Terbaru", "Recent Orders")}
           </h2>
 
           {recentOrders.length > 0 ? (
@@ -364,10 +386,13 @@ export default function HomeDashboard() {
                           {order.id}
                         </p>
                         <p className="text-sm font-bold text-gray-900 truncate mt-0.5">
-                          {order.product?.title || "Produk Hilang"}
+                          {order.product?.title ||
+                            t("home", "product_missing", "Produk Hilang", "Missing Product")}
                         </p>
                         <p className="text-xs text-gray-500 truncate mt-0.5 capitalize">
-                          Oleh: {order.user?.name || "Anonim"}
+                          {t("home", "by_label", "Oleh", "By")}:{" "}
+                          {order.user?.name ||
+                            t("home", "anonymous", "Anonim", "Anonymous")}
                         </p>
                       </div>
                     </div>
@@ -375,7 +400,7 @@ export default function HomeDashboard() {
                     {/* Harga & Badge Status */}
                     <div className="text-right shrink-0">
                       <p className="text-sm font-bold text-gray-900">
-                        {formatRupiah(order.total_price)}
+                        {formatRupiah(orderGrandTotal(order))}
                       </p>
                       <span
                         className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-md font-semibold ${statusConfig.class}`}
@@ -389,7 +414,7 @@ export default function HomeDashboard() {
             </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm pb-10">
-              Belum ada pesanan masuk.
+              {t("home", "empty_orders", "Belum ada pesanan masuk.", "No orders yet.")}
             </div>
           )}
         </div>

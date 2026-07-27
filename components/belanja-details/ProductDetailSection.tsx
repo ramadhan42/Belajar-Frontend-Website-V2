@@ -8,6 +8,7 @@ import {
   formatProductPrice,
   addToCart,
   addToWishlist,
+  getActivePromo,
   Product,
 } from "@/lib/api";
 
@@ -211,9 +212,9 @@ export default function ProductDetailSection({
   // Dummy Data State for Right Column Cart Box
   const [quantity, setQuantity] = useState(1);
   const dummyStock = 968;
-  const dummyPrice = 189000;
 
   const [hargaPromo, setHargaPromo] = useState<number>(0);
+  const [promoEndDate, setPromoEndDate] = useState<string | null>(null);
 
   // Cart & Wishlist state
   const [cartStatus, setCartStatus] = useState<
@@ -452,32 +453,34 @@ export default function ProductDetailSection({
   }, []);
 
   useEffect(() => {
-    fetch(`${BASE_URL}/api/promos`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Gagal mengambil data promo");
-        return res.json();
-      })
-      .then((data) => {
-        if (data.success && data.data && data.data.length > 0) {
-          setHargaPromo(Number(data.data[0].harga_promo));
+    getActivePromo()
+      .then((promo) => {
+        if (!promo) {
+          setHargaPromo(0);
+          setPromoEndDate(null);
+          return;
         }
+        setHargaPromo(Number(promo.harga_promo) || 0);
+        setPromoEndDate(promo.tanggal_berakhir_promo ?? null);
       })
       .catch((err) => {
         console.error(err);
+        setHargaPromo(0);
+        setPromoEndDate(null);
       });
   }, []);
 
-  // Pastikan product.price diubah menjadi Number agar bisa dikurangi
+  // Produk penuh (tanpa promo) × qty
   const productPrice = product?.price ? Number(product.price) : 0;
-
-  // Rumus: (Harga Produk - Harga Promo) * Kuantitas
-  // Menggunakan Math.max agar hasil tidak minus jika harga promo lebih besar dari harga produk
-  const dummySubtotalPrice = Math.max(
-    (productPrice - hargaPromo) * quantity,
-    0,
-  );
+  const productSubtotal = Math.max(productPrice * quantity, 0);
   const shippingCost = selectedKurir ? Number(selectedKurir.harga) || 0 : 0;
-  const totalWithShipping = dummySubtotalPrice + shippingCost;
+  // Promo mengurangi (produk + ongkir) di belanja details saja
+  const grossBeforePromo = productSubtotal + shippingCost;
+  const promoDiscount = Math.min(Math.max(hargaPromo, 0), grossBeforePromo);
+  const totalWithShipping = Math.max(grossBeforePromo - promoDiscount, 0);
+  // Ke checkout: harga katalog + potongan produk sekali (bukan unitPrice sudah-diskon)
+  // agar qty di checkout tidak mengalikan promo lagi
+  const checkoutProductDiscount = Math.min(promoDiscount, productSubtotal);
 
   useEffect(() => {
     setIsLoading(true);
@@ -542,6 +545,7 @@ export default function ProductDetailSection({
       stok: L(locale, "Stok:", "Stock:"),
       subtotal: L(locale, "Subtotal", "Subtotal"),
       ongkir: L(locale, "Ongkir", "Shipping"),
+      promo: L(locale, "Promo", "Promo"),
       totalBayar: L(locale, "Total", "Total"),
       beliLangsung: L(locale, "Beli Langsung", "Buy Now"),
       memproses: L(locale, "Memproses...", "Processing..."),
@@ -551,9 +555,10 @@ export default function ProductDetailSection({
       share: L(locale, "Share", "Share"),
       promoBerlaku: L(
         locale,
-        "Promo berlaku hari ini! Hemat hingga",
-        "Promo valid today! Save up to",
+        "Promo aktif! Hemat",
+        "Promo active! Save",
       ),
+      promoHingga: L(locale, "berlaku hingga", "valid until"),
       jaminanProduk: L(locale, "Jaminan Produk", "Product Guarantee"),
       uangKembali: L(
         locale,
@@ -1149,8 +1154,13 @@ export default function ProductDetailSection({
                 {/* Harga Detail */}
                 <div>
                   <div className="font-nohemi text-[28px] font-bold text-[#101828] leading-none">
-                    {formatProductPrice(dummyPrice)}
+                    {formatProductPrice(productPrice)}
                   </div>
+                  {promoDiscount > 0 ? (
+                    <p className="mt-1 text-[12px] font-parkinsans text-[#CA3500]">
+                      {copy.promo} −{formatProductPrice(promoDiscount)}
+                    </p>
+                  ) : null}
                 </div>
 
                 {/* Quantity & Stock */}
@@ -1188,14 +1198,14 @@ export default function ProductDetailSection({
                   </div>
                 </div>
 
-                {/* Ringkasan harga: produk + ongkir */}
+                {/* Ringkasan: produk + ongkir − promo */}
                 <div className="flex flex-col gap-1.5 mt-1">
                   <div className="flex justify-between items-center">
                     <span className="text-[14px] font-parkinsans text-[#6A7282] font-normal">
                       {copy.subtotal}
                     </span>
                     <span className="text-[14px] font-nohemi font-semibold text-[#101828]">
-                      {formatProductPrice(dummySubtotalPrice)}
+                      {formatProductPrice(productSubtotal)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -1212,6 +1222,16 @@ export default function ProductDetailSection({
                       {formatProductPrice(shippingCost)}
                     </span>
                   </div>
+                  {promoDiscount > 0 ? (
+                    <div className="flex justify-between items-center">
+                      <span className="text-[14px] font-parkinsans text-[#CA3500] font-normal">
+                        {copy.promo}
+                      </span>
+                      <span className="text-[14px] font-nohemi font-semibold text-[#CA3500]">
+                        −{formatProductPrice(promoDiscount)}
+                      </span>
+                    </div>
+                  ) : null}
                   <div className="flex justify-between items-center pt-1 border-t border-gray-100 mt-0.5">
                     <span className="text-[17px] font-parkinsans text-[#6A7282] font-normal">
                       {copy.totalBayar}
@@ -1219,7 +1239,7 @@ export default function ProductDetailSection({
                     <span
                       className="text-[17px] font-nohemi font-bold"
                       data-theme-text-shimmer
-            style={accentTextStyle}
+                      style={accentTextStyle}
                     >
                       {formatProductPrice(totalWithShipping)}
                     </span>
@@ -1230,12 +1250,14 @@ export default function ProductDetailSection({
                 <div className="flex flex-col gap-3 mt-1">
                   <button
                     onClick={() => {
-                      const unitPrice = Math.max(productPrice - hargaPromo, 0);
                       const params = new URLSearchParams({
                         type: "buynow",
                         productId: String(id),
                         qty: String(quantity),
-                        unitPrice: String(unitPrice),
+                        // Harga katalog murni — checkout tidak apply / bake promo ke unit price
+                        unitPrice: String(productPrice),
+                        // Potongan tetap dari details (sekali); checkout tidak fetch promo
+                        productDiscount: String(checkoutProductDiscount),
                       });
                       if (selectedKurir?.id) {
                         params.set("kurirId", String(selectedKurir.id));
@@ -1300,13 +1322,27 @@ export default function ProductDetailSection({
                 </div>
 
                 {/* Promo Banner */}
-                <div className="bg-[#FFF4E5] border border-[#FFE8CC] text-[#CA3500] rounded-[8px] p-3 flex gap-2.5 items-center mt-2 font-parkinsans">
-                  <Clock size={18} className="shrink-0" />
-                  <p className="text-[14px] font-normal leading-snug">
-                    {copy.promoBerlaku}{" "}
-                    {formatProductPrice(hargaPromo)}
-                  </p>
-                </div>
+                {promoDiscount > 0 ? (
+                  <div className="bg-[#FFF4E5] border border-[#FFE8CC] text-[#CA3500] rounded-[8px] p-3 flex gap-2.5 items-center mt-2 font-parkinsans">
+                    <Clock size={18} className="shrink-0" />
+                    <p className="text-[14px] font-normal leading-snug">
+                      {copy.promoBerlaku}{" "}
+                      {formatProductPrice(promoDiscount)}
+                      {promoEndDate
+                        ? ` · ${copy.promoHingga} ${new Date(
+                            promoEndDate,
+                          ).toLocaleDateString(
+                            locale === "en" ? "en-US" : "id-ID",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}`
+                        : ""}
+                    </p>
+                  </div>
+                ) : null}
 
                 {/* Notifications */}
                 {(cartMessage || wishlistMessage) && (

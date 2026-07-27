@@ -18,10 +18,14 @@ import { CgClose } from "react-icons/cg";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
+import { orderGrandTotal } from "@/lib/api";
 
 interface Order {
   id: string;
   total_price: string | number;
+  shipping_cost?: string | number;
+  promo_discount?: string | number;
+  grand_total?: string | number;
   status: string;
   metode_pembayaran: string;
   created_at: string;
@@ -82,9 +86,9 @@ export default function OrdersPage() {
   );
 
   // ---> KALKULASI TOTAL REVENUE <---
-  // Menjumlahkan total_price dari seluruh order yang tampil (filtered)
+  // produk + ongkir − promo (bukan total_price saja / ongkir hardcode)
   const totalRevenue = filteredOrders.reduce(
-    (sum, order) => sum + Number(order.total_price || 0),
+    (sum, order) => sum + orderGrandTotal(order),
     0,
   );
 
@@ -625,7 +629,7 @@ export default function OrdersPage() {
                   </td>
 
                   <td className="px-6 py-4 text-center text-sm font-bold text-gray-900">
-                    {formatRupiah(order.total_price)}
+                    {formatRupiah(orderGrandTotal(order))}
                   </td>
 
                   <td className="px-6 py-4 text-center text-left">

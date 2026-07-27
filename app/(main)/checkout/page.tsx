@@ -22,6 +22,7 @@ import {
   getProductImageUrl,
   formatProductPrice,
   guestCheckoutApi,
+  userProfileApi,
   Product,
 } from "@/lib/api";
 import { useLocale } from "@/context/LocaleContext";
@@ -107,6 +108,14 @@ function CheckoutContent() {
     address: "",
     courier: "JNE",
   });
+  /** Draft saat mengedit — baru di-commit ke formData saat klik Simpan */
+  const [addressDraft, setAddressDraft] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
 
   const searchParams = useSearchParams();
   const type = searchParams.get("type");
@@ -120,7 +129,7 @@ function CheckoutContent() {
   useTrackLocaleLoad(isLoading);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [isEditingAddress, setIsEditingAddress] = useState(true);
   const [orderNote, setOrderNote] = useState("");
 
   type KurirOption = {
@@ -146,6 +155,10 @@ function CheckoutContent() {
   const qtyParam = searchParams.get("qty");
   const kurirIdParam = searchParams.get("kurirId");
   const unitPriceParam = searchParams.get("unitPrice");
+  const productDiscountParam = searchParams.get("productDiscount");
+
+  /** Potongan produk tetap dari belanja details — tidak di-fetch / di-apply ulang sebagai promo */
+  const [productDiscount, setProductDiscount] = useState(0);
 
   const selectedKurir = useMemo(
     () => kurirs.find((k) => k.id === selectedKurirId) ?? kurirs[0] ?? null,
@@ -371,22 +384,161 @@ function CheckoutContent() {
   const isContentRevealed = !isLoading && !error && !isThemeLoading;
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("auth_user");
-      if (!raw) return;
-      const user = JSON.parse(raw);
-      setFormData((prev) => ({
-        ...prev,
-        name: prev.name || user.name || user.nama_lengkap || "",
-        email: prev.email || user.email || "",
-        phone: prev.phone || user.phone || "",
-        address: prev.address || user.alamat_lengkap || "",
-      }));
-    } catch {
-      /* ignore */
-    }
+    let cancelled = false;
+
+    const isCompleteAddress = (data: {
+      name?: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+    }) =>
+      Boolean(data.name?.trim()) &&
+      Boolean(data.email?.trim()) &&
+      Boolean(data.phone?.trim()) &&
+      Boolean(data.address?.trim());
+
+    const applyAddress = (next: {
+      name: string;
+      email: string;
+      phone: string;
+      address: string;
+    }) => {
+      if (cancelled) return;
+      setFormData((prev) => ({ ...prev, ...next }));
+      setAddressDraft(next);
+      setIsEditingAddress(!isCompleteAddress(next));
+    };
+
+    const loadShippingAddress = async () => {
+      const rawToken = localStorage.getItem("auth_token");
+      const token = rawToken ? rawToken.replace(/['"]+/g, "").trim() : null;
+
+      if (token) {
+        try {
+          const res = await userProfileApi.getProfile();
+          const user = res?.data ?? res;
+          if (user && !cancelled) {
+            const next = {
+              name: String(user.name || user.nama_lengkap || "").trim(),
+              email: String(user.email || "").trim(),
+              phone: String(user.phone || "").trim(),
+              address: String(user.alamat_lengkap || "").trim(),
+            };
+            applyAddress(next);
+            try {
+              const raw = localStorage.getItem("auth_user");
+              const prev = raw ? JSON.parse(raw) : {};
+              localStorage.setItem(
+                "auth_user",
+                JSON.stringify({ ...prev, ...user }),
+              );
+            } catch {
+              /* ignore */
+            }
+            return;
+          }
+        } catch {
+          /* fallback ke localStorage */
+        }
+      }
+
+      try {
+        const raw = localStorage.getItem("auth_user");
+        if (!raw || cancelled) return;
+        const user = JSON.parse(raw);
+        applyAddress({
+          name: String(user.name || user.nama_lengkap || "").trim(),
+          email: String(user.email || "").trim(),
+          phone: String(user.phone || "").trim(),
+          address: String(user.alamat_lengkap || "").trim(),
+        });
+      } catch {
+        /* ignore */
+      }
+    };
+
+    loadShippingAddress();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+  const openAddressEditor = () => {
+    setAddressDraft({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+    });
+    setIsEditingAddress(true);
+  };
+
+  const cancelAddressEdit = () => {
+    const hasCommitted =
+      Boolean(formData.name?.trim()) &&
+      Boolean(formData.email?.trim()) &&
+      Boolean(formData.phone?.trim()) &&
+      Boolean(formData.address?.trim());
+    if (!hasCommitted) return;
+    setAddressDraft({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+    });
+    setIsEditingAddress(false);
+  };
+
+  const saveAddress = async () => {
+    const next = {
+      name: addressDraft.name.trim(),
+      email: addressDraft.email.trim(),
+      phone: addressDraft.phone.trim(),
+      address: addressDraft.address.trim(),
+    };
+
+    if (!next.name || !next.email || !next.phone || !next.address) {
+      alert(copy.fillShippingData);
+      return null;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next.email)) {
+      alert(copy.invalidEmail);
+      return null;
+    }
+
+    setFormData((prev) => ({ ...prev, ...next }));
+    setAddressDraft(next);
+    setIsEditingAddress(false);
+
+    const rawToken = localStorage.getItem("auth_token");
+    const token = rawToken ? rawToken.replace(/['"]+/g, "").trim() : null;
+    if (!token) return next;
+
+    try {
+      setIsSavingAddress(true);
+      const data = await userProfileApi.updateProfile({
+        name: next.name,
+        nama_lengkap: next.name,
+        email: next.email,
+        phone: next.phone,
+        alamat_lengkap: next.address,
+      });
+      const userRaw = localStorage.getItem("auth_user");
+      const prev = userRaw ? JSON.parse(userRaw) : {};
+      localStorage.setItem(
+        "auth_user",
+        JSON.stringify({ ...prev, ...(data?.data || next) }),
+      );
+      window.dispatchEvent(new Event("auth-change"));
+    } catch (err) {
+      console.error("Gagal menyimpan alamat ke profil:", err);
+    } finally {
+      setIsSavingAddress(false);
+    }
+
+    return next;
+  };
   useEffect(() => {
     if (selectedKurir) {
       setFormData((prev) => ({
@@ -451,25 +603,37 @@ function CheckoutContent() {
             personality_type: item.product?.personality_type || "prestige",
           }));
           setItems(formattedItems);
+          setProductDiscount(0);
         } else if (type === "buynow" && productId) {
           const productData = await getProduct(productId, locale);
           const qty = Math.max(1, Number(qtyParam) || 1);
+          const catalogPrice =
+            parseFloat(String(productData.price || "0")) || 0;
 
-          // Harga produk murni saja (tanpa ongkir).
-          // unitPrice dari belanja details = (harga katalog - promo).
-          const catalogPrice = parseFloat(String(productData.price || "0")) || 0;
+          // Checkout tidak menerapkan promo. Harga item = katalog.
+          // Potongan (jika ada) hanya sekali dari query belanja details — tidak dikali qty.
           const fromQuery = Number(unitPriceParam);
-          const unitPrice =
-            Number.isFinite(fromQuery) && fromQuery >= 0
-              ? fromQuery
-              : catalogPrice;
+          const discountFromQuery = Number(productDiscountParam);
+          let discount = 0;
 
+          if (Number.isFinite(discountFromQuery) && discountFromQuery >= 0) {
+            discount = discountFromQuery;
+          } else if (
+            Number.isFinite(fromQuery) &&
+            fromQuery >= 0 &&
+            fromQuery < catalogPrice
+          ) {
+            // Legacy link: unitPrice lama = harga setelah promo
+            discount = Math.max(catalogPrice - fromQuery, 0) * qty;
+          }
+
+          setProductDiscount(discount);
           setItems([
             {
               id: `buy-${productData.id}`,
               product_id: productData.id,
               title: productData.title,
-              price: unitPrice,
+              price: catalogPrice,
               quantity: qty,
               image:
                 getProductImageUrl(
@@ -489,20 +653,44 @@ function CheckoutContent() {
     };
 
     fetchCheckoutData();
-  }, [type, productId, qtyParam, unitPriceParam, locale, copy, router]);
+  }, [
+    type,
+    productId,
+    qtyParam,
+    unitPriceParam,
+    productDiscountParam,
+    locale,
+    copy,
+    router,
+  ]);
 
-  /** Subtotal produk saja — ongkir dihitung terpisah dari API kurir */
-  const productSubtotal = items.reduce(
+  /** Subtotal katalog — potongan details (jika ada) hanya dikurangi sekali, bukan per unit */
+  const rawProductSubtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
+  const productSubtotal = Math.max(rawProductSubtotal - productDiscount, 0);
   const subtotal = productSubtotal;
   const totalTagihan = productSubtotal + ongkosKirim;
 
-  const processInternalCheckout = async (customInvoiceId: string) => {
+  const processInternalCheckout = async (
+    customInvoiceId: string,
+    shipping?: {
+      name: string;
+      email: string;
+      phone: string;
+      address: string;
+    },
+  ) => {
     const rawToken = localStorage.getItem("auth_token");
     const token = rawToken ? rawToken.replace(/['"]+/g, "").trim() : null;
     const isGuest = isGuestBuyNow && !token;
+    const recipient = shipping ?? {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      address: formData.address.trim(),
+    };
 
     if (!isGuestBuyNow && !token) {
       alert(copy.loginRequiredCart);
@@ -522,9 +710,10 @@ function CheckoutContent() {
       const formattedPaymentMethod =
         paymentMethod === "qris" ? "QRIS" : "Cash on Delivery";
 
+      // Simpan harga katalog di order; ongkir & promo dikirim terpisah (sekali).
       if (isGuest) {
         await guestCheckoutApi({
-          guest_email: formData.email.trim(),
+          guest_email: recipient.email,
           invoice_id: customInvoiceId,
           items: items.map((item) => ({
             product_id: Number(item.product_id),
@@ -534,9 +723,11 @@ function CheckoutContent() {
           })),
           payment_method: formattedPaymentMethod,
           total: totalTagihan,
-          recipient_name: formData.name,
-          recipient_phone: formData.phone,
-          recipient_address: formData.address,
+          shipping_cost: ongkosKirim,
+          promo_discount: productDiscount,
+          recipient_name: recipient.name,
+          recipient_phone: recipient.phone,
+          recipient_address: recipient.address,
           courier: courierLabel,
         });
         setCompletedOrderId(customInvoiceId);
@@ -554,13 +745,14 @@ function CheckoutContent() {
             items: items,
             payment_method: formattedPaymentMethod,
             total: totalTagihan,
-            guest_email: formData.email.trim() || undefined,
-            recipient_name: formData.name,
-            recipient_phone: formData.phone,
-            recipient_address: formData.address,
+            shipping_cost: ongkosKirim,
+            promo_discount: productDiscount,
+            guest_email: recipient.email || undefined,
+            recipient_name: recipient.name,
+            recipient_phone: recipient.phone,
+            recipient_address: recipient.address,
             courier: courierLabel,
             kurir_id: selectedKurir?.id,
-            shipping_cost: ongkosKirim,
           }),
         });
 
@@ -584,9 +776,9 @@ function CheckoutContent() {
             order_id: customInvoiceId,
             status: "Menunggu Konfirmasi",
             courier: courierLabel,
-            recipient_name: formData.name,
-            recipient_phone: formData.phone,
-            recipient_address: formData.address,
+            recipient_name: recipient.name,
+            recipient_phone: recipient.phone,
+            recipient_address: recipient.address,
             timeline: [
               { status: "Pesanan dibuat", time: new Date().toISOString() },
             ],
@@ -616,12 +808,28 @@ function CheckoutContent() {
   };
 
   const handleCheckout = async () => {
-    if (!formData.name || !formData.address || !formData.phone || !formData.email) {
+    let recipient = {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      address: formData.address.trim(),
+    };
+
+    if (isEditingAddress) {
+      const saved = await saveAddress();
+      if (!saved) return;
+      recipient = saved;
+    } else if (
+      !recipient.name ||
+      !recipient.email ||
+      !recipient.phone ||
+      !recipient.address
+    ) {
       alert(copy.fillShippingData);
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient.email)) {
       alert(copy.invalidEmail);
       return;
     }
@@ -662,11 +870,10 @@ function CheckoutContent() {
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(
-            data.message || copy.qrisGenerateFailed,
-          );
+          throw new Error(data.message || copy.qrisGenerateFailed);
         }
 
+        setFormData((prev) => ({ ...prev, ...recipient }));
         setQrisData({
           id: data.id,
           qr_string: data.qr_string,
@@ -684,7 +891,7 @@ function CheckoutContent() {
         setIsProcessing(false);
       }
     } else {
-      await processInternalCheckout(invoiceId);
+      await processInternalCheckout(invoiceId, recipient);
     }
   };
 
@@ -834,7 +1041,7 @@ function CheckoutContent() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setIsEditingAddress(true)}
+                    onClick={openAddressEditor}
                     className="shrink-0 px-4 py-1.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
                   >
                     {copy.changeAddress}
@@ -842,7 +1049,7 @@ function CheckoutContent() {
                 </div>
               ) : (
                 <div className="space-y-3 font-parkinsans">
-                  {!hasAddress && !isEditingAddress ? (
+                  {!hasAddress ? (
                     <p className="text-sm text-gray-500 mb-2">
                       {copy.emptyAddressHint}
                     </p>
@@ -852,12 +1059,15 @@ function CheckoutContent() {
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input
                         type="text"
-                        value={formData.name}
+                        value={addressDraft.name}
                         placeholder={copy.recipientName}
                         className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm outline-none focus:ring-2"
                         style={{ ["--tw-ring-color" as string]: `${brand}40` }}
                         onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
+                          setAddressDraft((prev) => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
                         }
                       />
                     </div>
@@ -865,12 +1075,15 @@ function CheckoutContent() {
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input
                         type="email"
-                        value={formData.email}
+                        value={addressDraft.email}
                         placeholder={copy.emailAddress}
                         className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm outline-none focus:ring-2"
                         style={{ ["--tw-ring-color" as string]: `${brand}40` }}
                         onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
+                          setAddressDraft((prev) => ({
+                            ...prev,
+                            email: e.target.value,
+                          }))
                         }
                       />
                     </div>
@@ -878,12 +1091,15 @@ function CheckoutContent() {
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input
                         type="tel"
-                        value={formData.phone}
+                        value={addressDraft.phone}
                         placeholder={copy.phoneNumber}
                         className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm outline-none focus:ring-2"
                         style={{ ["--tw-ring-color" as string]: `${brand}40` }}
                         onChange={(e) =>
-                          setFormData({ ...formData, phone: e.target.value })
+                          setAddressDraft((prev) => ({
+                            ...prev,
+                            phone: e.target.value,
+                          }))
                         }
                       />
                     </div>
@@ -916,13 +1132,16 @@ function CheckoutContent() {
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                     <textarea
-                      value={formData.address}
+                      value={addressDraft.address}
                       rows={3}
                       placeholder={copy.fullAddress}
                       className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm outline-none resize-none focus:ring-2"
                       style={{ ["--tw-ring-color" as string]: `${brand}40` }}
                       onChange={(e) =>
-                        setFormData({ ...formData, address: e.target.value })
+                        setAddressDraft((prev) => ({
+                          ...prev,
+                          address: e.target.value,
+                        }))
                       }
                     />
                   </div>
@@ -930,7 +1149,7 @@ function CheckoutContent() {
                     {hasAddress ? (
                       <button
                         type="button"
-                        onClick={() => setIsEditingAddress(false)}
+                        onClick={cancelAddressEdit}
                         className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
                       >
                         {copy.cancelEdit}
@@ -938,17 +1157,12 @@ function CheckoutContent() {
                     ) : null}
                     <button
                       type="button"
-                      onClick={() => {
-                        if (!hasAddress) {
-                          alert(copy.fillShippingData);
-                          return;
-                        }
-                        setIsEditingAddress(false);
-                      }}
-                      className="px-4 py-2 rounded-lg text-sm font-semibold text-white"
+                      onClick={() => void saveAddress()}
+                      disabled={isSavingAddress}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-60"
                       style={{ backgroundColor: brand }}
                     >
-                      {copy.saveAddress}
+                      {isSavingAddress ? copy.processing : copy.saveAddress}
                     </button>
                   </div>
                 </div>
@@ -968,7 +1182,14 @@ function CheckoutContent() {
               </div>
 
               <div className="space-y-4">
-                {items.map((item) => (
+                {items.map((item) => {
+                  const chargedUnit =
+                    items.length === 1 &&
+                    item.quantity > 0 &&
+                    productDiscount > 0
+                      ? productSubtotal / item.quantity
+                      : item.price;
+                  return (
                   <div
                     key={item.id}
                     className="flex gap-3 sm:gap-4 items-start"
@@ -993,13 +1214,13 @@ function CheckoutContent() {
                             className="text-sm font-bold"
                             style={{ color: brand }}
                           >
-                            {formatProductPrice(item.price)}
+                            {formatProductPrice(chargedUnit)}
                           </p>
                           <p className="text-[11px] text-gray-400 mt-0.5">
                             {L(
                               locale,
-                              `${item.quantity} × ${formatProductPrice(item.price)} = ${formatProductPrice(item.price * item.quantity)}`,
-                              `${item.quantity} × ${formatProductPrice(item.price)} = ${formatProductPrice(item.price * item.quantity)}`,
+                              `${item.quantity} × ${formatProductPrice(chargedUnit)} = ${formatProductPrice(chargedUnit * item.quantity)}`,
+                              `${item.quantity} × ${formatProductPrice(chargedUnit)} = ${formatProductPrice(chargedUnit * item.quantity)}`,
                             )}
                           </p>
                         </div>
@@ -1027,7 +1248,8 @@ function CheckoutContent() {
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Shipping box */}
