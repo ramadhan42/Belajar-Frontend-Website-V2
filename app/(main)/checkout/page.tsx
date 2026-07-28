@@ -452,10 +452,12 @@ function CheckoutContent() {
         const settings = await getPublicPaymentSettings();
         if (cancelled) return;
         setPaymentSettings(settings);
-        if (settings.provider === "xendit" && settings.configured) {
+        if (
+          (settings.provider === "xendit" ||
+            settings.provider === "midtrans") &&
+          settings.configured
+        ) {
           setPaymentMethod("qris");
-        } else if (settings.provider === "midtrans" && settings.configured) {
-          setPaymentMethod("midtrans");
         } else {
           setPaymentMethod("cash");
         }
@@ -479,34 +481,7 @@ function CheckoutContent() {
   const paymentOptions = useMemo(() => {
     const provider = paymentSettings?.provider ?? "manual";
     const configured = Boolean(paymentSettings?.configured);
-
-    if (provider === "xendit" && configured) {
-      return [
-        {
-          id: "qris",
-          title: "QRIS",
-          desc: copy.qrisDesc,
-          icon: QrCode,
-        },
-      ];
-    }
-
-    if (provider === "midtrans" && configured) {
-      return [
-        {
-          id: "midtrans",
-          title: "Midtrans",
-          desc: L(
-            locale,
-            "Bayar aman via Midtrans Snap (VA, e-wallet, kartu, QRIS).",
-            "Pay securely via Midtrans Snap (VA, e-wallet, card, QRIS).",
-          ),
-          icon: CreditCard,
-        },
-      ];
-    }
-
-    return [
+    const options = [
       {
         id: "cash",
         title: copy.codTitle,
@@ -514,6 +489,24 @@ function CheckoutContent() {
         icon: Banknote,
       },
     ];
+
+    if ((provider === "xendit" || provider === "midtrans") && configured) {
+      options.push({
+        id: "qris",
+        title: "QRIS",
+        desc:
+          provider === "xendit"
+            ? copy.qrisDesc
+            : L(
+                locale,
+                "Bayar dengan QRIS melalui Midtrans.",
+                "Pay with QRIS through Midtrans.",
+              ),
+        icon: provider === "xendit" ? QrCode : CreditCard,
+      });
+    }
+
+    return options;
   }, [paymentSettings, copy.qrisDesc, copy.codTitle, copy.codDesc, locale]);
 
   useEffect(() => {
@@ -857,9 +850,7 @@ function CheckoutContent() {
       const formattedPaymentMethod =
         paymentMethod === "qris"
           ? "QRIS"
-          : paymentMethod === "midtrans"
-            ? "Midtrans"
-            : "Cash on Delivery";
+          : "Cash on Delivery";
 
       // Simpan harga katalog di order; ongkir & promo dikirim terpisah (sekali).
       if (isGuest) {
@@ -997,7 +988,7 @@ function CheckoutContent() {
 
     const invoiceId = `INV-${Math.floor(Math.random() * 1000000)}`;
 
-    if (paymentMethod === "qris") {
+    if (paymentMethod === "qris" && paymentSettings?.provider === "xendit") {
       setIsProcessing(true);
       try {
         const expiresAt = new Date(Date.now() + 15 * 60000).toISOString();
@@ -1024,7 +1015,10 @@ function CheckoutContent() {
       } finally {
         setIsProcessing(false);
       }
-    } else if (paymentMethod === "midtrans") {
+    } else if (
+      paymentMethod === "qris" &&
+      paymentSettings?.provider === "midtrans"
+    ) {
       setIsProcessing(true);
       try {
         const snap = await createMidtransSnap({

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
+import AdminAlertModal from "@/components/admin/AdminAlertModal";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 interface UserData {
@@ -129,6 +130,11 @@ export default function UsersPage() {
   const [notification, setNotification] = useState<{
     message: string;
     type: "success" | "error";
+  } | null>(null);
+  const [alertDialog, setAlertDialog] = useState<{
+    title: string;
+    message: string;
+    variant: "info" | "success" | "error";
   } | null>(null);
 
   // Delete Modal
@@ -325,14 +331,21 @@ export default function UsersPage() {
     if (!userToDelete) return;
 
     if (userToDelete.is_admin) {
-      alert(
-        t(
+      setAlertDialog({
+        title: t(
+          "users",
+          "admin_protected_title",
+          "Aksi tidak diizinkan",
+          "Action not allowed",
+        ),
+        message: t(
           "users",
           "admin_protected",
           "Admin utama tidak dapat dihapus.",
           "The primary admin cannot be deleted.",
         ),
-      );
+        variant: "error",
+      });
       setIsDeleteModalOpen(false);
       return;
     }
@@ -356,26 +369,41 @@ export default function UsersPage() {
         setUserToDelete(null);
       } else {
         const errorData = await res.json();
-        alert(
-          errorData.message ||
+        setAlertDialog({
+          title: t(
+            "users",
+            "delete_failed_title",
+            "Gagal menghapus",
+            "Delete failed",
+          ),
+          message:
+            errorData.message ||
             t(
               "users",
               "delete_error",
               "Gagal menghapus pengguna.",
               "Failed to delete user.",
             ),
-        );
+          variant: "error",
+        });
       }
     } catch (error) {
       console.error("Terjadi kesalahan:", error);
-      alert(
-        t(
+      setAlertDialog({
+        title: t(
+          "users",
+          "network_error_title",
+          "Koneksi bermasalah",
+          "Connection issue",
+        ),
+        message: t(
           "users",
           "server_contact_error",
           "Gagal menghubungi server.",
           "Failed to contact the server.",
         ),
-      );
+        variant: "error",
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -407,6 +435,15 @@ export default function UsersPage() {
           {notification.message}
         </div>
       ) : null}
+
+      <AdminAlertModal
+        open={!!alertDialog}
+        onClose={() => setAlertDialog(null)}
+        title={alertDialog?.title || ""}
+        message={alertDialog?.message || ""}
+        variant={alertDialog?.variant || "info"}
+        buttonLabel={common.ok}
+      />
 
       {/* Header & Pencarian */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">

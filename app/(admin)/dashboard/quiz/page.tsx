@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
+import AdminSelect from "@/components/admin/AdminSelect";
 import { getAdminHeaders } from "@/lib/api";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 
@@ -1023,21 +1024,21 @@ export default function QuizAdminPage() {
                     "Dominant Personality",
                   )}
                 </label>
-                <select
+                <AdminSelect
                   value={scoreForm.dominant_personality}
-                  onChange={(e) =>
+                  onChange={(next) =>
                     setScoreForm((prev) => ({
                       ...prev,
-                      dominant_personality: e.target.value,
+                      dominant_personality: next,
                     }))
                   }
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none"
-                >
-                  <option value="peaceful_calm">Peaceful Calm</option>
-                  <option value="prestige">Purpose Prestige</option>
-                  <option value="sweet_shy">Sweet Shy</option>
-                  <option value="rebel_brave">Rebel Brave</option>
-                </select>
+                  options={[
+                    { value: "peaceful_calm", label: "Peaceful Calm" },
+                    { value: "prestige", label: "Purpose Prestige" },
+                    { value: "sweet_shy", label: "Sweet Shy" },
+                    { value: "rebel_brave", label: "Rebel Brave" },
+                  ]}
+                />
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-2">

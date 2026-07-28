@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
+import AdminSelect from "@/components/admin/AdminSelect";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 interface Product {
@@ -699,37 +700,37 @@ export default function ProductsPage() {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
                           Personality Type
                         </label>
-                        <select
+                        <AdminSelect
+                          key={`personality-${selectedProduct?.id ?? "new"}-${modalMode}`}
                           name="personality_type"
                           defaultValue={selectedProduct?.personality_type || ""}
                           required
-                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                        >
-                          <option value="" disabled>
-                            Pilih Tipe
-                          </option>
-                          <option value="prestige">Prestige</option>
-                          <option value="peaceful_calm">Peaceful Calm</option>
-                          <option value="rebel_brave">Rebel Brave</option>
-                          <option value="sweet_shy">Sweet Shy</option>
-                        </select>
+                          placeholder="Pilih Tipe"
+                          options={[
+                            { value: "prestige", label: "Prestige" },
+                            { value: "peaceful_calm", label: "Peaceful Calm" },
+                            { value: "rebel_brave", label: "Rebel Brave" },
+                            { value: "sweet_shy", label: "Sweet Shy" },
+                          ]}
+                        />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
                           Status Stok
                         </label>
-                        <select
+                        <AdminSelect
+                          key={`stock-${selectedProduct?.id ?? "new"}-${modalMode}`}
                           name="stock_status"
                           defaultValue={
                             selectedProduct?.stock_status || "tersedia"
                           }
                           required
-                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                        >
-                          <option value="tersedia">Tersedia</option>
-                          <option value="minim">Minim</option>
-                          <option value="habis">Habis</option>
-                        </select>
+                          options={[
+                            { value: "tersedia", label: "Tersedia" },
+                            { value: "minim", label: "Minim" },
+                            { value: "habis", label: "Habis" },
+                          ]}
+                        />
                       </div>
                     </div>
 
@@ -865,16 +866,17 @@ export default function ProductsPage() {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
                           Gender
                         </label>
-                        <select
+                        <AdminSelect
+                          key={`gender-${selectedProduct?.id ?? "new"}-${modalMode}`}
                           name="gender"
                           defaultValue={selectedProduct?.gender || "unisex"}
                           required
-                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                        >
-                          <option value="unisex">Unisex</option>
-                          <option value="male">Pria</option>
-                          <option value="female">Wanita</option>
-                        </select>
+                          options={[
+                            { value: "unisex", label: "Unisex" },
+                            { value: "male", label: "Pria" },
+                            { value: "female", label: "Wanita" },
+                          ]}
+                        />
                       </div>
                     </div>
 

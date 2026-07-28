@@ -25,6 +25,8 @@ import {
 } from "@/lib/cms";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 import CmsNumberInput from "@/components/admin/CmsNumberInput";
+import AdminSelect from "@/components/admin/AdminSelect";
+import AdminConfirmModal from "@/components/admin/AdminConfirmModal";
 import {
   CMS_FONT_FAMILY_OPTIONS,
   CMS_FONT_STYLE_OPTIONS,
@@ -33,6 +35,7 @@ import {
   isCmsFontField,
   isCmsFontStyleField,
   isCmsFontWeightField,
+  resolveCmsFontFamily,
   withFontFieldOrder,
 } from "@/lib/cmsFonts";
 
@@ -897,6 +900,7 @@ export default function CmsDashboardPage() {
   const [saving, setSaving] = useState(false);
   const [fields, setFields] = useState<CmsField[]>([]);
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
+  const [faqToDelete, setFaqToDelete] = useState<number | null>(null);
   const [notice, setNotice] = useState<{
     type: "success" | "error";
     text: string;
@@ -1128,12 +1132,6 @@ export default function CmsDashboardPage() {
   };
 
   const handleDeleteFaq = async (id: number) => {
-    if (
-      !confirm(
-        t("cms", "confirm_delete_faq", "Hapus FAQ ini?", "Delete this FAQ?"),
-      )
-    )
-      return;
     try {
       await adminDeleteFaq(id);
       showNotice(
@@ -1148,6 +1146,8 @@ export default function CmsDashboardPage() {
           ? e.message
           : t("cms", "faq_delete_error", "Gagal hapus FAQ", "Failed to delete FAQ"),
       );
+    } finally {
+      setFaqToDelete(null);
     }
   };
 
@@ -1169,6 +1169,25 @@ export default function CmsDashboardPage() {
           <span className="text-sm font-medium">{notice.text}</span>
         </div>
       )}
+
+      <AdminConfirmModal
+        open={faqToDelete !== null}
+        onClose={() => setFaqToDelete(null)}
+        onConfirm={() => {
+          if (faqToDelete !== null) {
+            return handleDeleteFaq(faqToDelete);
+          }
+        }}
+        title={t("cms", "delete_faq_title", "Hapus FAQ?", "Delete FAQ?")}
+        message={t(
+          "cms",
+          "confirm_delete_faq",
+          "Hapus FAQ ini?",
+          "Delete this FAQ?",
+        )}
+        confirmLabel={t("cms", "delete_faq", "Hapus FAQ", "Delete FAQ")}
+        cancelLabel={common.cancel}
+      />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -1220,11 +1239,12 @@ export default function CmsDashboardPage() {
         ))}
       </div>
 
-      {loading ? (
-        <div className="h-[40vh] flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-        </div>
-      ) : tab === "faq" ? (
+      <div className="relative min-h-[52vh]">
+        {loading ? (
+          <div className="flex h-[80vh] w-full items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-gray-900" />
+          </div>
+        ) : tab === "faq" ? (
         <div className="space-y-4">
           <div className="flex justify-end">
             <button
@@ -1247,7 +1267,7 @@ export default function CmsDashboardPage() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => handleDeleteFaq(faq.id)}
+                  onClick={() => setFaqToDelete(faq.id)}
                   className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -1455,42 +1475,51 @@ export default function CmsDashboardPage() {
                             />
                           </div>
                         ) : isFontSelectField ? (
-                          <select
+                          <AdminSelect
                             value={field.value || ""}
-                            onChange={(e) =>
-                              updateFieldValue(globalIndex, e.target.value)
+                            onChange={(next) =>
+                              updateFieldValue(globalIndex, next)
                             }
-                            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-900 bg-white"
-                          >
-                            {isCmsFontFamilyField(field.key) ? (
-                              <>
-                                <optgroup label="Font Project (Next.js)">
-                                  {CMS_FONT_FAMILY_OPTIONS.filter(
-                                    (o) => o.group === "project",
-                                  ).map((opt) => (
-                                    <option key={opt.value} value={opt.value}>
-                                      {opt.label}
-                                    </option>
-                                  ))}
-                                </optgroup>
-                                <optgroup label="Font Sistem">
-                                  {CMS_FONT_FAMILY_OPTIONS.filter(
-                                    (o) => o.group === "system",
-                                  ).map((opt) => (
-                                    <option key={opt.value} value={opt.value}>
-                                      {opt.label}
-                                    </option>
-                                  ))}
-                                </optgroup>
-                              </>
-                            ) : (
-                              fontSelectOptions.map((opt) => (
-                                <option key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </option>
-                              ))
+                            groupLabels={{
+                              project: "Font Project (Next.js)",
+                              system: "Font Sistem",
+                            }}
+                            options={
+                              isCmsFontFamilyField(field.key)
+                                ? CMS_FONT_FAMILY_OPTIONS.map((opt) => ({
+                                    value: opt.value,
+                                    label: opt.label,
+                                    group: opt.group,
+                                    style: {
+                                      fontFamily: resolveCmsFontFamily(
+                                        opt.value,
+                                      ),
+                                    },
+                                  }))
+                                : fontSelectOptions.map((opt) => ({
+                                    value: opt.value,
+                                    label: opt.label,
+                                    style: isCmsFontStyleField(field.key)
+                                      ? {
+                                          fontStyle:
+                                            opt.value === "italic"
+                                              ? "italic"
+                                              : "normal",
+                                        }
+                                      : isCmsFontWeightField(field.key)
+                                        ? {
+                                            fontWeight: Number(opt.value) || 400,
+                                          }
+                                        : undefined,
+                                  }))
+                            }
+                            placeholder={t(
+                              "cms",
+                              "select_option",
+                              "Pilih opsi…",
+                              "Select an option…",
                             )}
-                          </select>
+                          />
                         ) : isColorField ? (
                           <div className="flex items-center gap-3">
                             <input
@@ -1555,6 +1584,7 @@ export default function CmsDashboardPage() {
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }

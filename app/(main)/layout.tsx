@@ -5,7 +5,6 @@ import Navbar from "@/components/global/Navbar";
 import LoadingScreen from "@/components/beranda/LoadingScreen";
 import NavbarRouteHandler from "@/components/global/NavbarRouteHandler";
 import { NavbarColorProvider } from "@/context/NavbarColorContext";
-import { CmsProvider } from "@/context/CmsContext";
 import BodyColorHandler from "@/components/global/BodyColorHandler";
 import Footer from "@/components/global/Footer";
 
@@ -20,17 +19,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-screen w-full overflow-x-hidden">
+    <div className="evomi-site min-h-screen w-full overflow-x-hidden">
       <BodyColorHandler />
 
       <NavbarColorProvider>
-        <CmsProvider>
-          <NavbarRouteHandler />
-          <LoadingScreen />
-          <Navbar />
-          <main className="w-full overflow-x-hidden">{children}</main>
-          <Footer />
-        </CmsProvider>
+        <NavbarRouteHandler />
+        <LoadingScreen />
+        <Navbar />
+        <main className="w-full overflow-x-hidden">{children}</main>
+        <Footer />
       </NavbarColorProvider>
     </div>
   );

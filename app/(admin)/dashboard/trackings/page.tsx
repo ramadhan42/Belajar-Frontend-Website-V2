@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
+import AdminSelect from "@/components/admin/AdminSelect";
 import { getAdminHeaders } from "@/lib/api";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 
@@ -557,37 +558,43 @@ export default function TrackingsPage() {
                     <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
                       Status Utama
                     </label>
-                    <select
+                    <AdminSelect
+                      key={`status-${selectedTracking?.id ?? "trk"}`}
                       name="status"
-                      defaultValue={selectedTracking?.status}
-                      className="w-full border border-gray-200 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none transition-all shadow-sm cursor-pointer"
-                    >
-                      <option value="Menunggu Konfirmasi">
-                        Menunggu Konfirmasi
-                      </option>
-                      <option value="Pesanan Diproses">Pesanan Diproses</option>
-                      <option value="Pengemasan">Pengemasan</option>
-                      <option value="Sedang Dikirim">Sedang Dikirim</option>
-                      <option value="Dalam Perjalanan">Dalam Perjalanan</option>
-                      <option value="Selesai">Selesai / Diterima</option>
-                    </select>
+                      defaultValue={selectedTracking?.status || ""}
+                      options={[
+                        {
+                          value: "Menunggu Konfirmasi",
+                          label: "Menunggu Konfirmasi",
+                        },
+                        {
+                          value: "Pesanan Diproses",
+                          label: "Pesanan Diproses",
+                        },
+                        { value: "Pengemasan", label: "Pengemasan" },
+                        { value: "Sedang Dikirim", label: "Sedang Dikirim" },
+                        {
+                          value: "Dalam Perjalanan",
+                          label: "Dalam Perjalanan",
+                        },
+                        { value: "Selesai", label: "Selesai / Diterima" },
+                      ]}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold text-gray-500 uppercase block">
                       Penyedia Kurir
                     </label>
-                    <select
+                    <AdminSelect
+                      key={`courier-${selectedTracking?.id ?? "trk"}`}
                       name="courier"
-                      defaultValue={selectedTracking?.courier}
-                      className="w-full border border-gray-200 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-900 focus:ring-2 focus:ring-gray-900 outline-none shadow-sm cursor-pointer"
-                    >
-                      {courierOptions.map((kurir) => (
-                        <option key={kurir} value={kurir}>
-                          {kurir}
-                        </option>
-                      ))}
-                    </select>
+                      defaultValue={selectedTracking?.courier || ""}
+                      options={courierOptions.map((kurir) => ({
+                        value: kurir,
+                        label: kurir,
+                      }))}
+                    />
                   </div>
                 </div>
 

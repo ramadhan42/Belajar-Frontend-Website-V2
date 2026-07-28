@@ -17,6 +17,7 @@ import {
 import { CgClose } from "react-icons/cg";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
+import AdminAlertModal from "@/components/admin/AdminAlertModal";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 import { orderGrandTotal } from "@/lib/api";
 
@@ -66,6 +67,12 @@ export default function OrdersPage() {
     isOpen: false,
     message: "",
   });
+  const [alertDialog, setAlertDialog] = useState<{
+    title: string;
+    message: string;
+    variant: "info" | "success" | "error";
+    onCloseRedirect?: string;
+  } | null>(null);
 
   const showSuccess = (message: string) => {
     setSuccessModal({ isOpen: true, message });
@@ -247,15 +254,22 @@ export default function OrdersPage() {
 
       if (!res.ok) {
         if (res.status === 401) {
-          alert(
-            t(
+          setAlertDialog({
+            title: t(
+              "orders",
+              "session_expired_title",
+              "Sesi berakhir",
+              "Session expired",
+            ),
+            message: t(
               "orders",
               "session_expired",
               "Sesi Anda telah berakhir. Silakan login kembali.",
               "Your session has expired. Please log in again.",
             ),
-          );
-          window.location.href = "/login";
+            variant: "error",
+            onCloseRedirect: "/login",
+          });
           return;
         }
         throw new Error("Gagal mengupdate status");
@@ -278,14 +292,21 @@ export default function OrdersPage() {
       );
     } catch (error) {
       console.error("Gagal update status:", error);
-      alert(
-        t(
+      setAlertDialog({
+        title: t(
+          "orders",
+          "status_update_error_title",
+          "Update gagal",
+          "Update failed",
+        ),
+        message: t(
           "orders",
           "status_update_error",
           "Gagal mengupdate status. Periksa console.",
           "Failed to update status. Check the console.",
         ),
-      );
+        variant: "error",
+      });
     }
   };
 
@@ -365,6 +386,21 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6 pb-12">
+      <AdminAlertModal
+        open={!!alertDialog}
+        onClose={() => {
+          const redirectTo = alertDialog?.onCloseRedirect;
+          setAlertDialog(null);
+          if (redirectTo) {
+            window.location.href = redirectTo;
+          }
+        }}
+        title={alertDialog?.title || ""}
+        message={alertDialog?.message || ""}
+        variant={alertDialog?.variant || "info"}
+        buttonLabel={common.ok}
+      />
+
       {/* Modal Update */}
       <AdminModal
         open={isStatusModalOpen}

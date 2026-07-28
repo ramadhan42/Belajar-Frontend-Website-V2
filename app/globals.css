@@ -54,7 +54,14 @@ body {
   animation: marqueeScroll 70s linear infinite;
 }
 
-* {
+body {
+  cursor: auto;
+}
+
+.evomi-site,
+.evomi-site *,
+.admin-shell,
+.admin-shell * {
   cursor:
     url("https://cdn.cursors-4u.net/previews/normal-9e607e2c-48.webp") 33 30,
     auto !important;
@@ -1123,5 +1130,85 @@ html[data-theme-content-reveal="true"] [data-theme-content-fade] picture {
 
 [data-admin-theme="dark"] .recharts-text {
   fill: var(--admin-muted) !important;
+}
+
+/* ---- AdminSelect (custom dropdown) ---- */
+.admin-select-option-idle {
+  color: #374151;
+}
+
+.admin-select-option-idle:hover {
+  background-color: #f9fafb;
+}
+
+.admin-select-option-selected {
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+.admin-select-option-active {
+  background-color: #111827 !important;
+  color: #fff !important;
+}
+
+.admin-select-option-active .admin-select-option-label-active,
+.admin-select-check-active {
+  color: #fff !important;
+}
+
+.admin-select-check {
+  color: #111827;
+}
+
+[data-admin-theme="dark"] .admin-select-trigger {
+  background-color: var(--admin-surface-2) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text) !important;
+}
+
+[data-admin-theme="dark"] .admin-select-trigger:hover {
+  border-color: #4b5568 !important;
+}
+
+[data-admin-theme="dark"] .admin-select-trigger > span {
+  color: inherit !important;
+}
+
+[data-admin-theme="dark"] .admin-select-menu {
+  background-color: var(--admin-surface) !important;
+  border-color: var(--admin-border) !important;
+  box-shadow: 0 16px 48px -12px rgba(0, 0, 0, 0.55) !important;
+}
+
+[data-admin-theme="dark"] .admin-select-group {
+  background-color: color-mix(in srgb, var(--admin-surface) 92%, transparent) !important;
+  color: var(--admin-muted) !important;
+}
+
+[data-admin-theme="dark"] .admin-select-option-idle {
+  color: var(--admin-text) !important;
+}
+
+[data-admin-theme="dark"] .admin-select-option-idle:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-admin-theme="dark"] .admin-select-option-selected {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: var(--admin-text) !important;
+}
+
+[data-admin-theme="dark"] .admin-select-check {
+  color: #fff !important;
+}
+
+[data-admin-theme="dark"] .admin-select-option-active {
+  background-color: #fff !important;
+  color: #111827 !important;
+}
+
+[data-admin-theme="dark"] .admin-select-option-active .admin-select-option-label-active,
+[data-admin-theme="dark"] .admin-select-check-active {
+  color: #111827 !important;
 }
 

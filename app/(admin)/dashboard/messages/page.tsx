@@ -1,609 +1,598 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
-  Mail,
-  Eye,
-  X,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Inbox,
-  Reply,
+  Send,
+  Trash2,
+  MessageSquare,
+  User as UserIcon,
+  Loader2,
+  Headset,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
-import AdminModal from "@/components/admin/AdminModal";
 import { getAdminHeaders } from "@/lib/api";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
+import AdminAlertModal from "@/components/admin/AdminAlertModal";
+import AdminConfirmModal from "@/components/admin/AdminConfirmModal";
 
-// Definisikan tipe data untuk riwayat balasan
-interface ContactReply {
-  id: number;
-  contact_message_id: number;
-  reply_message: string;
-  replied_by: number;
-  created_at: string;
+interface Conversation {
+  email: string;
+  name: string;
+  avatar?: string | null;
+  user_id?: number | null;
+  phone?: string | null;
+  last_message?: string | null;
+  last_message_at?: string | null;
+  unread_count: number;
+  message_count: number;
+  has_chat: boolean;
 }
 
-// Definisikan tipe data untuk pesan utama
-interface ContactMessage {
-  id: number;
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  created_at: string;
-  replies?: ContactReply[]; // Menampung array riwayat chat balasan
+interface ChatBubble {
+  id: string;
+  type: "user" | "admin";
+  text: string;
+  subject?: string;
+  created_at?: string;
+}
+
+function avatarUrl(path?: string | null) {
+  if (!path) return null;
+  if (path.startsWith("http")) return path;
+  return `${SITE_STRINGS.base_url.url_backend}/storage/${path}`;
+}
+
+function formatTime(iso?: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("id-ID", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default function MessagesPage() {
   const { t, common } = useAdminI18n();
-  const [messages, setMessages] = useState<ContactMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // STATE MODAL DETAIL & BALAS
-  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
-  
-  // STATE INPUT BALASAN
-  const [replyText, setReplyText] = useState("");
-  const [isReplying, setIsReplying] = useState(false);
-
-  // STATE PAGINATION
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-
   const baseUrl = SITE_STRINGS.base_url.url_backend;
 
-  const fetchMessages = async () => {
-    setIsLoading(true);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [isLoadingList, setIsLoadingList] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
+  const [selectedMeta, setSelectedMeta] = useState<{
+    name: string;
+    avatar?: string | null;
+    email: string;
+  } | null>(null);
+  const [bubbles, setBubbles] = useState<ChatBubble[]>([]);
+  const [isLoadingThread, setIsLoadingThread] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [alertDialog, setAlertDialog] = useState<{
+    title: string;
+    message: string;
+    variant: "info" | "success" | "error";
+  } | null>(null);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const fetchConversations = useCallback(async () => {
+    setIsLoadingList(true);
     try {
-      const res = await fetch(`${baseUrl}/api/contact`, {
+      const res = await fetch(`${baseUrl}/api/admin/contact/conversations`, {
         headers: getAdminHeaders(),
       });
       const data = await res.json();
-      
-      // Mengamankan data array hasil fetch
-      const fetchedData = data?.data || [];
-      setMessages(fetchedData);
-
-      // Sinkronisasi data real-time jika modal chat sedang terbuka agar pesan baru langsung muncul
-      if (selectedMessage) {
-        const currentUpdated = fetchedData.find((m: ContactMessage) => m.id === selectedMessage.id);
-        if (currentUpdated) setSelectedMessage(currentUpdated);
-      }
-    } catch (error) {
-      console.error("Gagal memuat pesan:", error);
+      if (data.success) setConversations(data.data || []);
+    } catch (err) {
+      console.error(err);
     } finally {
-      setIsLoading(false);
+      setIsLoadingList(false);
     }
-  };
+  }, [baseUrl]);
 
-  useEffect(() => {
-    fetchMessages();
-  }, []);
-
-  // AKSI UNTUK MEMBALAS CHAT
-  const handleReplySubmit = async () => {
-    if (!replyText.trim() || !selectedMessage) return;
-
-    setIsReplying(true);
-    try {
-      const res = await fetch(`${baseUrl}/api/admin/contact/${selectedMessage.id}/reply`, {
-        method: "POST",
-        headers: getAdminHeaders(),
-        body: JSON.stringify({ reply_message: replyText }),
+  const openThread = useCallback(
+    async (conv: Conversation) => {
+      setSelectedEmail(conv.email);
+      setSelectedMeta({
+        name: conv.name,
+        avatar: conv.avatar,
+        email: conv.email,
       });
-
-      const data = await res.json();
-      if (data.success) {
-        setReplyText(""); // Kosongkan form teks
-        await fetchMessages(); // Refresh data utama & list chat di dalam modal
-      } else {
-        alert(
-          data.message ||
-            t(
-              "messages",
-              "reply_error",
-              "Gagal mengirim balasan.",
-              "Failed to send reply.",
-            ),
+      setIsLoadingThread(true);
+      try {
+        const res = await fetch(
+          `${baseUrl}/api/admin/contact/thread?email=${encodeURIComponent(conv.email)}`,
+          { headers: getAdminHeaders() },
         );
+        const data = await res.json();
+        if (data.success) {
+          setBubbles(data.data?.messages || []);
+          setSelectedMeta({
+            name: data.data?.name || conv.name,
+            avatar: data.data?.avatar ?? conv.avatar,
+            email: conv.email,
+          });
+          // refresh unread badges in list
+          setConversations((prev) =>
+            prev.map((c) =>
+              c.email === conv.email ? { ...c, unread_count: 0 } : c,
+            ),
+          );
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoadingThread(false);
       }
-    } catch (error) {
-      console.error("Error mengirim balasan:", error);
-      alert(
-        t(
-          "messages",
-          "network_error",
-          "Terjadi kesalahan jaringan.",
-          "A network error occurred.",
-        ),
-      );
-    } finally {
-      setIsReplying(false);
-    }
-  };
-
-  const handleOpenDetail = (message: ContactMessage) => {
-    setSelectedMessage(message);
-    setIsModalOpen(true);
-  };
-
-  const handleOpenReply = (message: ContactMessage) => {
-    setSelectedMessage(message);
-    setReplyText("");
-    setIsReplyModalOpen(true);
-  };
-
-  // FILTER PENCARIAN
-  const filteredMessages = messages.filter(
-    (m) =>
-      m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.message.toLowerCase().includes(searchTerm.toLowerCase())
+    },
+    [baseUrl],
   );
 
-  // LOGIKA PAGINATION
-  const totalPages = Math.ceil(filteredMessages.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredMessages.slice(indexOfFirstItem, indexOfLastItem);
+  useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [bubbles, isLoadingThread]);
+
+  const filtered = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return conversations;
+    return conversations.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        (c.last_message || "").toLowerCase().includes(q),
+    );
+  }, [conversations, searchTerm]);
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!draft.trim() || !selectedEmail) return;
+    setIsSending(true);
+    try {
+      const res = await fetch(`${baseUrl}/api/admin/contact/thread/send`, {
+        method: "POST",
+        headers: getAdminHeaders(),
+        body: JSON.stringify({
+          email: selectedEmail,
+          name: selectedMeta?.name,
+          message: draft.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setBubbles((prev) => [...prev, data.data]);
+        setDraft("");
+        setConversations((prev) => {
+          const next = prev.map((c) =>
+            c.email === selectedEmail
+              ? {
+                  ...c,
+                  last_message: data.data.text,
+                  last_message_at: data.data.created_at,
+                  has_chat: true,
+                }
+              : c,
+          );
+          return [...next].sort((a, b) =>
+            (b.last_message_at || "").localeCompare(a.last_message_at || ""),
+          );
+        });
+      } else {
+        setAlertDialog({
+          title: t(
+            "messages",
+            "send_failed_title",
+            "Pesan gagal dikirim",
+            "Message failed to send",
+          ),
+          message: data.message || "Gagal mengirim pesan.",
+          variant: "error",
+        });
+      }
+    } catch {
+      setAlertDialog({
+        title: t(
+          "messages",
+          "network_error_title",
+          "Koneksi bermasalah",
+          "Connection issue",
+        ),
+        message: "Terjadi kesalahan jaringan.",
+        variant: "error",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleDeleteChat = async () => {
+    if (!selectedEmail) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(
+        `${baseUrl}/api/admin/contact/thread?email=${encodeURIComponent(selectedEmail)}`,
+        {
+          method: "DELETE",
+          headers: getAdminHeaders(),
+        },
+      );
+      const data = await res.json();
+      if (data.success) {
+        setBubbles([]);
+        setDeleteOpen(false);
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.email === selectedEmail
+              ? {
+                  ...c,
+                  last_message: null,
+                  last_message_at: null,
+                  unread_count: 0,
+                  message_count: 0,
+                  has_chat: false,
+                }
+              : c,
+          ),
+        );
+      } else {
+        setAlertDialog({
+          title: t(
+            "messages",
+            "delete_failed_title",
+            "Gagal menghapus percakapan",
+            "Failed to delete conversation",
+          ),
+          message: data.message || "Gagal menghapus chat.",
+          variant: "error",
+        });
+      }
+    } catch {
+      setAlertDialog({
+        title: t(
+          "messages",
+          "network_error_title",
+          "Koneksi bermasalah",
+          "Connection issue",
+        ),
+        message: "Terjadi kesalahan jaringan.",
+        variant: "error",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-8 animate-fade-in">
-      {/* HEADER SECTION */}
-      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight">
-            {t("messages", "title", "Pesan Masuk", "Inbox Messages")}
-          </h1>
-          <p className="text-sm font-medium text-gray-500 mt-1">
-            {t(
-              "messages",
-              "subtitle",
-              "Kelola kritik, saran, dan obrolan pesan dari pelanggan.",
-              "Manage feedback, suggestions, and customer message threads.",
-            )}
-          </p>
-        </div>
+    <div className="space-y-4 pb-8 h-[calc(100vh-7rem)] min-h-[560px] flex flex-col">
+      <AdminAlertModal
+        open={!!alertDialog}
+        onClose={() => setAlertDialog(null)}
+        title={alertDialog?.title || ""}
+        message={alertDialog?.message || ""}
+        variant={alertDialog?.variant || "info"}
+        buttonLabel={common.ok}
+      />
 
-        {/* SEARCH BAR */}
-        <div className="relative w-full md:w-80">
-          <Search
-            size={18}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-          />
-          <input
-            type="text"
-            placeholder={t(
-              "messages",
-              "search_ph",
-              "Cari nama, email, subjek...",
-              "Search name, email, subject...",
-            )}
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-2xl text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all shadow-sm"
-          />
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+          <MessageSquare size={28} />
+          {t("messages", "title", "Pesan", "Messages")}
+        </h1>
+        <p className="text-gray-500 mt-1.5 text-sm">
+          {t(
+            "messages",
+            "subtitle_chat",
+            "Chat 1-1 dengan pengguna. Klik user untuk membuka percakapan.",
+            "1-1 chat with users. Click a user to open the conversation.",
+          )}
+        </p>
       </div>
 
-      {/* TABLE DATA SECTION */}
-      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50/70 border-b border-gray-100">
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider w-[22%]">
-                  {t("messages", "col_customer", "Pelanggan", "Customer")}
-                </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider w-[20%]">
-                  {t("messages", "col_subject", "Subjek", "Subject")}
-                </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider w-[28%]">
-                  {t("messages", "col_message", "Pesan", "Message")}
-                </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider w-[15%]">
-                  {common.date}
-                </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-[15%]">
-                  {common.actions}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-sm font-medium text-gray-400">
-                    {common.loading}
-                  </td>
-                </tr>
-              ) : currentItems.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center">
-                    <div className="flex flex-col items-center justify-center max-w-sm mx-auto">
-                      <div className="p-4 rounded-2xl bg-gray-50 text-gray-400 mb-4 shadow-sm border border-gray-100">
-                        <Inbox size={28} />
-                      </div>
-                      <p className="text-sm font-bold text-gray-900">
-                        {t(
-                          "messages",
-                          "empty_title",
-                          "Tidak ada pesan ditemukan",
-                          "No messages found",
-                        )}
-                      </p>
-                      <p className="text-xs font-medium text-gray-400 text-center mt-1">
-                        {t(
-                          "messages",
-                          "empty_desc",
-                          "Belum ada pesan masuk atau kata kunci pencarian Anda tidak cocok.",
-                          "No inbox messages yet, or your search did not match.",
-                        )}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                currentItems.map((m) => (
-                  <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-gray-900 text-sm leading-snug">
-                        {m.name}
-                      </div>
-                      <div className="text-xs font-medium text-gray-400 mt-0.5 flex items-center gap-1">
-                        <Mail size={12} />
-                        {m.email}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-block max-w-full truncate text-xs font-bold text-gray-700 bg-gray-100/80 px-2.5 py-1 rounded-lg border border-gray-200/50">
-                        {m.subject}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed font-medium">
-                        {m.message}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4 text-xs font-medium text-gray-500">
-                      {new Date(m.created_at).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        {/* TOMBOL LIHAT DETAIL */}
-                        <button
-                          onClick={() => handleOpenDetail(m)}
-                          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900 border border-gray-200 rounded-xl shadow-sm transition-all"
-                        >
-                          <Eye size={14} />
-                          {t("messages", "view", "Lihat", "View")}
-                        </button>
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* USER LIST */}
+        <aside className="lg:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col min-h-[320px]">
+          <div className="p-4 border-b border-gray-50">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+              <input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={t(
+                  "messages",
+                  "search_users",
+                  "Cari nama atau email user...",
+                  "Search user name or email...",
+                )}
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-sm outline-none focus:ring-2 focus:ring-gray-900 focus:bg-white"
+              />
+            </div>
+          </div>
 
-                        {/* TOMBOL BALAS & RIWAYAT CHAT */}
-                        <button
-                          onClick={() => handleOpenReply(m)}
-                          className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl shadow-sm transition-all border ${
-                            m.replies && m.replies.length > 0
-                              ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100/80"
-                              : "bg-gray-900 text-white border-transparent hover:bg-gray-800"
+          <div className="flex-1 overflow-y-auto">
+            {isLoadingList ? (
+              <div className="h-40 flex items-center justify-center text-gray-400">
+                <Loader2 className="animate-spin" size={22} />
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="p-8 text-center text-sm text-gray-400">
+                {t("messages", "empty_users", "Tidak ada user.", "No users found.")}
+              </div>
+            ) : (
+              filtered.map((conv) => {
+                const active = selectedEmail === conv.email;
+                const img = avatarUrl(conv.avatar);
+                return (
+                  <button
+                    key={conv.email}
+                    type="button"
+                    onClick={() => openThread(conv)}
+                    className={`w-full text-left px-4 py-3 flex gap-3 border-b border-gray-50 transition ${
+                      active ? "bg-gray-900 text-white" : "hover:bg-gray-50"
+                    }`}
+                  >
+                    <span
+                      className={`shrink-0 w-11 h-11 rounded-full overflow-hidden flex items-center justify-center font-bold text-sm ${
+                        active
+                          ? "bg-white text-gray-900"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {img ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={img} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        (conv.name || "?").charAt(0).toUpperCase()
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center justify-between gap-2">
+                        <span
+                          className={`text-sm font-semibold truncate ${
+                            active ? "text-white" : "text-gray-900"
                           }`}
                         >
-                          <Reply size={14} />
-                          {m.replies && m.replies.length > 0
-                            ? t(
-                                "messages",
-                                "history",
-                                `Riwayat (${m.replies.length})`,
-                                `History (${m.replies.length})`,
-                              )
-                            : common.reply}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* PAGINATION CONTROLLER PANEL */}
-        {!isLoading && totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500">
-              {t("messages", "showing", "Menampilkan", "Showing")}{" "}
-              {indexOfFirstItem + 1}-
-              {Math.min(indexOfLastItem, filteredMessages.length)}{" "}
-              {t("messages", "of", "dari", "of")} {filteredMessages.length}{" "}
-              {t("messages", "messages_word", "pesan", "messages")}
-            </span>
-
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="p-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:hover:bg-white text-gray-600 shadow-sm"
-              >
-                <ChevronLeft size={16} />
-              </button>
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-9 h-9 text-xs font-bold rounded-xl border transition-all shadow-sm ${
-                    currentPage === page
-                      ? "bg-gray-900 text-white border-transparent"
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-
-              <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="p-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:hover:bg-white text-gray-600 shadow-sm"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ========================================================= */}
-      {/* MODAL 1: DETAIL PESAN SAJA                                */}
-      {/* ========================================================= */}
-      <AdminModal
-        open={isModalOpen && !!selectedMessage}
-        onClose={() => setIsModalOpen(false)}
-        panelClassName="max-w-lg"
-      >
-          <div className="bg-white rounded-3xl w-full shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
-            {/* Header Modal */}
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gray-900 text-white shadow-sm">
-                  <Mail size={18} />
-                </div>
-                <div>
-                  <h3 className="text-base font-black text-gray-900 tracking-tight">
-                    {t("messages", "detail_title", "Detail Pesan Masuk", "Message Detail")}
-                  </h3>
-                  <p className="text-xs font-medium text-gray-400 mt-0.5">
-                    {t("messages", "message_id", "ID Pesan", "Message ID")}:
-                    #{selectedMessage?.id}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 border border-gray-200/60 shadow-sm"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Konten Modal */}
-            <div className="p-6 space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50/60 p-3.5 rounded-2xl border border-gray-100">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">
-                    {t("messages", "sender_name", "Nama Pengirim", "Sender Name")}
-                  </span>
-                  <span className="text-sm font-bold text-gray-800">
-                    {selectedMessage?.name}
-                  </span>
-                </div>
-                <div className="bg-gray-50/60 p-3.5 rounded-2xl border border-gray-100">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">
-                    {t("messages", "email_address", "Alamat Email", "Email Address")}
-                  </span>
-                  <span className="text-sm font-bold text-gray-800 break-all">
-                    {selectedMessage?.email}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
-                  {t("messages", "main_subject", "Subjek Utama", "Main Subject")}
-                </span>
-                <div className="text-sm font-bold text-gray-900 bg-gray-50/50 px-4 py-2.5 rounded-xl border border-gray-100">
-                  {selectedMessage?.subject}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
-                  {t(
-                    "messages",
-                    "message_content",
-                    "Isi Pesan Masuk",
-                    "Message Content",
-                  )}
-                </span>
-                <div className="text-sm text-gray-700 bg-gray-50/50 px-4 py-4 rounded-xl border border-gray-200 whitespace-pre-line leading-relaxed max-h-[200px] overflow-y-auto font-medium shadow-inner">
-                  "{selectedMessage?.message}"
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-xs font-bold text-gray-500 pt-2 border-t border-gray-50">
-                <Calendar size={14} className="text-gray-400" />
-                <span>{t("messages", "sent_at", "Dikirim pada", "Sent at")}: </span>
-                <span className="text-gray-700">
-                  {selectedMessage
-                    ? new Date(selectedMessage.created_at).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : ""}{" "}
-                  WIB
-                </span>
-              </div>
-            </div>
-
-            {/* Footer Modal */}
-            <div className="px-6 py-5 border-t border-gray-100 bg-gray-50/80 flex justify-end">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="px-6 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 shadow-sm transition-all"
-              >
-                {common.close}
-              </button>
-            </div>
-          </div>
-      </AdminModal>
-
-      {/* ========================================================= */}
-      {/* MODAL 2: KHUSUS BALAS PESAN & THREAD CHAT RIWAYAT         */}
-      {/* ========================================================= */}
-      <AdminModal
-        open={isReplyModalOpen && !!selectedMessage}
-        onClose={() => setIsReplyModalOpen(false)}
-        panelClassName="max-w-xl"
-      >
-          <div className="bg-white rounded-3xl w-full shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
-            {/* Header Modal Balas */}
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-900">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-white/10 text-white shadow-sm">
-                  <Reply size={18} />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white tracking-tight">
-                    {t("messages", "reply_title", "Balas Pesan Pelanggan", "Reply to Customer")}
-                  </h3>
-                  <p className="text-xs font-medium text-gray-300 mt-0.5">
-                    {t("messages", "chat_with", "Ruang obrolan dengan", "Chat with")}{" "}
-                    {selectedMessage?.name} ({selectedMessage?.email})
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsReplyModalOpen(false)}
-                className="p-2 rounded-xl hover:bg-white/20 text-gray-300 hover:text-white transition-colors bg-white/5 border border-white/10 shadow-sm"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* KONTEN UTAMA OBROLAN (SCROLLABLE CHAT THREAD VIEW) */}
-            <div className="p-6 bg-gray-50/40 space-y-4 max-h-[45vh] overflow-y-auto shadow-inner border-b border-gray-100">
-              
-              {/* Balon Chat 1: Pesan Awal dari User */}
-              <div className="flex flex-col items-start mr-12">
-                <div className="bg-white p-4 rounded-2xl rounded-tl-sm border border-gray-200 shadow-sm text-left">
-                  <span className="text-[9px] font-black text-gray-400 uppercase tracking-wide block mb-1">
-                    {selectedMessage?.name} (
-                    {t("messages", "initial_message", "Pesan Awal", "Initial Message")}{" "}
-                    — {selectedMessage?.subject})
-                  </span>
-                  <p className="text-sm text-gray-800 font-medium whitespace-pre-line leading-relaxed">
-                    {selectedMessage?.message}
-                  </p>
-                </div>
-                <span className="text-[10px] text-gray-400 mt-1 ml-1 font-bold">
-                  {selectedMessage
-                    ? new Date(selectedMessage.created_at).toLocaleString("id-ID", {
-                        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
-                      })
-                    : ""}
-                </span>
-              </div>
-
-              {/* Balon Chat Loop: Riwayat Balasan Admin Sebelumnya */}
-              {selectedMessage?.replies && selectedMessage.replies.length > 0 && (
-                <div className="space-y-4 pt-2">
-                  {selectedMessage.replies.map((reply) => (
-                    <div key={reply.id} className="flex flex-col items-end ml-12 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                      <div className="bg-gray-900 text-white p-4 rounded-2xl rounded-tr-sm shadow-sm text-left">
-                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-wide block mb-1">
-                          {t("messages", "admin_you", "Admin (Anda)", "Admin (You)")}
+                          {conv.name}
                         </span>
-                        <p className="text-sm font-medium whitespace-pre-line leading-relaxed">
-                          {reply.reply_message}
-                        </p>
-                      </div>
-                      <span className="text-[10px] text-gray-400 mt-1 mr-1 font-bold">
-                        {new Date(reply.created_at).toLocaleString("id-ID", {
-                          day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
-                        })}
+                        {conv.unread_count > 0 ? (
+                          <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500 text-white">
+                            {conv.unread_count}
+                          </span>
+                        ) : null}
                       </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                      <span
+                        className={`block text-[11px] truncate mt-0.5 ${
+                          active ? "text-white/70" : "text-gray-400"
+                        }`}
+                      >
+                        {conv.email}
+                      </span>
+                      <span
+                        className={`block text-[12px] truncate mt-1 ${
+                          active ? "text-white/80" : "text-gray-500"
+                        }`}
+                      >
+                        {conv.last_message ||
+                          t(
+                            "messages",
+                            "no_chat_yet",
+                            "Belum ada chat",
+                            "No chat yet",
+                          )}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </aside>
 
-            {/* PANEL FOOTER: TEXTAREA INPUT BALASAN BARU */}
-            <div className="p-5 bg-white space-y-3">
-              <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-wider block mb-1.5">
-                  {t(
+        {/* CHAT PANE */}
+        <section className="lg:col-span-8 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col min-h-[420px]">
+          {!selectedEmail ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3 p-8">
+              <MessageSquare size={42} className="opacity-30" />
+              <p className="text-sm font-medium text-gray-500 text-center max-w-sm">
+                {t(
+                  "messages",
+                  "pick_user",
+                  "Pilih user di sebelah kiri untuk melihat dan membalas chat 1-1.",
+                  "Select a user on the left to view and reply in a 1-1 chat.",
+                )}
+              </p>
+            </div>
+          ) : (
+            <>
+              <header className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3 bg-gray-50/60">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center font-bold text-gray-700 shrink-0">
+                    {avatarUrl(selectedMeta?.avatar) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={avatarUrl(selectedMeta?.avatar)!}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      (selectedMeta?.name || "?").charAt(0).toUpperCase()
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-bold text-gray-900 truncate">
+                      {selectedMeta?.name}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {selectedMeta?.email}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDeleteOpen(true)}
+                  disabled={!bubbles.length}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-red-600 border border-red-100 bg-red-50 hover:bg-red-100 disabled:opacity-40 disabled:hover:bg-red-50 transition"
+                  title={t(
                     "messages",
-                    "write_reply_label",
-                    "Tulis Balasan Follow-up / Balasan Baru",
-                    "Write a Follow-up / New Reply",
+                    "delete_chat",
+                    "Hapus chat",
+                    "Delete chat",
                   )}
-                </label>
-                <textarea
-                  rows={3}
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
+                >
+                  <Trash2 size={15} />
+                  <span className="hidden sm:inline">
+                    {t("messages", "delete_chat", "Hapus chat", "Delete chat")}
+                  </span>
+                </button>
+              </header>
+
+              <div
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto p-5 space-y-3 bg-[#F7F8FA]"
+              >
+                {isLoadingThread ? (
+                  <div className="h-full min-h-[200px] flex items-center justify-center text-gray-400">
+                    <Loader2 className="animate-spin" size={24} />
+                  </div>
+                ) : bubbles.length === 0 ? (
+                  <div className="h-full min-h-[200px] flex flex-col items-center justify-center text-gray-400 gap-2">
+                    <UserIcon size={28} className="opacity-40" />
+                    <p className="text-sm text-center max-w-xs">
+                      {t(
+                        "messages",
+                        "empty_thread",
+                        "Belum ada percakapan. Kirim pesan pertama di bawah.",
+                        "No conversation yet. Send the first message below.",
+                      )}
+                    </p>
+                  </div>
+                ) : (
+                  bubbles.map((b) => {
+                    const isAdmin = b.type === "admin";
+                    // Hide system placeholder from admin-started chats in the feed visually optional - show lightly
+                    const isPlaceholder =
+                      b.type === "user" &&
+                      b.text === "[Percakapan dimulai oleh admin]";
+                    if (isPlaceholder) return null;
+
+                    return (
+                      <div
+                        key={b.id}
+                        className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`max-w-[78%] rounded-2xl px-4 py-2.5 shadow-sm ${
+                            isAdmin
+                              ? "bg-gray-900 text-white rounded-br-md"
+                              : "bg-white text-gray-800 border border-gray-100 rounded-bl-md"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5 mb-1 opacity-70">
+                            {isAdmin ? (
+                              <Headset size={12} />
+                            ) : (
+                              <UserIcon size={12} />
+                            )}
+                            <span className="text-[10px] font-semibold uppercase tracking-wide">
+                              {isAdmin ? "Admin" : "User"}
+                            </span>
+                          </div>
+                          {b.subject && b.type === "user" ? (
+                            <p
+                              className={`text-[10px] mb-1 ${
+                                isAdmin ? "text-white/60" : "text-gray-400"
+                              }`}
+                            >
+                              {b.subject}
+                            </p>
+                          ) : null}
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                            {b.text}
+                          </p>
+                          <p
+                            className={`text-[10px] mt-1.5 ${
+                              isAdmin ? "text-white/50" : "text-gray-400"
+                            }`}
+                          >
+                            {formatTime(b.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              <form
+                onSubmit={handleSend}
+                className="p-4 border-t border-gray-100 bg-white flex gap-2"
+              >
+                <input
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
                   placeholder={t(
                     "messages",
-                    "reply_placeholder",
-                    `Ketik pesan balasan Anda ke ${selectedMessage?.name}...`,
-                    `Type your reply to ${selectedMessage?.name}...`,
+                    "chat_placeholder",
+                    "Ketik pesan untuk user ini...",
+                    "Type a message to this user...",
                   )}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 transition-all shadow-sm resize-none"
+                  className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-gray-900"
                 />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-1">
                 <button
-                  onClick={() => setIsReplyModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl bg-white text-gray-700 text-sm font-bold border border-gray-200 hover:bg-gray-50 shadow-sm transition-all"
+                  type="submit"
+                  disabled={isSending || !draft.trim()}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-black disabled:opacity-50 transition"
                 >
-                  {common.cancel}
-                </button>
-                <button
-                  onClick={handleReplySubmit}
-                  disabled={isReplying || !replyText.trim()}
-                  className="px-6 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 disabled:bg-gray-400 shadow-sm transition-all flex items-center justify-center gap-2"
-                >
-                  {isReplying ? (
-                    common.saving
+                  {isSending ? (
+                    <Loader2 size={16} className="animate-spin" />
                   ) : (
-                    <>
-                      <Reply size={16} />
-                      {t("messages", "send_reply", "Kirim Balasan", "Send Reply")}
-                    </>
+                    <Send size={16} />
                   )}
+                  {t("messages", "send", "Kirim", "Send")}
                 </button>
-              </div>
-            </div>
-          </div>
-      </AdminModal>
+              </form>
+            </>
+          )}
+        </section>
+      </div>
+
+      <AdminConfirmModal
+        open={deleteOpen}
+        onClose={() => {
+          if (!isDeleting) setDeleteOpen(false);
+        }}
+        onConfirm={handleDeleteChat}
+        loading={isDeleting}
+        title={t(
+          "messages",
+          "delete_title",
+          "Hapus percakapan?",
+          "Delete conversation?",
+        )}
+        message={
+          selectedMeta
+            ? t(
+                "messages",
+                "delete_message",
+                `Semua chat dengan "${selectedMeta.name}" (${selectedMeta.email}) akan dihapus permanen.`,
+                `All chats with "${selectedMeta.name}" (${selectedMeta.email}) will be permanently deleted.`,
+              )
+            : ""
+        }
+        confirmLabel={common.yes_delete}
+        cancelLabel={common.cancel}
+      />
     </div>
   );
 }
