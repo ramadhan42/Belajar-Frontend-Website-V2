@@ -442,7 +442,7 @@ export default function UsersPage() {
         title={alertDialog?.title || ""}
         message={alertDialog?.message || ""}
         variant={alertDialog?.variant || "info"}
-        buttonLabel={common.ok}
+        buttonLabel={common.close}
       />
 
       {/* Header & Pencarian */}

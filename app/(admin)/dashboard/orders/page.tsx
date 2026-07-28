@@ -398,7 +398,7 @@ export default function OrdersPage() {
         title={alertDialog?.title || ""}
         message={alertDialog?.message || ""}
         variant={alertDialog?.variant || "info"}
-        buttonLabel={common.ok}
+        buttonLabel={common.close}
       />
 
       {/* Modal Update */}
