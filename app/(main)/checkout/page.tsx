@@ -7,6 +7,7 @@ import {
   Banknote,
   CheckCircle2,
   ChevronDown,
+  CreditCard,
   Loader2,
   Mail,
   MapPin,
@@ -23,8 +24,14 @@ import {
   formatProductPrice,
   guestCheckoutApi,
   userProfileApi,
+  getPublicPaymentSettings,
+  createXenditQr,
+  getXenditQrStatus,
+  createMidtransSnap,
+  type PaymentSettingsPublic,
   Product,
 } from "@/lib/api";
+import { openMidtransSnap } from "@/lib/midtrans";
 import { useLocale } from "@/context/LocaleContext";
 import { L } from "@/lib/localeText";
 import { useCms } from "@/context/CmsContext";
@@ -82,9 +89,6 @@ const VISUAL_BY_PERSONALITY: Record<
 
 const VISUAL_FALLBACK = VISUAL_BY_PERSONALITY["purpose_prestige"];
 
-const XENDIT_AUTH =
-  "Basic eG5kX2RldmVsb3BtZW50X3RLblFjYm5aVDVzbEFKYjJqSTVVeUQ3cVQ3VWRZUHE4cUp6MmdFNjFySXo3YUEyZklSTGdiOEJ2TEZsZDo=";
-
 function CheckoutContent() {
   const BASE_URL = SITE_STRINGS.base_url.url_backend;
   const { locale } = useLocale();
@@ -126,7 +130,9 @@ function CheckoutContent() {
   const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
 
   const [items, setItems] = useState<CheckoutItemType[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState("qris");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [paymentSettings, setPaymentSettings] =
+    useState<PaymentSettingsPublic | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   useTrackLocaleLoad(isLoading);
   const [error, setError] = useState<string | null>(null);
@@ -438,6 +444,77 @@ function CheckoutContent() {
     { textFx: false },
   ).isThemeLoading;
   const isContentRevealed = !isLoading && !error && !isThemeLoading;
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const settings = await getPublicPaymentSettings();
+        if (cancelled) return;
+        setPaymentSettings(settings);
+        if (settings.provider === "xendit" && settings.configured) {
+          setPaymentMethod("qris");
+        } else if (settings.provider === "midtrans" && settings.configured) {
+          setPaymentMethod("midtrans");
+        } else {
+          setPaymentMethod("cash");
+        }
+      } catch {
+        if (!cancelled) {
+          setPaymentSettings({
+            provider: "manual",
+            is_production: false,
+            configured: true,
+            client_key: null,
+          });
+          setPaymentMethod("cash");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const paymentOptions = useMemo(() => {
+    const provider = paymentSettings?.provider ?? "manual";
+    const configured = Boolean(paymentSettings?.configured);
+
+    if (provider === "xendit" && configured) {
+      return [
+        {
+          id: "qris",
+          title: "QRIS",
+          desc: copy.qrisDesc,
+          icon: QrCode,
+        },
+      ];
+    }
+
+    if (provider === "midtrans" && configured) {
+      return [
+        {
+          id: "midtrans",
+          title: "Midtrans",
+          desc: L(
+            locale,
+            "Bayar aman via Midtrans Snap (VA, e-wallet, kartu, QRIS).",
+            "Pay securely via Midtrans Snap (VA, e-wallet, card, QRIS).",
+          ),
+          icon: CreditCard,
+        },
+      ];
+    }
+
+    return [
+      {
+        id: "cash",
+        title: copy.codTitle,
+        desc: copy.codDesc,
+        icon: Banknote,
+      },
+    ];
+  }, [paymentSettings, copy.qrisDesc, copy.codTitle, copy.codDesc, locale]);
 
   useEffect(() => {
     let cancelled = false;
@@ -778,7 +855,11 @@ function CheckoutContent() {
       setIsProcessing(true);
 
       const formattedPaymentMethod =
-        paymentMethod === "qris" ? "QRIS" : "Cash on Delivery";
+        paymentMethod === "qris"
+          ? "QRIS"
+          : paymentMethod === "midtrans"
+            ? "Midtrans"
+            : "Cash on Delivery";
 
       // Simpan harga katalog di order; ongkir & promo dikirim terpisah (sekali).
       if (isGuest) {
@@ -920,28 +1001,11 @@ function CheckoutContent() {
       setIsProcessing(true);
       try {
         const expiresAt = new Date(Date.now() + 15 * 60000).toISOString();
-
-        const res = await fetch("https://api.xendit.co/qr_codes", {
-          method: "POST",
-          headers: {
-            "api-version": "2022-07-31",
-            "Content-Type": "application/json",
-            Authorization: XENDIT_AUTH,
-          },
-          body: JSON.stringify({
-            reference_id: invoiceId,
-            type: "DYNAMIC",
-            currency: "IDR",
-            amount: totalTagihan,
-            expires_at: expiresAt,
-          }),
+        const data = await createXenditQr({
+          reference_id: invoiceId,
+          amount: totalTagihan,
+          expires_at: expiresAt,
         });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || copy.qrisGenerateFailed);
-        }
 
         setFormData((prev) => ({ ...prev, ...recipient }));
         setQrisData({
@@ -960,6 +1024,67 @@ function CheckoutContent() {
       } finally {
         setIsProcessing(false);
       }
+    } else if (paymentMethod === "midtrans") {
+      setIsProcessing(true);
+      try {
+        const snap = await createMidtransSnap({
+          order_id: invoiceId,
+          amount: totalTagihan,
+          customer_name: recipient.name,
+          customer_email: recipient.email,
+          item_name: items[0]?.title
+            ? `Evomi — ${items[0].title}`
+            : "Pesanan Evomi",
+        });
+
+        setFormData((prev) => ({ ...prev, ...recipient }));
+
+        await openMidtransSnap(
+          snap.token,
+          snap.client_key,
+          snap.is_production,
+          {
+            onSuccess: () => {
+              void processInternalCheckout(invoiceId, recipient);
+            },
+            onPending: () => {
+              void processInternalCheckout(invoiceId, recipient);
+            },
+            onError: (result) => {
+              setModal({
+                isOpen: true,
+                title: copy.failedTitle,
+                message:
+                  result.status_message ||
+                  L(
+                    locale,
+                    "Pembayaran Midtrans gagal.",
+                    "Midtrans payment failed.",
+                  ),
+                type: "error",
+              });
+            },
+            onClose: () => {
+              setIsProcessing(false);
+            },
+          },
+        );
+      } catch (err: any) {
+        setModal({
+          isOpen: true,
+          title: copy.failedTitle,
+          message:
+            err.message ||
+            L(
+              locale,
+              "Gagal membuka Midtrans Snap.",
+              "Failed to open Midtrans Snap.",
+            ),
+          type: "error",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
     } else {
       await processInternalCheckout(invoiceId, recipient);
     }
@@ -972,17 +1097,7 @@ function CheckoutContent() {
       if (!qrisData || !isQrisModalOpen) return;
 
       try {
-        const res = await fetch(
-          `https://api.xendit.co/qr_codes/${qrisData.id}`,
-          {
-            method: "GET",
-            headers: {
-              "api-version": "2022-07-31",
-              Authorization: XENDIT_AUTH,
-            },
-          },
-        );
-        const data = await res.json();
+        const data = await getXenditQrStatus(qrisData.id);
 
         if (
           data.status === "INACTIVE" ||
@@ -1428,20 +1543,7 @@ function CheckoutContent() {
               </div>
 
               <div className="space-y-2">
-                {[
-                  {
-                    id: "qris",
-                    title: "QRIS",
-                    desc: copy.qrisDesc,
-                    icon: QrCode,
-                  },
-                  {
-                    id: "cash",
-                    title: copy.codTitle,
-                    desc: copy.codDesc,
-                    icon: Banknote,
-                  },
-                ].map((m) => {
+                {paymentOptions.map((m) => {
                   const selected = paymentMethod === m.id;
                   const Icon = m.icon;
                   return (

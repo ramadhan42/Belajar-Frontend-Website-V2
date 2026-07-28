@@ -849,3 +849,140 @@ export const resetPasswordApi = async (data: {
 
   return result;
 };
+
+// ---------------------------------------------------------------------------
+// Payment settings & gateways
+// ---------------------------------------------------------------------------
+
+export type PaymentProvider = "manual" | "midtrans" | "xendit";
+
+export type PaymentSettingsPublic = {
+  provider: PaymentProvider;
+  is_production: boolean;
+  configured: boolean;
+  client_key?: string | null;
+};
+
+export type PaymentSettingsAdmin = PaymentSettingsPublic & {
+  merchant_id?: string | null;
+  client_key?: string | null;
+  server_key_masked?: string | null;
+  has_server_key?: boolean;
+  updated_by?: number | null;
+  updated_at?: string | null;
+};
+
+export type PaymentSettingsUpdatePayload = {
+  provider: PaymentProvider;
+  is_production: boolean;
+  merchant_id?: string | null;
+  client_key?: string | null;
+  server_key?: string;
+};
+
+export async function getPublicPaymentSettings(): Promise<PaymentSettingsPublic> {
+  const res = await fetch(`${BASE_URL}/api/payment-settings`, {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Gagal memuat pengaturan pembayaran");
+  }
+  return json.data;
+}
+
+export async function adminGetPaymentSettings(): Promise<PaymentSettingsAdmin> {
+  const res = await fetch(`${BASE_URL}/api/admin/payment-settings`, {
+    headers: getAdminHeaders(false),
+    cache: "no-store",
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Gagal memuat pengaturan pembayaran");
+  }
+  return json.data;
+}
+
+export async function adminUpdatePaymentSettings(
+  payload: PaymentSettingsUpdatePayload,
+): Promise<PaymentSettingsAdmin> {
+  const res = await fetch(`${BASE_URL}/api/admin/payment-settings`, {
+    method: "PUT",
+    headers: getAdminHeaders(true),
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    const firstError = json.errors
+      ? Object.values(json.errors).flat()[0]
+      : null;
+    throw new Error(
+      (typeof firstError === "string" ? firstError : null) ||
+        json.message ||
+        "Gagal menyimpan pengaturan pembayaran",
+    );
+  }
+  return json.data;
+}
+
+export async function createXenditQr(payload: {
+  reference_id: string;
+  amount: number;
+  expires_at?: string;
+}): Promise<{
+  id: string;
+  qr_string: string;
+  status?: string | null;
+  invoice_id: string;
+}> {
+  const res = await fetch(`${BASE_URL}/api/payments/xendit/qr`, {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Gagal membuat QRIS");
+  }
+  return json.data;
+}
+
+export async function getXenditQrStatus(
+  id: string,
+): Promise<{ id: string; status?: string | null; reference_id?: string | null }> {
+  const res = await fetch(`${BASE_URL}/api/payments/xendit/qr/${id}`, {
+    headers: { Accept: "application/json" },
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Gagal cek status QRIS");
+  }
+  return json.data;
+}
+
+export async function createMidtransSnap(payload: {
+  order_id: string;
+  amount: number;
+  customer_name?: string;
+  customer_email?: string;
+  item_name?: string;
+}): Promise<{
+  token: string;
+  redirect_url?: string | null;
+  client_key: string;
+  is_production: boolean;
+  order_id: string;
+}> {
+  const res = await fetch(`${BASE_URL}/api/payments/midtrans/snap`, {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Gagal membuat Midtrans Snap");
+  }
+  return json.data;
+}
+

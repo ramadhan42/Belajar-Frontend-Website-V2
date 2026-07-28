@@ -12,6 +12,10 @@ import {
   Trash2,
   AlertTriangle,
   ShieldCheck,
+  Edit2,
+  Camera,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
@@ -23,8 +27,74 @@ interface UserData {
   email: string;
   nama_lengkap: string | null;
   alamat_lengkap: string | null;
+  avatar_profile?: string | null;
+  phone?: string | null;
   is_admin?: boolean;
   created_at: string;
+}
+
+type EditFormState = {
+  name: string;
+  email: string;
+  nama_lengkap: string;
+  alamat_lengkap: string;
+  phone: string;
+  password: string;
+  is_admin: boolean;
+};
+
+function getAvatarUrl(path?: string | null) {
+  if (!path) return null;
+  if (
+    path.startsWith("http") ||
+    path.startsWith("blob:") ||
+    path.startsWith("data:")
+  ) {
+    return path;
+  }
+  return `${SITE_STRINGS.base_url.url_backend}/storage/${path}`;
+}
+
+function UserAvatar({
+  user,
+  size = "md",
+}: {
+  user: Pick<UserData, "name" | "avatar_profile" | "is_admin">;
+  size?: "sm" | "md" | "lg";
+}) {
+  const url = getAvatarUrl(user.avatar_profile);
+  const sizeClass =
+    size === "lg" ? "w-16 h-16" : size === "sm" ? "w-8 h-8" : "w-10 h-10";
+  const iconClass = size === "lg" ? "w-8 h-8" : size === "sm" ? "w-4 h-4" : "w-5 h-5";
+  const initial = (user.name || "?").trim().charAt(0).toUpperCase() || "?";
+
+  if (url) {
+    return (
+      <div
+        className={`${sizeClass} rounded-full overflow-hidden border border-gray-100 shadow-sm bg-gray-50 shrink-0`}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt={user.name || "Avatar"}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`${sizeClass} rounded-full bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm shrink-0`}
+      title={initial}
+    >
+      {user.is_admin ? (
+        <ShieldCheck className={`${iconClass} text-blue-600`} />
+      ) : (
+        <User className={iconClass} />
+      )}
+    </div>
+  );
 }
 
 export default function UsersPage() {
@@ -41,12 +111,37 @@ export default function UsersPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
 
+  // Edit Modal
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [userToEdit, setUserToEdit] = useState<UserData | null>(null);
+  const [editForm, setEditForm] = useState<EditFormState>({
+    name: "",
+    email: "",
+    nama_lengkap: "",
+    alamat_lengkap: "",
+    phone: "",
+    password: "",
+    is_admin: false,
+  });
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+
   // Delete Modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const baseUrl = SITE_STRINGS.base_url.url_backend;
+
+  const showNotification = (message: string, type: "success" | "error") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -101,6 +196,122 @@ export default function UsersPage() {
   const openViewModal = (user: UserData) => {
     setSelectedUser(user);
     setIsViewModalOpen(true);
+  };
+
+  const openEditModal = (user: UserData) => {
+    setUserToEdit(user);
+    setEditForm({
+      name: user.name || "",
+      email: user.email || "",
+      nama_lengkap: user.nama_lengkap || "",
+      alamat_lengkap: user.alamat_lengkap || "",
+      phone: user.phone || "",
+      password: "",
+      is_admin: Boolean(user.is_admin),
+    });
+    setAvatarFile(null);
+    setAvatarPreview(getAvatarUrl(user.avatar_profile));
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setUserToEdit(null);
+    setAvatarFile(null);
+    setAvatarPreview(null);
+  };
+
+  const handleAvatarPick = (file?: File | null) => {
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const saveEdit = async () => {
+    if (!userToEdit) return;
+    if (!editForm.name.trim() || !editForm.email.trim()) {
+      showNotification(
+        t(
+          "users",
+          "edit_required",
+          "Nama dan email wajib diisi.",
+          "Name and email are required.",
+        ),
+        "error",
+      );
+      return;
+    }
+
+    setIsSaving(true);
+    const token = localStorage.getItem("auth_token");
+    const formData = new FormData();
+    formData.append("name", editForm.name.trim());
+    formData.append("email", editForm.email.trim());
+    formData.append("nama_lengkap", editForm.nama_lengkap.trim());
+    formData.append("alamat_lengkap", editForm.alamat_lengkap.trim());
+    formData.append("phone", editForm.phone.trim());
+    formData.append("is_admin", editForm.is_admin ? "1" : "0");
+    if (editForm.password.trim()) {
+      formData.append("password", editForm.password.trim());
+    }
+    if (avatarFile) {
+      formData.append("avatar_profile", avatarFile);
+    }
+
+    try {
+      const res = await fetch(`${baseUrl}/api/admin/users/${userToEdit.id}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(
+          data.message ||
+            t(
+              "users",
+              "edit_error",
+              "Gagal memperbarui pengguna.",
+              "Failed to update user.",
+            ),
+        );
+      }
+
+      const updated = data.data as UserData;
+      setUsers((prev) =>
+        prev.map((u) => (u.id === updated.id ? { ...u, ...updated } : u)),
+      );
+      if (selectedUser?.id === updated.id) {
+        setSelectedUser({ ...selectedUser, ...updated });
+      }
+      closeEditModal();
+      showNotification(
+        t(
+          "users",
+          "edit_success",
+          "Data pengguna berhasil diperbarui.",
+          "User updated successfully.",
+        ),
+        "success",
+      );
+    } catch (error) {
+      showNotification(
+        error instanceof Error
+          ? error.message
+          : t(
+              "users",
+              "edit_error",
+              "Gagal memperbarui pengguna.",
+              "Failed to update user.",
+            ),
+        "error",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const openDeleteModal = (user: UserData) => {
@@ -180,6 +391,23 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
+      {notification ? (
+        <div
+          className={`fixed top-6 right-6 z-[60] flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${
+            notification.type === "success"
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+              : "bg-rose-50 text-rose-700 border border-rose-100"
+          }`}
+        >
+          {notification.type === "success" ? (
+            <CheckCircle2 className="w-4 h-4" />
+          ) : (
+            <AlertCircle className="w-4 h-4" />
+          )}
+          {notification.message}
+        </div>
+      ) : null}
+
       {/* Header & Pencarian */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div>
@@ -226,6 +454,9 @@ export default function UsersPage() {
               <thead className="bg-gray-50/80 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500">
                 <tr>
                   <th className="px-6 py-4 font-semibold">{common.id}</th>
+                  <th className="px-6 py-4 font-semibold">
+                    {t("users", "col_avatar", "Avatar", "Avatar")}
+                  </th>
                   <th className="px-6 py-4 font-semibold">{common.user}</th>
                   <th className="px-6 py-4 font-semibold">
                     {t("users", "col_address", "Alamat / Info", "Address / Info")}
@@ -247,14 +478,10 @@ export default function UsersPage() {
                         #{user.id}
                       </td>
                       <td className="px-6 py-4">
+                        <UserAvatar user={user} size="md" />
+                      </td>
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm">
-                            {user.is_admin ? (
-                              <ShieldCheck className="w-5 h-5 text-blue-600" />
-                            ) : (
-                              <User className="w-5 h-5" />
-                            )}
-                          </div>
                           <div>
                             <div className="flex items-center gap-2">
                               <div className="font-semibold text-gray-900">
@@ -288,6 +515,14 @@ export default function UsersPage() {
                             title={t("users", "view_detail", "Lihat Detail", "View Detail")}
                           >
                             <Eye className="w-5 h-5" />
+                          </button>
+
+                          <button
+                            onClick={() => openEditModal(user)}
+                            className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                            title={t("users", "edit_user", "Edit Pengguna", "Edit User")}
+                          >
+                            <Edit2 className="w-5 h-5" />
                           </button>
 
                           {/* Logic Render Button Hapus */}
@@ -326,7 +561,7 @@ export default function UsersPage() {
                 ) : (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="px-6 py-12 text-center text-gray-500"
                     >
                       {searchQuery
@@ -463,10 +698,10 @@ export default function UsersPage() {
       <AdminModal
         open={isViewModalOpen && !!selectedUser}
         onClose={() => setIsViewModalOpen(false)}
-        panelClassName="max-w-lg"
+        panelClassName="max-w-lg max-h-[80vh]"
       >
-          <div className="bg-white rounded-2xl w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <div className="bg-white rounded-2xl w-full max-h-[80vh] flex flex-col shadow-2xl border border-gray-100 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
               <h3 className="text-lg font-bold text-gray-900">
                 {t("users", "detail_title", "Detail Pengguna", "User Detail")}
               </h3>
@@ -477,28 +712,43 @@ export default function UsersPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
-                  {selectedUser?.is_admin ? (
-                    <ShieldCheck className="w-8 h-8" />
-                  ) : (
-                    <User className="w-8 h-8" />
-                  )}
-                </div>
-                <div>
-                  <h4 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    {selectedUser?.name}
+
+            <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-3">
+              <div className="flex items-center gap-3 pb-1">
+                {selectedUser ? (
+                  <UserAvatar user={selectedUser} size="lg" />
+                ) : null}
+                <div className="min-w-0">
+                  <h4 className="text-lg font-bold text-gray-900 flex flex-wrap items-center gap-2">
+                    <span className="truncate">{selectedUser?.name}</span>
                     {selectedUser?.is_admin && (
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-blue-50 text-blue-600 border border-blue-100">
                         ADMIN
                       </span>
                     )}
                   </h4>
-                  <p className="text-sm text-gray-500">{selectedUser?.email}</p>
+                  <p className="text-sm text-gray-500 truncate">
+                    {selectedUser?.email}
+                  </p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    {selectedUser?.avatar_profile
+                      ? t(
+                          "users",
+                          "avatar_set",
+                          "Avatar tersedia",
+                          "Avatar available",
+                        )
+                      : t(
+                          "users",
+                          "avatar_empty",
+                          "Belum mengunggah avatar",
+                          "No avatar uploaded",
+                        )}
+                  </p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-4">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
                     {t("users", "user_id", "ID Pengguna", "User ID")}
@@ -509,21 +759,29 @@ export default function UsersPage() {
                 </div>
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                    {t("users", "full_name", "Nama Lengkap", "Full Name")}
-                  </p>
-                  <p className="text-gray-900 font-medium">
-                    {selectedUser?.nama_lengkap || "-"}
-                  </p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
                     {t("users", "joined_date", "Tanggal Bergabung", "Joined Date")}
                   </p>
                   <p className="text-gray-900 font-medium">
                     {selectedUser ? formatDate(selectedUser.created_at) : ""}
                   </p>
                 </div>
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 sm:col-span-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    {t("users", "full_name", "Nama Lengkap", "Full Name")}
+                  </p>
+                  <p className="text-gray-900 font-medium">
+                    {selectedUser?.nama_lengkap || "-"}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 sm:col-span-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    {t("users", "phone", "Telepon", "Phone")}
+                  </p>
+                  <p className="text-gray-900 font-medium">
+                    {selectedUser?.phone || "-"}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 sm:col-span-2">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
                     {t("users", "full_address", "Alamat Lengkap", "Full Address")}
                   </p>
@@ -539,7 +797,19 @@ export default function UsersPage() {
                 </div>
               </div>
             </div>
-            <div className="p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl flex justify-end">
+
+            <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50 shrink-0 flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  if (!selectedUser) return;
+                  setIsViewModalOpen(false);
+                  openEditModal(selectedUser);
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-xl shadow-sm transition-colors"
+              >
+                <Edit2 className="w-4 h-4" />
+                {common.edit}
+              </button>
               <button
                 onClick={() => setIsViewModalOpen(false)}
                 className="px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
@@ -548,6 +818,208 @@ export default function UsersPage() {
               </button>
             </div>
           </div>
+      </AdminModal>
+
+      {/* Modal Edit Pengguna */}
+      <AdminModal
+        open={isEditModalOpen && !!userToEdit}
+        onClose={closeEditModal}
+        panelClassName="max-w-lg max-h-[80vh]"
+      >
+        <div className="bg-white rounded-2xl w-full max-h-[80vh] flex flex-col shadow-2xl border border-gray-100 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
+            <h3 className="text-lg font-bold text-gray-900">
+              {t("users", "edit_title", "Edit Pengguna", "Edit User")}
+            </h3>
+            <button
+              onClick={closeEditModal}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="relative shrink-0">
+                <div className="w-16 h-16 rounded-full overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center text-gray-400">
+                  {avatarPreview ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={avatarPreview}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-7 h-7" />
+                  )}
+                </div>
+                <label className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center cursor-pointer shadow-sm hover:bg-gray-800">
+                  <Camera className="w-3.5 h-3.5" />
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/jpg,image/webp"
+                    className="hidden"
+                    onChange={(e) =>
+                      handleAvatarPick(e.target.files?.[0] ?? null)
+                    }
+                  />
+                </label>
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-gray-900 truncate">
+                  {userToEdit?.email}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {t(
+                    "users",
+                    "edit_avatar_hint",
+                    "Klik ikon kamera untuk ganti avatar.",
+                    "Click the camera icon to change avatar.",
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider sm:col-span-2">
+                {t("users", "field_name", "Nama", "Name")}
+                <input
+                  value={editForm.name}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  className="mt-1.5 w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-gray-900"
+                />
+              </label>
+
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider sm:col-span-2">
+                Email
+                <input
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, email: e.target.value }))
+                  }
+                  className="mt-1.5 w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-gray-900"
+                />
+              </label>
+
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider sm:col-span-2">
+                {t("users", "full_name", "Nama Lengkap", "Full Name")}
+                <input
+                  value={editForm.nama_lengkap}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      nama_lengkap: e.target.value,
+                    }))
+                  }
+                  className="mt-1.5 w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-gray-900"
+                />
+              </label>
+
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider sm:col-span-2">
+                {t("users", "phone", "Telepon", "Phone")}
+                <input
+                  value={editForm.phone}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, phone: e.target.value }))
+                  }
+                  className="mt-1.5 w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-gray-900"
+                />
+              </label>
+
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider sm:col-span-2">
+                {t("users", "full_address", "Alamat Lengkap", "Full Address")}
+                <textarea
+                  rows={3}
+                  value={editForm.alamat_lengkap}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      alamat_lengkap: e.target.value,
+                    }))
+                  }
+                  className="mt-1.5 w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-gray-900 resize-none"
+                />
+              </label>
+
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider sm:col-span-2">
+                {t(
+                  "users",
+                  "password_optional",
+                  "Password baru (opsional)",
+                  "New password (optional)",
+                )}
+                <input
+                  type="password"
+                  value={editForm.password}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      password: e.target.value,
+                    }))
+                  }
+                  placeholder={t(
+                    "users",
+                    "password_placeholder",
+                    "Kosongkan jika tidak diganti",
+                    "Leave blank to keep current",
+                  )}
+                  className="mt-1.5 w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-gray-900"
+                  autoComplete="new-password"
+                />
+              </label>
+
+              <label className="flex items-center gap-3 sm:col-span-2 text-sm text-gray-700 bg-gray-50 border border-gray-100 rounded-xl px-3 py-3">
+                <input
+                  type="checkbox"
+                  checked={editForm.is_admin}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      is_admin: e.target.checked,
+                    }))
+                  }
+                  className="rounded border-gray-300"
+                />
+                <span>
+                  {t(
+                    "users",
+                    "toggle_admin",
+                    "Jadikan Admin Evomi",
+                    "Make Evomi Admin",
+                  )}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50 shrink-0 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={closeEditModal}
+              disabled={isSaving}
+              className="px-4 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-xl shadow-sm transition-colors disabled:opacity-60"
+            >
+              {common.cancel}
+            </button>
+            <button
+              type="button"
+              onClick={() => void saveEdit()}
+              disabled={isSaving}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors disabled:opacity-60"
+            >
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Edit2 className="w-4 h-4" />
+              )}
+              {isSaving ? common.saving : common.save_changes}
+            </button>
+          </div>
+        </div>
       </AdminModal>
     </div>
   );

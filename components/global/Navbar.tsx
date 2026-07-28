@@ -177,6 +177,28 @@ export default function Navbar() {
         "wishlist_empty",
         en ? "Wishlist is empty" : "Wishlist masih kosong",
       ),
+      adminDashboard: tUi(
+        "account",
+        "admin_dashboard",
+        en ? "Admin Dashboard" : "Dashboard Admin",
+      ),
+      adminDashboardDesc: tUi(
+        "account",
+        "admin_dashboard_desc",
+        en ? "Manage Evomi store & CMS" : "Kelola toko & CMS Evomi",
+      ),
+      adminDashboardTitle: tUi(
+        "account",
+        "admin_dashboard_title",
+        en ? "Admin Dashboard" : "Dashboard Admin",
+      ),
+      adminDashboardLoading: tUi(
+        "account",
+        "admin_dashboard_loading",
+        en
+          ? "Opening admin dashboard..."
+          : "Membuka dashboard admin...",
+      ),
       language: tUi("account", "language", en ? "Language" : "Bahasa"),
     }),
     [tUi, en],
@@ -396,6 +418,7 @@ export default function Navbar() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
 
   const [navModal, setNavModal] = useState<NavModalState>({
@@ -414,6 +437,7 @@ export default function Navbar() {
           const user = JSON.parse(userRaw);
           setUserEmail(user.email ?? null);
           setUserName(user.name ?? null);
+          setIsAdmin(Boolean(user.is_admin));
           const avatar = user.avatar_profile;
           if (avatar) {
             setUserAvatar(
@@ -428,11 +452,13 @@ export default function Navbar() {
           setUserEmail(null);
           setUserAvatar(null);
           setUserName(null);
+          setIsAdmin(false);
         }
       } else {
         setUserEmail(null);
         setUserAvatar(null);
         setUserName(null);
+        setIsAdmin(false);
       }
     };
     readAuth();
@@ -499,6 +525,7 @@ export default function Navbar() {
       setUserEmail(null);
       setUserAvatar(null);
       setUserName(null);
+      setIsAdmin(false);
       window.dispatchEvent(new Event("auth-change"));
       setIsLogoutLoading(false);
       setNavModal({
@@ -1009,6 +1036,32 @@ export default function Navbar() {
                         <div className="h-px bg-gray-100" />
 
                         <div className="space-y-0.5">
+                          {isAdmin ? (
+                            <Link
+                              href="/dashboard"
+                              role="menuitem"
+                              onClick={(e) => {
+                                setIsAccountMenuOpen(false);
+                                handleNavAction(
+                                  e,
+                                  "/dashboard",
+                                  account.adminDashboardTitle,
+                                  account.adminDashboardLoading,
+                                );
+                              }}
+                              className="nav-account-item"
+                            >
+                              <div className="min-w-0">
+                                <p className="text-[11px] font-semibold text-gray-800">
+                                  {account.adminDashboard}
+                                </p>
+                                <p className="text-[10px] text-gray-500 mt-0.5">
+                                  {account.adminDashboardDesc}
+                                </p>
+                              </div>
+                            </Link>
+                          ) : null}
+
                           <Link
                             href="/profile"
                             role="menuitem"
@@ -1402,6 +1455,22 @@ export default function Navbar() {
                       </span>
                     </div>
 
+                    {isAdmin ? (
+                      <Link
+                        href="/dashboard"
+                        onClick={(e) =>
+                          handleNavAction(
+                            e,
+                            "/dashboard",
+                            account.adminDashboardTitle,
+                            account.adminDashboardLoading,
+                          )
+                        }
+                        className="nav-mobile-link flex items-center justify-between w-full text-[12px] py-2.5 px-3 font-bold rounded-full text-white hover:bg-white hover:text-[var(--nav-color)]"
+                      >
+                        <span>{account.adminDashboard}</span>
+                      </Link>
+                    ) : null}
                     <Link
                       href="/profile"
                       onClick={(e) =>

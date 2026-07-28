@@ -21,6 +21,7 @@ import {
 import { SITE_STRINGS } from "@/components/constans/strings";
 import { getAdminHeaders, orderGrandTotal } from "@/lib/api";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
+import { useAdminTheme } from "@/context/AdminThemeContext";
 
 // Pembaruan Tipe Data sesuai JSON Response Anda
 interface Order {
@@ -52,6 +53,7 @@ interface Order {
 
 export default function HomeDashboard() {
   const { t } = useAdminI18n();
+  const { isDark } = useAdminTheme();
   const router = useRouter(); // 2. Inisialisasi router
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState({
@@ -296,34 +298,57 @@ export default function HomeDashboard() {
                 >
                   <defs>
                     <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.1} />
+                      <stop
+                        offset="5%"
+                        stopColor="#10B981"
+                        stopOpacity={isDark ? 0.28 : 0.1}
+                      />
                       <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
-                    stroke="#f3f4f6"
+                    stroke={isDark ? "#2a3344" : "#f3f4f6"}
                   />
                   <XAxis
                     dataKey="name"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#9ca3af", fontSize: 12 }}
+                    tick={{ fill: isDark ? "#9aa3b2" : "#9ca3af", fontSize: 12 }}
                     dy={10}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#9ca3af", fontSize: 12 }}
+                    tick={{ fill: isDark ? "#9aa3b2" : "#9ca3af", fontSize: 12 }}
                     tickFormatter={(value) => `Rp${value / 1000}k`}
                   />
                   <Tooltip
+                    cursor={{
+                      stroke: isDark ? "#3b465c" : "#e5e7eb",
+                      strokeWidth: 1,
+                    }}
                     contentStyle={{
                       borderRadius: "12px",
-                      border: "none",
-                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      border: isDark
+                        ? "1px solid #2a3344"
+                        : "1px solid #e5e7eb",
+                      backgroundColor: isDark ? "#1a2030" : "#ffffff",
+                      color: isDark ? "#e8eaed" : "#111827",
+                      boxShadow: isDark
+                        ? "0 12px 28px rgba(0,0,0,0.45)"
+                        : "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                     }}
+                    labelStyle={{
+                      color: isDark ? "#e8eaed" : "#111827",
+                      fontWeight: 600,
+                      marginBottom: 4,
+                    }}
+                    itemStyle={{
+                      color: isDark ? "#d1d5db" : "#374151",
+                    }}
+                    wrapperClassName="admin-chart-tooltip"
                     formatter={(value: any) => [
                       formatRupiah(value),
                       t("home", "trend_revenue", "Pendapatan", "Revenue"),

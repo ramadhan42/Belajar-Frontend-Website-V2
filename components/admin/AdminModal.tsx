@@ -56,7 +56,7 @@ export default function AdminModal({
           <motion.button
             type="button"
             aria-label="Tutup modal"
-            className="absolute inset-0 bg-gray-900/40 backdrop-blur-[2px]"
+            className="admin-modal-backdrop absolute inset-0 bg-gray-900/40 dark:bg-black/70 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

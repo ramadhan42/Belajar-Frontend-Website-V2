@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode for admin dashboard (.dark ancestor) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --font-nohemi: var(--font-nohemi);
   --font-parkinsans: var(--font-parkinsans);
@@ -706,5 +709,419 @@ html[data-theme-content-reveal="true"] [data-theme-content-fade] picture {
   opacity: 1 !important;
   transition: opacity var(--theme-content-fade-duration, 520ms)
     cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+/* ========== Admin dashboard dark theme (scoped) ========== */
+.admin-shell {
+  --admin-bg: #f8f9fa;
+  --admin-surface: #ffffff;
+  --admin-surface-2: #f9fafb;
+  --admin-surface-3: #f3f4f6;
+  --admin-border: #e5e7eb;
+  --admin-text: #111827;
+  --admin-muted: #6b7280;
+  --admin-hover: rgba(0, 0, 0, 0.04);
+  --admin-theme-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --admin-theme-duration: 420ms;
+  color-scheme: light;
+}
+
+[data-admin-theme="dark"] {
+  color-scheme: dark;
+  --admin-bg: #0b0d12;
+  --admin-surface: #141820;
+  --admin-surface-2: #1a2030;
+  --admin-surface-3: #222938;
+  --admin-border: #2a3344;
+  --admin-text: #e8eaed;
+  --admin-muted: #9aa3b2;
+  --admin-hover: rgba(255, 255, 255, 0.06);
+}
+
+/* Smooth color morph after first paint */
+.admin-shell.admin-theme-ready,
+.admin-shell.admin-theme-ready .admin-sidebar,
+.admin-shell.admin-theme-ready main,
+.admin-shell.admin-theme-ready main > *,
+.admin-shell.admin-theme-ready [class*="rounded-"],
+.admin-shell.admin-theme-ready [class*="bg-"],
+.admin-shell.admin-theme-ready [class*="border-"],
+.admin-shell.admin-theme-ready [class*="text-"],
+.admin-shell.admin-theme-ready table,
+.admin-shell.admin-theme-ready thead,
+.admin-shell.admin-theme-ready tbody,
+.admin-shell.admin-theme-ready tr,
+.admin-shell.admin-theme-ready th,
+.admin-shell.admin-theme-ready td,
+.admin-shell.admin-theme-ready input,
+.admin-shell.admin-theme-ready textarea,
+.admin-shell.admin-theme-ready select,
+.admin-shell.admin-theme-ready button,
+.admin-shell.admin-theme-ready a,
+.admin-shell.admin-theme-ready p,
+.admin-shell.admin-theme-ready h1,
+.admin-shell.admin-theme-ready h2,
+.admin-shell.admin-theme-ready h3,
+.admin-shell.admin-theme-ready h4,
+.admin-shell.admin-theme-ready span,
+.admin-shell.admin-theme-ready label,
+.admin-shell.admin-theme-ready nav,
+.admin-shell.admin-theme-ready aside,
+.admin-shell.admin-theme-ready svg {
+  transition-property: background-color, color, border-color, box-shadow, fill,
+    stroke, opacity;
+  transition-duration: var(--admin-theme-duration);
+  transition-timing-function: var(--admin-theme-ease);
+}
+
+.admin-shell.admin-theme-ready .animate-spin,
+.admin-shell.admin-theme-ready [class*="animate-"] {
+  transition: none !important;
+}
+
+@supports (view-transition-name: none) {
+  .admin-shell.admin-theme-ready {
+    view-transition-name: admin-shell;
+  }
+
+  ::view-transition-old(admin-shell),
+  ::view-transition-new(admin-shell) {
+    animation-duration: 0.45s;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  ::view-transition-old(admin-shell) {
+    animation-name: admin-theme-fade-out;
+  }
+
+  ::view-transition-new(admin-shell) {
+    animation-name: admin-theme-fade-in;
+  }
+}
+
+@keyframes admin-theme-fade-out {
+  to {
+    opacity: 0.72;
+    filter: blur(2px);
+  }
+}
+
+@keyframes admin-theme-fade-in {
+  from {
+    opacity: 0.72;
+    filter: blur(2px);
+  }
+}
+
+[data-admin-theme="dark"].admin-shell,
+[data-admin-theme="dark"] .admin-shell {
+  background-color: var(--admin-bg) !important;
+  color: var(--admin-text);
+}
+
+[data-admin-theme="dark"] .admin-sidebar {
+  background-color: rgba(20, 24, 32, 0.96) !important;
+  border-color: var(--admin-border) !important;
+}
+
+/* ---- Surfaces / cards (main + modal; avoid breaking sidebar) ---- */
+[data-admin-theme="dark"] main [class*="bg-white"],
+[data-admin-theme="dark"] [role="dialog"] [class*="bg-white"],
+[data-admin-theme="dark"] [role="document"] [class*="bg-white"] {
+  background-color: var(--admin-surface) !important;
+}
+
+[data-admin-theme="dark"] main [class*="bg-gray-50"],
+[data-admin-theme="dark"] main [class*="bg-[#F8F9FA]"],
+[data-admin-theme="dark"] main [class*="bg-\[\#F8F9FA\]"],
+[data-admin-theme="dark"] [role="dialog"] [class*="bg-gray-50"],
+[data-admin-theme="dark"] [role="document"] [class*="bg-gray-50"] {
+  background-color: var(--admin-surface-2) !important;
+}
+
+[data-admin-theme="dark"] main [class*="bg-gray-100"],
+[data-admin-theme="dark"] [role="dialog"] [class*="bg-gray-100"],
+[data-admin-theme="dark"] [role="document"] [class*="bg-gray-100"] {
+  background-color: var(--admin-surface-3) !important;
+}
+
+[data-admin-theme="dark"] main [class*="bg-gray-200"],
+[data-admin-theme="dark"] [role="dialog"] [class*="bg-gray-200"] {
+  background-color: #2a3344 !important;
+}
+
+/* Primary / inverted solid actions — exact token only (NOT bg-gray-900/40 overlays) */
+[data-admin-theme="dark"] main [class~="bg-gray-900"],
+[data-admin-theme="dark"] main [class~="hover:bg-gray-800"]:hover,
+[data-admin-theme="dark"] [role="dialog"] [class~="bg-gray-900"],
+[data-admin-theme="dark"] [role="dialog"] [class~="hover:bg-gray-800"]:hover,
+[data-admin-theme="dark"] [role="document"] [class~="bg-gray-900"] {
+  background-color: #f3f4f6 !important;
+  color: #0f172a !important;
+  border-color: transparent !important;
+}
+
+[data-admin-theme="dark"] main [class~="bg-gray-900"],
+[data-admin-theme="dark"] main [class~="bg-gray-900"] *,
+[data-admin-theme="dark"] [role="dialog"] [class~="bg-gray-900"],
+[data-admin-theme="dark"] [role="dialog"] [class~="bg-gray-900"] *,
+[data-admin-theme="dark"] [role="document"] [class~="bg-gray-900"],
+[data-admin-theme="dark"] [role="document"] [class~="bg-gray-900"] * {
+  color: #0f172a !important;
+  stroke: #0f172a !important;
+}
+
+/* Selectable option cards (payment, tabs, etc.) */
+[data-admin-theme="dark"] .admin-select-card {
+  background-color: var(--admin-surface-2) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text) !important;
+}
+
+[data-admin-theme="dark"] .admin-select-card:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: #3b465c !important;
+}
+
+[data-admin-theme="dark"] .admin-select-card-active {
+  background-color: #f8fafc !important;
+  border-color: #f8fafc !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+[data-admin-theme="dark"] .admin-select-card-active,
+[data-admin-theme="dark"] .admin-select-card-active * {
+  color: #0f172a !important;
+  stroke: #0f172a !important;
+}
+
+[data-admin-theme="dark"] .admin-select-card:not(.admin-select-card-active) .admin-select-card-muted {
+  color: var(--admin-muted) !important;
+}
+
+[data-admin-theme="dark"] .admin-select-card-active .admin-select-card-muted {
+  color: #475569 !important;
+}
+
+/* Modal backdrop must stay dark */
+[data-admin-theme="dark"] .admin-modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.72) !important;
+  backdrop-filter: blur(4px);
+}
+
+.admin-modal-backdrop {
+  background-color: rgba(17, 24, 39, 0.45);
+}
+
+/* Soft tint badges/cards */
+[data-admin-theme="dark"] main [class*="bg-blue-50"],
+[data-admin-theme="dark"] main [class*="bg-emerald-50"],
+[data-admin-theme="dark"] main [class*="bg-green-50"],
+[data-admin-theme="dark"] main [class*="bg-amber-50"],
+[data-admin-theme="dark"] main [class*="bg-yellow-50"],
+[data-admin-theme="dark"] main [class*="bg-rose-50"],
+[data-admin-theme="dark"] main [class*="bg-red-50"],
+[data-admin-theme="dark"] main [class*="bg-orange-50"],
+[data-admin-theme="dark"] main [class*="bg-purple-50"],
+[data-admin-theme="dark"] main [class*="bg-indigo-50"],
+[data-admin-theme="dark"] main [class*="bg-sky-50"],
+[data-admin-theme="dark"] [role="dialog"] [class*="bg-blue-50"],
+[data-admin-theme="dark"] [role="dialog"] [class*="bg-emerald-50"],
+[data-admin-theme="dark"] [role="dialog"] [class*="bg-amber-50"],
+[data-admin-theme="dark"] [role="dialog"] [class*="bg-rose-50"],
+[data-admin-theme="dark"] [role="dialog"] [class*="bg-red-50"] {
+  background-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+/* ---- Borders (main + modal only) ---- */
+[data-admin-theme="dark"] main [class*="border-gray"],
+[data-admin-theme="dark"] main [class*="border-blue-100"],
+[data-admin-theme="dark"] main [class*="border-emerald-100"],
+[data-admin-theme="dark"] main [class*="border-amber-100"],
+[data-admin-theme="dark"] main [class*="border-rose-100"],
+[data-admin-theme="dark"] main [class*="border-red-100"],
+[data-admin-theme="dark"] main [class*="border-green-100"],
+[data-admin-theme="dark"] main [class*="border-sky-100"],
+[data-admin-theme="dark"] [role="dialog"] [class*="border-gray"],
+[data-admin-theme="dark"] [role="document"] [class*="border-gray"] {
+  border-color: var(--admin-border) !important;
+}
+
+[data-admin-theme="dark"] main .divide-y > :not([hidden]) ~ :not([hidden]),
+[data-admin-theme="dark"] main [class*="divide-gray"] > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--admin-border) !important;
+}
+
+/* ---- Text (main + modal only — sidebar active pill needs black text) ---- */
+[data-admin-theme="dark"] main [class*="text-gray-900"],
+[data-admin-theme="dark"] main [class*="text-gray-800"],
+[data-admin-theme="dark"] main [class*="text-gray-700"],
+[data-admin-theme="dark"] [role="dialog"] [class*="text-gray-900"],
+[data-admin-theme="dark"] [role="dialog"] [class*="text-gray-800"],
+[data-admin-theme="dark"] [role="dialog"] [class*="text-gray-700"],
+[data-admin-theme="dark"] [role="document"] [class*="text-gray-900"],
+[data-admin-theme="dark"] [role="document"] [class*="text-gray-800"],
+[data-admin-theme="dark"] [role="document"] [class*="text-gray-700"] {
+  color: var(--admin-text) !important;
+}
+
+[data-admin-theme="dark"] main [class*="text-gray-600"],
+[data-admin-theme="dark"] main [class*="text-gray-500"],
+[data-admin-theme="dark"] main [class*="text-gray-400"],
+[data-admin-theme="dark"] main [class*="text-gray-300"],
+[data-admin-theme="dark"] [role="dialog"] [class*="text-gray-600"],
+[data-admin-theme="dark"] [role="dialog"] [class*="text-gray-500"],
+[data-admin-theme="dark"] [role="dialog"] [class*="text-gray-400"],
+[data-admin-theme="dark"] [role="document"] [class*="text-gray-500"],
+[data-admin-theme="dark"] [role="document"] [class*="text-gray-400"] {
+  color: var(--admin-muted) !important;
+}
+
+/* Sidebar active: white pill + black label/icon */
+[data-admin-theme="dark"] .admin-sidebar .admin-nav-active {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+[data-admin-theme="dark"] .admin-sidebar .admin-nav-active,
+[data-admin-theme="dark"] .admin-sidebar .admin-nav-active span,
+[data-admin-theme="dark"] .admin-sidebar .admin-nav-active svg {
+  color: #0f172a !important;
+  stroke: #0f172a !important;
+}
+
+[data-admin-theme="dark"] .admin-sidebar .admin-nav-item:not(.admin-nav-active):hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #f1f5f9 !important;
+}
+
+/* Chart tooltip dark */
+[data-admin-theme="dark"] .recharts-default-tooltip,
+[data-admin-theme="dark"] .admin-chart-tooltip {
+  background: #1a2030 !important;
+  border: 1px solid #2a3344 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45) !important;
+  color: #e8eaed !important;
+}
+
+[data-admin-theme="dark"] .recharts-default-tooltip .recharts-tooltip-label,
+[data-admin-theme="dark"] .recharts-default-tooltip .recharts-tooltip-item,
+[data-admin-theme="dark"] .recharts-tooltip-item-name,
+[data-admin-theme="dark"] .recharts-tooltip-item-separator,
+[data-admin-theme="dark"] .recharts-tooltip-item-value,
+[data-admin-theme="dark"] .admin-chart-tooltip,
+[data-admin-theme="dark"] .admin-chart-tooltip * {
+  color: #e8eaed !important;
+}
+
+/* ---- Hover ---- */
+[data-admin-theme="dark"] main [class*="hover:bg-gray-50"]:hover,
+[data-admin-theme="dark"] main [class*="hover:bg-white"]:hover,
+[data-admin-theme="dark"] main [class*="hover:bg-gray-100"]:hover,
+[data-admin-theme="dark"] main [class*="hover:bg-gray-200"]:hover,
+[data-admin-theme="dark"] [role="dialog"] [class*="hover:bg-gray-50"]:hover,
+[data-admin-theme="dark"] [role="dialog"] [class*="hover:bg-white"]:hover {
+  background-color: var(--admin-hover) !important;
+}
+
+[data-admin-theme="dark"] main [class*="hover:bg-red-50"]:hover {
+  background-color: rgba(239, 68, 68, 0.14) !important;
+}
+
+[data-admin-theme="dark"] main [class*="hover:bg-blue-50"]:hover,
+[data-admin-theme="dark"] main [class*="hover:bg-amber-50"]:hover,
+[data-admin-theme="dark"] main [class*="hover:bg-emerald-50"]:hover,
+[data-admin-theme="dark"] main [class*="hover:bg-green-50"]:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-admin-theme="dark"] main [class*="hover:text-gray"]:hover {
+  color: #fff !important;
+}
+
+/* ---- Forms ---- */
+[data-admin-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+[data-admin-theme="dark"] textarea,
+[data-admin-theme="dark"] select {
+  background-color: var(--admin-surface-2) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text) !important;
+}
+
+[data-admin-theme="dark"] input::placeholder,
+[data-admin-theme="dark"] textarea::placeholder {
+  color: #7b8494 !important;
+}
+
+/* ---- Tables ---- */
+[data-admin-theme="dark"] table {
+  background-color: var(--admin-surface) !important;
+  color: var(--admin-text) !important;
+  border-color: var(--admin-border) !important;
+}
+
+[data-admin-theme="dark"] thead,
+[data-admin-theme="dark"] thead tr,
+[data-admin-theme="dark"] th {
+  background-color: var(--admin-surface-2) !important;
+  color: var(--admin-muted) !important;
+  border-color: var(--admin-border) !important;
+}
+
+[data-admin-theme="dark"] tbody tr,
+[data-admin-theme="dark"] td {
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text);
+}
+
+[data-admin-theme="dark"] tbody tr:hover {
+  background-color: var(--admin-hover) !important;
+}
+
+/* Card / panel shells (div wrappers for tables & stats) */
+[data-admin-theme="dark"] main div[class*="rounded-2xl"][class*="border"],
+[data-admin-theme="dark"] main div[class*="rounded-2xl"][class*="shadow"],
+[data-admin-theme="dark"] main div[class*="rounded-xl"][class*="border"][class*="shadow"],
+[data-admin-theme="dark"] main div[class*="rounded-xl"][class*="bg-white"],
+[data-admin-theme="dark"] [role="dialog"] div[class*="rounded-2xl"],
+[data-admin-theme="dark"] [role="document"] > div {
+  background-color: var(--admin-surface) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text);
+}
+
+/* Nested soft panels inside cards */
+[data-admin-theme="dark"] main div[class*="rounded-2xl"] [class*="bg-gray-50"],
+[data-admin-theme="dark"] main div[class*="rounded-2xl"] [class*="bg-gray-100"],
+[data-admin-theme="dark"] main div[class*="rounded-xl"] [class*="bg-gray-50"],
+[data-admin-theme="dark"] main div[class*="rounded-xl"] [class*="bg-gray-100"],
+[data-admin-theme="dark"] [role="dialog"] [class*="bg-gray-50"],
+[data-admin-theme="dark"] [role="dialog"] [class*="bg-gray-100"] {
+  background-color: var(--admin-surface-2) !important;
+}
+
+/* ---- Shadows ---- */
+[data-admin-theme="dark"] main [class*="shadow"],
+[data-admin-theme="dark"] [role="dialog"] [class*="shadow"] {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Modals / overlays inside admin */
+[data-admin-theme="dark"] [role="dialog"] [role="document"] > div {
+  background-color: var(--admin-surface) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text);
+}
+
+/* Recharts / chart cards often leave pale fills */
+[data-admin-theme="dark"] .recharts-cartesian-grid line {
+  stroke: #2a3344 !important;
+}
+
+[data-admin-theme="dark"] .recharts-text {
+  fill: var(--admin-muted) !important;
 }
 
