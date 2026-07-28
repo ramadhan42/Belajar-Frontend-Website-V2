@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useNavbarColor } from "@/context/NavbarColorContext";
 import { logout } from "@/lib/api";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import { motion, AnimatePresence, useInView, type Variants } from "framer-motion";
 
 import { SITE_STRINGS } from "@/components/constans/strings";
 import { useCms } from "@/context/CmsContext";
@@ -360,9 +360,10 @@ export default function Navbar() {
     : "transparent";
 
   const navEase = [0.22, 1, 0.36, 1] as const;
+  const navEaseExit = [0.4, 0, 1, 1] as const;
 
   // Stagger variants — re-trigger tiap isInView berubah
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: {},
     visible: {
       transition: {
@@ -372,7 +373,7 @@ export default function Navbar() {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: -10, filter: "blur(4px)" },
     visible: {
       opacity: 1,
@@ -382,7 +383,7 @@ export default function Navbar() {
     },
   };
 
-  const mobileMenuVariants = {
+  const mobileMenuVariants: Variants = {
     hidden: { opacity: 0, y: -12, scale: 0.97, filter: "blur(6px)" },
     visible: {
       opacity: 1,
@@ -401,11 +402,11 @@ export default function Navbar() {
       y: -8,
       scale: 0.98,
       filter: "blur(4px)",
-      transition: { duration: 0.24, ease: [0.4, 0, 1, 1] },
+      transition: { duration: 0.24, ease: navEaseExit },
     },
   };
 
-  const mobileItemVariants = {
+  const mobileItemVariants: Variants = {
     hidden: { opacity: 0, x: -8 },
     visible: {
       opacity: 1,
