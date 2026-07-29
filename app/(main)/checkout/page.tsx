@@ -7,7 +7,6 @@ import {
   Banknote,
   CheckCircle2,
   ChevronDown,
-  CreditCard,
   Loader2,
   Mail,
   MapPin,
@@ -27,11 +26,11 @@ import {
   getPublicPaymentSettings,
   createXenditQr,
   getXenditQrStatus,
-  createMidtransSnap,
+  createMidtransQris,
+  getMidtransQrisStatus,
   type PaymentSettingsPublic,
   Product,
 } from "@/lib/api";
-import { openMidtransSnap } from "@/lib/midtrans";
 import { useLocale } from "@/context/LocaleContext";
 import { L } from "@/lib/localeText";
 import { useCms } from "@/context/CmsContext";
@@ -157,6 +156,7 @@ function CheckoutContent() {
     id: string;
     qr_string: string;
     invoice_id: string;
+    provider: "xendit" | "midtrans";
   } | null>(null);
   const [isQrisModalOpen, setIsQrisModalOpen] = useState(false);
 
@@ -392,8 +392,8 @@ function CheckoutContent() {
       ),
       qrisDesc: L(
         locale,
-        "Scan via M-Banking / E-Wallet",
-        "Scan via M-Banking / E-Wallet",
+        "Bayar dengan QRIS melalui Xendit",
+        "Pay with QRIS via Xendit",
       ),
       codTitle: L(locale, "Cash on Delivery", "Cash on Delivery"),
       codDesc: L(
@@ -499,10 +499,10 @@ function CheckoutContent() {
             ? copy.qrisDesc
             : L(
                 locale,
-                "Bayar dengan QRIS melalui Midtrans.",
-                "Pay with QRIS through Midtrans.",
+                "Bayar dengan QRIS melalui Midtrans",
+                "Pay with QRIS via Midtrans",
               ),
-        icon: provider === "xendit" ? QrCode : CreditCard,
+        icon: QrCode,
       });
     }
 
@@ -1003,6 +1003,7 @@ function CheckoutContent() {
           id: data.id,
           qr_string: data.qr_string,
           invoice_id: invoiceId,
+          provider: "xendit",
         });
         setIsQrisModalOpen(true);
       } catch (err: any) {
@@ -1021,59 +1022,33 @@ function CheckoutContent() {
     ) {
       setIsProcessing(true);
       try {
-        const snap = await createMidtransSnap({
+        const data = await createMidtransQris({
           order_id: invoiceId,
           amount: totalTagihan,
           customer_name: recipient.name,
           customer_email: recipient.email,
+          customer_phone: recipient.phone,
           item_name: items[0]?.title
             ? `Evomi — ${items[0].title}`
             : "Pesanan Evomi",
+          item_id: items[0]?.product_id
+            ? String(items[0].product_id)
+            : "evomi-order",
         });
 
         setFormData((prev) => ({ ...prev, ...recipient }));
-
-        await openMidtransSnap(
-          snap.token,
-          snap.client_key,
-          snap.is_production,
-          {
-            onSuccess: () => {
-              void processInternalCheckout(invoiceId, recipient);
-            },
-            onPending: () => {
-              void processInternalCheckout(invoiceId, recipient);
-            },
-            onError: (result) => {
-              setModal({
-                isOpen: true,
-                title: copy.failedTitle,
-                message:
-                  result.status_message ||
-                  L(
-                    locale,
-                    "Pembayaran Midtrans gagal.",
-                    "Midtrans payment failed.",
-                  ),
-                type: "error",
-              });
-            },
-            onClose: () => {
-              setIsProcessing(false);
-            },
-          },
-        );
+        setQrisData({
+          id: data.order_id || invoiceId,
+          qr_string: data.qr_string,
+          invoice_id: invoiceId,
+          provider: "midtrans",
+        });
+        setIsQrisModalOpen(true);
       } catch (err: any) {
         setModal({
           isOpen: true,
           title: copy.failedTitle,
-          message:
-            err.message ||
-            L(
-              locale,
-              "Gagal membuka Midtrans Snap.",
-              "Failed to open Midtrans Snap.",
-            ),
+          message: err.message || copy.qrisCreateFailed,
           type: "error",
         });
       } finally {
@@ -1091,6 +1066,21 @@ function CheckoutContent() {
       if (!qrisData || !isQrisModalOpen) return;
 
       try {
+        if (qrisData.provider === "midtrans") {
+          const data = await getMidtransQrisStatus(qrisData.id);
+          const paid =
+            data.status === "settlement" ||
+            data.status === "capture" ||
+            data.status === "success";
+
+          if (paid) {
+            clearInterval(interval);
+            setIsQrisModalOpen(false);
+            await processInternalCheckout(qrisData.invoice_id);
+          }
+          return;
+        }
+
         const data = await getXenditQrStatus(qrisData.id);
 
         if (

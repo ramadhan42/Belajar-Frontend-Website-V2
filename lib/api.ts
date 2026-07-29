@@ -856,6 +856,26 @@ export const resetPasswordApi = async (data: {
 
 export type PaymentProvider = "manual" | "midtrans" | "xendit";
 
+export type MidtransPaymentSettings = {
+  is_production: boolean;
+  merchant_id?: string | null;
+  client_key?: string | null;
+  server_key?: string | null;
+  server_key_masked?: string | null;
+  has_server_key?: boolean;
+  configured?: boolean;
+};
+
+export type XenditPaymentSettings = {
+  is_production: boolean;
+  merchant_id?: string | null;
+  callback_token?: string | null;
+  secret_key?: string | null;
+  secret_key_masked?: string | null;
+  has_secret_key?: boolean;
+  configured?: boolean;
+};
+
 export type PaymentSettingsPublic = {
   provider: PaymentProvider;
   is_production: boolean;
@@ -864,20 +884,26 @@ export type PaymentSettingsPublic = {
 };
 
 export type PaymentSettingsAdmin = PaymentSettingsPublic & {
-  merchant_id?: string | null;
-  client_key?: string | null;
-  server_key_masked?: string | null;
-  has_server_key?: boolean;
   updated_by?: number | null;
   updated_at?: string | null;
+  midtrans: MidtransPaymentSettings;
+  xendit: XenditPaymentSettings;
 };
 
 export type PaymentSettingsUpdatePayload = {
   provider: PaymentProvider;
-  is_production: boolean;
-  merchant_id?: string | null;
-  client_key?: string | null;
-  server_key?: string;
+  midtrans?: {
+    is_production?: boolean;
+    merchant_id?: string | null;
+    client_key?: string | null;
+    server_key?: string | null;
+  };
+  xendit?: {
+    is_production?: boolean;
+    merchant_id?: string | null;
+    callback_token?: string | null;
+    secret_key?: string | null;
+  };
 };
 
 export async function getPublicPaymentSettings(): Promise<PaymentSettingsPublic> {
@@ -957,6 +983,58 @@ export async function getXenditQrStatus(
   const json = await res.json();
   if (!res.ok || !json.success) {
     throw new Error(json.message || "Gagal cek status QRIS");
+  }
+  return json.data;
+}
+
+export async function createMidtransQris(payload: {
+  order_id: string;
+  amount: number;
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone?: string;
+  item_name?: string;
+  item_id?: string;
+}): Promise<{
+  id: string;
+  transaction_id: string;
+  order_id: string;
+  qr_string: string;
+  status?: string | null;
+  expiry_time?: string | null;
+  invoice_id: string;
+  is_production: boolean;
+}> {
+  const res = await fetch(`${BASE_URL}/api/payments/midtrans/qris`, {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Gagal membuat QRIS Midtrans");
+  }
+  return json.data;
+}
+
+export async function getMidtransQrisStatus(
+  orderId: string,
+): Promise<{
+  id: string;
+  order_id?: string | null;
+  status?: string | null;
+  fraud_status?: string | null;
+  payment_type?: string | null;
+}> {
+  const res = await fetch(
+    `${BASE_URL}/api/payments/midtrans/qris/${encodeURIComponent(orderId)}`,
+    {
+      headers: { Accept: "application/json" },
+    },
+  );
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Gagal cek status QRIS Midtrans");
   }
   return json.data;
 }

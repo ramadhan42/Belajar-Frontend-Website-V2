@@ -28,10 +28,23 @@ declare global {
 
 const SCRIPT_ID = "midtrans-snap-script";
 
+let loadedClientKey: string | null = null;
+let loadedIsProduction: boolean | null = null;
+
 export function midtransSnapScriptUrl(isProduction: boolean): string {
   return isProduction
     ? "https://app.midtrans.com/snap/snap.js"
     : "https://app.sandbox.midtrans.com/snap/snap.js";
+}
+
+function unloadMidtransSnap() {
+  const existing = document.getElementById(SCRIPT_ID);
+  existing?.remove();
+  if (typeof window !== "undefined") {
+    delete window.snap;
+  }
+  loadedClientKey = null;
+  loadedIsProduction = null;
 }
 
 export async function loadMidtransSnap(
@@ -42,23 +55,20 @@ export async function loadMidtransSnap(
     throw new Error("Midtrans Snap hanya tersedia di browser.");
   }
 
-  if (window.snap) return;
-
-  const existing = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
-  if (existing) {
-    await new Promise<void>((resolve, reject) => {
-      if (window.snap) {
-        resolve();
-        return;
-      }
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener(
-        "error",
-        () => reject(new Error("Gagal memuat Midtrans Snap.")),
-        { once: true },
-      );
-    });
+  if (
+    window.snap &&
+    loadedClientKey === clientKey &&
+    loadedIsProduction === isProduction
+  ) {
     return;
+  }
+
+  if (
+    window.snap ||
+    loadedClientKey !== clientKey ||
+    loadedIsProduction !== isProduction
+  ) {
+    unloadMidtransSnap();
   }
 
   await new Promise<void>((resolve, reject) => {
@@ -67,7 +77,11 @@ export async function loadMidtransSnap(
     script.src = midtransSnapScriptUrl(isProduction);
     script.setAttribute("data-client-key", clientKey);
     script.async = true;
-    script.onload = () => resolve();
+    script.onload = () => {
+      loadedClientKey = clientKey;
+      loadedIsProduction = isProduction;
+      resolve();
+    };
     script.onerror = () => reject(new Error("Gagal memuat Midtrans Snap."));
     document.body.appendChild(script);
   });
