@@ -206,6 +206,8 @@ const HERO_FIELD_ORDER = [
   "badge_right_bottom_mobile",
   "badge_right_bottom_desktop",
   // Wave SVGs (sayap)
+  "wave_left_icon",
+  "wave_right_icon",
   "wave_left_left_mobile",
   "wave_left_left_desktop",
   "wave_left_top_mobile",
@@ -362,6 +364,8 @@ const FIELD_LABELS: Record<string, string> = {
   badge_right_bottom_mobile: "Badge Kanan — Posisi Bottom Mobile",
   badge_right_bottom_desktop: "Badge Kanan — Posisi Bottom Desktop",
 
+  wave_left_icon: "Sayap Kiri (Wave SVG)",
+  wave_right_icon: "Sayap Kanan (Wave SVG)",
   wave_left_left_mobile: "Wave Kiri (Sayap) — Left Mobile",
   wave_left_left_desktop: "Wave Kiri (Sayap) — Left Desktop",
   wave_left_top_mobile: "Wave Kiri (Sayap) — Top Mobile",
@@ -1451,7 +1455,14 @@ export default function CmsDashboardPage() {
                         </label>
                         {field.type === "image" ? (
                           <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50/60 p-3">
-                            <div className="h-16 w-16 rounded-lg bg-white border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
+                            <div
+                              className={
+                                field.key === "wave_left_icon" ||
+                                field.key === "wave_right_icon"
+                                  ? "h-24 w-36 rounded-lg bg-[#0071BC] border border-gray-200 overflow-hidden flex items-center justify-center shrink-0 p-2"
+                                  : "h-16 w-16 rounded-lg bg-white border border-gray-200 overflow-hidden flex items-center justify-center shrink-0"
+                              }
+                            >
                               {resolveCmsImage(field.value) ? (
                                 <img
                                   src={resolveCmsImage(field.value)!}
@@ -1462,17 +1473,39 @@ export default function CmsDashboardPage() {
                                 <ImageIcon className="h-5 w-5 text-gray-300" />
                               )}
                             </div>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) =>
-                                handleImageUpload(
-                                  globalIndex,
-                                  e.target.files?.[0] ?? null,
-                                )
-                              }
-                              className="flex-1 text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white"
-                            />
+                            <div className="flex-1 min-w-0 space-y-1">
+                              <input
+                                type="file"
+                                accept="image/*,.svg,image/svg+xml"
+                                onChange={(e) =>
+                                  handleImageUpload(
+                                    globalIndex,
+                                    e.target.files?.[0] ?? null,
+                                  )
+                                }
+                                className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white"
+                              />
+                              {(field.key === "wave_left_icon" ||
+                                field.key === "wave_right_icon") && (
+                                <div className="flex items-center gap-2">
+                                  <p className="text-[11px] text-gray-400">
+                                    Upload SVG/PNG. Preview sayap di sebelah
+                                    kiri.
+                                  </p>
+                                  {field.value ? (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        updateFieldValue(globalIndex, "")
+                                      }
+                                      className="shrink-0 text-[11px] font-semibold text-gray-500 hover:text-gray-800 underline"
+                                    >
+                                      Pakai default
+                                    </button>
+                                  ) : null}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         ) : isFontSelectField ? (
                           <AdminSelect
