@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Mail, RefreshCw, AlertCircle } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
-// Sesuaikan path import SITE_STRINGS ini dengan struktur folder project kamu
+import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 interface Subscriber {
   id: number;
@@ -13,6 +13,7 @@ interface Subscriber {
 }
 
 export default function SubscribersPage() {
+  const { t, common } = useAdminI18n();
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,10 +78,15 @@ export default function SubscribersPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Mail className="text-gray-900" size={28} />
-            Newsletter Subscribers
+            {t("subscribers", "title", "Newsletter Subscribers", "Newsletter Subscribers")}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            Kelola daftar email pelanggan yang berlangganan buletin Evomi.
+            {t(
+              "subscribers",
+              "subtitle",
+              "Kelola daftar email pelanggan yang berlangganan buletin Evomi.",
+              "Manage customer emails subscribed to the Evomi newsletter.",
+            )}
           </p>
         </div>
 
@@ -90,7 +96,7 @@ export default function SubscribersPage() {
           className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
         >
           <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
-          {isLoading ? "Memuat..." : "Refresh Data"}
+          {isLoading ? common.loading : common.refresh}
         </button>
       </div>
 
@@ -109,13 +115,18 @@ export default function SubscribersPage() {
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100">
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">
-                  ID
+                  {common.id}
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Email
+                  {common.email}
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Tanggal Berlangganan
+                  {t(
+                    "subscribers",
+                    "col_subscribed_at",
+                    "Tanggal Berlangganan",
+                    "Subscribed At",
+                  )}
                 </th>
               </tr>
             </thead>
@@ -160,10 +171,20 @@ export default function SubscribersPage() {
                     <div className="flex flex-col items-center justify-center text-gray-400">
                       <Mail size={48} className="mb-3 opacity-20" />
                       <p className="text-base font-medium text-gray-600">
-                        Belum ada subscriber
+                        {t(
+                          "subscribers",
+                          "empty_title",
+                          "Belum ada subscriber",
+                          "No subscribers yet",
+                        )}
                       </p>
                       <p className="text-sm mt-1">
-                        Daftar email yang berlangganan akan muncul di sini.
+                        {t(
+                          "subscribers",
+                          "empty_desc",
+                          "Daftar email yang berlangganan akan muncul di sini.",
+                          "Subscribed emails will appear here.",
+                        )}
                       </p>
                     </div>
                   </td>
@@ -177,7 +198,12 @@ export default function SubscribersPage() {
         {!isLoading && subscribers.length > 0 && (
           <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
             <p className="text-xs text-gray-500">
-              Total <b>{subscribers.length}</b> subscriber ditemukan.
+              {t(
+                "subscribers",
+                "total_found",
+                `Total ${subscribers.length} subscriber ditemukan.`,
+                `Total ${subscribers.length} subscribers found.`,
+              )}
             </p>
           </div>
         )}

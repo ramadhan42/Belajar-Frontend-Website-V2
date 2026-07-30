@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, ShoppingCart } from "lucide-react";
 import { wishlistApi, formatProductPrice, getProductImageUrl } from "@/lib/api";
+import { useLocale } from "@/context/LocaleContext";
+import { L, productLocaleText } from "@/lib/localeText";
 
 /** Warna bg gambar produk — sama seperti halaman Belanja */
 const PRODUCT_IMG_BG: Record<string, string> = {
@@ -24,12 +26,45 @@ function getProductImageBg(product?: {
 }
 
 export default function WishlistDetailPage() {
+  const { locale } = useLocale();
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
 
   const [item, setItem] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const copy = useMemo(
+    () => ({
+      loading: L(locale, "Memuat detail produk...", "Loading product details..."),
+      productNotFound: L(locale, "Produk tidak ditemukan", "Product not found"),
+      backToWishlist: L(locale, "Kembali ke Wishlist", "Back to Wishlist"),
+      detailTitle: L(locale, "Detail Produk Wishlist", "Wishlist Product Details"),
+      imageUnavailable: L(
+        locale,
+        "Gambar tidak tersedia",
+        "Image not available",
+      ),
+      descriptionLabel: L(locale, "Deskripsi Produk:", "Product Description:"),
+      noDescription: L(
+        locale,
+        "Tidak ada deskripsi yang tersedia untuk produk ini. Silakan hubungi admin untuk info lebih lanjut.",
+        "No description is available for this product. Please contact admin for more information.",
+      ),
+      addToCartButton: L(locale, "Tambahkan ke Keranjang", "Add to Cart"),
+      copyright: L(
+        locale,
+        "© 2026 Toko Anda. All rights reserved.",
+        "© 2026 Your Store. All rights reserved.",
+      ),
+      footerTagline: L(
+        locale,
+        "Dibuat dengan ❤️ untuk pengalaman belanja yang lebih baik.",
+        "Made with ❤️ for a better shopping experience.",
+      ),
+    }),
+    [locale],
+  );
 
   // useEffect(() => {
   //   if (id) {
@@ -49,10 +84,10 @@ export default function WishlistDetailPage() {
 
   useEffect(() => {
     if (id) {
+      setLoading(true);
       wishlistApi
-        .getWishlistDetail(Number(id))
+        .getWishlistDetail(Number(id), locale)
         .then((data) => {
-          console.log("Struktur data API Detail Wishlist:", data); // <-- TAMBAHKAN INI
           setItem(data);
           setLoading(false);
         })
@@ -61,13 +96,13 @@ export default function WishlistDetailPage() {
           setLoading(false);
         });
     }
-  }, [id]);
+  }, [id, locale]);
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <Loader2 className="animate-spin w-10 h-10 text-gray-400 mb-4" />
-        <p className="text-gray-500 font-medium">Memuat detail produk...</p>
+        <p className="text-gray-500 font-medium">{copy.loading}</p>
       </div>
     );
   }
@@ -76,13 +111,13 @@ export default function WishlistDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Produk tidak ditemukan
+          {copy.productNotFound}
         </h2>
         <button
           onClick={() => router.push("/wishlist")}
           className="text-blue-600 hover:underline"
         >
-          Kembali ke Wishlist
+          {copy.backToWishlist}
         </button>
       </div>
     );
@@ -108,7 +143,7 @@ export default function WishlistDetailPage() {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="font-bold text-lg">Detail Produk Wishlist</h1>
+        <h1 className="font-bold text-lg">{copy.detailTitle}</h1>
       </nav>
 
       {/* Main Content */}
@@ -127,18 +162,18 @@ export default function WishlistDetailPage() {
                 src={
                   getProductImageUrl(item.product.image_1 as string) || ""
                 }
-                alt={item.product.title}
+                alt={productLocaleText(item.product, "title", locale)}
                 className="max-h-full max-w-full w-auto h-auto object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
               />
             ) : (
-              <span className="text-white/80">Gambar tidak tersedia</span>
+              <span className="text-white/80">{copy.imageUnavailable}</span>
             )}
           </div>
 
           {/* Kolom Detail */}
           <div className="flex flex-col h-full">
             <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-2">
-              {item.product.title}
+              {productLocaleText(item.product, "title", locale)}
             </h1>
 
             <p
@@ -150,11 +185,15 @@ export default function WishlistDetailPage() {
 
             <div className="prose prose-sm text-gray-600 mb-8 flex-1">
               <h3 className="font-semibold text-gray-900 mb-2">
-                Deskripsi Produk:
+                {copy.descriptionLabel}
               </h3>
               <p>
-                {item.product.description ||
-                  "Tidak ada deskripsi yang tersedia untuk produk ini. Silakan hubungi admin untuk info lebih lanjut."}
+                {productLocaleText(
+                  item.product,
+                  "description",
+                  locale,
+                  copy.noDescription,
+                )}
               </p>
             </div>
 
@@ -165,7 +204,7 @@ export default function WishlistDetailPage() {
                 style={{ backgroundColor: "var(--primary-color)" }}
               >
                 <ShoppingCart className="w-5 h-5" />
-                Tambahkan ke Keranjang
+                {copy.addToCartButton}
               </button>
             </div>
           </div>
@@ -178,8 +217,8 @@ export default function WishlistDetailPage() {
         style={{ backgroundColor: "var(--primary-color)" }}
       >
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center text-sm opacity-90">
-          <p>© 2026 Toko Anda. All rights reserved.</p>
-          <p>Dibuat dengan ❤️ untuk pengalaman belanja yang lebih baik.</p>
+          <p>{copy.copyright}</p>
+          <p>{copy.footerTagline}</p>
         </div>
       </footer>
     </div>

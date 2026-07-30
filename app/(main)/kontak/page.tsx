@@ -5,12 +5,16 @@ import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Send, Loader2 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import { cmsValue, getCmsPage, CmsGrouped } from "@/lib/cms";
+import { useLocale } from "@/context/LocaleContext";
+import { useCms } from "@/context/CmsContext";
 
 export const dynamic = "force-dynamic";
 
 export default function KontakPage() {
   const BASE_URL = SITE_STRINGS.base_url.url_backend;
   const [cms, setCms] = useState<CmsGrouped>({});
+  const { locale, trackLocaleLoad } = useLocale();
+  const { tUi } = useCms();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -29,8 +33,20 @@ export default function KontakPage() {
   });
 
   useEffect(() => {
-    getCmsPage("kontak").then(setCms);
-  }, []);
+    const endLoad = trackLocaleLoad();
+    let cancelled = false;
+    getCmsPage("kontak", locale)
+      .then((data) => {
+        if (!cancelled) setCms(data);
+      })
+      .finally(() => {
+        if (!cancelled) endLoad();
+      });
+    return () => {
+      cancelled = true;
+      endLoad();
+    };
+  }, [locale, trackLocaleLoad]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -159,7 +175,7 @@ export default function KontakPage() {
                 </>
               ) : (
                 <>
-                  Kirim Pesan <Send size={18} />
+          {tUi("kontak", "send", "Kirim Pesan")} <Send size={18} />
                 </>
               )}
             </button>

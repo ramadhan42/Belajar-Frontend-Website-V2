@@ -5,6 +5,7 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api";
 import { Eye, EyeOff } from "lucide-react";
+import { useCms } from "@/context/CmsContext";
 
 // Tipe data untuk konfigurasi status modal
 interface ModalState {
@@ -16,6 +17,7 @@ interface ModalState {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { tUi } = useCms();
 
   // State untuk form login
   const [email, setEmail] = useState("");
@@ -60,6 +62,9 @@ export default function LoginPage() {
 
       localStorage.setItem("auth_token", res.token);
       localStorage.setItem("auth_user", JSON.stringify(res.user));
+      if (res.user?.is_admin) {
+        localStorage.setItem("user", JSON.stringify(res.user));
+      }
       window.dispatchEvent(new Event("auth-change"));
 
       setModal({
@@ -90,7 +95,7 @@ export default function LoginPage() {
       {/* HEADER */}
       <div className="text-center space-y-2">
         <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight uppercase">
-          Masuk
+          {tUi("auth", "login_title", "Masuk")}
         </h1>
         <p className="text-blue-100/80 font-light italic text-sm">
           Lanjutkan perjalanan Anda bersama Evomi
@@ -104,7 +109,7 @@ export default function LoginPage() {
             htmlFor="email"
             className="text-xs font-semibold text-white/80 uppercase tracking-widest ml-1"
           >
-            Email
+            {tUi("auth", "email", "Email")}
           </label>
           <input
             id="email"
@@ -124,7 +129,7 @@ export default function LoginPage() {
               htmlFor="password"
               className="text-xs font-semibold text-white/80 uppercase tracking-widest"
             >
-              Password
+              {tUi("auth", "password", "Password")}
             </label>
             {/* ROUTE KE HALAMAN RESET PASSWORD */}
             <Link
@@ -161,7 +166,7 @@ export default function LoginPage() {
           disabled={isLoading}
           className="w-full bg-white text-[#1172ba] font-bold py-4 rounded-2xl shadow-lg shadow-blue-950/10 hover:bg-blue-50 active:scale-[0.99] transition-all uppercase tracking-widest text-sm mt-4 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {isLoading ? "Memproses..." : "Masuk Sekarang"}
+          {isLoading ? tUi("common", "loading", "Memproses...") : tUi("auth", "login_title", "Masuk Sekarang")}
         </button>
       </form>
 

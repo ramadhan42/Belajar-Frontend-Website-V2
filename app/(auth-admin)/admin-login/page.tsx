@@ -59,6 +59,7 @@ export default function AdminLoginPage() {
         if (data.user && data.user.is_admin === true) {
           localStorage.setItem("auth_token", data.token);
           localStorage.setItem("user", JSON.stringify(data.user));
+          localStorage.setItem("auth_user", JSON.stringify(data.user));
 
           setModal({
             isOpen: true,

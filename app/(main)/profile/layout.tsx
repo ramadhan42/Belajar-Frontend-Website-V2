@@ -1,8 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
 import {
   User,
   ShoppingCart,
@@ -10,12 +10,12 @@ import {
   Heart,
   MessageCircle,
 } from "lucide-react";
-import { SITE_STRINGS } from "@/components/constans/strings";
-import {
-  getCartItems,
-  getWishlistItems,
-  getShoppingHistory,
-} from "@/lib/api";
+import { useLocale } from "@/context/LocaleContext";
+import { useCms } from "@/context/CmsContext";
+import { useBadgeCounts } from "@/context/BadgeCountsContext";
+import { useNavbarColor } from "@/context/NavbarColorContext";
+import { L } from "@/lib/localeText";
+import { PROFILE_BRAND_BLUE } from "@/components/profile/brand";
 
 export default function ProfileLayout({
   children,
@@ -23,95 +23,86 @@ export default function ProfileLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [cartCount, setCartCount] = useState(0);
-  const [historyCount, setHistoryCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
-
-  const menuItems = [
-    { href: "/profile", label: "Pengaturan Profil", icon: User },
-    { href: "/profile/chat", label: "Pesan Anda", icon: MessageCircle },
-    { href: "/profile/cart", label: "Keranjang Belanja", icon: ShoppingCart },
-    { href: "/profile/history", label: "Riwayat Belanja", icon: History },
-    { href: "/profile/wishlist", label: "Wishlist", icon: Heart },
-  ];
-
-  const fetchUnreadCount = async () => {
-    try {
-      const storedUser = localStorage.getItem("auth_user");
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        if (user.email) {
-          const res = await fetch(
-            `${SITE_STRINGS.base_url.url_backend}/api/contact/unread-count?email=${user.email}`,
-          );
-          const data = await res.json();
-          if (data.success) {
-            setUnreadCount(data.count);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Gagal load unread badge:", error);
-    }
-  };
-
-  const fetchMenuCounts = useCallback(async () => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      setCartCount(0);
-      setHistoryCount(0);
-      setWishlistCount(0);
-      return;
-    }
-
-    try {
-      const [cart, history, wishlist] = await Promise.all([
-        getCartItems().catch(() => []),
-        getShoppingHistory().catch(() => []),
-        getWishlistItems().catch(() => []),
-      ]);
-
-      setCartCount(Array.isArray(cart) ? cart.length : 0);
-      setHistoryCount(Array.isArray(history) ? history.length : 0);
-      setWishlistCount(Array.isArray(wishlist) ? wishlist.length : 0);
-    } catch (error) {
-      console.error("Gagal load badge menu akun:", error);
-    }
-  }, []);
+  const { locale } = useLocale();
+  const { tUi } = useCms();
+  const { setNavbarAndFooterColor } = useNavbarColor();
+  const {
+    unread: unreadCount,
+    cart: cartCount,
+    history: historyCount,
+    wishlist: wishlistCount,
+  } = useBadgeCounts();
 
   useEffect(() => {
-    fetchUnreadCount();
-    fetchMenuCounts();
+    setNavbarAndFooterColor(PROFILE_BRAND_BLUE);
+  }, [pathname, setNavbarAndFooterColor]);
 
-    const intervalId = setInterval(() => {
-      fetchUnreadCount();
-      fetchMenuCounts();
-    }, 5000);
+  const copy = {
+    menuTitle: tUi(
+      "profile",
+      "menu_title",
+      L(locale, "Menu Akun", "Account Menu"),
+    ),
+    menuSubtitle: tUi(
+      "profile",
+      "menu_subtitle",
+      L(locale, "Kelola aktivitas & akun Anda", "Manage your activity & account"),
+    ),
+  };
 
-    window.addEventListener("messages_read", fetchUnreadCount);
-    window.addEventListener("cart_updated", fetchMenuCounts);
-    window.addEventListener("wishlist_updated", fetchMenuCounts);
-    window.addEventListener("history_updated", fetchMenuCounts);
+  const menuItems = [
+    {
+      href: "/profile",
+      label: tUi(
+        "profile",
+        "settings",
+        L(locale, "Pengaturan Profil", "Profile Settings"),
+      ),
+      icon: User,
+    },
+    {
+      href: "/profile/chat",
+      label: tUi(
+        "profile",
+        "messages",
+        L(locale, "Pesan Anda", "Your Messages"),
+      ),
+      icon: MessageCircle,
+    },
+    {
+      href: "/profile/cart",
+      label: tUi(
+        "profile",
+        "cart",
+        L(locale, "Keranjang Belanja", "Shopping Cart"),
+      ),
+      icon: ShoppingCart,
+    },
+    {
+      href: "/profile/history",
+      label: tUi(
+        "profile",
+        "history",
+        L(locale, "Riwayat Belanja", "Order History"),
+      ),
+      icon: History,
+    },
+    {
+      href: "/profile/wishlist",
+      label: tUi("profile", "wishlist", L(locale, "Wishlist", "Wishlist")),
+      icon: Heart,
+    },
+  ];
 
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener("messages_read", fetchUnreadCount);
-      window.removeEventListener("cart_updated", fetchMenuCounts);
-      window.removeEventListener("wishlist_updated", fetchMenuCounts);
-      window.removeEventListener("history_updated", fetchMenuCounts);
-    };
-  }, [pathname, fetchMenuCounts]);
-
-  const getBadgeCount = (label: string) => {
-    switch (label) {
-      case "Pesan Anda":
+  const getBadgeCount = (href: string) => {
+    switch (href) {
+      case "/profile/chat":
         return unreadCount;
-      case "Keranjang Belanja":
+      case "/profile/cart":
         return cartCount;
-      case "Riwayat Belanja":
+      case "/profile/history":
         return historyCount;
-      case "Wishlist":
+      case "/profile/wishlist":
         return wishlistCount;
       default:
         return 0;
@@ -119,17 +110,17 @@ export default function ProfileLayout({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 sm:px-6 lg:px-8 bg-gray-50/50 min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 sm:px-6 lg:px-8 bg-white min-h-screen">
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
         {/* Sidebar Navigation */}
         <aside className="w-full lg:w-72 shrink-0">
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100/80 p-4 sm:p-5 sticky top-6 shadow-sm shadow-gray-100/50">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 p-4 sm:p-5 sticky top-6">
             <div className="px-3 sm:px-4 py-2 sm:py-3 mb-3 sm:mb-4">
               <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                Menu Akun
+                {copy.menuTitle}
               </h2>
               <p className="text-sm text-gray-500 font-light mt-0.5">
-                Kelola aktivitas & akun Anda
+                {copy.menuSubtitle}
               </p>
             </div>
 
@@ -137,7 +128,7 @@ export default function ProfileLayout({
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
-                const badgeCount = getBadgeCount(item.label);
+                const badgeCount = getBadgeCount(item.href);
 
                 return (
                   <Link
@@ -145,9 +136,14 @@ export default function ProfileLayout({
                     href={item.href}
                     className={`flex items-center gap-3.5 px-4 py-3.5 text-sm font-medium rounded-2xl transition-all duration-200 group ${
                       isActive
-                        ? "bg-black text-white shadow-md shadow-black/10 font-semibold"
+                        ? "text-white font-semibold"
                         : "text-gray-600 hover:bg-gray-50 hover:text-black"
                     }`}
+                    style={
+                      isActive
+                        ? { backgroundColor: PROFILE_BRAND_BLUE }
+                        : undefined
+                    }
                   >
                     <Icon
                       className={`w-5 h-5 transition-transform duration-200 group-hover:scale-105 ${
@@ -163,7 +159,7 @@ export default function ProfileLayout({
                         className={`ml-auto flex h-5 min-w-5 px-1 items-center justify-center rounded-full text-[10px] font-bold transition-all ${
                           isActive
                             ? "bg-white text-black"
-                            : "bg-green-500 text-white shadow-sm ring-2 ring-green-100"
+                            : "bg-green-500 text-white"
                         }`}
                       >
                         {badgeCount > 99 ? "99+" : badgeCount}

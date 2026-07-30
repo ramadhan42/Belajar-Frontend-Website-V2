@@ -4,6 +4,8 @@ import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Search, Mail, HelpCircle } from "lucide-react";
 import { getPublicFaqs, FaqItem } from "@/lib/cms";
+import { useLocale } from "@/context/LocaleContext";
+import { useCms } from "@/context/CmsContext";
 
 export const dynamic = "force-dynamic";
 
@@ -91,12 +93,26 @@ const FAQItem = ({
 export default function FAQPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [faqData, setFaqData] = useState(FALLBACK_FAQ);
+  const { locale, trackLocaleLoad } = useLocale();
+  const { tUi } = useCms();
 
   useEffect(() => {
-    getPublicFaqs().then((items) => {
-      if (items.length > 0) setFaqData(faqsToGrouped(items));
-    });
-  }, []);
+    const endLoad = trackLocaleLoad();
+    let cancelled = false;
+    getPublicFaqs(locale)
+      .then((items) => {
+        if (cancelled) return;
+        if (items.length > 0) setFaqData(faqsToGrouped(items));
+        else setFaqData(FALLBACK_FAQ);
+      })
+      .finally(() => {
+        if (!cancelled) endLoad();
+      });
+    return () => {
+      cancelled = true;
+      endLoad();
+    };
+  }, [locale, trackLocaleLoad]);
 
   const filteredData = useMemo(() => {
     if (!searchQuery) return faqData;
@@ -117,13 +133,15 @@ export default function FAQPage() {
     <div className="min-h-screen bg-white pt-24 sm:pt-28 md:pt-32 pb-16 md:pb-24 px-4 sm:px-6 md:px-12 lg:px-24 font-nohemi">
       <div className="max-w-3xl mx-auto text-center mb-16">
         <h1 className="text-[32px] md:text-[48px] font-bold text-gray-900 mb-6">
-          Pusat Bantuan Evomi
+          {tUi("faq", "title", "Pusat Bantuan Evomi")}
         </h1>
         <div className="relative mt-10 max-w-lg mx-auto">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
-            placeholder="Cari topik bantuan..."
+            placeholder={
+              locale === "en" ? "Search help topics..." : "Cari topik bantuan..."
+            }
             className="w-full h-[56px] pl-12 pr-4 rounded-full border border-gray-200 outline-none focus:border-[#1172BA] transition-all shadow-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
