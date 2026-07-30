@@ -20,7 +20,11 @@ export default function BodyColorHandler() {
       pathname === "/contact" ||
       pathname === "/" ||
       pathname === "/beranda" ||
-      pathname === "/belanja"
+      pathname === "/belanja" ||
+      pathname === "/login" ||
+      pathname === "/register" ||
+      pathname === "/reset-password" ||
+      pathname === "/forgot-password"
     ) {
       color = BLUE;
     } else if (pathname === "/layanan") {

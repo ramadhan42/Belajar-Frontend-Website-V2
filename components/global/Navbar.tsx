@@ -908,6 +908,7 @@ export default function Navbar() {
                   height={30}
                   className="object-contain brightness-0 invert w-auto h-5 md:h-10 -translate-y-1 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
                   priority
+                  unoptimized
                 />
               </Link>
             </motion.div>

@@ -887,9 +887,9 @@ export default function HeroSection() {
                   src={product.labelImage}
                   alt={product.title}
                   fill
-                  sizes="(max-width: 768px) 12vw, 7vw"
+                  sizes="(max-width: 768px) 20vw, 12vw"
                   quality={HERO_IMG_QUALITY}
-                  unoptimized={isSvgSrc(product.labelImage)}
+                  unoptimized
                   className="object-contain pointer-events-none"
                 />
               </motion.div>
