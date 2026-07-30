@@ -5,6 +5,26 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Prevent Hostinger CDN (hcdn) from caching HTML for a year after deploys.
+  // Do not apply these to /_next/static (hashed assets should stay long-lived).
+  async headers() {
+    const noHtmlCache = [
+      {
+        key: "Cache-Control",
+        value: "private, no-cache, no-store, max-age=0, must-revalidate",
+      },
+      {
+        key: "CDN-Cache-Control",
+        value: "no-store",
+      },
+    ];
+    return [
+      {
+        source: "/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|src/|fonts/|sample-evomi/).*)",
+        headers: noHtmlCache,
+      },
+    ];
+  },
   images: {
     dangerouslyAllowLocalIP: true,
     qualities: [75, 90, 95, 100],

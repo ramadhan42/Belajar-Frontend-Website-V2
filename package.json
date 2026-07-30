@@ -6,7 +6,9 @@
     "dev": "node --max-old-space-size=3072 ./node_modules/next/dist/bin/next dev",
     "build": "node --max-old-space-size=3072 ./node_modules/next/dist/bin/next build",
     "start": "node --max-old-space-size=2048 ./node_modules/next/dist/bin/next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "verify:live": "node scripts/verify-live-assets.mjs",
+    "hostinger:rebuild": "bash scripts/hostinger-rebuild.sh"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
