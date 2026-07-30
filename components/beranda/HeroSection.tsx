@@ -29,6 +29,11 @@ function isSvgSrc(src: string) {
   return /\.svg(\?|$)/i.test(src);
 }
 
+/** Raster uploads can replace wings; SVG-as-<img> clips paths outside viewBox. */
+function isRasterSrc(src: string) {
+  return /\.(png|jpe?g|webp|gif)(\?|$)/i.test(src);
+}
+
 const HERO_PRODUCT_LAYOUT = [
   {
     id: 1,
@@ -313,10 +318,16 @@ export default function HeroSection() {
   const shouldAnimate = isReady && isScrollVisible;
 
   // Inline so CMS position always wins over stylesheet / Framer Motion.
-  const waveLeftIcon =
-    resolveCmsImage(tBeranda("hero", "wave_left_icon", "")) || "";
-  const waveRightIcon =
+  // Only use CMS wave assets when they are raster (PNG/WebP). SVG files must
+  // stay inline — <img>/<Image> clips path geometry outside the viewBox and
+  // makes the hero wings look cut off / messy on production.
+  const waveLeftCms = resolveCmsImage(tBeranda("hero", "wave_left_icon", "")) || "";
+  const waveRightCms =
     resolveCmsImage(tBeranda("hero", "wave_right_icon", "")) || "";
+  const waveLeftIcon =
+    waveLeftCms && isRasterSrc(waveLeftCms) ? waveLeftCms : "";
+  const waveRightIcon =
+    waveRightCms && isRasterSrc(waveRightCms) ? waveRightCms : "";
 
   const waveLeftStyle: CSSProperties = {
     left: styleVal(
@@ -425,6 +436,7 @@ export default function HeroSection() {
           aspect-ratio: 394 / 269;
           transform: scale(1.12) rotate(-8deg);
           transform-origin: 88% 78%;
+          overflow: visible;
         }
         .hero-wave-right {
           right: var(--hero-wave-r-right-m, -17%);
@@ -434,6 +446,7 @@ export default function HeroSection() {
           aspect-ratio: 418 / 449;
           transform: scale(1.12) rotate(8deg);
           transform-origin: 12% 78%;
+          overflow: visible;
         }
 
         .hero-headline {
@@ -473,7 +486,6 @@ export default function HeroSection() {
         }
 
         .hero-visual-stage {
-          contain: layout;
           isolation: isolate;
         }
 
