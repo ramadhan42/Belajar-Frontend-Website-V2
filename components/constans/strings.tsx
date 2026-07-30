@@ -6,9 +6,13 @@
 
 export const SITE_STRINGS = {
   base_url: {
+    /** Production API (subdomain Hostinger, aman dari redeploy Node) */
     url_backend_deploy: "https://api.evomi.shop",
-    url_backend_local: "http://127.0.0.1:8000",
-    // Production API subdomain (aman dari redeploy Node)
+    /**
+     * Active backend URL.
+     * - Production/Hostinger build: pakai NEXT_PUBLIC_URL dari .env.production
+     * - Local override: set NEXT_PUBLIC_URL di .env.local
+     */
     url_backend:
       process.env.NEXT_PUBLIC_URL?.replace(/\/$/, "") || "https://api.evomi.shop",
   },

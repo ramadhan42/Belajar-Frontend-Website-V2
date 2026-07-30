@@ -274,20 +274,29 @@ export interface BadgeCounts {
 
 /** GET /api/badges — lightweight counts for navbar/profile badges */
 export async function getBadgeCounts(): Promise<BadgeCounts> {
-  const res = await request<{ success?: boolean; data: BadgeCounts }>(
-    "/api/badges",
-    {
-      method: "GET",
-      headers: buildHeaders(true),
-    },
-  );
+  try {
+    const res = await request<{ success?: boolean; data?: BadgeCounts }>(
+      "/api/badges",
+      {
+        method: "GET",
+        headers: buildHeaders(true),
+      },
+    );
 
-  return {
-    cart: Number(res.data?.cart ?? 0),
-    wishlist: Number(res.data?.wishlist ?? 0),
-    history: Number(res.data?.history ?? 0),
-    unread: Number(res.data?.unread ?? 0),
-  };
+    return {
+      cart: Number(res.data?.cart ?? 0),
+      wishlist: Number(res.data?.wishlist ?? 0),
+      history: Number(res.data?.history ?? 0),
+      unread: Number(res.data?.unread ?? 0),
+    };
+  } catch {
+    return {
+      cart: 0,
+      wishlist: 0,
+      history: 0,
+      unread: 0,
+    };
+  }
 }
 
 // Tambahkan di file api.ts

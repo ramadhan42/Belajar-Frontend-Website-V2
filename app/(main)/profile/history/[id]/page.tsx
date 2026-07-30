@@ -26,7 +26,7 @@ import { SITE_STRINGS } from "@/components/constans/strings";
 import { useLocale } from "@/context/LocaleContext";
 import { L, productLocaleText } from "@/lib/localeText";
 
-const BASE_URL = SITE_STRINGS.base_url.url_backend_local;
+const BASE_URL = SITE_STRINGS.base_url.url_backend;
 
 const VISUAL_BY_PERSONALITY: Record<string, { navbarColor: string }> = {
   purpose_prestige: { navbarColor: "#1172BA" },
