@@ -96,10 +96,10 @@ export default function LacakPaketPage() {
       try {
         setLoading(true);
         setError("");
-        const apiBase =
-          process.env.NEXT_PUBLIC_API_URL ||
-          SITE_STRINGS.base_url.url_backend;
-        const trackingBase = apiBase.replace(/\/api\/?$/, "");
+        const trackingBase = SITE_STRINGS.base_url.url_backend.replace(
+          /\/api\/?$/,
+          "",
+        );
         const response = await fetch(
           `${trackingBase}/api/trackings/${encodeURIComponent(resiParam)}`,
         );

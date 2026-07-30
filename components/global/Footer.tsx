@@ -93,7 +93,7 @@ export default function Footer() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_URL || baseUrl}/api/newsletter/subscribe`,
+        `${baseUrl}/api/newsletter/subscribe`,
         {
           method: "POST",
           headers: {

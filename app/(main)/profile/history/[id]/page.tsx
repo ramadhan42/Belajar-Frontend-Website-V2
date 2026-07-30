@@ -280,7 +280,7 @@ export default function HistoryDetailPage() {
           await Promise.all(
             historyGroup.map(async (item) => {
               const response = await fetch(
-                `${process.env.NEXT_PUBLIC_URL || BASE_URL}/api/orders/${item.id}/confirm`,
+                `${BASE_URL}/api/orders/${item.id}/confirm`,
                 {
                   method: "PATCH",
                   headers: {

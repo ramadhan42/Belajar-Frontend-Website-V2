@@ -301,7 +301,7 @@ export default function HistoryPage() {
 
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_URL || BASE_URL}/api/orders/${group.groupId}/confirm`,
+            `${BASE_URL}/api/orders/${group.groupId}/confirm`,
             {
               method: "PATCH",
               headers: {

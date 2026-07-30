@@ -8,8 +8,10 @@ export const SITE_STRINGS = {
   base_url: {
     url_backend_deploy: "https://evomi.shop/backend",
     url_backend_local: "http://127.0.0.1:8000",
-    // Sementara: frontend local → backend Hostinger
-    url_backend: "https://evomi.shop/backend",
+    // Production Hostinger. Override lokal via NEXT_PUBLIC_URL di .env.local
+    url_backend:
+      process.env.NEXT_PUBLIC_URL?.replace(/\/$/, "") ||
+      "https://evomi.shop/backend",
   },
   meta: {
     title: "Evomi | Premium Fragrance & Perfume",
@@ -90,7 +92,7 @@ export const SITE_STRINGS = {
     errorGeneric: "Terjadi kesalahan. Silakan coba beberapa saat lagi.",
     loading: "Memuat data...",
   },
-} as const;
+};
 
 // Type definition untuk autocompletion dan type-safety di seluruh aplikasi
 export type SiteStrings = typeof SITE_STRINGS;

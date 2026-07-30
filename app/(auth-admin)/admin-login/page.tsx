@@ -41,22 +41,23 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_URL || BASE_URL}/api/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: (e.target as any).email.value,
-            password: (e.target as any).password.value,
-          }),
+      const res = await fetch(`${BASE_URL}/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        body: JSON.stringify({
+          email: (e.target as any).email.value,
+          password: (e.target as any).password.value,
+        }),
+      });
 
       const data = await res.json();
 
       if (res.ok && data.token) {
-        if (data.user && data.user.is_admin === true) {
+        const isAdmin = Boolean(data.user?.is_admin);
+        if (data.user && isAdmin) {
           localStorage.setItem("auth_token", data.token);
           localStorage.setItem("user", JSON.stringify(data.user));
           localStorage.setItem("auth_user", JSON.stringify(data.user));
