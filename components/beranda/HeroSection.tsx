@@ -352,7 +352,7 @@ export default function HeroSection() {
     <section
       ref={sectionRef}
       style={heroCssVars}
-      className={`hero-section bg-[#0071BC] md:mb-6 md:mt-10 text-white pt-4 pb-10 md:pt-0 md:pb-10 px-4 flex flex-col items-center justify-center text-center select-none overflow-hidden relative${
+      className={`hero-section bg-[#0071BC] md:mb-6 md:mt-10 text-white pt-4 pb-10 md:pt-0 md:pb-10 px-4 flex flex-col items-center justify-center text-center select-none overflow-x-clip overflow-y-visible relative${
         isLocaleLoading ? " is-locale-loading" : ""
       }`}
     >
