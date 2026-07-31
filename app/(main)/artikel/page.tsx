@@ -133,12 +133,20 @@ export default function ArtikelPage() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.12 }}
-            className="mt-4 max-w-2xl text-white/90 text-sm md:text-base leading-relaxed"
+            className="mt-4 max-w-2xl text-white/90 text-sm md:text-base leading-relaxed line-clamp-2"
           >
-            {L(
-              locale,
-              "Baca panduan aroma, tips perawatan parfum, dan cerita di balik karakter wewangian Evomi.",
-              "Read scent guides, perfume care tips, and stories behind Evomi fragrance characters.",
+            {locale === "en" ? (
+              <>
+                Read scent guides, perfume care tips,
+                <br />
+                and stories behind Evomi fragrance characters.
+              </>
+            ) : (
+              <>
+                Baca panduan aroma, tips perawatan parfum,
+                <br />
+                dan cerita di balik karakter wewangian Evomi.
+              </>
             )}
           </motion.p>
 
