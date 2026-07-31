@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, Variants, AnimatePresence } from "framer-motion";
@@ -9,6 +9,21 @@ import { useLocale } from "@/context/LocaleContext";
 import { resolveCmsImage } from "@/lib/cms";
 import { cmsFontStyle } from "@/lib/cmsFonts";
 import { L } from "@/lib/localeText";
+
+const DEFAULT_CARD_ICON_SIZE_MOBILE = "100px";
+const DEFAULT_CARD_ICON_SIZE_DESKTOP = "140px";
+
+function cssSize(raw: string, fallback: string) {
+  const trimmed = raw.trim();
+  return trimmed || fallback;
+}
+
+function cssSizeToPxNumber(raw: string, fallback: number) {
+  const match = raw.trim().match(/^(-?\d+(?:\.\d+)?)/);
+  if (!match) return fallback;
+  const n = Number.parseFloat(match[1]);
+  return Number.isFinite(n) ? Math.round(n) : fallback;
+}
 
 // Interface untuk state modal
 interface NavModalState {
@@ -37,6 +52,21 @@ export default function SecondSection() {
   const headline1 = read("headline_1", L(locale, "Kenalan sama", "Meet our"));
   const headline2 = read("headline_2", L(locale, "karakter ", "characters "));
   const headline3 = read("headline_3", L(locale, "kita yuk!", "today!"));
+
+  const iconSizeMobile = cssSize(
+    read("card_icon_size_mobile", DEFAULT_CARD_ICON_SIZE_MOBILE),
+    DEFAULT_CARD_ICON_SIZE_MOBILE,
+  );
+  const iconSizeDesktop = cssSize(
+    read("card_icon_size_desktop", DEFAULT_CARD_ICON_SIZE_DESKTOP),
+    DEFAULT_CARD_ICON_SIZE_DESKTOP,
+  );
+  const iconPx = cssSizeToPxNumber(iconSizeDesktop, 140);
+
+  const sectionStyle = {
+    "--s2-icon-m": iconSizeMobile,
+    "--s2-icon-d": iconSizeDesktop,
+  } as CSSProperties;
 
   const characters = [
     {
@@ -140,7 +170,22 @@ export default function SecondSection() {
   };
 
   return (
-    <section className="bg-[#ffffff] flex flex-col items-center text-center px-4 w-full overflow-x-hidden overflow-y-visible relative pb-[30px]">
+    <section
+      className="bg-[#ffffff] flex flex-col items-center text-center px-4 w-full overflow-x-hidden overflow-y-visible relative pb-[30px]"
+      style={sectionStyle}
+    >
+      <style>{`
+        .s2-char-icon {
+          width: var(--s2-icon-m);
+          height: var(--s2-icon-m);
+        }
+        @media (min-width: 768px) {
+          .s2-char-icon {
+            width: var(--s2-icon-d);
+            height: var(--s2-icon-d);
+          }
+        }
+      `}</style>
       {/* ================= STICKY LINGKARAN DIVIDER ATAS ================= */}
       <div className="absolute top-0 left-0 w-full overflow-hidden h-[15px] md:h-[23px] pointer-events-none">
         <style>{`
@@ -206,12 +251,12 @@ export default function SecondSection() {
             onClick={() => handleCharacterClick(char.id, char.name)}
             className="flex flex-col items-center group cursor-pointer hover:scale-105 hover:z-30 transition-transform duration-300 ease-in-out"
           >
-            <div className="w-[100px] h-[100px] sm:w-[140px] sm:h-[140px] md:w-[140px] md:h-[140px] relative flex justify-center items-center">
+            <div className="s2-char-icon relative flex justify-center items-center">
               <Image
                 src={char.path}
                 alt={`Karakter ${char.title}`}
-                width={140}
-                height={140}
+                width={iconPx}
+                height={iconPx}
                 className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-lg transition-all duration-300"
               />
             </div>

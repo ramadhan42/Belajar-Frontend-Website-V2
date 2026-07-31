@@ -89,38 +89,98 @@ export function cmsValue(
   return data?.[section]?.[key] ?? fallback;
 }
 
+/** Short in-memory TTL — cuts repeat CMS traffic on SPA navigations without stale admin UX. */
+const CMS_PUBLIC_TTL_MS = 60_000;
+
+type CacheEntry<T> = { data: T; expires: number };
+
+const cmsPageCache = new Map<string, CacheEntry<CmsGrouped>>();
+const cmsPageInflight = new Map<string, Promise<CmsGrouped>>();
+const faqCache = new Map<string, CacheEntry<FaqItem[]>>();
+const faqInflight = new Map<string, Promise<FaqItem[]>>();
+
+/** Clear public CMS cache after admin saves (or pass a page key to clear one entry). */
+export function invalidateCmsPublicCache(page?: CmsPageKey): void {
+  if (!page) {
+    cmsPageCache.clear();
+    faqCache.clear();
+    return;
+  }
+  for (const key of cmsPageCache.keys()) {
+    if (key.startsWith(`${page}:`)) cmsPageCache.delete(key);
+  }
+}
+
 export async function getCmsPage(
   page: CmsPageKey,
   locale: Locale = "id",
 ): Promise<CmsGrouped> {
-  try {
-    const res = await fetch(
-      `${BASE_URL}/api/cms/${page}?locale=${locale}`,
-      {
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      },
-    );
-    if (!res.ok) return {};
-    const json = await res.json();
-    return json.data || {};
-  } catch {
-    return {};
-  }
+  const cacheKey = `${page}:${locale}`;
+  const hit = cmsPageCache.get(cacheKey);
+  if (hit && hit.expires > Date.now()) return hit.data;
+
+  const pending = cmsPageInflight.get(cacheKey);
+  if (pending) return pending;
+
+  const request = (async (): Promise<CmsGrouped> => {
+    try {
+      const res = await fetch(
+        `${BASE_URL}/api/cms/${page}?locale=${locale}`,
+        {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        },
+      );
+      if (!res.ok) return {};
+      const json = await res.json();
+      const data: CmsGrouped = json.data || {};
+      cmsPageCache.set(cacheKey, {
+        data,
+        expires: Date.now() + CMS_PUBLIC_TTL_MS,
+      });
+      return data;
+    } catch {
+      return {};
+    } finally {
+      cmsPageInflight.delete(cacheKey);
+    }
+  })();
+
+  cmsPageInflight.set(cacheKey, request);
+  return request;
 }
 
 export async function getPublicFaqs(locale: Locale = "id"): Promise<FaqItem[]> {
-  try {
-    const res = await fetch(`${BASE_URL}/api/cms/faqs?locale=${locale}`, {
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    const json = await res.json();
-    return Array.isArray(json.data) ? json.data : [];
-  } catch {
-    return [];
-  }
+  const cacheKey = `faqs:${locale}`;
+  const hit = faqCache.get(cacheKey);
+  if (hit && hit.expires > Date.now()) return hit.data;
+
+  const pending = faqInflight.get(cacheKey);
+  if (pending) return pending;
+
+  const request = (async (): Promise<FaqItem[]> => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/cms/faqs?locale=${locale}`, {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      if (!res.ok) return [];
+      const json = await res.json();
+      const data: FaqItem[] = Array.isArray(json.data) ? json.data : [];
+      faqCache.set(cacheKey, {
+        data,
+        expires: Date.now() + CMS_PUBLIC_TTL_MS,
+      });
+      return data;
+    } catch {
+      return [];
+    } finally {
+      faqInflight.delete(cacheKey);
+    }
+  })();
+
+  faqInflight.set(cacheKey, request);
+  return request;
 }
 
 export async function adminGetCmsPage(
@@ -157,6 +217,7 @@ export async function adminSaveCmsPage(
   if (!res.ok) {
     throw new Error(json.message || "Gagal menyimpan konten");
   }
+  invalidateCmsPublicCache(page);
   return json;
 }
 
@@ -194,6 +255,7 @@ export async function adminCreateFaq(
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.message || "Gagal menambah FAQ");
+  invalidateCmsPublicCache();
   return json.data;
 }
 
@@ -208,6 +270,7 @@ export async function adminUpdateFaq(
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.message || "Gagal update FAQ");
+  invalidateCmsPublicCache();
   return json.data;
 }
 
@@ -220,4 +283,5 @@ export async function adminDeleteFaq(id: number) {
     const json = await res.json().catch(() => ({}));
     throw new Error(json.message || "Gagal hapus FAQ");
   }
+  invalidateCmsPublicCache();
 }

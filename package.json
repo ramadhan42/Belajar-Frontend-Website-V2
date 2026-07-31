@@ -5,16 +5,13 @@
   "scripts": {
     "dev": "node --max-old-space-size=3072 ./node_modules/next/dist/bin/next dev",
     "build": "node --max-old-space-size=3072 ./node_modules/next/dist/bin/next build",
-    "start": "node --max-old-space-size=2048 ./node_modules/next/dist/bin/next start",
+    "start": "node --max-old-space-size=1024 ./node_modules/next/dist/bin/next start",
     "lint": "eslint",
     "verify:live": "node scripts/verify-live-assets.mjs",
     "hostinger:rebuild": "bash scripts/hostinger-rebuild.sh"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.6.1",
-    "@types/three": "^0.184.1",
     "framer-motion": "^12.40.0",
     "gsap": "^3.15.0",
     "lucide-react": "^1.17.0",
@@ -22,8 +19,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-icons": "^5.6.0",
-    "recharts": "^3.8.1",
-    "three": "^0.184.0"
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

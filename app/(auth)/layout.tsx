@@ -34,7 +34,7 @@ export default function AuthLayout({
 }) {
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 relative overflow-hidden font-nohemi"
+      className="evomi-site min-h-screen w-full flex items-center justify-center p-4 sm:p-6 relative overflow-hidden font-nohemi"
       style={{ backgroundColor: "#2B92DE" }}
     >
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-[120px]" />

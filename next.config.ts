@@ -28,14 +28,21 @@ const nextConfig: NextConfig = {
   images: {
     dangerouslyAllowLocalIP: true,
     qualities: [75, 90, 95, 100],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 512, 768, 1024],
+    // Keep retina widths; drop 3840 (4K) — rarely needed and inflates optimizer work.
+    // imageSizes stay in the "sizes" attribute small-image range (no overlap with deviceSizes).
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     formats: ["image/webp"],
     remotePatterns: [
       {
         protocol: "http",
         hostname: "127.0.0.1",
         port: "8000",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
         pathname: "/**",
       },
       {

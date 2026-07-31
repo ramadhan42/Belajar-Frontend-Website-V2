@@ -1693,11 +1693,7 @@ function CheckoutContent() {
         onClose={() => {
           setModal({ ...modal, isOpen: false });
           if (modal.type === "success") {
-            if (isGuestBuyNow) {
-              router.push("/pengiriman");
-            } else {
-              router.push("/profile/history");
-            }
+            router.push("/");
           }
         }}
         title={modal.title}

@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Clean rebuild for Hostinger Node.js (evomi.shop frontend)
 # Run this ON the Hostinger server in the frontend repo folder.
+#
+# Production start (`npm start`) uses --max-old-space-size=1024 so the Node
+# process fits shared Hostinger RAM better than 2048. Prefer building locally
+# or in CI and uploading `.next` when the server is near its memory limit.
+# In hPanel: stop unused Node apps and set the start command to `npm start`.
 set -euo pipefail
 
 echo "==> Checking git status"
