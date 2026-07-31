@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useLayoutEffect } from "react";
 
+/** Navbar / overscroll match — keep #1172BA at top even when artikel heroes lighten downward */
 const BLUE = "#1172BA";
 const WHITE = "#FFFFFF";
 
@@ -21,6 +22,8 @@ export default function BodyColorHandler() {
       pathname === "/" ||
       pathname === "/beranda" ||
       pathname === "/belanja" ||
+      pathname === "/artikel" ||
+      pathname.startsWith("/artikel/") ||
       pathname === "/login" ||
       pathname === "/register" ||
       pathname === "/reset-password" ||
@@ -36,7 +39,9 @@ export default function BodyColorHandler() {
       pathname === "/checkout" ||
       pathname.startsWith("/checkout/") ||
       pathname === "/kuis" ||
-      pathname.startsWith("/kuis/")
+      pathname.startsWith("/kuis/") ||
+      pathname === "/faq" ||
+      pathname === "/kontak"
     ) {
       color = pathname.startsWith("/checkout") ? "#F0F3F7" : WHITE;
     }

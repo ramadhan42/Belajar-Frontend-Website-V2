@@ -19,6 +19,7 @@ import {
   Boxes,
   Tag,
   CreditCard,
+  Newspaper,
 } from "lucide-react";
 import { SITE_STRINGS } from "../constans/strings";
 import LanguageSwitcher from "@/components/global/LanguageSwitcher";
@@ -30,6 +31,7 @@ const menuItems = [
   { key: "dashboard", path: "/dashboard", icon: LayoutDashboard, id: "Dashboard", en: "Dashboard" },
   { key: "cms", path: "/dashboard/cms", icon: FilePenLine, id: "CMS", en: "CMS" },
   { key: "products", path: "/dashboard/products", icon: Package, id: "Produk", en: "Products" },
+  { key: "articles", path: "/dashboard/articles", icon: Newspaper, id: "Artikel", en: "Articles" },
   { key: "promos", path: "/dashboard/promos", icon: Tag, id: "Promo", en: "Promos" },
   { key: "payment", path: "/dashboard/payment", icon: CreditCard, id: "Pembayaran", en: "Payment" },
   { key: "kurirs", path: "/dashboard/kurirs", icon: Boxes, id: "Kurir", en: "Couriers" },

@@ -592,6 +592,79 @@ export type Promo = {
   updated_at?: string;
 };
 
+export type Article = {
+  id: number;
+  title: string;
+  title_en?: string | null;
+  slug: string;
+  excerpt?: string | null;
+  excerpt_en?: string | null;
+  content: string;
+  content_en?: string | null;
+  image?: string | null;
+  category?: string | null;
+  author?: string | null;
+  title_font_family?: string | null;
+  title_font_weight?: string | null;
+  title_font_style?: string | null;
+  title_font_size?: string | null;
+  excerpt_font_family?: string | null;
+  excerpt_font_weight?: string | null;
+  excerpt_font_style?: string | null;
+  excerpt_font_size?: string | null;
+  content_font_family?: string | null;
+  content_font_weight?: string | null;
+  content_font_style?: string | null;
+  content_font_size?: string | null;
+  is_published?: boolean;
+  published_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export function getArticleImageUrl(path?: string | null): string | null {
+  if (!path) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+  // Frontend public assets (e.g. /src/images/...)
+  if (path.startsWith("/")) {
+    return encodeURI(path);
+  }
+  return getProductImageUrl(path);
+}
+
+export async function getArticles(params?: {
+  category?: string;
+  limit?: number;
+}): Promise<Article[]> {
+  const q = new URLSearchParams();
+  if (params?.category) q.set("category", params.category);
+  if (params?.limit) q.set("limit", String(params.limit));
+  const suffix = q.toString() ? `?${q.toString()}` : "";
+  const res = await fetch(`${BASE_URL}/api/articles${suffix}`, {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || "Gagal memuat artikel");
+  }
+  return data.data || [];
+}
+
+export async function getArticleBySlug(slug: string): Promise<Article> {
+  const res = await fetch(`${BASE_URL}/api/articles/${encodeURIComponent(slug)}`, {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || "Artikel tidak ditemukan");
+  }
+  return data.data;
+}
+
 /** Promo publik (storefront). active=true → hanya yang berlaku hari ini. */
 export async function getPromos(active = false): Promise<Promo[]> {
   const q = active ? "?active=1" : "";

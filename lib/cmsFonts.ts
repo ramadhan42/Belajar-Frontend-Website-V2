@@ -102,6 +102,53 @@ export function resolveCmsFontStyle(
   return fallback;
 }
 
+export const CMS_FONT_SIZE_OPTIONS: { value: string; label: string }[] = [
+  { value: "14", label: "14px" },
+  { value: "16", label: "16px" },
+  { value: "17", label: "17px" },
+  { value: "18", label: "18px" },
+  { value: "20", label: "20px" },
+  { value: "22", label: "22px" },
+  { value: "24", label: "24px" },
+  { value: "28", label: "28px" },
+  { value: "32", label: "32px" },
+  { value: "36", label: "36px" },
+  { value: "40", label: "40px" },
+  { value: "48", label: "48px" },
+];
+
+export function resolveCmsFontSize(
+  raw: string | null | undefined,
+  fallback = "16",
+): string {
+  const v = (raw ?? "").trim();
+  if (!v) return `${fallback}px`;
+  if (/^\d+(\.\d+)?(px|rem|em)$/i.test(v)) return v;
+  if (/^\d+(\.\d+)?$/.test(v)) return `${v}px`;
+  return `${fallback}px`;
+}
+
+/** Build typography style from article (or form) font_* fields for a prefix. */
+export function articleFontStyle(
+  source: Record<string, string | null | undefined> | null | undefined,
+  prefix: "title" | "excerpt" | "content",
+  defaults: CmsFontDefaults & { size?: string } = {},
+): CSSProperties {
+  const family = defaults.family ?? (prefix === "title" ? "nohemi" : "parkinsans");
+  const weight = defaults.weight ?? (prefix === "title" ? "700" : "400");
+  const style = defaults.style ?? "normal";
+  const size =
+    defaults.size ??
+    (prefix === "title" ? "40" : prefix === "excerpt" ? "18" : "17");
+  const get = (key: string) => source?.[key] ?? undefined;
+  return {
+    fontFamily: resolveCmsFontFamily(get(`${prefix}_font_family`), family),
+    fontWeight: resolveCmsFontWeight(get(`${prefix}_font_weight`), weight),
+    fontStyle: resolveCmsFontStyle(get(`${prefix}_font_style`), style),
+    fontSize: resolveCmsFontSize(get(`${prefix}_font_size`), size),
+  };
+}
+
 export function isCmsFontFamilyField(key: string) {
   return key.endsWith("_font_family");
 }

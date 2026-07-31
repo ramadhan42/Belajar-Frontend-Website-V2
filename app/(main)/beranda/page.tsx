@@ -8,6 +8,7 @@ import ThirdSection from "@/components/beranda/ThirdSection";
 import FifthSection from "@/components/beranda/FifthSection";
 import SixthSection from "@/components/beranda/SixthSection";
 import SeventhSection from "@/components/beranda/SeventhSection";
+import ArtikelSection from "@/components/beranda/ArtikelSection";
 
 export default function Beranda() {
   const aboutSectionRef = useRef<HTMLDivElement>(null);
@@ -78,6 +79,7 @@ export default function Beranda() {
       </div>
 
       <FourthSection />
+      <ArtikelSection />
       <FifthSection />
       <SixthSection />
       <SeventhSection />

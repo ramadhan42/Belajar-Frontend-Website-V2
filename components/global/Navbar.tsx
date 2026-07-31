@@ -238,6 +238,14 @@ export default function Navbar() {
           "Redirecting to the Personality Quiz page...",
         ),
       },
+      artikel: {
+        title: L(locale, "Artikel Parfum", "Perfume Articles"),
+        message: L(
+          locale,
+          "Mengarahkan ke halaman artikel Evomi...",
+          "Redirecting to the Evomi articles page...",
+        ),
+      },
       login: {
         title: L(locale, "Halaman Masuk", "Login Page"),
         message: L(
@@ -568,6 +576,13 @@ export default function Navbar() {
       label: tNav("belanja", "Belanja"),
       action: navAction.belanja,
       match: "/belanja",
+    },
+    {
+      path: "/artikel",
+      href: "/artikel",
+      label: tNav("artikel", L(locale, "Artikel", "Articles")),
+      action: navAction.artikel,
+      match: "/artikel",
     },
     {
       path: "/kuis",
@@ -914,7 +929,7 @@ export default function Navbar() {
             </motion.div>
 
             {/* DESKTOP: MENU TENGAH — lebar pill disamakan (4 kolom) */}
-            <div className="hidden md:grid grid-cols-4 gap-1 items-center">
+            <div className="hidden md:grid grid-cols-5 gap-1 items-center">
               {desktopLinks.map((link) => {
                 const active = isActive(link.match);
                 return (
@@ -1391,6 +1406,12 @@ export default function Navbar() {
                       path: "/belanja",
                       label: tNav("belanja", "Belanja"),
                       action: navAction.belanja,
+                    },
+                    {
+                      href: "/artikel",
+                      path: "/artikel",
+                      label: tNav("artikel", L(locale, "Artikel", "Articles")),
+                      action: navAction.artikel,
                     },
                     {
                       href: "/kuis",
