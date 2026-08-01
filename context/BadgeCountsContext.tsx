@@ -20,8 +20,8 @@ const EMPTY_COUNTS: BadgeCounts = {
 };
 
 /** Soft poll only while tab is visible — keeps chat badge fresh without spam. */
-const VISIBLE_POLL_MS = 30_000;
-const FOCUS_REFRESH_COOLDOWN_MS = 2_000;
+const VISIBLE_POLL_MS = 60_000;
+const FOCUS_REFRESH_COOLDOWN_MS = 5_000;
 
 type BadgeCountsContextValue = BadgeCounts & {
   ready: boolean;

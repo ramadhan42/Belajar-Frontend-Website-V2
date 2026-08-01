@@ -63,7 +63,14 @@ const nextConfig: NextConfig = {
     ],
   },
   devIndicators: {},
-  experimental: {},
+  // Shared hosting (Hostinger): limit worker/CPU assumptions baked into the build.
+  // Prevents Next from behaving like a 60-core machine during image/static work.
+  experimental: {
+    cpus: 2,
+    webpackMemoryOptimizations: true,
+  },
+  // Cap in-memory cache used by the Next server (~32MB).
+  cacheMaxMemorySize: 32 * 1024 * 1024,
 };
 
 export default nextConfig;

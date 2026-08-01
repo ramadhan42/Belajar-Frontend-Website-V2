@@ -294,7 +294,7 @@ export default function ProductChatPanel({
     if (!open || !user?.email) return;
     pollRef.current = window.setInterval(() => {
       void fetchThread({ silent: true });
-    }, 15000);
+    }, 30000);
     return () => {
       if (pollRef.current) window.clearInterval(pollRef.current);
     };

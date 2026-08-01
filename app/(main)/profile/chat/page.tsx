@@ -286,7 +286,7 @@ export default function ChatPage() {
     if (!userData.email) return;
     const id = window.setInterval(() => {
       fetchMessages({ silent: true });
-    }, 20000);
+    }, 30000);
     return () => window.clearInterval(id);
   }, [userData.email, fetchMessages]);
 
