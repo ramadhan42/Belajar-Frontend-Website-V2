@@ -1,0 +1,6 @@
+# Ignore local noise on Vercel builds
+.load-test
+load-test
+*.zip
+.env.local
+.DS_Store

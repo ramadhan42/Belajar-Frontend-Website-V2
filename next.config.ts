@@ -63,14 +63,12 @@ const nextConfig: NextConfig = {
     ],
   },
   devIndicators: {},
-  // Shared hosting (Hostinger): limit worker/CPU assumptions baked into the build.
-  // Prevents Next from behaving like a 60-core machine during image/static work.
+  // Vercel has more CPU than Hostinger shared Node; keep modest workers for stable builds.
   experimental: {
     cpus: 2,
     webpackMemoryOptimizations: true,
   },
-  // Cap in-memory cache used by the Next server (~32MB).
-  cacheMaxMemorySize: 32 * 1024 * 1024,
+  cacheMaxMemorySize: 64 * 1024 * 1024,
 };
 
 export default nextConfig;
