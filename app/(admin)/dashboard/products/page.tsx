@@ -148,6 +148,24 @@ export default function ProductsPage() {
     return false;
   };
 
+  const assertProductImagesWithinLimit = (formData: FormData): boolean => {
+    for (const value of formData.values()) {
+      if (value instanceof File && value.size > MAX_PRODUCT_IMAGE_BYTES) {
+        showNotification(
+          t(
+            "products",
+            "image_too_large",
+            "Ukuran gambar maksimal 40MB per file.",
+            "Each image must be at most 40MB.",
+          ),
+          "error",
+        );
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleOpenAdd = () => {
     setModalMode("add");
     setSelectedProduct(null);
@@ -176,11 +194,31 @@ export default function ProductsPage() {
     setIsModalOpen(true);
   };
 
+  const MAX_PRODUCT_IMAGE_BYTES = 40 * 1024 * 1024;
+
   const handleImageFileChange = (
     field: "image_produk_belanja" | "image_1" | "image_2" | "image_3",
     file: File | null,
+    input?: HTMLInputElement | null,
   ) => {
     if (!file) return;
+
+    if (file.size > MAX_PRODUCT_IMAGE_BYTES) {
+      showNotification(
+        t(
+          "products",
+          "image_too_large",
+          "Ukuran gambar maksimal 40MB per file.",
+          "Each image must be at most 40MB.",
+        ),
+        "error",
+      );
+      if (input) {
+        input.value = "";
+      }
+      return;
+    }
+
     const url = URL.createObjectURL(file);
     setImagePreviews((prev) => ({ ...prev, [field]: url }));
   };
@@ -221,6 +259,9 @@ export default function ProductsPage() {
     }
 
     const formData = new FormData(e.currentTarget);
+    if (!assertProductImagesWithinLimit(formData)) {
+      return;
+    }
     const hasImages = formHasImageFiles(formData);
 
     setIsSaving(true);
@@ -296,6 +337,9 @@ export default function ProductsPage() {
 
     const formData = new FormData(e.currentTarget);
     const token = localStorage.getItem("auth_token");
+    if (!assertProductImagesWithinLimit(formData)) {
+      return;
+    }
     const hasImages = formHasImageFiles(formData);
 
     setIsSaving(true);
@@ -928,6 +972,7 @@ export default function ProductsPage() {
                                   handleImageFileChange(
                                     field,
                                     e.target.files?.[0] ?? null,
+                                    e.currentTarget,
                                   )
                                 }
                                 className="flex-1 text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800"
@@ -936,12 +981,22 @@ export default function ProductsPage() {
                           </div>
                         ))}
                       </div>
-                      {modalMode === "edit" && (
-                        <p className="text-[11px] text-gray-400 mt-2">
-                          Kosongkan file jika tidak ingin mengubah gambar yang
-                          sudah ada.
-                        </p>
-                      )}
+                      <p className="text-[11px] text-gray-400 mt-2">
+                        {t(
+                          "products",
+                          "image_max_hint",
+                          "Maksimal 40MB per gambar (JPEG, PNG, WEBP).",
+                          "Max 40MB per image (JPEG, PNG, WEBP).",
+                        )}
+                        {modalMode === "edit"
+                          ? ` ${t(
+                              "products",
+                              "image_keep_hint",
+                              "Kosongkan file jika tidak ingin mengubah gambar yang sudah ada.",
+                              "Leave a file empty to keep the current image.",
+                            )}`
+                          : ""}
+                      </p>
                     </div>
                   </div>
 
