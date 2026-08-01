@@ -6,15 +6,18 @@
 
 export const SITE_STRINGS = {
   base_url: {
-    /** Production API (subdomain Hostinger, aman dari redeploy Node) */
+    /** Production API on Hostinger (api.evomi.shop) */
     url_backend_deploy: "https://api.evomi.shop",
     /**
      * Active backend URL.
-     * - Production/Hostinger build: pakai NEXT_PUBLIC_URL dari .env.production
-     * - Local override: set NEXT_PUBLIC_URL di .env.local
+     * - Hostinger main: NEXT_PUBLIC_URL from .env.production → api.evomi.shop
+     * - Local: set NEXT_PUBLIC_URL in .env.local
      */
     url_backend:
       process.env.NEXT_PUBLIC_URL?.replace(/\/$/, "") || "https://api.evomi.shop",
+    /** Public frontend origin (Hostinger: https://evomi.shop) */
+    url_frontend:
+      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://evomi.shop",
   },
   meta: {
     title: "Evomi | Premium Fragrance & Perfume",
