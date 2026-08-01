@@ -9,11 +9,16 @@ import {
   Image as ImageIcon,
   X,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
+import {
+  firstValidationError,
+  uploadFormDataWithProgress,
+} from "@/lib/uploadWithProgress";
 
 interface Product {
   id: number | string;
@@ -85,6 +90,8 @@ export default function ProductsPage() {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const confirmDelete = (id: number | string) => {
     setDeleteId(id);
@@ -124,9 +131,28 @@ export default function ProductsPage() {
     return `${baseUrl}/storage/${path}`;
   };
 
+  const closeProductModal = () => {
+    if (isSaving) {
+      return;
+    }
+    setIsModalOpen(false);
+    setUploadProgress(0);
+  };
+
+  const formHasImageFiles = (formData: FormData): boolean => {
+    for (const value of formData.values()) {
+      if (value instanceof File && value.size > 0) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   const handleOpenAdd = () => {
     setModalMode("add");
     setSelectedProduct(null);
+    setIsSaving(false);
+    setUploadProgress(0);
     setImagePreviews({
       image_produk_belanja: null,
       image_1: null,
@@ -139,6 +165,8 @@ export default function ProductsPage() {
   const handleOpenEdit = (product: Product) => {
     setModalMode("edit");
     setSelectedProduct(product);
+    setIsSaving(false);
+    setUploadProgress(0);
     setImagePreviews({
       image_produk_belanja: getImageUrl(product.image_produk_belanja),
       image_1: getImageUrl(product.image_1),
@@ -188,30 +216,37 @@ export default function ProductsPage() {
 
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSaving || !selectedProduct?.id) {
+      return;
+    }
+
     const formData = new FormData(e.currentTarget);
+    const hasImages = formHasImageFiles(formData);
+
+    setIsSaving(true);
+    setUploadProgress(hasImages ? 0 : 15);
 
     try {
-      const res = await fetch(
-        `${baseUrl}/api/products/${selectedProduct?.id}`,
-        {
-          method: "POST", // Sesuai permintaan Anda
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-          body: formData,
+      const res = await uploadFormDataWithProgress({
+        url: `${baseUrl}/api/products/${selectedProduct.id}`,
+        method: "POST",
+        formData,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          Accept: "application/json",
         },
-      );
+        onProgress: (percent) => {
+          setUploadProgress(hasImages ? percent : Math.max(15, percent));
+        },
+      });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        const firstError = err?.errors
-          ? Object.values(err.errors).flat()[0]
-          : null;
         throw new Error(
-          (firstError as string) || err?.message || "Gagal memperbarui data",
+          firstValidationError(res.json) || "Gagal memperbarui data",
         );
       }
 
+      setUploadProgress(100);
       showNotification(
         t(
           "products",
@@ -235,11 +270,17 @@ export default function ProductsPage() {
             ),
         "error",
       );
+    } finally {
+      setIsSaving(false);
+      setUploadProgress(0);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSaving) {
+      return;
+    }
     if (modalMode === "edit") {
       await handleUpdate(e);
     } else {
@@ -249,28 +290,39 @@ export default function ProductsPage() {
 
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSaving) {
+      return;
+    }
+
     const formData = new FormData(e.currentTarget);
     const token = localStorage.getItem("auth_token");
+    const hasImages = formHasImageFiles(formData);
+
+    setIsSaving(true);
+    setUploadProgress(hasImages ? 0 : 15);
 
     try {
-      const res = await fetch(`${baseUrl}/api/products`, {
-        method: "POST", // Metode POST untuk tambah data
+      const res = await uploadFormDataWithProgress({
+        url: `${baseUrl}/api/products`,
+        method: "POST",
+        formData,
         headers: {
           Authorization: `Bearer ${token}`,
-          // JANGAN tambahkan "Content-Type": "application/json" di sini
+          Accept: "application/json",
         },
-        body: formData,
+        onProgress: (percent) => {
+          setUploadProgress(hasImages ? percent : Math.max(15, percent));
+        },
       });
 
-      const result = await res.json();
-
       if (!res.ok) {
-        // Menampilkan pesan error spesifik dari server (misalnya: validasi gagal)
-        console.error("Error Detail:", result);
-        throw new Error(result.message || "Gagal menyimpan produk");
+        console.error("Error Detail:", res.json);
+        throw new Error(
+          firstValidationError(res.json) || "Gagal menyimpan produk",
+        );
       }
 
-      // Jika berhasil
+      setUploadProgress(100);
       showNotification(
         t(
           "products",
@@ -281,7 +333,7 @@ export default function ProductsPage() {
         "success",
       );
       setIsModalOpen(false);
-      fetchProducts(); // Refresh daftar produk
+      fetchProducts();
     } catch (error) {
       showNotification(
         t(
@@ -292,6 +344,9 @@ export default function ProductsPage() {
         ) + (error instanceof Error ? error.message : "Periksa koneksi Anda"),
         "error",
       );
+    } finally {
+      setIsSaving(false);
+      setUploadProgress(0);
     }
   };
 
@@ -613,10 +668,54 @@ export default function ProductsPage() {
       {/* MODAL CRUD (Add / Edit) */}
       <AdminModal
         open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={closeProductModal}
+        closeOnBackdrop={!isSaving}
         panelClassName="max-w-3xl"
       >
-        <div className="bg-white rounded-2xl shadow-xl w-full h-[80vh] max-h-[80vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 overflow-hidden border border-gray-100">
+        <div className="bg-white rounded-2xl shadow-xl w-full h-[80vh] max-h-[80vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 overflow-hidden border border-gray-100 relative">
+            {isSaving && (
+              <div className="absolute inset-0 z-20 bg-white/70 backdrop-blur-[1px] flex items-center justify-center p-6">
+                <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-5 shadow-lg">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Loader2 className="h-5 w-5 animate-spin text-gray-900 shrink-0" />
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">
+                        {uploadProgress >= 100
+                          ? t(
+                              "products",
+                              "upload_finishing",
+                              "Menyimpan perubahan…",
+                              "Saving changes…",
+                            )
+                          : t(
+                              "products",
+                              "upload_in_progress",
+                              "Mengunggah gambar & menyimpan…",
+                              "Uploading images & saving…",
+                            )}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {t(
+                          "products",
+                          "upload_please_wait",
+                          "Jangan tutup jendela ini sampai selesai.",
+                          "Please keep this window open until finished.",
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gray-900 transition-[width] duration-150 ease-out"
+                      style={{ width: `${Math.max(2, uploadProgress)}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-right text-sm font-semibold tabular-nums text-gray-900">
+                    {uploadProgress}%
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
               <h3 className="text-lg font-bold text-gray-900">
                 {modalMode === "add"
@@ -625,8 +724,9 @@ export default function ProductsPage() {
               </h3>
               <button
                 type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                onClick={closeProductModal}
+                disabled={isSaving}
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-40 disabled:pointer-events-none"
               >
                 <X size={18} />
               </button>
@@ -944,23 +1044,32 @@ export default function ProductsPage() {
               <div className="shrink-0 px-6 py-4 flex items-center justify-end gap-3 border-t border-gray-100 bg-white">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 border border-gray-200 rounded-xl shadow-sm transition-colors"
+                  onClick={closeProductModal}
+                  disabled={isSaving}
+                  className="px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 border border-gray-200 rounded-xl shadow-sm transition-colors disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {common.cancel}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 text-sm font-semibold text-white bg-gray-900 hover:bg-gray-800 rounded-xl transition-all shadow-sm"
+                  disabled={isSaving}
+                  className="inline-flex items-center justify-center gap-2 min-w-[9.5rem] px-5 py-2.5 text-sm font-semibold text-white bg-gray-900 hover:bg-gray-800 rounded-xl transition-all shadow-sm disabled:opacity-80 disabled:cursor-wait"
                 >
-                  {modalMode === "add"
-                    ? t(
-                        "products",
-                        "save_product",
-                        "Simpan Produk",
-                        "Save Product",
-                      )
-                    : common.save_changes}
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {uploadProgress}%
+                    </>
+                  ) : modalMode === "add" ? (
+                    t(
+                      "products",
+                      "save_product",
+                      "Simpan Produk",
+                      "Save Product",
+                    )
+                  ) : (
+                    common.save_changes
+                  )}
                 </button>
               </div>
             </form>
