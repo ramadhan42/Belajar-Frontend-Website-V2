@@ -31,6 +31,8 @@ export interface User {
   avatar_profile?: string | null;
   created_at?: string;
   updated_at?: string;
+  last_login_at?: string | null;
+  last_seen_at?: string | null;
 }
 
 export interface AuthResponse {

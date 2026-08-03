@@ -17,10 +17,17 @@ import {
   Eye,
   EyeOff,
   Settings,
+  Clock,
+  LogIn,
+  Info,
 } from "lucide-react";
 import { useLocale } from "@/context/LocaleContext";
 import { useCms } from "@/context/CmsContext";
 import { L } from "@/lib/localeText";
+import {
+  formatPresenceDateTime,
+  formatPresenceRelative,
+} from "@/lib/formatPresence";
 import ProfileBrandShell, {
   useProfileBrand,
 } from "@/components/profile/ProfileBrandShell";
@@ -56,6 +63,8 @@ export default function ProfilePage() {
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [lastLoginAt, setLastLoginAt] = useState<string | null>(null);
+  const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState({ type: "", message: "" });
@@ -93,6 +102,8 @@ export default function ProfilePage() {
       ),
       loadingTitle: L(locale, "Memuat profil...", "Loading profile..."),
       changePhoto: L(locale, "Ganti foto profil", "Change profile photo"),
+      lastLogin: L(locale, "Last login", "Last login"),
+      lastSeen: L(locale, "Last seen", "Last seen"),
       photoLabel: L(locale, "Foto Profil", "Profile Photo"),
       photoHint: L(
         locale,
@@ -167,6 +178,8 @@ export default function ProfilePage() {
           });
           setAvatarPath(user.avatar_profile || null);
           setAvatarPreview(getAvatarUrl(user.avatar_profile));
+          setLastLoginAt(user.last_login_at || null);
+          setLastSeenAt(user.last_seen_at || null);
         }
       } catch (error) {
         console.error("Gagal mengambil profil:", error);
@@ -306,6 +319,108 @@ export default function ProfilePage() {
           onSubmit={handleSubmit}
           className="space-y-5 max-w-3xl bg-white rounded-2xl border border-gray-100 p-5 sm:p-7"
         >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="group/login relative rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3 flex items-start gap-3 transition-colors hover:border-slate-200 hover:bg-white focus-within:border-slate-200 focus-within:bg-white">
+              <span className="mt-0.5 w-9 h-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center shrink-0 shadow-sm">
+                <LogIn size={16} style={{ color: brand }} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    {copy.lastLogin}
+                  </p>
+                  <button
+                    type="button"
+                    className="inline-flex h-4 w-4 items-center justify-center rounded-full text-slate-400 transition-colors hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-1"
+                    aria-label={
+                      locale === "en"
+                        ? "Show last login details"
+                        : "Tampilkan detail last login"
+                    }
+                  >
+                    <Info size={12} strokeWidth={2.5} />
+                  </button>
+                </div>
+                <p className="text-sm font-semibold text-slate-800 mt-0.5">
+                  {formatPresenceDateTime(lastLoginAt, locale)}
+                </p>
+              </div>
+
+              <div
+                role="tooltip"
+                className="pointer-events-none absolute left-1/2 top-[calc(100%+10px)] z-30 w-[min(100%,17.5rem)] -translate-x-1/2 opacity-0 scale-95 translate-y-1 transition-all duration-200 ease-out group-hover/login:opacity-100 group-hover/login:scale-100 group-hover/login:translate-y-0 group-focus-within/login:opacity-100 group-focus-within/login:scale-100 group-focus-within/login:translate-y-0"
+              >
+                <div className="relative rounded-2xl border border-slate-200/90 bg-slate-900 px-3.5 py-3 text-left shadow-[0_18px_40px_-18px_rgba(15,23,42,0.55)]">
+                  <span
+                    className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 rounded-[3px] border-l border-t border-slate-200/90 bg-slate-900"
+                    aria-hidden
+                  />
+                  <p className="relative text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                    {locale === "en" ? "Last successful login" : "Login berhasil terakhir"}
+                  </p>
+                  <p className="relative mt-1 text-sm font-semibold text-white leading-snug">
+                    {formatPresenceDateTime(lastLoginAt, locale)}
+                  </p>
+                  <p className="relative mt-1.5 text-[11px] leading-relaxed text-slate-400">
+                    {locale === "en"
+                      ? "Recorded each time you sign in to your Evomi account."
+                      : "Dicatat setiap kali Anda masuk ke akun Evomi."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="group/seen relative rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3 flex items-start gap-3 transition-colors hover:border-slate-200 hover:bg-white focus-within:border-slate-200 focus-within:bg-white">
+              <span className="mt-0.5 w-9 h-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center shrink-0 shadow-sm">
+                <Clock size={16} style={{ color: brand }} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    {copy.lastSeen}
+                  </p>
+                  <button
+                    type="button"
+                    className="inline-flex h-4 w-4 items-center justify-center rounded-full text-slate-400 transition-colors hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-1"
+                    aria-label={
+                      locale === "en"
+                        ? "Show exact last seen time"
+                        : "Tampilkan waktu last seen lengkap"
+                    }
+                  >
+                    <Info size={12} strokeWidth={2.5} />
+                  </button>
+                </div>
+                <p className="text-sm font-semibold text-slate-800 mt-0.5">
+                  {formatPresenceRelative(lastSeenAt, locale)}
+                </p>
+              </div>
+
+              <div
+                role="tooltip"
+                className="pointer-events-none absolute left-1/2 top-[calc(100%+10px)] z-30 w-[min(100%,17.5rem)] -translate-x-1/2 opacity-0 scale-95 translate-y-1 transition-all duration-200 ease-out group-hover/seen:opacity-100 group-hover/seen:scale-100 group-hover/seen:translate-y-0 group-focus-within/seen:opacity-100 group-focus-within/seen:scale-100 group-focus-within/seen:translate-y-0"
+              >
+                <div className="relative rounded-2xl border border-slate-200/90 bg-slate-900 px-3.5 py-3 text-left shadow-[0_18px_40px_-18px_rgba(15,23,42,0.55)]">
+                  <span
+                    className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 rounded-[3px] border-l border-t border-slate-200/90 bg-slate-900"
+                    aria-hidden
+                  />
+                  <p className="relative text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                    {locale === "en" ? "Exact time" : "Waktu tepat"}
+                  </p>
+                  <p className="relative mt-1 text-sm font-semibold text-white leading-snug">
+                    {formatPresenceDateTime(lastSeenAt, locale)}
+                  </p>
+                  <p className="relative mt-1.5 text-[11px] leading-relaxed text-slate-400">
+                    {locale === "en"
+                      ? "Updated when you use the app while logged in."
+                      : "Diperbarui saat Anda aktif memakai aplikasi dalam keadaan login."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-center gap-5 pb-2">
             <div className="relative group">
               <div

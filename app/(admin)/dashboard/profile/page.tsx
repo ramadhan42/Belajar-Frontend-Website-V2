@@ -21,6 +21,10 @@ import { motion } from "framer-motion";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
+import {
+  formatPresenceDateTime,
+  formatPresenceRelative,
+} from "@/lib/formatPresence";
 
 interface UserProfile {
   id: number;
@@ -29,6 +33,8 @@ interface UserProfile {
   email_verified_at: string | null;
   created_at: string;
   updated_at: string;
+  last_login_at?: string | null;
+  last_seen_at?: string | null;
   nama_lengkap: string | null;
   alamat_lengkap: string | null;
   phone: string | null;
@@ -115,6 +121,8 @@ export default function ProfilePage() {
         "Manage your admin identity, contact info, and primary address.",
       ),
       memberSince: t("profile", "member_since", "Bergabung sejak", "Member since"),
+      lastLogin: t("profile", "last_login", "Last login", "Last login"),
+      lastSeen: t("profile", "last_seen", "Last seen", "Last seen"),
       lastUpdated: t("profile", "last_updated", "Terakhir diperbarui", "Last updated"),
       accountOverview: t(
         "profile",
@@ -419,16 +427,22 @@ export default function ProfilePage() {
           </div>
 
           {/* Quick stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-8">
             <StatPill
               icon={Calendar}
               label={copy.memberSince}
               value={formatAdminDate(profile.created_at, locale)}
             />
             <StatPill
+              icon={KeyRound}
+              label={copy.lastLogin}
+              value={formatPresenceDateTime(profile.last_login_at, locale)}
+            />
+            <StatPill
               icon={Clock}
-              label={copy.lastUpdated}
-              value={formatAdminDate(profile.updated_at, locale)}
+              label={copy.lastSeen}
+              value={formatPresenceRelative(profile.last_seen_at, locale)}
+              title={formatPresenceDateTime(profile.last_seen_at, locale)}
             />
             <StatPill
               icon={Mail}
@@ -724,11 +738,13 @@ function StatPill({
   label,
   value,
   truncate: shouldTruncate,
+  title,
 }: {
   icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
   value: string;
   truncate?: boolean;
+  title?: string;
 }) {
   return (
     <motion.div
@@ -736,6 +752,7 @@ function StatPill({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white px-4 py-3.5 shadow-sm"
+      title={title}
     >
       <span className="w-10 h-10 rounded-xl bg-[#1172BA]/8 flex items-center justify-center shrink-0">
         <Icon size={18} className="text-[#1172BA]" />

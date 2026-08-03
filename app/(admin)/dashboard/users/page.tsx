@@ -21,6 +21,10 @@ import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
 import AdminAlertModal from "@/components/admin/AdminAlertModal";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
+import {
+  formatPresenceDateTime,
+  formatPresenceRelative,
+} from "@/lib/formatPresence";
 
 interface UserData {
   id: number;
@@ -32,6 +36,8 @@ interface UserData {
   phone?: string | null;
   is_admin?: boolean;
   created_at: string;
+  last_login_at?: string | null;
+  last_seen_at?: string | null;
 }
 
 type EditFormState = {
@@ -99,7 +105,7 @@ function UserAvatar({
 }
 
 export default function UsersPage() {
-  const { t, common } = useAdminI18n();
+  const { t, common, locale } = useAdminI18n();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -501,6 +507,12 @@ export default function UsersPage() {
                   <th className="px-6 py-4 font-semibold">
                     {t("users", "col_joined", "Bergabung", "Joined")}
                   </th>
+                  <th className="px-6 py-4 font-semibold">
+                    {t("users", "col_last_login", "Last Login", "Last Login")}
+                  </th>
+                  <th className="px-6 py-4 font-semibold">
+                    {t("users", "col_last_seen", "Last Seen", "Last Seen")}
+                  </th>
                   <th className="px-6 py-4 font-semibold text-center">{common.actions}</th>
                 </tr>
               </thead>
@@ -543,6 +555,15 @@ export default function UsersPage() {
                       </td>
                       <td className="px-6 py-4">
                         {formatDate(user.created_at)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
+                        {formatPresenceDateTime(user.last_login_at, locale)}
+                      </td>
+                      <td
+                        className="px-6 py-4 whitespace-nowrap text-xs text-gray-600"
+                        title={formatPresenceDateTime(user.last_seen_at, locale)}
+                      >
+                        {formatPresenceRelative(user.last_seen_at, locale)}
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
@@ -598,7 +619,7 @@ export default function UsersPage() {
                 ) : (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={8}
                       className="px-6 py-12 text-center text-gray-500"
                     >
                       {searchQuery
@@ -800,6 +821,33 @@ export default function UsersPage() {
                   </p>
                   <p className="text-gray-900 font-medium">
                     {selectedUser ? formatDate(selectedUser.created_at) : ""}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    {t("users", "last_login", "Last Login", "Last Login")}
+                  </p>
+                  <p className="text-gray-900 font-medium">
+                    {selectedUser
+                      ? formatPresenceDateTime(selectedUser.last_login_at, locale)
+                      : ""}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    {t("users", "last_seen", "Last Seen", "Last Seen")}
+                  </p>
+                  <p
+                    className="text-gray-900 font-medium"
+                    title={
+                      selectedUser
+                        ? formatPresenceDateTime(selectedUser.last_seen_at, locale)
+                        : undefined
+                    }
+                  >
+                    {selectedUser
+                      ? formatPresenceRelative(selectedUser.last_seen_at, locale)
+                      : ""}
                   </p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 sm:col-span-2">

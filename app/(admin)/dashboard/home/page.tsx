@@ -8,6 +8,7 @@ import {
   Users,
   TrendingUp,
   ImageIcon,
+  Info,
 } from "lucide-react";
 import {
   AreaChart,
@@ -52,7 +53,7 @@ interface Order {
 }
 
 export default function HomeDashboard() {
-  const { t } = useAdminI18n();
+  const { t, locale } = useAdminI18n();
   const { isDark } = useAdminTheme();
   const router = useRouter(); // 2. Inisialisasi router
   const [isLoading, setIsLoading] = useState(true);
@@ -193,32 +194,84 @@ export default function HomeDashboard() {
   // 3. Tambahkan properti route untuk card yang bisa diklik
   const stats = [
     {
+      key: "products",
       title: t("home", "stat_products", "Total Produk", "Total Products"),
       value: dashboardData.totalProducts.toString(),
       icon: Package,
       trend: t("home", "trend_active", "Aktif", "Active"),
       route: "/dashboard/products",
+      tipTitle: t(
+        "home",
+        "tip_products_title",
+        "Katalog produk",
+        "Product catalog",
+      ),
+      tipBody: t(
+        "home",
+        "tip_products_body",
+        "Jumlah seluruh produk parfum yang tersimpan di inventaris Evomi.",
+        "Total perfume products currently stored in Evomi inventory.",
+      ),
     },
     {
+      key: "orders",
       title: t("home", "stat_orders", "Total Pesanan", "Total Orders"),
       value: dashboardData.totalOrders.toString(),
       icon: ShoppingBag,
       trend: t("home", "trend_month", "Bulan ini", "This month"),
       route: "/dashboard/orders",
+      tipTitle: t(
+        "home",
+        "tip_orders_title",
+        "Semua pesanan",
+        "All orders",
+      ),
+      tipBody: t(
+        "home",
+        "tip_orders_body",
+        "Total pesanan masuk dari pelanggan, termasuk status menunggu hingga selesai.",
+        "Total customer orders across all statuses, from pending to completed.",
+      ),
     },
     {
+      key: "users",
       title: t("home", "stat_users", "Pengguna Aktif", "Active Users"),
       value: dashboardData.activeUsers.toString(),
       icon: Users,
       trend: t("home", "trend_registered", "Terdaftar", "Registered"),
       route: "/dashboard/users",
+      tipTitle: t(
+        "home",
+        "tip_users_title",
+        "Akun terdaftar",
+        "Registered accounts",
+      ),
+      tipBody: t(
+        "home",
+        "tip_users_body",
+        "Jumlah seluruh pengguna yang sudah membuat akun di Evomi (termasuk admin).",
+        "Total users who have registered an Evomi account (including admins).",
+      ),
     },
     {
+      key: "revenue",
       title: t("home", "stat_revenue", "Total Pendapatan", "Total Revenue"),
       value: formatRupiah(dashboardData.totalRevenue),
       icon: TrendingUp,
       trend: t("home", "trend_revenue", "Pendapatan", "Revenue"),
       route: "/dashboard/orders",
+      tipTitle: t(
+        "home",
+        "tip_revenue_title",
+        "Pendapatan bersih",
+        "Net revenue",
+      ),
+      tipBody: t(
+        "home",
+        "tip_revenue_body",
+        "Akumulasi pendapatan dari pesanan yang dihitung sebagai revenue bersih di sistem.",
+        "Accumulated revenue from orders counted as net revenue in the system.",
+      ),
     },
   ];
 
@@ -249,26 +302,40 @@ export default function HomeDashboard() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => {
+        {stats.map((stat) => {
           const Icon = stat.icon;
           return (
             <div
-              key={index}
-              onClick={() => stat.route && router.push(stat.route)} // 4. Tambahkan onClick function
-              className={`bg-white p-6 rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-50/50 hover:shadow-[0_4px_25px_rgb(0,0,0,0.06)] transition-all ${
-                stat.route ? "cursor-pointer hover:border-gray-200" : "" // 5. Tambahkan cursor-pointer jika route tersedia
+              key={stat.key}
+              onClick={() => stat.route && router.push(stat.route)}
+              className={`group/stat relative bg-white p-6 rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-50/50 hover:shadow-[0_4px_25px_rgb(0,0,0,0.06)] transition-all ${
+                stat.route ? "cursor-pointer hover:border-gray-200" : ""
               }`}
             >
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    {stat.title}
-                  </p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">
+              <div className="flex justify-between items-start gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-medium text-gray-500">
+                      {stat.title}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex h-5 w-5 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
+                      aria-label={
+                        locale === "en"
+                          ? `About ${stat.title}`
+                          : `Tentang ${stat.title}`
+                      }
+                    >
+                      <Info size={13} strokeWidth={2.5} />
+                    </button>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-2 tracking-tight">
                     {stat.value}
                   </h3>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-xl">
+                <div className="p-3 bg-gray-50 rounded-xl shrink-0">
                   <Icon size={20} className="text-gray-700" />
                 </div>
               </div>
@@ -276,6 +343,39 @@ export default function HomeDashboard() {
                 <span className="text-xs font-medium text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md">
                   {stat.trend}
                 </span>
+              </div>
+
+              <div
+                role="tooltip"
+                className="pointer-events-none absolute left-1/2 top-[calc(100%+12px)] z-40 w-[min(100%,18rem)] -translate-x-1/2 opacity-0 scale-95 translate-y-1 transition-all duration-200 ease-out group-hover/stat:opacity-100 group-hover/stat:scale-100 group-hover/stat:translate-y-0 group-focus-within/stat:opacity-100 group-focus-within/stat:scale-100 group-focus-within/stat:translate-y-0"
+              >
+                <div className="relative rounded-2xl border border-slate-200/90 bg-slate-900 px-3.5 py-3 text-left shadow-[0_18px_40px_-16px_rgba(15,23,42,0.55)]">
+                  <span
+                    className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 rounded-[3px] border-l border-t border-slate-200/90 bg-slate-900"
+                    aria-hidden
+                  />
+                  <div className="relative flex items-center gap-2">
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-white">
+                      <Icon size={14} />
+                    </span>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                      {stat.tipTitle}
+                    </p>
+                  </div>
+                  <p className="relative mt-2 text-sm font-semibold text-white leading-snug">
+                    {stat.value}
+                  </p>
+                  <p className="relative mt-1.5 text-[11px] leading-relaxed text-slate-400">
+                    {stat.tipBody}
+                  </p>
+                  {stat.route ? (
+                    <p className="relative mt-2 text-[10px] font-medium text-emerald-400/90">
+                      {locale === "en"
+                        ? "Click card to open details →"
+                        : "Klik kartu untuk buka detail →"}
+                    </p>
+                  ) : null}
+                </div>
               </div>
             </div>
           );

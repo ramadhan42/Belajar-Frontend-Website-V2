@@ -355,6 +355,22 @@ export default function ArticlesAdminPage() {
     style: { fontFamily: resolveCmsFontFamily(opt.value) },
   }));
 
+  const fontWeightOptions = CMS_FONT_WEIGHT_OPTIONS.map((opt) => ({
+    value: opt.value,
+    label: opt.label,
+    style: { fontWeight: Number(opt.value) || 400 },
+  }));
+
+  const fontStyleOptions = CMS_FONT_STYLE_OPTIONS.map((opt) => ({
+    value: opt.value,
+    label: opt.label,
+    style: {
+      fontStyle: (opt.value === "italic" ? "italic" : "normal") as
+        | "normal"
+        | "italic",
+    },
+  }));
+
   const renderFontRow = (
     prefix: "title" | "excerpt" | "content",
     label: string,
@@ -388,7 +404,7 @@ export default function ArticlesAdminPage() {
             <AdminSelect
               value={String(form[weightKey])}
               onChange={(next) => patchForm({ [weightKey]: next })}
-              options={CMS_FONT_WEIGHT_OPTIONS}
+              options={fontWeightOptions}
             />
           </label>
           <label className="block text-xs space-y-1 min-w-0">
@@ -396,10 +412,7 @@ export default function ArticlesAdminPage() {
             <AdminSelect
               value={String(form[styleKey])}
               onChange={(next) => patchForm({ [styleKey]: next })}
-              options={CMS_FONT_STYLE_OPTIONS.map((opt) => ({
-                ...opt,
-                style: { fontStyle: opt.value as "normal" | "italic" },
-              }))}
+              options={fontStyleOptions}
             />
           </label>
           <label className="block text-xs space-y-1 min-w-0">
