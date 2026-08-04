@@ -33,7 +33,7 @@ export default function SixthSection() {
 
   return (
     <section
-      className="bg-[#1172BA] flex flex-col items-center justify-center pt-8 pb-24 md:pt-4 md:pb-28 overflow-hidden select-none relative w-full"
+      className="relative z-0 bg-[#1172BA] flex flex-col items-center justify-center pt-10 pb-24 md:pt-8 md:pb-28 overflow-hidden select-none w-full"
     >
       <style>{`
         @keyframes marquee {

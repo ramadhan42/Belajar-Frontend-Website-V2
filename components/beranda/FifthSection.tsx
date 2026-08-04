@@ -178,7 +178,7 @@ export default function FifthSection() {
   };
 
   return (
-    <section className="bg-[#FAFAFA] md:bg-white flex flex-col items-center text-center w-full pt-10 sm:pt-12 md:pt-14 pb-14 md:pb-16 px-4 sm:px-6 md:px-8 relative overflow-hidden">
+    <section className="relative z-10 bg-[#FAFAFA] md:bg-white flex flex-col items-center text-center w-full pt-10 sm:pt-12 md:pt-14 pb-14 md:pb-16 px-4 sm:px-6 md:px-8 overflow-hidden">
       {/* Dekorasi sudut — seperti screenshot */}
       <div className="absolute top-[12%] left-0 z-0 pointer-events-none w-[40px] sm:w-[70px] md:w-[100px] -translate-x-[20%] md:-translate-x-[15%]">
         <Image

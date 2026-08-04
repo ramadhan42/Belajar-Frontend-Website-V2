@@ -97,13 +97,13 @@ export default function Beranda() {
 
       {/* Brush divider between section 5 (white) and section 6 (blue) */}
       <div
-        className="relative z-20 w-full leading-[0] pointer-events-none -my-[8px] sm:-my-[11px] md:-my-[15px] lg:-my-[19px]"
+        className="relative z-30 w-full leading-[0] pointer-events-none -mt-[14px] sm:-mt-[18px] md:-mt-[24px] lg:-mt-[28px] -mb-[2px]"
         aria-hidden
       >
         <img
           src="/src/images/section 6/divider.svg"
           alt=""
-          className="mx-auto block w-full h-[16px] sm:h-[22px] md:h-[30px] lg:h-[38px] object-cover object-center select-none"
+          className="mx-auto block w-full h-[22px] sm:h-[28px] md:h-[38px] lg:h-[48px] object-cover object-center select-none"
           draggable={false}
         />
       </div>
