@@ -78,9 +78,36 @@ export default function Beranda() {
         <ThirdSection />
       </div>
 
+      {/* Brush divider between section 3 (blue) and section 4 (white) */}
+      <div
+        className="relative z-20 w-full leading-[0] pointer-events-none -my-[8px] sm:-my-[11px] md:-my-[15px] lg:-my-[19px]"
+        aria-hidden
+      >
+        <img
+          src="/src/images/section 3/vector-divider.svg"
+          alt=""
+          className="mx-auto block w-full h-[16px] sm:h-[22px] md:h-[30px] lg:h-[38px] object-cover object-center select-none"
+          draggable={false}
+        />
+      </div>
+
       <FourthSection />
       <ArtikelSection />
       <FifthSection />
+
+      {/* Brush divider between section 5 (white) and section 6 (blue) */}
+      <div
+        className="relative z-20 w-full leading-[0] pointer-events-none -my-[8px] sm:-my-[11px] md:-my-[15px] lg:-my-[19px]"
+        aria-hidden
+      >
+        <img
+          src="/src/images/section 6/divider.svg"
+          alt=""
+          className="mx-auto block w-full h-[16px] sm:h-[22px] md:h-[30px] lg:h-[38px] object-cover object-center select-none"
+          draggable={false}
+        />
+      </div>
+
       <SixthSection />
       <SeventhSection />
     </div>

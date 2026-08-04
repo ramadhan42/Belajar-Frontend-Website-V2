@@ -22,6 +22,7 @@ import { useAdminI18n } from "@/hooks/useAdminI18n";
 import AdminModal from "@/components/admin/AdminModal";
 import AdminConfirmModal from "@/components/admin/AdminConfirmModal";
 import AdminSelect from "@/components/admin/AdminSelect";
+import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import {
   CMS_FONT_FAMILY_OPTIONS,
   CMS_FONT_SIZE_OPTIONS,
@@ -590,32 +591,13 @@ export default function ArticlesAdminPage() {
         </div>
 
         {totalPages > 1 ? (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-[#2a3344] text-sm">
-            <span className="text-gray-500">
-              {filtered.length} {t("articles", "items", "artikel", "articles")}
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={currentPage <= 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#2a3344] disabled:opacity-40"
-              >
-                Prev
-              </button>
-              <span className="px-2 py-1.5 text-gray-600 dark:text-gray-300">
-                {currentPage}/{totalPages}
-              </span>
-              <button
-                type="button"
-                disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#2a3344] disabled:opacity-40"
-              >
-                Next
-              </button>
-            </div>
-          </div>
+          <AdminTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filtered.length}
+            itemLabel={t("articles", "items", "artikel", "articles")}
+            onPageChange={setCurrentPage}
+          />
         ) : null}
       </div>
 

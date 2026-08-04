@@ -12,10 +12,21 @@ import { L } from "@/lib/localeText";
 
 const DEFAULT_CARD_ICON_SIZE_MOBILE = "100px";
 const DEFAULT_CARD_ICON_SIZE_DESKTOP = "140px";
+const DEFAULT_CARD_LABEL_GAP_MOBILE = "0px";
+const DEFAULT_CARD_LABEL_GAP_DESKTOP = "12px";
+const DEFAULT_CARD_GAP_HORIZONTAL_MOBILE = "16px";
+const DEFAULT_CARD_GAP_HORIZONTAL_DESKTOP = "32px";
 
 function cssSize(raw: string, fallback: string) {
   const trimmed = raw.trim();
   return trimmed || fallback;
+}
+
+function normalizePxSize(raw: string, fallback: string) {
+  const trimmed = raw.trim();
+  if (!trimmed) return fallback;
+  if (/^-?\d+(\.\d+)?$/.test(trimmed)) return `${trimmed}px`;
+  return trimmed;
 }
 
 function cssSizeToPxNumber(raw: string, fallback: number) {
@@ -61,11 +72,31 @@ export default function SecondSection() {
     read("card_icon_size_desktop", DEFAULT_CARD_ICON_SIZE_DESKTOP),
     DEFAULT_CARD_ICON_SIZE_DESKTOP,
   );
+  const labelGapMobile = normalizePxSize(
+    read("card_label_gap_mobile", DEFAULT_CARD_LABEL_GAP_MOBILE),
+    DEFAULT_CARD_LABEL_GAP_MOBILE,
+  );
+  const labelGapDesktop = normalizePxSize(
+    read("card_label_gap_desktop", DEFAULT_CARD_LABEL_GAP_DESKTOP),
+    DEFAULT_CARD_LABEL_GAP_DESKTOP,
+  );
+  const cardGapHorizontalMobile = normalizePxSize(
+    read("card_gap_horizontal_mobile", DEFAULT_CARD_GAP_HORIZONTAL_MOBILE),
+    DEFAULT_CARD_GAP_HORIZONTAL_MOBILE,
+  );
+  const cardGapHorizontalDesktop = normalizePxSize(
+    read("card_gap_horizontal_desktop", DEFAULT_CARD_GAP_HORIZONTAL_DESKTOP),
+    DEFAULT_CARD_GAP_HORIZONTAL_DESKTOP,
+  );
   const iconPx = cssSizeToPxNumber(iconSizeDesktop, 140);
 
   const sectionStyle = {
     "--s2-icon-m": iconSizeMobile,
     "--s2-icon-d": iconSizeDesktop,
+    "--s2-label-gap-m": labelGapMobile,
+    "--s2-label-gap-d": labelGapDesktop,
+    "--s2-card-gap-m": cardGapHorizontalMobile,
+    "--s2-card-gap-d": cardGapHorizontalDesktop,
   } as CSSProperties;
 
   const characters = [
@@ -179,10 +210,98 @@ export default function SecondSection() {
           width: var(--s2-icon-m);
           height: var(--s2-icon-m);
         }
+        .s2-char-grid {
+          display: grid !important;
+          grid-template-columns: repeat(2, max-content);
+          justify-content: center;
+          justify-items: center;
+          align-items: start;
+          column-gap: var(--s2-card-gap-m, 16px) !important;
+          row-gap: var(--s2-card-gap-m, 16px) !important;
+          gap: var(--s2-card-gap-m, 16px) !important;
+        }
+        .s2-char-card {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          row-gap: var(--s2-label-gap-m, 0px);
+        }
+        .s2-char-card .s2-char-visual {
+          transition:
+            transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+            filter 0.35s ease;
+          transform-origin: center bottom;
+          will-change: transform;
+          pointer-events: none;
+        }
+        .s2-char-card:hover .s2-char-visual {
+          transform: translateY(-6px) scale(1.06);
+          filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.18));
+        }
+        .s2-char-card .s2-char-label {
+          transition: opacity 0.3s ease;
+        }
+        .s2-char-card:hover .s2-char-label {
+          opacity: 0.95;
+        }
+        .s2-char-label {
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+        }
+        .s2-cta-btn {
+          position: relative;
+          overflow: hidden;
+        }
+        .s2-cta-btn::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: 9999px;
+          background: linear-gradient(
+            120deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.22) 45%,
+            transparent 70%
+          );
+          transform: translateX(-120%);
+          transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+          pointer-events: none;
+        }
+        .s2-cta-btn:hover::before {
+          transform: translateX(120%);
+        }
+        .s2-cta-btn .s2-cta-icon {
+          transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .s2-cta-btn:hover .s2-cta-icon {
+          transform: translateX(4px);
+        }
         @media (min-width: 768px) {
           .s2-char-icon {
             width: var(--s2-icon-d);
             height: var(--s2-icon-d);
+          }
+          .s2-char-grid {
+            grid-template-columns: repeat(4, max-content);
+            column-gap: var(--s2-card-gap-d, 32px) !important;
+            row-gap: var(--s2-card-gap-d, 32px) !important;
+            gap: var(--s2-card-gap-d, 32px) !important;
+          }
+          .s2-char-card {
+            row-gap: var(--s2-label-gap-d, 12px);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .s2-char-card .s2-char-visual,
+          .s2-char-card .s2-char-label,
+          .s2-cta-btn::before,
+          .s2-cta-btn .s2-cta-icon {
+            transition: none !important;
+          }
+          .s2-char-card:hover .s2-char-visual,
+          .s2-char-card:hover .s2-char-label,
+          .s2-cta-btn:hover .s2-cta-icon {
+            transform: none !important;
           }
         }
       `}</style>
@@ -242,14 +361,26 @@ export default function SecondSection() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.2 }}
-        className="mt-6 md:mt-10 mb-8 md:mb-10 w-full max-w-3xl grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 justify-items-center"
+        className="s2-char-grid mt-6 md:mt-10 mb-8 md:mb-10 w-full max-w-4xl"
+        style={
+          {
+            "--s2-card-gap-m": cardGapHorizontalMobile,
+            "--s2-card-gap-d": cardGapHorizontalDesktop,
+          } as CSSProperties
+        }
       >
         {characters.map((char) => (
           <motion.div
             key={char.id}
             variants={itemVariants}
             onClick={() => handleCharacterClick(char.id, char.name)}
-            className="flex flex-col items-center group cursor-pointer hover:scale-105 hover:z-30 transition-transform duration-300 ease-in-out"
+            className="s2-char-card group cursor-pointer hover:z-30"
+            style={
+              {
+                "--s2-label-gap-m": labelGapMobile,
+                "--s2-label-gap-d": labelGapDesktop,
+              } as CSSProperties
+            }
           >
             <div className="s2-char-icon relative flex justify-center items-center">
               <Image
@@ -257,11 +388,11 @@ export default function SecondSection() {
                 alt={`Karakter ${char.title}`}
                 width={iconPx}
                 height={iconPx}
-                className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-lg transition-all duration-300"
+                className="s2-char-visual w-full h-full object-contain drop-shadow-sm"
               />
             </div>
             <h3
-              className={`text-l md:text-2xl tracking-tight whitespace-pre-line md:mt-3 ${char.colorClass}`}
+              className={`s2-char-label text-l md:text-2xl tracking-tight whitespace-pre-line ${char.colorClass}`}
               style={cmsFontStyle(read, `card${char.id}_name`, {
                 family: "heavy",
               })}
@@ -274,14 +405,15 @@ export default function SecondSection() {
 
       {/* 3. Button Lihat Semua Karakter */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.6 }}
-        whileInView={{ opacity: 1, scale: 0.8 }}
-        viewport={{ once: false }}
-        transition={{ duration: 0.5, delay: 0.4 }}
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.4 }}
+        transition={{ duration: 0.5, delay: 0.25 }}
+        className="mb-10 md:mb-15 md:mt-10"
       >
         <button
           onClick={handleBelanjaAction}
-          className="bg-[#0071BC] text-white text-[12px] md:text-[18.3px] px-6 md:px-9 py-3 md:py-4 rounded-full shadow-lg inline-flex items-center gap-2 mb-10 md:mb-15 md:mt-10 relative z-10 transform transition-all duration-200 ease-out hover:scale-95 hover:translate-y-1 hover:shadow-sm cursor-pointer border-none outline-none"
+          className="s2-cta-btn group bg-[#0071BC] text-white text-[11px] md:text-[15px] px-5 md:px-7 py-2.5 md:py-3 rounded-full shadow-lg inline-flex items-center gap-1.5 md:gap-2 relative z-10 cursor-pointer border-none outline-none transition-[background-color,box-shadow] duration-200 ease-out hover:bg-[#0062a3] hover:shadow-xl active:brightness-95"
           style={cmsFontStyle(read, "cta_label", { weight: "700" })}
         >
           {read(
@@ -289,10 +421,11 @@ export default function SecondSection() {
             L(locale, "Lihat Semua Karakter", "See All Characters"),
           )}
           <svg
-            className="w-4 h-4 md:w-[19px] md:h-[19px]"
+            className="s2-cta-icon w-3.5 h-3.5 md:w-4 md:h-4 pointer-events-none"
             viewBox="0 0 19 19"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden
           >
             <path
               d="M3.80933 9.14282H14.476"

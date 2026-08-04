@@ -21,7 +21,6 @@ export default function ThirdSection() {
       icon:
         resolveCmsImage(read("card1_icon", "")) ||
         "/src/images/section 3/star-medium.png",
-      hoverClass: "hover:rotate-[5deg] md:hover:rotate-[5deg]",
     },
     {
       title: read("card2_title", "Environment\nFriendly"),
@@ -32,7 +31,6 @@ export default function ThirdSection() {
       icon:
         resolveCmsImage(read("card2_icon", "")) ||
         "/src/images/section 3/peaceful-calm.png",
-      hoverClass: "hover:-rotate-[5deg] md:hover:-rotate-[5deg]",
     },
     {
       title: read("card3_title", "Playful Design\nConcept"),
@@ -43,7 +41,6 @@ export default function ThirdSection() {
       icon:
         resolveCmsImage(read("card3_icon", "")) ||
         "/src/images/section 3/triangle.png",
-      hoverClass: "hover:rotate-[5deg] md:hover:rotate-[5deg]",
     },
   ];
 
@@ -67,16 +64,16 @@ export default function ThirdSection() {
   };
 
   return (
-    <section className="relative bg-[#0071BC] flex flex-col items-center text-center w-full px-2 md:px-2 overflow-hidden pb-10 md:pb-10">
+    <section className="relative z-10 bg-[#0071BC] flex flex-col items-center text-center w-full px-2 md:px-2 overflow-hidden pb-12 md:pb-14">
       {/* 1. Teks Atas - Animasi fade in dari bawah */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.5 }}
         transition={{ duration: 0.6 }}
-        className="group flex items-center justify-center gap-3 md:gap-4 mt-10 md:mt-15 mb-6 md:mb-[30px] cursor-pointer"
+        className="group flex items-center justify-center gap-3 md:gap-4 mt-10 md:mt-15 mb-6 md:mb-[30px]"
       >
-        <h2 className="text-[28px] md:text-[42px] leading-tight transition-transform duration-300 ease-in-out group-hover:rotate-[4deg]">
+        <h2 className="text-[28px] md:text-[42px] leading-tight">
           <span
             className="text-white"
             style={cmsFontStyle(read, "title_1", { weight: "700" })}
@@ -90,7 +87,7 @@ export default function ThirdSection() {
             {read("title_2", "Value")}
           </span>
         </h2>
-        <div className="w-[24px] md:w-[24px] h-[24px] md:h-[24px] relative flex justify-center items-center transition-transform duration-300 ease-in-out group-hover:-rotate-[4deg]">
+        <div className="w-[24px] md:w-[24px] h-[24px] md:h-[24px] relative flex justify-center items-center pointer-events-none">
           <Image
             src="/src/images/section 3/star-medium.png"
             alt="Icon"
@@ -127,10 +124,8 @@ export default function ThirdSection() {
               >
                 {card.title}
               </h3>
-              <div
-                className={`relative bg-white rounded-[24px] md:rounded-3xl p-5 sm:p-6 md:p-8 shadow-xl flex flex-col cursor-pointer transition-transform duration-300 ease-out hover:z-10 flex-grow ${card.hoverClass}`}
-              >
-                <div className="absolute -top-4 -right-2 md:-top-5 md:-right-5 w-[35px] md:w-[45px] h-[35px] md:h-[45px] z-20 flex justify-center items-center">
+              <div className="relative bg-white rounded-[24px] md:rounded-3xl p-5 sm:p-6 md:p-8 shadow-xl flex flex-col flex-grow transition-[box-shadow,filter] duration-300 ease-out hover:z-10 hover:shadow-2xl hover:brightness-[1.02]">
+                <div className="absolute -top-4 -right-2 md:-top-5 md:-right-5 w-[35px] md:w-[45px] h-[35px] md:h-[45px] z-20 flex justify-center items-center pointer-events-none">
                   <Image
                     src={card.icon}
                     alt={card.title.replace("\n", " ")}
@@ -151,12 +146,12 @@ export default function ThirdSection() {
         </div>
       </motion.div>
 
-      {/* 3. Teks Bawah - Animasi scale */}
+      {/* 3. Teks Bawah */}
       <motion.p
         initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: false }}
-        className="text-white text-[20px] md:text-[28px] mt-4 md:mt-[10px] mb-8 md:mb-5 relative z-10 cursor-pointer"
+        className="text-white text-[20px] md:text-[28px] mt-4 md:mt-[10px] mb-6 md:mb-8 relative z-10"
         style={cmsFontStyle(read, "tagline", { weight: "700" })}
       >
         {read("tagline", "Every Version of Me")}

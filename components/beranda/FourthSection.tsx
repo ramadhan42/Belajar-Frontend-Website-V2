@@ -13,7 +13,7 @@ export default function FourthSection() {
     resolveCmsImage(tBeranda("fourth", "image", "")) || THANKS_CARD_FALLBACK;
 
   return (
-    <section className="relative bg-white w-full overflow-hidden p-[5%]">
+    <section className="relative z-0 bg-white w-full overflow-hidden px-[5%] pb-[5%] pt-8 sm:pt-10 md:pt-12">
       {/* Mobile */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

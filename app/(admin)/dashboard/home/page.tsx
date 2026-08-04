@@ -23,6 +23,13 @@ import { SITE_STRINGS } from "@/components/constans/strings";
 import { getAdminHeaders, orderGrandTotal } from "@/lib/api";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 import { useAdminTheme } from "@/context/AdminThemeContext";
+import AdminRichTooltip from "@/components/admin/AdminRichTooltip";
+import {
+  isSuccessfulPayment,
+  normalizePaymentStatus,
+  paymentStatusBadgeClass,
+  paymentStatusLabel,
+} from "@/lib/paymentStatus";
 
 // Pembaruan Tipe Data sesuai JSON Response Anda
 interface Order {
@@ -38,6 +45,7 @@ interface Order {
   created_at: string;
   updated_at: string;
   metode_pembayaran: string;
+  payment_status?: string;
   product?: {
     id: number;
     title: string;
@@ -138,11 +146,15 @@ export default function HomeDashboard() {
           totalProducts: products?.data?.length || products?.length || 0,
           totalOrders: ordersList.length || 0,
           activeUsers: users?.data?.length || users?.length || 0,
-          totalRevenue: revenue?.data?.total_revenue_clean || 0,
+          totalRevenue: revenue?.data?.total_revenue || 0,
         });
 
-        // Olah Data Grafik Penjualan
+        // Olah Data Grafik Penjualan — hanya pembayaran berhasil
         const salesByDate = ordersList.reduce((acc: any, order: Order) => {
+          if (!isSuccessfulPayment(order.payment_status)) {
+            return acc;
+          }
+
           const date = new Date(order.created_at).toLocaleDateString("id-ID", {
             day: "numeric",
             month: "short",
@@ -263,14 +275,14 @@ export default function HomeDashboard() {
       tipTitle: t(
         "home",
         "tip_revenue_title",
-        "Pendapatan bersih",
-        "Net revenue",
+        "Pendapatan (berhasil)",
+        "Revenue (successful)",
       ),
       tipBody: t(
         "home",
         "tip_revenue_body",
-        "Akumulasi pendapatan dari pesanan yang dihitung sebagai revenue bersih di sistem.",
-        "Accumulated revenue from orders counted as net revenue in the system.",
+        "Total produk + ongkir − promo dari pesanan dengan pembayaran berhasil. Pending dan dibatalkan tidak dihitung.",
+        "Product + shipping − promo from orders with successful payment. Pending and cancelled are excluded.",
       ),
     },
   ];
@@ -308,7 +320,7 @@ export default function HomeDashboard() {
             <div
               key={stat.key}
               onClick={() => stat.route && router.push(stat.route)}
-              className={`group/stat relative bg-white p-6 rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-50/50 hover:shadow-[0_4px_25px_rgb(0,0,0,0.06)] transition-all ${
+              className={`relative bg-white p-6 rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-50/50 hover:shadow-[0_4px_25px_rgb(0,0,0,0.06)] transition-all ${
                 stat.route ? "cursor-pointer hover:border-gray-200" : ""
               }`}
             >
@@ -318,18 +330,33 @@ export default function HomeDashboard() {
                     <p className="text-sm font-medium text-gray-500">
                       {stat.title}
                     </p>
-                    <button
-                      type="button"
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex h-5 w-5 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
-                      aria-label={
-                        locale === "en"
-                          ? `About ${stat.title}`
-                          : `Tentang ${stat.title}`
+                    <AdminRichTooltip
+                      title={stat.tipTitle}
+                      highlight={stat.value}
+                      body={stat.tipBody}
+                      footer={
+                        stat.route
+                          ? locale === "en"
+                            ? "Click card to open details →"
+                            : "Klik kartu untuk buka detail →"
+                          : undefined
                       }
+                      icon={<Icon size={14} />}
+                      stopTriggerClick
+                      triggerClassName="rounded-full"
                     >
-                      <Info size={13} strokeWidth={2.5} />
-                    </button>
+                      <button
+                        type="button"
+                        className="inline-flex h-5 w-5 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
+                        aria-label={
+                          locale === "en"
+                            ? `About ${stat.title}`
+                            : `Tentang ${stat.title}`
+                        }
+                      >
+                        <Info size={13} strokeWidth={2.5} />
+                      </button>
+                    </AdminRichTooltip>
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mt-2 tracking-tight">
                     {stat.value}
@@ -343,39 +370,6 @@ export default function HomeDashboard() {
                 <span className="text-xs font-medium text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md">
                   {stat.trend}
                 </span>
-              </div>
-
-              <div
-                role="tooltip"
-                className="pointer-events-none absolute left-1/2 top-[calc(100%+12px)] z-40 w-[min(100%,18rem)] -translate-x-1/2 opacity-0 scale-95 translate-y-1 transition-all duration-200 ease-out group-hover/stat:opacity-100 group-hover/stat:scale-100 group-hover/stat:translate-y-0 group-focus-within/stat:opacity-100 group-focus-within/stat:scale-100 group-focus-within/stat:translate-y-0"
-              >
-                <div className="relative rounded-2xl border border-slate-200/90 bg-slate-900 px-3.5 py-3 text-left shadow-[0_18px_40px_-16px_rgba(15,23,42,0.55)]">
-                  <span
-                    className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 rounded-[3px] border-l border-t border-slate-200/90 bg-slate-900"
-                    aria-hidden
-                  />
-                  <div className="relative flex items-center gap-2">
-                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-white">
-                      <Icon size={14} />
-                    </span>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                      {stat.tipTitle}
-                    </p>
-                  </div>
-                  <p className="relative mt-2 text-sm font-semibold text-white leading-snug">
-                    {stat.value}
-                  </p>
-                  <p className="relative mt-1.5 text-[11px] leading-relaxed text-slate-400">
-                    {stat.tipBody}
-                  </p>
-                  {stat.route ? (
-                    <p className="relative mt-2 text-[10px] font-medium text-emerald-400/90">
-                      {locale === "en"
-                        ? "Click card to open details →"
-                        : "Klik kartu untuk buka detail →"}
-                    </p>
-                  ) : null}
-                </div>
               </div>
             </div>
           );
@@ -429,30 +423,32 @@ export default function HomeDashboard() {
                       stroke: isDark ? "#3b465c" : "#e5e7eb",
                       strokeWidth: 1,
                     }}
-                    contentStyle={{
-                      borderRadius: "12px",
-                      border: isDark
-                        ? "1px solid #2a3344"
-                        : "1px solid #e5e7eb",
-                      backgroundColor: isDark ? "#1a2030" : "#ffffff",
-                      color: isDark ? "#e8eaed" : "#111827",
-                      boxShadow: isDark
-                        ? "0 12px 28px rgba(0,0,0,0.45)"
-                        : "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload?.length) return null;
+                      const raw = payload[0]?.value;
+                      const amount =
+                        typeof raw === "number"
+                          ? raw
+                          : Number(raw ?? 0);
+                      return (
+                        <div className="rounded-2xl border border-slate-200/90 bg-slate-900 px-3.5 py-3 shadow-[0_18px_40px_-16px_rgba(15,23,42,0.55)] min-w-[10rem]">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                            {label}
+                          </p>
+                          <p className="mt-1.5 text-sm font-semibold text-white">
+                            {formatRupiah(amount)}
+                          </p>
+                          <p className="mt-1 text-[11px] text-slate-400">
+                            {t(
+                              "home",
+                              "trend_revenue",
+                              "Pendapatan",
+                              "Revenue",
+                            )}
+                          </p>
+                        </div>
+                      );
                     }}
-                    labelStyle={{
-                      color: isDark ? "#e8eaed" : "#111827",
-                      fontWeight: 600,
-                      marginBottom: 4,
-                    }}
-                    itemStyle={{
-                      color: isDark ? "#d1d5db" : "#374151",
-                    }}
-                    wrapperClassName="admin-chart-tooltip"
-                    formatter={(value: any) => [
-                      formatRupiah(value),
-                      t("home", "trend_revenue", "Pendapatan", "Revenue"),
-                    ]}
                   />
                   <Area
                     type="monotone"
@@ -472,73 +468,150 @@ export default function HomeDashboard() {
           </div>
         </div>
 
-        {/* Versi Lengkap Recent Orders Section dengan Gambar & Status */}
-        <div className="bg-white p-6 rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-50/50 min-h-[400px]">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">
+        {/* Pesanan Terbaru */}
+        <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-50/50 min-h-[400px] flex flex-col">
+          <h2 className="text-lg font-semibold text-gray-900 mb-5">
             {t("home", "recent_orders", "Pesanan Terbaru", "Recent Orders")}
           </h2>
 
           {recentOrders.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3 overflow-visible flex-1">
               {recentOrders.map((order, index) => {
                 const statusConfig = getStatusConfig(order.status);
+                const productTitle =
+                  order.product?.title ||
+                  t("home", "product_missing", "Produk Hilang", "Missing Product");
+                const buyerName =
+                  order.user?.name ||
+                  t("home", "anonymous", "Anonim", "Anonymous");
+                const totalLabel = formatRupiah(orderGrandTotal(order));
+                const orderDate = new Date(order.created_at).toLocaleString(
+                  locale === "en" ? "en-GB" : "id-ID",
+                  {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  },
+                );
+                const paymentStatus = normalizePaymentStatus(order.payment_status);
+                const paymentLabel = paymentStatusLabel(
+                  paymentStatus,
+                  locale === "en" ? "en" : "id",
+                );
+                const tipBody = [
+                  `${t("home", "by_label", "Oleh", "By")}: ${buyerName}`,
+                  `${locale === "en" ? "Total" : "Total"}: ${totalLabel}`,
+                  `${locale === "en" ? "Fulfillment" : "Pengiriman"}: ${statusConfig.label}`,
+                  `${locale === "en" ? "Payment" : "Pembayaran"}: ${paymentLabel}`,
+                  `${locale === "en" ? "Ordered" : "Dipesan"}: ${orderDate}`,
+                  paymentStatus === "success"
+                    ? locale === "en"
+                      ? "Included in revenue"
+                      : "Masuk total pendapatan"
+                    : locale === "en"
+                      ? "Not included in revenue"
+                      : "Tidak masuk total pendapatan",
+                ].join("\n");
 
                 return (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0 gap-2"
+                  <AdminRichTooltip
+                    key={order.id || index}
+                    title={String(order.id)}
+                    highlight={productTitle}
+                    body={tipBody}
+                    footer={
+                      locale === "en"
+                        ? "Click to open Orders →"
+                        : "Klik untuk buka Pesanan →"
+                    }
+                    icon={<ShoppingBag size={14} />}
+                    side={index >= recentOrders.length - 2 ? "top" : "bottom"}
+                    className="w-full"
+                    triggerClassName="w-full"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      {/* Thumbnail Gambar 1 Produk */}
-                      <div className="w-12 h-12 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
-                        {order.product?.image_1 ? (
-                          <img
-                            src={`${baseUrl}/storage/${order.product.image_1}`}
-                            alt={order.product.title}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = "";
-                            }}
-                          />
-                        ) : (
-                          <ImageIcon className="w-5 h-5 text-gray-400" />
-                        )}
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => router.push("/dashboard/orders")}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          router.push("/dashboard/orders");
+                        }
+                      }}
+                      className="w-full rounded-2xl border border-gray-100 bg-gray-50/40 p-3.5 text-left transition-colors hover:border-gray-200 hover:bg-white hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 cursor-pointer"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-12 h-12 rounded-xl border border-gray-200 bg-white flex items-center justify-center overflow-hidden shrink-0">
+                          {order.product?.image_1 ? (
+                            <img
+                              src={`${baseUrl}/storage/${order.product.image_1}`}
+                              alt={productTitle}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = "";
+                              }}
+                            />
+                          ) : (
+                            <ImageIcon className="w-5 h-5 text-gray-400" />
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider break-all leading-snug">
+                              {order.id}
+                            </p>
+                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full text-gray-400 shrink-0 mt-0.5">
+                              <Info size={11} strokeWidth={2.5} />
+                            </span>
+                          </div>
+                          <p className="text-sm font-bold text-gray-900 mt-1 leading-snug break-words">
+                            {productTitle}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1 leading-snug break-words">
+                            {t("home", "by_label", "Oleh", "By")}: {buyerName}
+                          </p>
+                        </div>
                       </div>
 
-                      {/* Detail Informasi Pesanan */}
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                          {order.id}
-                        </p>
-                        <p className="text-sm font-bold text-gray-900 truncate mt-0.5">
-                          {order.product?.title ||
-                            t("home", "product_missing", "Produk Hilang", "Missing Product")}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate mt-0.5 capitalize">
-                          {t("home", "by_label", "Oleh", "By")}:{" "}
-                          {order.user?.name ||
-                            t("home", "anonymous", "Anonim", "Anonymous")}
-                        </p>
+                      <div className="mt-3 pt-3 border-t border-gray-100/90 flex flex-col gap-2.5">
+                        <div className="flex items-center justify-between gap-3">
+                          <p
+                            className={`text-sm font-bold tabular-nums ${
+                              paymentStatus === "success"
+                                ? "text-gray-900"
+                                : "text-gray-400 line-through decoration-gray-300"
+                            }`}
+                          >
+                            {totalLabel}
+                          </p>
+                          <p className="text-[10px] text-gray-400 shrink-0">
+                            {orderDate}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          <span
+                            className={`inline-flex max-w-full items-center px-2 py-1 rounded-md text-[10px] font-semibold border leading-tight ${paymentStatusBadgeClass(paymentStatus)}`}
+                          >
+                            {paymentLabel}
+                          </span>
+                          <span
+                            className={`inline-flex max-w-full items-center px-2 py-1 rounded-md text-[10px] font-semibold leading-tight ${statusConfig.class}`}
+                          >
+                            {statusConfig.label}
+                          </span>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Harga & Badge Status */}
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-bold text-gray-900">
-                        {formatRupiah(orderGrandTotal(order))}
-                      </p>
-                      <span
-                        className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-md font-semibold ${statusConfig.class}`}
-                      >
-                        {statusConfig.label}
-                      </span>
-                    </div>
-                  </div>
+                  </AdminRichTooltip>
                 );
               })}
             </div>
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm pb-10">
+            <div className="w-full flex-1 flex items-center justify-center text-gray-400 text-sm pb-10">
               {t("home", "empty_orders", "Belum ada pesanan masuk.", "No orders yet.")}
             </div>
           )}

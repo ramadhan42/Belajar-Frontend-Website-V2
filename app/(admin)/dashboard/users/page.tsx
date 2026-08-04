@@ -7,8 +7,6 @@ import {
   Eye,
   X,
   User,
-  ChevronLeft,
-  ChevronRight,
   Trash2,
   AlertTriangle,
   ShieldCheck,
@@ -20,6 +18,7 @@ import {
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
 import AdminAlertModal from "@/components/admin/AdminAlertModal";
+import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 import {
   formatPresenceDateTime,
@@ -644,50 +643,15 @@ export default function UsersPage() {
 
           {/* Footer Pagination */}
           {!loading && filteredUsers.length > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 gap-4">
-              <div className="text-xs text-gray-500 text-center sm:text-left">
-                {t("users", "showing", "Menampilkan", "Showing")}{" "}
-                <span className="font-semibold text-gray-700">
-                  {startIndex + 1}
-                </span>{" "}
-                {t("users", "to", "sampai", "to")}{" "}
-                <span className="font-semibold text-gray-700">
-                  {Math.min(startIndex + itemsPerPage, filteredUsers.length)}
-                </span>{" "}
-                {t("users", "of", "dari", "of")}{" "}
-                <span className="font-semibold text-gray-700">
-                  {filteredUsers.length}
-                </span>{" "}
-                {t("users", "users_word", "pengguna", "users")}
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  disabled={currentPage === 1}
-                  className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  {t("users", "prev", "Sebelumnya", "Previous")}
-                </button>
-                <span className="text-xs text-gray-500 font-medium min-w-[50px] text-center">
-                  {t("users", "page_label", "Hal", "Page")} {currentPage}{" "}
-                  {t("users", "of", "dari", "of")} {totalPages || 1}
-                </span>
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages || totalPages === 0}
-                  className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
-                >
-                  {t("users", "next", "Selanjutnya", "Next")}
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+            <AdminTablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredUsers.length}
+              itemLabel={t("users", "users_word", "pengguna", "users")}
+              onPageChange={setCurrentPage}
+              hideWhenSinglePage={false}
+              className="bg-gray-50/50 px-6 py-4"
+            />
           )}
         </>
       </div>

@@ -54,7 +54,6 @@ export default function FifthSection() {
       descColor: "text-[#1172BAB2]",
       price: read("card1_price", "Rp189.000"),
       btnBg: "bg-[#1172BA]",
-      hoverClass: "hover:-rotate-[3deg]",
     },
     {
       id: 2,
@@ -77,7 +76,6 @@ export default function FifthSection() {
       descColor: "text-[#5EA14A]",
       price: read("card2_price", "Rp199.000"),
       btnBg: "bg-[#5EA14A]",
-      hoverClass: "hover:rotate-[3deg]",
     },
     {
       id: 3,
@@ -100,7 +98,6 @@ export default function FifthSection() {
       descColor: "text-[#E33D35]",
       price: read("card3_price", "Rp179.000"),
       btnBg: "bg-[#E33D35]",
-      hoverClass: "hover:-rotate-[3deg]",
     },
     {
       id: 4,
@@ -123,7 +120,6 @@ export default function FifthSection() {
       descColor: "text-[#DD74A5]",
       price: read("card4_price", "Rp189.000"),
       btnBg: "bg-[#DD74A5]",
-      hoverClass: "hover:rotate-[3deg]",
     },
   ];
 
@@ -182,7 +178,7 @@ export default function FifthSection() {
   };
 
   return (
-    <section className="bg-[#FAFAFA] md:bg-white flex flex-col items-center text-center w-full pt-10 sm:pt-12 md:pt-14 pb-20 md:pb-24 px-4 sm:px-6 md:px-8 relative overflow-hidden">
+    <section className="bg-[#FAFAFA] md:bg-white flex flex-col items-center text-center w-full pt-10 sm:pt-12 md:pt-14 pb-14 md:pb-16 px-4 sm:px-6 md:px-8 relative overflow-hidden">
       {/* Dekorasi sudut — seperti screenshot */}
       <div className="absolute top-[12%] left-0 z-0 pointer-events-none w-[40px] sm:w-[70px] md:w-[100px] -translate-x-[20%] md:-translate-x-[15%]">
         <Image
@@ -271,7 +267,7 @@ export default function FifthSection() {
             key={product.id}
             variants={cardVariants}
             onClick={() => handleProductClick(product.id, product.title)}
-            className={`relative w-full max-w-[260px] mx-auto rounded-[18px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col border border-black/5 hover:z-20 cursor-pointer ${product.hoverClass}`}
+            className="group relative w-full max-w-[260px] mx-auto rounded-[18px] md:rounded-[24px] shadow-sm hover:shadow-xl transition-[box-shadow] duration-300 ease-out overflow-hidden flex flex-col border border-black/5 hover:z-20 cursor-pointer"
           >
             {/* Area gambar */}
             <div
@@ -279,7 +275,7 @@ export default function FifthSection() {
             >
               <div className="absolute top-2.5 left-2.5 md:top-3.5 md:left-3.5 z-20">
                 <span
-                  className={`bg-white px-2.5 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-[12px] shadow-sm ${product.textColor}`}
+                  className={`bg-white px-2.5 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-[12px] shadow-sm ${product.textColor} transition-transform duration-300 ease-out group-hover:-translate-y-0.5`}
                   style={cmsFontStyle(read, `card${product.id}_badge`, {
                     weight: "700",
                   })}
@@ -297,14 +293,14 @@ export default function FifthSection() {
                   delay: index * 0.12,
                   ease: "easeOut",
                 }}
-                className="relative w-full flex justify-center items-end translate-y-[14%] md:translate-y-[16%] z-10 pb-0"
+                className="relative w-full flex justify-center items-end translate-y-[14%] md:translate-y-[16%] z-10 pb-0 pointer-events-none"
               >
                 <Image
                   src={product.path}
                   alt={product.title}
                   width={500}
                   height={500}
-                  className="object-contain drop-shadow-xl w-[78%] sm:w-[80%] md:w-[82%]"
+                  className="object-contain drop-shadow-xl w-[78%] sm:w-[80%] md:w-[82%] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-2 group-hover:scale-[1.05]"
                 />
               </motion.div>
             </div>
@@ -342,7 +338,7 @@ export default function FifthSection() {
                 <button
                   type="button"
                   aria-label={`Lihat ${product.title}`}
-                  className={`w-6 h-6 md:w-7 md:h-7 rounded-full flex justify-center items-center text-white transition-transform hover:scale-105 active:scale-95 shrink-0 ${product.btnBg}`}
+                  className={`w-6 h-6 md:w-7 md:h-7 rounded-full flex justify-center items-center text-white shrink-0 transition-[background-color,box-shadow] duration-300 group-hover:shadow-md ${product.btnBg}`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -350,7 +346,7 @@ export default function FifthSection() {
                     viewBox="0 0 24 24"
                     strokeWidth={2.5}
                     stroke="currentColor"
-                    className="w-3 h-3"
+                    className="w-3 h-3 pointer-events-none transition-transform duration-300 ease-out group-hover:translate-x-0.5"
                   >
                     <path
                       strokeLinecap="round"
@@ -367,56 +363,32 @@ export default function FifthSection() {
 
       {/* CTA */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: false }}
-        transition={{ duration: 0.5, delay: 0.15 }}
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.4 }}
+        transition={{ duration: 0.45, delay: 0.1 }}
         className="relative z-10"
       >
         <button
           onClick={handleBelanjaAction}
-          className="group flex items-center justify-center gap-2 md:gap-3 bg-[#1172BA] text-white text-[13px] md:text-[14px] px-7 py-2.5 md:px-10 md:py-3 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 shadow-md"
+          className="beranda-cta group relative overflow-hidden flex items-center justify-center gap-2 md:gap-3 bg-[#1172BA] text-white text-[13px] md:text-[14px] px-7 py-2.5 md:px-10 md:py-3 rounded-full transition-[background-color,box-shadow] duration-200 hover:bg-[#0e5d99] hover:shadow-lg active:brightness-95 shadow-md"
           style={cmsFontStyle(read, "cta_label", { weight: "700" })}
         >
-          <div className="relative w-[16px] h-[16px] md:w-[19px] md:h-[19px]">
+          <span
+            className="pointer-events-none absolute inset-0 rounded-full bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.22)_45%,transparent_70%)] -translate-x-[120%] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[120%]"
+            aria-hidden
+          />
+          <div className="relative w-[16px] h-[16px] md:w-[19px] md:h-[19px] transition-transform duration-300 ease-out group-hover:-rotate-12 group-hover:scale-110">
             <Image
               src="/src/images/section 5/star-medium.png"
               alt=""
               fill
-              className="object-contain brightness-0 invert"
+              className="object-contain brightness-0 invert pointer-events-none"
             />
           </div>
-          {read("cta_label", L(locale, "Lihat Koleksi", "View Collection"))}
+          <span className="relative">{read("cta_label", L(locale, "Lihat Koleksi", "View Collection"))}</span>
         </button>
       </motion.div>
-
-      {/* Wave bawah */}
-      <div className="absolute bottom-0 left-0 w-full z-0 leading-[0]">
-        <svg
-          className="block w-full h-[28px] md:h-[60px]"
-          viewBox="0 24 150 28"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            <path
-              id="gentle-wave-s5"
-              d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
-            />
-          </defs>
-          <g>
-            <use href="#gentle-wave-s5" x="48" y="0" fill="#60BBFF" fillOpacity="0.3">
-              <animate attributeName="x" from="-90" to="85" dur="10s" repeatCount="indefinite" />
-            </use>
-            <use href="#gentle-wave-s5" x="48" y="3" fill="#60BBFF" fillOpacity="0.6">
-              <animate attributeName="x" from="-90" to="85" dur="14s" repeatCount="indefinite" />
-            </use>
-            <use href="#gentle-wave-s5" x="48" y="5" fill="#60BBFF" fillOpacity="1">
-              <animate attributeName="x" from="-90" to="85" dur="20s" repeatCount="indefinite" />
-            </use>
-          </g>
-        </svg>
-      </div>
 
       <AnimatePresence>
         {navModal.isOpen && (

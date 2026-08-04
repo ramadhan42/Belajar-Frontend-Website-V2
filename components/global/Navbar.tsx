@@ -625,9 +625,7 @@ export default function Navbar() {
               isolation: isolate;
               transition:
                 color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
                 opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-              will-change: transform, color;
             }
             .nav-pill::before {
               content: "";
@@ -637,7 +635,7 @@ export default function Navbar() {
               background: rgba(255, 255, 255, 0.96);
               box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
               opacity: 0;
-              transform: scale(0.88);
+              transform: scale(0.92);
               transition:
                 opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
                 transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
@@ -646,14 +644,13 @@ export default function Navbar() {
             }
             .nav-pill:hover:not(.is-active) {
               color: var(--nav-color);
-              transform: translateY(-1.5px);
             }
             .nav-pill:hover:not(.is-active)::before {
               opacity: 1;
               transform: scale(1);
             }
             .nav-pill:active:not(.is-active) {
-              transform: translateY(0) scale(0.97);
+              opacity: 0.92;
               transition-duration: 0.16s;
             }
             .nav-pill.is-active {
@@ -670,22 +667,19 @@ export default function Navbar() {
             }
             .nav-avatar {
               transition:
-                transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-                background-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-                color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-                border-color 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-              will-change: transform;
+                box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 0.45s cubic-bezier(0.22, 1, 0.36, 1);
             }
             .nav-avatar:hover {
-              transform: translateY(-2px) scale(1.05);
-              box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+              box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
               background-color: #ffffff;
               color: var(--nav-color);
               border-color: rgba(255, 255, 255, 0.95);
             }
             .nav-avatar:active {
-              transform: translateY(0) scale(0.97);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
               transition-duration: 0.16s;
             }
             .nav-avatar-ring {
@@ -694,7 +688,7 @@ export default function Navbar() {
               border-radius: 9999px;
               border: 1.5px solid rgba(255, 255, 255, 0.4);
               opacity: 0;
-              transform: scale(0.88);
+              transform: scale(0.92);
               transition:
                 opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
                 transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
@@ -764,7 +758,6 @@ export default function Navbar() {
             }
             .nav-account-item:hover {
               background-color: #f3f4f6;
-              transform: translateX(2px);
             }
             .nav-unread-badge {
               position: absolute;
@@ -820,7 +813,6 @@ export default function Navbar() {
                 box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
             }
             .nav-mobile-link:hover {
-              transform: translateX(3px);
               box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             }
             .nav-logout {
@@ -834,9 +826,7 @@ export default function Navbar() {
                 background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
                 color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
                 border-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-              will-change: transform;
+                box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1);
             }
             .nav-logout span,
             .nav-logout .nav-logout-icon {
@@ -852,7 +842,6 @@ export default function Navbar() {
               color: var(--nav-color, #1172BA) !important;
               border-color: #ffffff;
               box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
-              transform: translateY(-2px);
             }
             .nav-logout:hover span,
             .nav-logout:hover .nav-logout-icon {
@@ -860,7 +849,7 @@ export default function Navbar() {
               stroke: var(--nav-color, #1172BA) !important;
             }
             .nav-logout:active {
-              transform: translateY(0) scale(0.97);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
               transition-duration: 0.16s;
             }
             .nav-logout:disabled {
@@ -901,9 +890,8 @@ export default function Navbar() {
             <motion.div
               variants={itemVariants}
               className="md:ml-2 flex-shrink-0"
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ duration: 0.4, ease: navEase }}
+              whileTap={{ opacity: 0.85 }}
+              transition={{ duration: 0.25, ease: navEase }}
             >
               <Link
                 href="/"

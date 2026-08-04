@@ -864,6 +864,8 @@ function CheckoutContent() {
             title: item.title,
           })),
           payment_method: formattedPaymentMethod,
+          payment_status:
+            paymentMethod === "qris" ? "success" : "pending",
           total: totalTagihan,
           shipping_cost: ongkosKirim,
           promo_discount: productDiscount,
@@ -886,6 +888,8 @@ function CheckoutContent() {
             invoice_id: customInvoiceId,
             items: items,
             payment_method: formattedPaymentMethod,
+            payment_status:
+              paymentMethod === "qris" ? "success" : "pending",
             total: totalTagihan,
             shipping_cost: ongkosKirim,
             promo_discount: productDiscount,

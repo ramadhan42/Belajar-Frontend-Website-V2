@@ -27,6 +27,11 @@ import ProfileBrandShell, {
   useProfileBrand,
 } from "@/components/profile/ProfileBrandShell";
 import { profileBrandGradient } from "@/components/profile/brand";
+import {
+  normalizePaymentStatus,
+  paymentStatusBadgeClass,
+  paymentStatusLabel,
+} from "@/lib/paymentStatus";
 
 const BASE_URL = SITE_STRINGS.base_url.url_backend;
 
@@ -506,14 +511,30 @@ export default function HistoryPage() {
                   </div>
 
                   <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-0 border-slate-100">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${statusConfig.color}`}
-                    >
+                    <div className="flex flex-wrap items-center gap-2">
                       <span
-                        className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`}
-                      />
-                      {statusConfig.label}
-                    </span>
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${paymentStatusBadgeClass(
+                          normalizePaymentStatus(
+                            (firstItem as any).payment_status,
+                          ),
+                        )}`}
+                      >
+                        {paymentStatusLabel(
+                          normalizePaymentStatus(
+                            (firstItem as any).payment_status,
+                          ),
+                          locale === "en" ? "en" : "id",
+                        )}
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${statusConfig.color}`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`}
+                        />
+                        {statusConfig.label}
+                      </span>
+                    </div>
 
                     {currentStatus === "dalam_perjalanan" && (
                       <button

@@ -33,7 +33,7 @@ export default function SixthSection() {
 
   return (
     <section
-      className="bg-[#1172BA] flex flex-col items-center justify-center pt-6 pb-24 md:pt-1 md:pb-28 overflow-hidden select-none relative w-full"
+      className="bg-[#1172BA] flex flex-col items-center justify-center pt-8 pb-24 md:pt-4 md:pb-28 overflow-hidden select-none relative w-full"
     >
       <style>{`
         @keyframes marquee {
@@ -153,7 +153,7 @@ export default function SixthSection() {
             <img
               src={packagingSrc}
               alt="Packaging Main"
-              className="w-full h-auto block object-contain drop-shadow-xl transition-all duration-500 ease-out md:hover:rotate-2 md:hover:scale-[1.02] cursor-pointer bg-transparent"
+              className="w-full h-auto block object-contain drop-shadow-xl transition-[filter,drop-shadow] duration-500 ease-out md:hover:brightness-[1.03] md:hover:drop-shadow-2xl cursor-pointer bg-transparent"
             />
 
             {/* Label MOBILE — Galaxy S20 */}

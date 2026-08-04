@@ -25,6 +25,11 @@ import { useNavbarColor } from "@/context/NavbarColorContext";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import { useLocale } from "@/context/LocaleContext";
 import { L, productLocaleText } from "@/lib/localeText";
+import {
+  normalizePaymentStatus,
+  paymentStatusBadgeClass,
+  paymentStatusLabel,
+} from "@/lib/paymentStatus";
 
 const BASE_URL = SITE_STRINGS.base_url.url_backend;
 
@@ -467,11 +472,27 @@ export default function HistoryDetailPage() {
             </div>
             <div>
               <p className="text-sm text-gray-500 mb-0.5">{copy.orderStatus}</p>
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${statusConfig.color}`}
-              >
-                {statusConfig.label}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${statusConfig.color}`}
+                >
+                  {statusConfig.label}
+                </span>
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${paymentStatusBadgeClass(
+                    normalizePaymentStatus(
+                      (representativeItem as any).payment_status,
+                    ),
+                  )}`}
+                >
+                  {paymentStatusLabel(
+                    normalizePaymentStatus(
+                      (representativeItem as any).payment_status,
+                    ),
+                    locale === "en" ? "en" : "id",
+                  )}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -598,6 +619,25 @@ export default function HistoryDetailPage() {
                   {/* Mengambil data payment_method dari API */}
                   {(representativeItem as any).metode_pembayaran ||
                     copy.unknown}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-gray-600">
+                <span>
+                  {L(locale, "Status Pembayaran", "Payment Status")}
+                </span>
+                <span
+                  className={`font-medium px-3 py-1 rounded-md border text-xs ${paymentStatusBadgeClass(
+                    normalizePaymentStatus(
+                      (representativeItem as any).payment_status,
+                    ),
+                  )}`}
+                >
+                  {paymentStatusLabel(
+                    normalizePaymentStatus(
+                      (representativeItem as any).payment_status,
+                    ),
+                    locale === "en" ? "en" : "id",
+                  )}
                 </span>
               </div>
               <div className="flex justify-between items-center text-gray-600">

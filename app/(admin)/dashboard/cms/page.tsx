@@ -515,6 +515,10 @@ const FIELD_LABELS: Record<string, string> = {
   cta_label: "Teks Tombol CTA",
   card_icon_size_mobile: "Gambar Karakter — Size Mobile",
   card_icon_size_desktop: "Gambar Karakter — Size Desktop",
+  card_label_gap_mobile: "Jarak Vertikal Gambar ↔ Label — Mobile (px)",
+  card_label_gap_desktop: "Jarak Vertikal Gambar ↔ Label — Desktop (px)",
+  card_gap_horizontal_mobile: "Jarak Horizontal Antar Kartu — Mobile (px)",
+  card_gap_horizontal_desktop: "Jarak Horizontal Antar Kartu — Desktop (px)",
   card1_name: "Kartu 1 — Nama",
   card2_name: "Kartu 2 — Nama",
   card3_name: "Kartu 3 — Nama",
@@ -569,6 +573,10 @@ const SECOND_FIELD_ORDER = withFontFieldOrder(
     "headline_3",
     "card_icon_size_mobile",
     "card_icon_size_desktop",
+    "card_label_gap_mobile",
+    "card_label_gap_desktop",
+    "card_gap_horizontal_mobile",
+    "card_gap_horizontal_desktop",
     "card1_name",
     "card1_title",
     "card1_image",
@@ -801,7 +809,7 @@ function sortSectionFields(section: string, sectionFields: CmsField[]) {
 }
 
 const NUMERIC_STYLE_KEY_RE =
-  /(_fs_|_pos_|_left_|_top_|_right_|_bottom_|_size_|_rotate_|_icon_size_|^wave_)/;
+  /(_fs_|_pos_|_left_|_top_|_right_|_bottom_|_size_|_gap_|_rotate_|_icon_size_|^wave_)/;
 
 function looksLikeCssNumber(value: string | null | undefined) {
   const v = (value ?? "").trim();
@@ -854,7 +862,9 @@ function inferNumericUnit(key: string): string {
   if (/_rotate_/.test(key) || /product\d+_size_/.test(key)) return "";
   if (
     /_fs_/.test(key) ||
+    /_gap_/.test(key) ||
     /_icon_size_/.test(key) ||
+    /card_icon_size_/.test(key) ||
     /divider_icon_\d+_size_/.test(key) ||
     /divider_bottom_/.test(key) ||
     /headline_pos_/.test(key)
@@ -901,6 +911,36 @@ function numericStepForField(key: string, unit: string) {
   return 1;
 }
 
+const SECOND_LAYOUT_DEFAULTS: Record<string, string> = {
+  card_icon_size_mobile: "100px",
+  card_icon_size_desktop: "140px",
+  card_label_gap_mobile: "0px",
+  card_label_gap_desktop: "12px",
+  card_gap_horizontal_mobile: "16px",
+  card_gap_horizontal_desktop: "32px",
+};
+
+function ensureSecondSectionLayoutFields(fields: CmsField[]): CmsField[] {
+  const existing = new Set(
+    fields
+      .filter((f) => f.page === "beranda" && f.section === "second")
+      .map((f) => f.key),
+  );
+  const extras: CmsField[] = [];
+  for (const [key, value] of Object.entries(SECOND_LAYOUT_DEFAULTS)) {
+    if (existing.has(key)) continue;
+    extras.push({
+      id: null,
+      page: "beranda",
+      section: "second",
+      key,
+      type: "string",
+      value,
+    });
+  }
+  return extras.length ? [...fields, ...extras] : fields;
+}
+
 export default function CmsDashboardPage() {
   const { t, common, locale } = useAdminI18n();
   const [tab, setTab] = useState<TabKey>("beranda");
@@ -945,7 +985,14 @@ export default function CmsDashboardPage() {
         setFields([...nav, ...foot]);
       } else {
         const page = pageForTab(tab);
-        if (page) setFields(await adminGetCmsPage(page, locale));
+        if (page) {
+          const loaded = await adminGetCmsPage(page, locale);
+          setFields(
+            page === "beranda"
+              ? ensureSecondSectionLayoutFields(loaded)
+              : loaded,
+          );
+        }
       }
     } catch (e) {
       showNotice(

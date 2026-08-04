@@ -18,8 +18,16 @@ import { CgClose } from "react-icons/cg";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
 import AdminAlertModal from "@/components/admin/AdminAlertModal";
+import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 import { orderGrandTotal } from "@/lib/api";
+import {
+  isSuccessfulPayment,
+  normalizePaymentStatus,
+  paymentStatusBadgeClass,
+  paymentStatusLabel,
+  type PaymentStatus,
+} from "@/lib/paymentStatus";
 
 interface Order {
   id: string;
@@ -29,6 +37,7 @@ interface Order {
   grand_total?: string | number;
   status: string;
   metode_pembayaran: string;
+  payment_status?: string;
   created_at: string;
   product: {
     title: string;
@@ -38,7 +47,7 @@ interface Order {
 }
 
 export default function OrdersPage() {
-  const { t, common } = useAdminI18n();
+  const { t, common, locale } = useAdminI18n();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -53,6 +62,8 @@ export default function OrdersPage() {
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [newStatus, setNewStatus] = useState("");
+  const [newPaymentStatus, setNewPaymentStatus] =
+    useState<PaymentStatus>("pending");
 
   const baseUrl = SITE_STRINGS.base_url.url_backend;
 
@@ -92,12 +103,65 @@ export default function OrdersPage() {
     currentPage * itemsPerPage,
   );
 
-  // ---> KALKULASI TOTAL REVENUE <---
-  // produk + ongkir − promo (bukan total_price saja / ongkir hardcode)
-  const totalRevenue = filteredOrders.reduce(
-    (sum, order) => sum + orderGrandTotal(order),
-    0,
-  );
+  // ---> KALKULASI TOTAL REVENUE (hanya pembayaran berhasil) <---
+  const totalRevenue = filteredOrders.reduce((sum, order) => {
+    if (!isSuccessfulPayment(order.payment_status)) {
+      return sum;
+    }
+    return sum + orderGrandTotal(order);
+  }, 0);
+
+  const paymentOptions: Array<{
+    id: PaymentStatus;
+    label: string;
+    desc: string;
+  }> = [
+    {
+      id: "success",
+      label: t(
+        "orders",
+        "payment_success",
+        "Pembayaran berhasil",
+        "Payment successful",
+      ),
+      desc: t(
+        "orders",
+        "payment_success_desc",
+        "Masuk ke total pendapatan",
+        "Counts toward total revenue",
+      ),
+    },
+    {
+      id: "pending",
+      label: t(
+        "orders",
+        "payment_pending",
+        "Pembayaran pending",
+        "Payment pending",
+      ),
+      desc: t(
+        "orders",
+        "payment_pending_desc",
+        "Belum masuk total pendapatan",
+        "Not counted in revenue yet",
+      ),
+    },
+    {
+      id: "cancelled",
+      label: t(
+        "orders",
+        "payment_cancelled",
+        "Pembayaran dibatalkan",
+        "Payment cancelled",
+      ),
+      desc: t(
+        "orders",
+        "payment_cancelled_desc",
+        "Tidak masuk total pendapatan",
+        "Excluded from revenue",
+      ),
+    },
+  ];
 
   const statusOptions = [
     {
@@ -239,6 +303,7 @@ export default function OrdersPage() {
     try {
       const formData = new FormData();
       formData.append("status", newStatus);
+      formData.append("payment_status", newPaymentStatus);
       formData.append("_method", "PATCH");
 
       const res = await fetch(
@@ -275,9 +340,19 @@ export default function OrdersPage() {
         throw new Error("Gagal mengupdate status");
       }
 
+      const payload = await res.json().catch(() => null);
+      const updated = payload?.data as Order | undefined;
+
       setOrders(
         orders.map((o) =>
-          o.id === selectedOrder.id ? { ...o, status: newStatus } : o,
+          o.id === selectedOrder.id
+            ? {
+                ...o,
+                status: updated?.status || newStatus,
+                payment_status:
+                  updated?.payment_status || newPaymentStatus,
+              }
+            : o,
         ),
       );
 
@@ -475,7 +550,22 @@ export default function OrdersPage() {
                     <button
                       key={option.id}
                       type="button"
-                      onClick={() => setNewStatus(option.id)}
+                      onClick={() => {
+                        setNewStatus(option.id);
+                        if (option.id === "dibatalkan") {
+                          setNewPaymentStatus("cancelled");
+                        } else if (
+                          newPaymentStatus === "pending" &&
+                          [
+                            "pengemasan",
+                            "dalam_perjalanan",
+                            "diterima",
+                            "selesai",
+                          ].includes(option.id)
+                        ) {
+                          setNewPaymentStatus("success");
+                        }
+                      }}
                       className={`flex items-start gap-3.5 p-3.5 rounded-xl border text-left transition-all ${
                         isSelected
                           ? option.activeColor + " shadow-sm shadow-gray-100"
@@ -502,6 +592,46 @@ export default function OrdersPage() {
                           {option.desc}
                         </p>
                       </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400 block pt-2">
+                {t(
+                  "orders",
+                  "select_payment_status",
+                  "Status Pembayaran",
+                  "Payment Status",
+                )}
+              </label>
+              <div className="grid grid-cols-1 gap-2">
+                {paymentOptions.map((option) => {
+                  const isSelected = newPaymentStatus === option.id;
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setNewPaymentStatus(option.id)}
+                      className={`flex items-start justify-between gap-3 p-3 rounded-xl border text-left transition-all ${
+                        isSelected
+                          ? "ring-2 ring-gray-900 border-gray-900 bg-gray-50"
+                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
+                      }`}
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {option.label}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {option.desc}
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold border ${paymentStatusBadgeClass(option.id)}`}
+                      >
+                        {option.id}
+                      </span>
                     </button>
                   );
                 })}
@@ -665,7 +795,25 @@ export default function OrdersPage() {
                   </td>
 
                   <td className="px-6 py-4 text-center text-sm font-bold text-gray-900">
-                    {formatRupiah(orderGrandTotal(order))}
+                    <div className="flex flex-col items-center gap-1">
+                      <span
+                        className={
+                          isSuccessfulPayment(order.payment_status)
+                            ? "text-gray-900"
+                            : "text-gray-400 line-through decoration-gray-300"
+                        }
+                      >
+                        {formatRupiah(orderGrandTotal(order))}
+                      </span>
+                      <span
+                        className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold border ${paymentStatusBadgeClass(normalizePaymentStatus(order.payment_status))}`}
+                      >
+                        {paymentStatusLabel(
+                          normalizePaymentStatus(order.payment_status),
+                          locale === "en" ? "en" : "id",
+                        )}
+                      </span>
+                    </div>
                   </td>
 
                   <td className="px-6 py-4 text-center text-left">
@@ -688,6 +836,9 @@ export default function OrdersPage() {
                         onClick={() => {
                           setSelectedOrder(order);
                           setNewStatus(order.status);
+                          setNewPaymentStatus(
+                            normalizePaymentStatus(order.payment_status),
+                          );
                           setIsStatusModalOpen(true);
                         }}
                         className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 border border-gray-150 bg-white shadow-sm transition-colors"
@@ -712,8 +863,8 @@ export default function OrdersPage() {
             </tbody>
           </table>
 
-          {/* 3. FOOTER: TOTAL REVENUE & PAGINATION (DESIGN BARU) */}
-          <div className="px-6 py-5 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-6 bg-gray-50/50">
+          {/* 3. FOOTER: TOTAL REVENUE & PAGINATION */}
+          <div className="px-6 py-5 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/50">
             {/* Widget Total Pendapatan */}
             <div className="flex items-center gap-4 bg-white px-5 py-3 rounded-2xl border border-gray-200 shadow-sm w-full sm:w-auto">
               <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
@@ -721,7 +872,12 @@ export default function OrdersPage() {
               </div>
               <div>
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  {t("orders", "total_revenue", "Total Pendapatan", "Total Revenue")}
+                  {t(
+                    "orders",
+                    "total_revenue",
+                    "Total Pendapatan (berhasil)",
+                    "Total Revenue (successful)",
+                  )}
                 </p>
                 <p className="text-xl font-black text-gray-900 mt-0.5">
                   {formatRupiah(totalRevenue)}
@@ -729,31 +885,16 @@ export default function OrdersPage() {
               </div>
             </div>
 
-            {/* Navigasi Pagination */}
-            <div className="flex items-center gap-3">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
-                className="px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:hover:bg-white transition-all shadow-sm"
-              >
-                Prev
-              </button>
-
-              <div className="px-4 py-2.5 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center min-w-[80px]">
-                <span className="text-sm font-bold text-gray-700">
-                  {currentPage} <span className="text-gray-400 mx-1">/</span>{" "}
-                  {totalPages}
-                </span>
-              </div>
-
-              <button
-                disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
-                className="px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:hover:bg-white transition-all shadow-sm"
-              >
-                Next
-              </button>
-            </div>
+            <AdminTablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredOrders.length}
+              itemLabel={t("orders", "items", "pesanan", "orders")}
+              onPageChange={setCurrentPage}
+              hideWhenSinglePage={false}
+              showItemCount={false}
+              className="border-t-0 px-0 py-0 bg-transparent w-full sm:w-auto"
+            />
           </div>
         </div>
       </div>

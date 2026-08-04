@@ -5,11 +5,10 @@ import {
   Search,
   Trash2,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
+import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 interface WishlistItem {
@@ -258,27 +257,16 @@ export default function WishlistPage() {
             </tbody>
           </table>
 
-          {/* NAVIGASI PAGINATION */}
           {filteredWishlists.length > 0 && (
-            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-center gap-4 bg-gray-50/50">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(currentPage - 1)}
-                className="px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm font-bold hover:bg-gray-50 disabled:opacity-50 shadow-sm flex items-center gap-1"
-              >
-                <ChevronLeft size={16} /> Prev
-              </button>
-              <div className="text-sm font-bold text-gray-600 px-3">
-                {currentPage} / {totalPages}
-              </div>
-              <button
-                disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage(currentPage + 1)}
-                className="px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm font-bold hover:bg-gray-50 disabled:opacity-50 shadow-sm flex items-center gap-1"
-              >
-                Next <ChevronRight size={16} />
-              </button>
-            </div>
+            <AdminTablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredWishlists.length}
+              itemLabel={t("wishlist", "items", "wishlist", "wishlists")}
+              onPageChange={setCurrentPage}
+              hideWhenSinglePage={false}
+              className="bg-gray-50/50 px-6 py-4"
+            />
           )}
         </div>
       </div>

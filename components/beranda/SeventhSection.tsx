@@ -334,10 +334,38 @@ export default function SeventhSection() {
 
           <button
             onClick={handleQuizRouting}
-            className="relative z-50 cursor-pointer text-[15px] md:text-[22px] lg:text-[24px] text-white bg-[#1172BA] px-10 md:px-12 py-2.5 md:py-2.5 rounded-full shadow-md hover:scale-95 transition-all inline-flex items-center gap-2"
+            className="group relative z-50 overflow-hidden cursor-pointer text-[11px] md:text-[15px] text-white bg-[#1172BA] px-5 md:px-7 py-2.5 md:py-3 rounded-full shadow-md transition-[background-color,box-shadow] duration-200 hover:bg-[#0e5d99] hover:shadow-lg active:brightness-95 inline-flex items-center gap-1.5 md:gap-2"
             style={cmsFontStyle(read, "cta_label", { weight: "600" })}
           >
-            {read("cta_label", L(locale, "Mulai Kuis", "Start Quiz"))}
+            <span
+              className="pointer-events-none absolute inset-0 rounded-full bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.22)_45%,transparent_70%)] -translate-x-[120%] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[120%]"
+              aria-hidden
+            />
+            <span className="relative">
+              {read("cta_label", L(locale, "Mulai Kuis", "Start Quiz"))}
+            </span>
+            <svg
+              className="relative w-3.5 h-3.5 md:w-4 md:h-4 pointer-events-none transition-transform duration-300 ease-out group-hover:translate-x-1"
+              viewBox="0 0 19 19"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden
+            >
+              <path
+                d="M3.80933 9.14282H14.476"
+                stroke="currentColor"
+                strokeWidth="1.52381"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M9.14282 3.80957L14.4762 9.1429L9.14282 14.4762"
+                stroke="currentColor"
+                strokeWidth="1.52381"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </motion.div>
       </motion.div>

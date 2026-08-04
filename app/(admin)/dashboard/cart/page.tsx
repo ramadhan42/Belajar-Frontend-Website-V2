@@ -6,12 +6,11 @@ import {
   Trash2,
   CheckCircle2,
   Package,
-  ChevronLeft,
-  ChevronRight,
   ShoppingCart,
 } from "lucide-react";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
+import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 
 interface CartItem {
@@ -300,27 +299,16 @@ export default function CartPage() {
             </tbody>
           </table>
 
-          {/* Navigasi Pagination */}
           {filteredCarts.length > 0 && (
-            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-center gap-4 bg-gray-50/50">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
-                className="px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:hover:bg-white transition-all shadow-sm flex items-center gap-1.5"
-              >
-                <ChevronLeft size={16} /> Prev
-              </button>
-              <div className="text-sm font-bold text-gray-700 min-w-[80px] text-center bg-white px-4 py-2.5 rounded-xl border border-gray-200 shadow-sm">
-                {currentPage} <span className="text-gray-400 font-medium mx-1.5">/</span> {totalPages}
-              </div>
-              <button
-                disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
-                className="px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:hover:bg-white transition-all shadow-sm flex items-center gap-1.5"
-              >
-                Next <ChevronRight size={16} />
-              </button>
-            </div>
+            <AdminTablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredCarts.length}
+              itemLabel={t("cart", "items", "item", "items")}
+              onPageChange={setCurrentPage}
+              hideWhenSinglePage={false}
+              className="bg-gray-50/50 px-6 py-4"
+            />
           )}
         </div>
       </div>

@@ -17,6 +17,7 @@ import { getAdminHeaders, formatProductPrice, type Promo } from "@/lib/api";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 import AdminModal from "@/components/admin/AdminModal";
 import AdminConfirmModal from "@/components/admin/AdminConfirmModal";
+import AdminTablePagination from "@/components/admin/AdminTablePagination";
 
 type FormState = {
   harga_promo: string;
@@ -451,29 +452,15 @@ export default function PromosPage() {
           </table>
 
           {filtered.length > 0 ? (
-            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-center gap-4 bg-gray-50/50">
-              <button
-                type="button"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
-                className="px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:hover:bg-white transition-all shadow-sm"
-              >
-                Prev
-              </button>
-              <div className="text-sm font-bold text-gray-700 min-w-[80px] text-center bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
-                {currentPage}{" "}
-                <span className="text-gray-400 font-medium mx-1">/</span>{" "}
-                {totalPages}
-              </div>
-              <button
-                type="button"
-                disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
-                className="px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:hover:bg-white transition-all shadow-sm"
-              >
-                Next
-              </button>
-            </div>
+            <AdminTablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filtered.length}
+              itemLabel={t("promos", "items", "promo", "promos")}
+              onPageChange={setCurrentPage}
+              hideWhenSinglePage={false}
+              className="bg-gray-50/50 px-6 py-4"
+            />
           ) : null}
         </div>
       </div>

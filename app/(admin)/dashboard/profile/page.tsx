@@ -16,10 +16,12 @@ import {
   KeyRound,
   BadgeCheck,
   Sparkles,
+  Info,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { SITE_STRINGS } from "@/components/constans/strings";
 import AdminModal from "@/components/admin/AdminModal";
+import AdminRichTooltip from "@/components/admin/AdminRichTooltip";
 import { useAdminI18n } from "@/hooks/useAdminI18n";
 import {
   formatPresenceDateTime,
@@ -432,23 +434,60 @@ export default function ProfilePage() {
               icon={Calendar}
               label={copy.memberSince}
               value={formatAdminDate(profile.created_at, locale)}
+              tipTitle={
+                locale === "en" ? "Account created" : "Akun dibuat"
+              }
+              tipHighlight={formatAdminDate(profile.created_at, locale)}
+              tipBody={
+                locale === "en"
+                  ? "Date this admin account was registered on Evomi."
+                  : "Tanggal akun admin ini didaftarkan di Evomi."
+              }
             />
             <StatPill
               icon={KeyRound}
               label={copy.lastLogin}
               value={formatPresenceDateTime(profile.last_login_at, locale)}
+              tipTitle={
+                locale === "en"
+                  ? "Last successful login"
+                  : "Login berhasil terakhir"
+              }
+              tipHighlight={formatPresenceDateTime(profile.last_login_at, locale)}
+              tipBody={
+                locale === "en"
+                  ? "Updated when you sign in successfully to the admin panel."
+                  : "Diperbarui saat Anda berhasil masuk ke panel admin."
+              }
             />
             <StatPill
               icon={Clock}
               label={copy.lastSeen}
               value={formatPresenceRelative(profile.last_seen_at, locale)}
-              title={formatPresenceDateTime(profile.last_seen_at, locale)}
+              tipTitle={
+                locale === "en" ? "Last activity" : "Aktivitas terakhir"
+              }
+              tipHighlight={formatPresenceDateTime(profile.last_seen_at, locale)}
+              tipBody={
+                locale === "en"
+                  ? "Approximate time of your latest authenticated API activity."
+                  : "Perkiraan waktu aktivitas API terautentikasi terakhir Anda."
+              }
             />
             <StatPill
               icon={Mail}
               label={t("profile", "email_label", "Alamat Email", "Email Address")}
               value={profile.email}
               truncate
+              tipTitle={
+                locale === "en" ? "Email address" : "Alamat email"
+              }
+              tipHighlight={profile.email}
+              tipBody={
+                locale === "en"
+                  ? "Primary email used for this admin account."
+                  : "Email utama yang dipakai akun admin ini."
+              }
             />
           </div>
 
@@ -738,22 +777,20 @@ function StatPill({
   label,
   value,
   truncate: shouldTruncate,
-  title,
+  tipTitle,
+  tipHighlight,
+  tipBody,
 }: {
   icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
   value: string;
   truncate?: boolean;
-  title?: string;
+  tipTitle?: string;
+  tipHighlight?: string;
+  tipBody?: string;
 }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white px-4 py-3.5 shadow-sm"
-      title={title}
-    >
+  const content = (
+    <>
       <span className="w-10 h-10 rounded-xl bg-[#1172BA]/8 flex items-center justify-center shrink-0">
         <Icon size={18} className="text-[#1172BA]" />
       </span>
@@ -761,20 +798,54 @@ function StatPill({
         initial={{ opacity: 0, x: -4 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
-        className="min-w-0"
+        className="min-w-0 flex-1"
       >
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-          {label}
-        </p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+            {label}
+          </p>
+          {tipTitle ? (
+            <button
+              type="button"
+              className="inline-flex h-4 w-4 items-center justify-center rounded-full text-gray-400 transition-colors hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
+              aria-label={label}
+            >
+              <Info size={11} strokeWidth={2.5} />
+            </button>
+          ) : null}
+        </div>
         <p
           className={`text-sm font-semibold text-gray-900 mt-0.5 ${
             shouldTruncate ? "truncate" : ""
           }`}
-          title={value}
         >
           {value}
         </p>
       </motion.div>
+    </>
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="rounded-xl border border-gray-100 bg-white px-4 py-3.5 shadow-sm"
+    >
+      {tipTitle ? (
+        <AdminRichTooltip
+          title={tipTitle}
+          highlight={tipHighlight ?? value}
+          body={tipBody}
+          icon={<Icon size={14} />}
+          className="w-full"
+          triggerClassName="w-full flex items-center gap-3"
+        >
+          {content}
+        </AdminRichTooltip>
+      ) : (
+        <div className="flex items-center gap-3">{content}</div>
+      )}
     </motion.div>
   );
 }

@@ -136,6 +136,8 @@ export interface ShoppingHistoryItem {
   ongkir_price?: number;
   created_at?: string;
   metode_pembayaran?: string;
+  /** pending | success | cancelled — only success counts in revenue */
+  payment_status?: string;
 }
 
 /** Total bayar order = produk + ongkir − promo (sekali). */
@@ -359,6 +361,7 @@ export type GuestCheckoutPayload = {
   guest_email: string;
   invoice_id: string;
   payment_method: string;
+  payment_status?: "pending" | "success" | "cancelled";
   total: number;
   shipping_cost?: number;
   promo_discount?: number;
